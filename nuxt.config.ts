@@ -12,11 +12,14 @@ export default defineNuxtConfig({
     kv: true,
   },
 
-  // $development: {
-  //   hub: {
-  //     remote: true,
-  //   },
-  // },
+  hooks: {
+    "vite:extend"({ config }) {
+      if (config.server && config.server.hmr) {
+        // @ts-ignore
+        config.server.hmr.protocol = "wss";
+      }
+    },
+  },
 
   compatibilityDate: "2024-12-12",
 });
