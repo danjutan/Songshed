@@ -76,5 +76,6 @@
   },
   "[vue]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "IDX.corgiMode": false
 }
