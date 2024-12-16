@@ -10,6 +10,7 @@ import {
   CellHoverInjectionKey,
   type CellHoverEvents,
 } from "../state/cell-hover-events";
+import { useTemplateRef } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -39,7 +40,7 @@ const emit = defineEmits<{
 const { editingNote, setEditing } = inject(EditingInjectionKey) as EditingState;
 const { hover } = inject(CellHoverInjectionKey) as CellHoverEvents;
 
-const input = ref<HTMLInputElement>();
+const input = useTemplateRef("input");
 
 function focus() {
   input.value!.focus();
