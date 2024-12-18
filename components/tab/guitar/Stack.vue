@@ -90,11 +90,11 @@ function onSpotMouseDown(
 
 <template>
   <div
-    class="stack"
     :ref="
       (el) =>
         resizeState.registerStackRef(position, el as HTMLDivElement | null)
     "
+    class="stack"
     @mousedown="onStackMouseDown"
     @mousemove="onStackMouseMove"
   >

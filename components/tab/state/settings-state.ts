@@ -5,6 +5,7 @@ export function createSettingsState() {
     collapseSubdivisions: false,
     collapseEmpty: false,
     collapseAll: true,
+    cellHeight: "24px",
   });
 
   return settings;
