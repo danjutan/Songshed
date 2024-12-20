@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import {
-  ResizeStateInjectionKey,
-  type ResizeState,
-} from "../../state/resize-state";
+  ResizeObserverInjectionKey,
+  type ResizeObserver,
+} from "../../state/resize-observer";
 import {
   SettingsInjectionKey,
   type Settings,

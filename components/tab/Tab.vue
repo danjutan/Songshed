@@ -26,9 +26,9 @@ import {
   createBendEditState,
 } from "./guitar/state/bend-edit-state";
 import {
-  createResizeState,
-  ResizeStateInjectionKey,
-} from "./state/resize-state";
+  createResizeObserver,
+  ResizeObserverInjectionKey,
+} from "./state/resize-observer";
 import { SettingsInjectionKey, type Settings } from "./state/settings-state";
 
 const props = defineProps<{
@@ -53,8 +53,8 @@ provide(SelectionInjectionKey, selectionState);
 const editingState = createEditingState();
 provide(EditingInjectionKey, editingState);
 
-const resizeState = createResizeState();
-provide(ResizeStateInjectionKey, resizeState);
+const resizeState = createResizeObserver();
+provide(ResizeObserverInjectionKey, resizeState);
 
 const tieAddState = createTieAddState(
   cellHoverEvents,
@@ -121,7 +121,7 @@ const gridTemplateColumns = computed<string>(() => {
     { length: settings.barsPerLine },
     () => barTemplateColumns,
   ).join(" min-content ");
-  return `var(--note-font-size) ${bars}`;
+  return `var(--note-font-size) ${bars} var(--note-font-size)`;
 });
 
 export type TablineColumn = {
