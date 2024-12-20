@@ -26,9 +26,9 @@ import {
   createBendEditState,
 } from "./guitar/state/bend-edit-state";
 import {
-  createResizeObserver,
-  ResizeObserverInjectionKey,
-} from "./state/resize-observer";
+  createStackResizeObserver,
+  StackResizeObserverInjectionKey,
+} from "./state/stack-resize-observer";
 import { SettingsInjectionKey, type Settings } from "./state/settings-state";
 
 const props = defineProps<{
@@ -53,8 +53,8 @@ provide(SelectionInjectionKey, selectionState);
 const editingState = createEditingState();
 provide(EditingInjectionKey, editingState);
 
-const resizeState = createResizeObserver();
-provide(ResizeObserverInjectionKey, resizeState);
+const resizeState = createStackResizeObserver();
+provide(StackResizeObserverInjectionKey, resizeState);
 
 const tieAddState = createTieAddState(
   cellHoverEvents,

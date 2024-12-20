@@ -1,13 +1,13 @@
 <script lang="ts" setup>
 import {
-  ResizeObserverInjectionKey,
-  type ResizeObserver,
-} from "../../state/resize-observer";
+  StackResizeObserverInjectionKey,
+  type StackResizeObserver,
+} from "../../state/stack-resize-observer";
 import {
   SettingsInjectionKey,
   type Settings,
 } from "../../state/settings-state";
-import BendRender from "./Bend.vue";
+import BendRender from "./Bend/BendRender.vue";
 import type { Bend } from "~/model/stores";
 
 const props = defineProps<{
@@ -38,5 +38,9 @@ svg {
   width: 100%;
   height: 100%;
   pointer-events: none;
+}
+
+svg * {
+  pointer-events: all;
 }
 </style>

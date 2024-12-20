@@ -7,7 +7,7 @@ export interface StackCoords {
   right: number;
 }
 
-export interface ResizeObserver {
+export interface StackResizeObserver {
   registerStackRef: (startPos: number, stack: HTMLDivElement | null) => void;
   getStackCoords: (startPos: number) => StackCoords | undefined;
   getPreviousStackPos: (startPosition: number) => number | undefined;
@@ -22,7 +22,7 @@ export function withOffset(coords: StackCoords, offset: number): StackCoords {
   };
 }
 
-export function createResizeObserver(): ResizeObserver {
+export function createStackResizeObserver(): StackResizeObserver {
   interface Stack {
     x: StackCoords; //reactive computed
     prev?: number;
@@ -115,5 +115,5 @@ export function createResizeObserver(): ResizeObserver {
   };
 }
 
-export const ResizeObserverInjectionKey =
-  Symbol() as InjectionKey<ResizeObserver>;
+export const StackResizeObserverInjectionKey =
+  Symbol() as InjectionKey<StackResizeObserver>;

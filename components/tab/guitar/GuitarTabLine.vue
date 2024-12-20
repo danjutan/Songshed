@@ -23,9 +23,9 @@ import {
   type BendEditState,
 } from "./state/bend-edit-state";
 import {
-  createResizeObserver,
-  ResizeObserverInjectionKey,
-} from "../state/resize-observer";
+  createStackResizeObserver,
+  StackResizeObserverInjectionKey,
+} from "../state/stack-resize-observer";
 
 const props = defineProps<{
   tabLineIndex: number;
