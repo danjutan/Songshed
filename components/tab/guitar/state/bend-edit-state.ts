@@ -70,11 +70,22 @@ export function createBendEditState(
     }
   }
 
+  function onReleaseGrabberClick(grabberPosition: number) {
+    if (!draggingBend.value?.through?.length) {
+      tieStore.value!.updateBend({
+        ...draggingBend.value!,
+        through: [draggingBend.value!.to - draggingBend.value!.from!],
+        to: grabberPosition,
+        releaseType: "hold",
+      });
+    }
+  }
+
   function deleteBend(bend: Bend) {
     tieStore.value!.deleteTie(bend.string, bend.from);
   }
 
-  function updateBendBy(bend: Bend, value: number) {
+  function setBendValue(bend: Bend, value: number) {
     tieStore.value!.updateBend({ ...bend, bend: value });
   }
 
@@ -82,7 +93,8 @@ export function createBendEditState(
     start,
     onLabelHover,
     deleteBend,
-    updateBendBy,
+    setBendValue,
+    onReleaseGrabberClick,
     get dragging() {
       return dragging.value !== undefined;
     },

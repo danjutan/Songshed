@@ -51,10 +51,7 @@ export function useBendCoords(
 
   const throughCoords = computed<StackCoords | undefined>(() => {
     if (!throughPoint.value) return;
-    const coords = withOffset(
-      getStackCoords(throughPoint.value!)!,
-      fromCoords.left,
-    );
+    const coords = getStackCoords(props.bend.from + throughPoint.value!)!;
     if (!coords) return;
     if (isRightHalf.value) {
       if (throughPoint.value < props.tablineStart) {
