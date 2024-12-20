@@ -53,6 +53,9 @@ provide(SelectionInjectionKey, selectionState);
 const editingState = createEditingState();
 provide(EditingInjectionKey, editingState);
 
+const resizeState = createResizeState();
+provide(ResizeStateInjectionKey, resizeState);
+
 const tieAddState = createTieAddState(
   cellHoverEvents,
   computed(() => props.tabStore.guitar),
@@ -118,7 +121,7 @@ const gridTemplateColumns = computed<string>(() => {
     { length: settings.barsPerLine },
     () => barTemplateColumns,
   ).join(" min-content ");
-  return `var(--cell-height) ${bars} var(--note-font-size)`;
+  return `var(--note-font-size) ${bars}`;
 });
 
 export type TablineColumn = {
@@ -408,6 +411,7 @@ const overlayedBarStart = ref<number | undefined>();
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1;
 
   & .buttons {
     height: 100%;
