@@ -1,13 +1,9 @@
 <script lang="ts" setup>
 import Stack from "./bar/Stack.vue";
-import { type GuitarNote, type NoteSpot, type TabStore } from "./data";
-import { ExpansionStateKey, createExpansionState } from "./providers/expansion-state";
+import { type GuitarNote, type TabStore } from "./data";
 import Strings from "./bar/Strings.vue";
 import Overlay from "./bar/Overlay.vue";
 import Unexpander from "./bar/Unexpander.vue";
-
-// TODO: move to app
-provide(ExpansionStateKey, createExpansionState());
 
 const props = withDefaults(defineProps<{
   data: TabStore

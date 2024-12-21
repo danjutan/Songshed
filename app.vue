@@ -2,10 +2,6 @@
 import type { GuitarNote } from "./components/tab/data";
 import { Spacing, createTabStore } from "./components/tab/data";
 import Tab from "./components/tab/Tab.vue";
-import { SelectionStateKey, createSelectionState } from "./components/tab/providers/selection-state";
-
-const selectionState = createSelectionState();
-provide(SelectionStateKey, selectionState);
 
 const tabStore = createTabStore();
 
@@ -56,7 +52,8 @@ function fretboardNoteChange(note: GuitarNote) {
 
 const notches = ref(8);
 const subdivisions = ref(4);
-const collapse = ref(true);
+const collapseSubdivisions = ref(true);
+const collapseEmpty = ref(false);
 </script>
 
 <template>
@@ -65,12 +62,17 @@ const collapse = ref(true);
                            type="number">
   Subdivide notches by: <input v-model="subdivisions"
                                type="number">
-  Collapse subdivisions: <input v-model="collapse"
+  Collapse subdivisions: <input v-model="collapseSubdivisions"
                                 type="checkbox">
+
+  Collapse empty notches: <input v-model="collapseEmpty"
+                                 type="checkbox">
+
   <Tab :data="tabStore"
        :notches
        :subdivisions
-       :collapse-subdivisions="collapse"
+       :collapse-subdivisions
+       :collapse-empty
   />
   <!-- <Fretboard
     width="75%"
