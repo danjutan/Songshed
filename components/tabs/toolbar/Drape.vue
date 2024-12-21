@@ -56,6 +56,7 @@ const collapsedDisplay = computed(() => props.collapsed === "show" ? "block" : "
 
   .drape-down {
     background-color: v-bind(color);
+    pointer-events: auto;
     height: calc(v-bind(numStrings) * var(--min-division-width) / 2);
     display: v-bind(defaultDisplay);
   }

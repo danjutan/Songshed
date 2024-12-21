@@ -38,13 +38,18 @@ const spacers = computed(() => emptyDivisions(props.divisions));
            :row-start="2"
            color="var(--substack-bg)">
       <template #up>
-        <div :style="{ backgroundColor: 'lightblue', width: '100%', pointerEvents: 'auto' }">
-          up
-        </div>
+        <div :style="{ width: '100%', height: 'var(--min-division-width)', pointerEvents: 'auto' }" />
       </template>
       <template #down>
-        <div :style="{ backgroundColor: 'transparent' }">
-          down
+        <div class="spacer-overlay">
+          <div class="indicator-container">
+            <div class="spacer-indicator">
+              ←
+            </div>
+            <div class="spacer-indicator">
+              →
+            </div>
+          </div>
         </div>
       </template>
     </Drape>
@@ -72,6 +77,35 @@ const spacers = computed(() => emptyDivisions(props.divisions));
   grid-row: 1 / span 1;
   container-name: notch;
   container-type: size;
+}
+
+.spacer-overlay {
+  display: flex;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.indicator-container {
+  width: 100%;
+  /* margin-top: calc(var(--min-division-width) / 2); */
+  height: calc(var(--min-division-width));
+  container-type: size;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.spacer-indicator {
+  /* margin-top: -50%; */
+  font-size: clamp(10px, 50cqw, var(--min-division-width));
+  color: red;
+}
+
+@container (aspect-ratio < 1) {
+  .spacer-indicator {
+    display: none;
+  }
 }
 
 .notch:not(:first-child) .selectable {
