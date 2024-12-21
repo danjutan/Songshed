@@ -29,7 +29,8 @@ const ties = computed<TieRenderData[]>(() => {
   const ties: TieRenderData[] = [];
   for (const [string, stack] of props.ties) {
     for (const [position, tie] of stack) {
-      if (position >= props.startPosition && position <= props.endPosition) {
+      // if (position === Spacing.Whole * 2) debugger;
+      if (position >= props.startPosition && position < props.endPosition) {
         const startColumn =
           props.startColumn + (position - props.startPosition) / props.subUnit;
         if (tie.to <= props.endPosition) {
@@ -81,20 +82,6 @@ const ties = computed<TieRenderData[]>(() => {
     }
   }
   return ties;
-  // [...props.stackData.entries()].forEach(([position, stack], index) => {
-  //   for (const [string, note] of stack) {
-  //     if (note.tie) {
-  //       ties.push({
-  //         string,
-  //         startColumn: props.startColumn + index,
-  //         endColumn:
-  //           props.startColumn +
-  //           index +
-  //           (note.tie.to - position) / props.subUnit,
-  //         type: note.tie.type,
-  //       });
-  //     }
-  //   }
 });
 </script>
 

@@ -63,6 +63,11 @@ if (id) {
     type: "p",
   });
 
+  guitar.setTie(1, Spacing.Whole * 2, {
+    to: Spacing.Whole * 2 + Spacing.Sixteenth,
+    type: "p",
+  });
+
   guitar.setTie(0, Spacing.Quarter * 9, {
     to: Spacing.Quarter * 10,
     type: "p",
