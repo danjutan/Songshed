@@ -57,32 +57,37 @@ if (id) {
 
   guitar.setTie(2, Spacing.Quarter * 2, {
     to: Spacing.Quarter * 2 + Spacing.Sixteenth,
-    type: "h",
+    type: "H",
   });
 
   guitar.setTie(1, Spacing.Quarter * 3 + Spacing.Sixteenth, {
     to: Spacing.Whole + Spacing.Sixteenth,
-    type: "p",
+    type: "P",
   });
 
   guitar.setTie(1, Spacing.Whole * 2, {
     to: Spacing.Whole * 2 + Spacing.Sixteenth,
-    type: "p",
+    type: "P",
   });
 
   guitar.setTie(2, Spacing.Whole * 2 - Spacing.Sixteenth, {
     to: Spacing.Whole * 2,
-    type: "s",
+    type: "S",
+  });
+
+  guitar.setTie(2, Spacing.Whole * 3 - Spacing.Sixteenth, {
+    to: Spacing.Whole * 3,
+    type: "H",
   });
 
   guitar.setTie(0, Spacing.Quarter * 9 - Spacing.Sixteenth, {
     to: Spacing.Quarter * 10 - Spacing.Sixteenth,
-    type: "p",
+    type: "P",
   });
 
   guitar.setTie(2, Spacing.Quarter * 9 - Spacing.Sixteenth, {
     to: Spacing.Quarter * 10 + Spacing.Sixteenth,
-    type: "p",
+    type: "P",
   });
   tabStore.value = store;
 }
