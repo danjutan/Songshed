@@ -83,6 +83,13 @@ if (id) {
     to: Spacing.Quarter * 3,
   });
 
+  ties.setTie(3, Spacing.Quarter * 11 + Spacing.Sixteenth, {
+    type: "bend",
+    releaseType: "hold",
+    bend: 1,
+    to: Spacing.Quarter * 12 + Spacing.Sixteenth * 2,
+  });
+
   ties.setTie(2, Spacing.Quarter * 2, {
     to: Spacing.Quarter * 2 + Spacing.Sixteenth,
     type: "hammer",

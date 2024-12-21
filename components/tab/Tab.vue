@@ -134,6 +134,7 @@ const bendRenders = computed(() => {
       props.data.guitar!.ties,
       subUnit,
       computed(() => annotationRows.value + 2),
+      computed(() => props.barsPerLine * (columnsPerBar.value + 1)),
       posToCol,
     ).value;
   }

@@ -7,6 +7,7 @@ export function createBendRenderState(
   store: TieStore,
   subUnit: ComputedRef<number>,
   startRow: ComputedRef<number>,
+  tablineColumns: ComputedRef<number>,
   posToCol: (pos: number) => TablineColumn,
   //newBend: NewBend
 ) {
@@ -17,16 +18,9 @@ export function createBendRenderState(
       //todo: halves logic
     > = new Map();
 
-    function push(
-      tablineIndex: number,
-      row: number,
-      startColumn: number,
-      throughColumns: number[],
-      endColumn: number,
-      bend: Bend,
-    ) {
+    function push(tablineIndex: number, renderProps: BendRenderProps) {
       const atTabline = bendRenders.get(tablineIndex) || [];
-      atTabline.push({ row, startColumn, throughColumns, endColumn, bend });
+      atTabline.push(renderProps);
       bendRenders.set(tablineIndex, atTabline);
     }
 
@@ -40,16 +34,35 @@ export function createBendRenderState(
         const row = startRow.value + string;
         if (start.tabline !== end.tabline) {
           // halves logic goes here
+          // continue;
+          const fullColumns = tablineColumns.value - start.column + end.column;
+          push(start.tabline, {
+            row,
+            startColumn: start.column,
+            throughColumns,
+            endColumn: tablineColumns.value,
+            bend,
+            half: "left",
+            fullColumns,
+          });
+          push(end.tabline, {
+            row,
+            startColumn: 2,
+            throughColumns,
+            endColumn: end.column,
+            bend,
+            half: "right",
+            fullColumns,
+          });
           continue;
         }
-        push(
-          start.tabline,
+        push(start.tabline, {
           row,
-          start.column,
+          startColumn: start.column,
           throughColumns,
-          end.column,
+          endColumn: end.column,
           bend,
-        );
+        });
       }
     });
 

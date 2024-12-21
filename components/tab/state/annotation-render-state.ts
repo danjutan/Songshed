@@ -41,7 +41,7 @@ export function createAnnotationRenderState(
         const end = posToCol(annotation.end);
         if (start.tabline !== end.tabline) {
           push(start.tabline, row, start.column, -2, annotation);
-          push(end.tabline, row, 1, end.column, annotation);
+          push(end.tabline, row, 2, end.column, annotation);
           continue;
         }
         push(start.tabline, row, start.column, end.column, annotation);
@@ -56,7 +56,7 @@ export function createAnnotationRenderState(
       const last = posToCol(Math.max(start, end) + subUnit.value);
       if (first.tabline !== last.tabline) {
         push(first.tabline, row, first.column, -2);
-        push(last.tabline, row, 1, last.column);
+        push(last.tabline, row, 2, last.column);
       } else {
         push(first.tabline, row, first.column, last.column);
       }

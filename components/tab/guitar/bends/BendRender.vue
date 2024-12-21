@@ -5,6 +5,8 @@ import type { OverlayPosition } from "../../overlay-objects";
 export type BendRenderProps = OverlayPosition & {
   bend: Bend;
   throughColumns: number[];
+  half?: "left" | "right";
+  fullColumns?: number; // if half
 };
 const props = defineProps<BendRenderProps & { bendRow: number }>();
 
@@ -14,6 +16,19 @@ const upswingEndColumn = computed(
 
 const upswingColumns = computed(
   () => upswingEndColumn.value - props.startColumn + 1,
+);
+
+const upswingTo = computed(
+  () =>
+    (props.half === "left" ? props.fullColumns! : upswingColumns.value) * vbu -
+    vbu / 2,
+);
+
+const upswingFrom = computed(
+  () =>
+    (props.half === "right" ? upswingColumns.value - props.fullColumns! : 0) *
+      vbu +
+    vbu * 0.75,
 );
 
 const restColumns = computed(() => props.endColumn - upswingEndColumn.value);
@@ -65,8 +80,8 @@ const endArrowHover = ref(false);
     <path
       class="upswing-curve"
       :d="
-        `M ${vbu * 0.75} ${vbu * rowSpan - vbu * 0.75}` +
-        `Q ${vbu * upswingColumns - vbu / 2} ${vbu * rowSpan - vbu * 0.75} ${vbu * upswingColumns - vbu / 2} ${vbu * 1.1}`
+        `M ${upswingFrom} ${vbu * rowSpan - vbu * 0.75}` +
+        `Q ${upswingTo} ${vbu * rowSpan - vbu * 0.75} ${upswingTo} ${vbu * 1.1}`
       "
       :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
     />
@@ -112,7 +127,7 @@ const endArrowHover = ref(false);
       @mouseleave="endArrowHover = false"
     />
   </template>
-  <div class="label">
+  <div v-if="props.half !== 'left'" class="label">
     <div class="row">
       <span>{{ bendLabels[props.bend.bend] || props.bend.bend }}</span>
       <div v-if="!restColumns" class="grabber right" />
@@ -132,12 +147,14 @@ const endArrowHover = ref(false);
   width: 100%;
   height: 100%;
   overflow: visible;
-  /* pointer-events: none; */
+  pointer-events: none;
 }
 
 .upswing,
 .downswing {
   grid-row: v-bind(bendRow) / calc(v-bind(row) + 1);
+  overflow: hidden;
+  z-index: 1;
 }
 
 .hold {
