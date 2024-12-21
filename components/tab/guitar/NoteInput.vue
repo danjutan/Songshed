@@ -6,7 +6,6 @@ const props = withDefaults(
     data?: GuitarNote;
     tuning: Midi;
     frets: number;
-    collapse?: boolean;
     startFocused?: boolean;
     blockingColor?: string;
     hovering?: boolean;
@@ -78,7 +77,7 @@ onMounted(() => {
 <template>
   <div
     class="note-input"
-    :class="{ hovering, collapse: collapse && !relativeNote }"
+    :class="{ hovering }"
     @mouseover="mouseOver"
     @mouseleave="emit('endEdit')"
   >
@@ -101,14 +100,6 @@ onMounted(() => {
   display: grid;
 }
 
-.collapse {
-  width: 100%;
-  height: 100%;
-  container-type: size;
-  container-name: collapser;
-  /* border: 1px solid black; */
-}
-
 input {
   all: unset;
   /* text-shadow: 1px 1px 0px lightgray; */
@@ -128,8 +119,6 @@ input {
   pointer-events: none;
   color: transparent;
   background-color: v-bind(blockingColor);
-  /* display: none; */
-  /* aspect-ratio: 1 / 1; */
 }
 
 .hovering > input {
