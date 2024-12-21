@@ -97,6 +97,15 @@ function onSelectInput(e: Event) {
 }
 
 const selectHeight = "18px";
+const select = useTemplateRef("select");
+const { focused: selectFocused } = useFocus(select);
+
+document.addEventListener("click", (event) => {
+  if (select.value && !select.value.contains(event.target as Node)) {
+    selectFocused.value = false;
+  }
+});
+
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
 </script>
@@ -179,7 +188,11 @@ const releaseArrowHover = ref(false);
       :height="cellHeight"
     >
       <div :class="{ dragging: bendEditState.dragging }" class="bend-label">
-        <select @input="onSelectInput">
+        <select
+          ref="select"
+          @input="onSelectInput"
+          @change="selectFocused = false"
+        >
           <option
             v-for="[bendBy, label] in Object.entries(bendLabels).sort(
               (a, b) => +a[0] - +b[0],
@@ -219,7 +232,7 @@ const releaseArrowHover = ref(false);
     span:hover,
     select:hover + span {
       background-color: lightgray;
-      width: var(--cell-height);
+      width: calc(var(--cell-height) + 4px);
       text-align: center;
       /* display: none;
       & + select {
@@ -234,11 +247,16 @@ const releaseArrowHover = ref(false);
 
   & select {
     position: absolute;
-    width: var(--cell-height);
+    width: calc(var(--cell-height) + 4px);
     cursor: text;
-    opacity: 0;
+    appearance: none;
     text-align: center;
     height: v-bind(selectHeight);
+    opacity: 0;
+
+    &:focus {
+      opacity: 1;
+    }
 
     & [value="delete"] {
       color: darkred;
