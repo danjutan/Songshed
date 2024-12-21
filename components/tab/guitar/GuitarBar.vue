@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GuitarNote } from "../data";
+import type { GuitarNote } from "~/model/data";
 import Strings from "./Strings.vue";
 import Stack from "./Stack.vue";
 import Overlay from "./Overlay.vue";

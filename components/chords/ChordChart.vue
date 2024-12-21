@@ -13,7 +13,7 @@ const props = withDefaults(
   },
 );
 
-const cellWidth = 20; // relative to a border width of 1
+const cellWidth = 24; // relative to a border width of 1
 const cellRatio = 4 / 3; // height / width
 const cellHeight = cellWidth * cellRatio;
 const topEndHeight = cellHeight / 4;
@@ -54,8 +54,31 @@ const totalHeight = computed(() => cellHeight * (numFrets.value + 1) + gridStart
 
 const viewBox = computed(() => `0 0 ${totalWidth.value} ${totalHeight.value}`);
 
-const hovering = ref({ x: -1, y: -1 });
 // const fingerLabels = computed(() => new Array({length: numFrets}, i =>
+
+function onInput(e: Event) {
+  const target = e.target as HTMLInputElement;
+  const value = target.value;
+  if (value.trim() == "") {
+    return;
+  }
+  const num = parseInt(value);
+  if (Number.isInteger(num) && num >= 1 && num < 99) {
+    windowOffset.value = num - fretStart.value;
+    return;
+  }
+  target.value = `${windowStart.value}`;
+}
+
+function onInputBlur(e: Event) {
+  const target = e.target as HTMLInputElement;
+  target.value = `${windowStart.value}`;
+}
+
+function onInputClick(e: Event) {
+  const target = e.target as HTMLInputElement;
+  target.select();
+}
 </script>
 
 <template>
@@ -87,48 +110,6 @@ const hovering = ref({ x: -1, y: -1 });
       :stroke="'black'"
     />
 
-    <template v-if="windowStart !== 0">
-      <text
-        v-for="(n, i) in numFrets"
-        text-anchor="middle"
-        :x="cellWidth / 2 - 1"
-        :y="gridStartY + n * cellHeight - cellWidth / 2"
-        fill="gray"
-        font-family="sans-serif"
-        :font-size="cellWidth / 2"
-      >
-        {{ windowStart + i }}
-      </text>
-    </template>
-
-    <text
-      class="arrow"
-      text-anchor="middle"
-      :x="cellWidth / 2"
-      :y="gridStartY - cellHeight / 3 - 1"
-      :transform="`rotate(-90, ${cellWidth * (3 / 4) - 1} ${gridStartY - cellHeight / 3 - 1})`"
-      fill="transparent"
-      font-family="sans-serif"
-      :font-size="cellHeight / 2"
-      @click="decrementWindowOffset"
-    >
-      ⮕
-    </text>
-
-    <text
-      class="arrow"
-      text-anchor="middle"
-      :x="cellWidth / 2"
-      :y="gridEndY + cellWidth"
-      :transform="`rotate(90, ${cellWidth * (3 / 4) - 1} ${gridEndY + cellWidth / 2})`"
-      fill="transparent"
-      font-family="sans-serif"
-      :font-size="cellHeight / 2"
-      @click="incrementWindowOffset"
-    >
-      ⮕
-    </text>
-
     <template v-for="(_, x) in strings">
       <template v-for="(f, y) in numFrets">
         <template v-if="notes[strings - x - 1]?.fret !== f + windowStart - 1">
@@ -157,17 +138,78 @@ const hovering = ref({ x: -1, y: -1 });
         :r="noteRadius"
       />
     </template>
+
+    <template v-if="windowStart !== 1">
+      <text
+        v-for="(n, i) in numFrets"
+        text-anchor="middle"
+        :x="cellWidth / 2 - 1"
+        :y="gridStartY + n * cellHeight - cellWidth / 2"
+        fill="gray"
+        font-family="sans-serif"
+        :font-size="cellWidth / 2"
+      >
+        {{ windowStart + i }}
+      </text>
+    </template>
+
+    <text
+      class="arrow"
+      text-anchor="middle"
+      :x="cellWidth / 2"
+      :y="gridStartY - cellHeight / 3 - 1"
+      :transform="`rotate(-90, ${cellWidth * (3 / 4) - 1} ${gridStartY - cellHeight / 3 - 1})`"
+      font-family="sans-serif"
+      :font-size="cellHeight / 2"
+      :fill="'transparent'"
+      @click="decrementWindowOffset"
+    >
+      ⮕
+    </text>
+
+    <text
+      class="arrow"
+      text-anchor="middle"
+      :x="cellWidth / 2"
+      :y="gridEndY + cellWidth"
+      :transform="`rotate(90, ${cellWidth * (3 / 4) - 1} ${gridEndY + cellWidth / 2})`"
+      font-family="sans-serif"
+      :font-size="cellHeight / 2"
+      :fill="'transparent'"
+      @click="incrementWindowOffset"
+    >
+      ⮕
+    </text>
+    <foreignObject :x="0" :y="gridStartY + 6" :width="100" :height="cellHeight">
+      <input
+        type="text"
+        :value="windowStart"
+        inputmode="numeric"
+        @input="onInput"
+        @blur="onInputBlur"
+        @click="onInputClick"
+      />
+    </foreignObject>
   </svg>
 </template>
 
 <style scoped>
 svg {
-  border: 1px solid black;
+  /* border: 1px solid black; */
   user-select: none;
 }
 
-svg:hover .arrow {
+svg:hover input {
+  display: inline-block;
+}
+
+svg:hover .arrow:not(:hover) {
   fill: gray;
+}
+
+.arrow:hover {
+  fill: black;
+  cursor: pointer;
 }
 circle:not(.selected) {
   fill: transparent;
@@ -177,8 +219,10 @@ circle:hover {
   fill: black;
 }
 
-.arrow:hover {
-  fill: black;
-  cursor: pointer;
+input {
+  display: none;
+  width: 14px;
+  font-size: 12px;
+  text-align: center;
 }
 </style>

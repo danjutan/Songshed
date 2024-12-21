@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Annotation } from "../data";
+import type { Annotation } from "~/model/data";
 
 const props = defineProps<{
   row: number;

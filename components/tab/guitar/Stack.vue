@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { GuitarNote } from "../data";
+import type { GuitarNote } from "~/model/data";
 import NoteInput from "./NoteInput.vue";
 
 const props = withDefaults(

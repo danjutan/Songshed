@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { GuitarNote } from "../data";
+import type { GuitarNote } from "~/model/data";
 
 const props = withDefaults(
   defineProps<{

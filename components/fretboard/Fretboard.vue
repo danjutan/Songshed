@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { NoteData } from "../tab/data";
 import NoteView from "./NoteView.vue";
 import { defaultFrameColor } from "~/composables/colors";
 
