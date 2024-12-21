@@ -99,6 +99,7 @@ const stackExpanderStarts = computed<number[]>(
       <template #up>
         <UnexpanderOverlay v-if="expanded.has(start)"
                            @mouseover="hovering = start"
+                           @mouseleave="hovering = 0"
         />
       </template>
     </Drape>

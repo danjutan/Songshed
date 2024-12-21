@@ -48,11 +48,6 @@ const firstColWidth = computed(() =>
   sortedSubstacks.value.length ? "var(--note-font-size)" : "1fr",
 );
 
-const substacksExpanded = ref(false);
-const substackMinWidth = computed(() =>
-  substacksExpanded.value ? "var(--cell-height)" : "1px",
-);
-
 const emptySubstacks = computed(() => {
   const notchPositions: Array<{ column: number, position: number }> = [];
   const filled = new Set(colPositions.value);
@@ -135,9 +130,7 @@ const emptySubstacks = computed(() => {
 .division {
   display: grid;
   grid-template-columns: v-bind(firstColWidth) repeat(
-      v-bind(numSubstacks),
-      minmax(v-bind(substackMinWidth), 1fr)
-    );
+      v-bind(numSubstacks), auto);
   grid-template-rows: repeat(v-bind(numStrings), var(--cell-height));
 }
 
@@ -164,13 +157,13 @@ const emptySubstacks = computed(() => {
 }
 
 .square {
-  width: 75%;
+  width: 95%;
   max-width: calc(var(--cell-height) / 2);
   aspect-ratio: 1;
   background-color: blue;
 }
 
-@container (aspect-ratio < 0.2) or (aspect-ratio > 1) {
+@container (aspect-ratio < 0.1) or (aspect-ratio > 1) {
   .square {
     display: none;
   }
