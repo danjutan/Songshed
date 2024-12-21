@@ -69,6 +69,13 @@ const gridTemplateColumns = computed<string>(() => {
 const annotationRows = computed(() => Math.max(props.data.annotations.getRows().length, 1));
 const notesRow = computed(() => annotationRows.value + 1);
 
+function newAnnotationRowClick() {
+  if (props.data.annotations.getRows().length < annotationRows.value) {
+    props.data.annotations.createNextRow();
+  }
+  props.data.annotations.createNextRow();
+}
+
 function newBarClick(lastBarStart?: number) {
   if (lastBarStart !== undefined)
     newBarStart.value = lastBarStart + notchUnit.value * props.notches;
@@ -221,7 +228,7 @@ const annotationRenders = computed(() => {
           />
         </template>
 
-        <div class="new-row-box" @click="data.annotations.createNextRow()"><span>+</span></div>
+        <div class="new-row-box" @click="newAnnotationRowClick"><span>+</span></div>
       </template>
       <div
         v-if="tabLineIndex === tabLines.length - 1"
