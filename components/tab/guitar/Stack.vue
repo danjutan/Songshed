@@ -26,9 +26,10 @@ const emit = defineEmits<{
 
 const selecting = inject(SelectionInjectionKey) as SelectionState;
 const editing = inject(EditingInjectionKey) as EditingState;
+const tieAdd = inject(TieAddInjectionKey) as TieAddState;
 
 const noteSpots = computed(() => {
-  const noteSpots = new Array(props.tuning.length);
+  const noteSpots = new Array<GuitarNote | undefined>(props.tuning.length);
   for (const [string, note] of props.notes.entries()) {
     noteSpots[string] = note;
   }
@@ -58,6 +59,22 @@ function onSpotMouseEnter(string: number) {
 
 type InputRef = InstanceType<typeof NoteInput> | null;
 const inputRefs = ref<InputRef[]>([]);
+
+const tieable = (note: GuitarNote | undefined, string: number) =>
+  note &&
+  editing.editingNote?.string === string &&
+  editing.editingNote.position === props.position;
+
+function onSpotMouseDown(
+  e: MouseEvent,
+  string: number,
+  note: GuitarNote | undefined,
+) {
+  if (tieable(note, string)) {
+    tieAdd.start(string, props.position, note!.midi);
+    e.preventDefault();
+  }
+}
 </script>
 
 <template>
@@ -70,10 +87,12 @@ const inputRefs = ref<InputRef[]>([]);
       v-for="(note, string) in noteSpots"
       class="container"
       :class="{
+        crosshair: tieable(note, string),
         collapse: editing.editingNote?.position !== position && collapse,
       }"
       @mouseenter="onSpotMouseEnter(string)"
       @click="inputRefs[string]?.focus()"
+      @mousedown="(e) => onSpotMouseDown(e, string, note)"
       @mouseleave="hovering = undefined"
     >
       <div
@@ -117,6 +136,10 @@ const inputRefs = ref<InputRef[]>([]);
   justify-content: center;
   align-items: center;
   cursor: text;
+}
+
+.container.crosshair {
+  cursor: crosshair;
 }
 
 .container.collapse {

@@ -39,8 +39,6 @@ const emit = defineEmits<{
 const { editingNote, setEditing } = inject(EditingInjectionKey) as EditingState;
 const { hover } = inject(CellHoverInjectionKey) as CellHoverEvents;
 
-const tieAdd = inject(TieAddInjectionKey) as TieAddState;
-
 const input = ref<HTMLInputElement>();
 
 function focus() {
@@ -99,10 +97,10 @@ function onClick(e: MouseEvent) {
   focus();
 }
 
-function onSideMouseDown(e: MouseEvent) {
-  tieAdd.start(props.string, props.position, props.data!.midi!);
-  e.stopImmediatePropagation();
-}
+// function onSideMouseDown(e: MouseEvent) {
+//   tieAdd.start(props.string, props.position, props.data!.midi!);
+//   e.stopImmediatePropagation();
+// }
 </script>
 
 <template>
@@ -112,7 +110,7 @@ function onSideMouseDown(e: MouseEvent) {
     @mouseover="hover(string, position)"
   >
     <span class="input-bg">{{ relativeNote }}</span>
-    <div
+    <!-- <div
       v-if="editing && relativeNote"
       class="side left"
       :class="{
@@ -122,7 +120,7 @@ function onSideMouseDown(e: MouseEvent) {
       @mousedown="onSideMouseDown"
     >
       <span>&ldca;</span>
-    </div>
+    </div> -->
     <input
       ref="input"
       :value="relativeNote"
@@ -134,7 +132,7 @@ function onSideMouseDown(e: MouseEvent) {
       @click="onClick"
       @keyup="(e) => e.stopPropagation()"
     />
-    <div
+    <!-- <div
       v-if="editing && hasNote"
       class="side right"
       :class="{
@@ -144,7 +142,7 @@ function onSideMouseDown(e: MouseEvent) {
       @mousedown="onSideMouseDown"
     >
       <span>&rdca;</span>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -154,14 +152,12 @@ function onSideMouseDown(e: MouseEvent) {
   display: grid;
   justify-items: center;
   align-items: center; /*comment this if you want other centering*/
-  grid-template-columns: 1fr 1fr 1fr;
+  /* grid-template-columns: 1fr 1fr 1fr; */
 }
 
-.side {
-  /* background-color: v-bind(blockingColor); */
+/* .side {
   cursor: crosshair;
   grid-row: 1;
-  /* width: calc(var(--note-font-size) / 2); */
   height: 100%;
   display: flex;
   align-items: end;
@@ -185,7 +181,7 @@ function onSideMouseDown(e: MouseEvent) {
   & span {
     transform: translateY(3px);
   }
-}
+} */
 
 input {
   all: unset;
@@ -194,7 +190,8 @@ input {
 
 .input-bg,
 input {
-  grid-area: 1 / 2;
+  grid-area: 1 / 1;
+  /* grid-area: 1 / 2; */
   /* font-size: var(--note-font-size); */
   text-align: center; /*comment this if you want other centering*/
 }
