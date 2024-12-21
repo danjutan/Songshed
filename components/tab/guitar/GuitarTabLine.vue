@@ -7,22 +7,20 @@ import BendRender from "./bends/BendRender.vue";
 import BendDragBar from "./bends/BendDragBar.vue";
 import { createBendRenderState } from "./state/bend-render-state";
 import { TieAddInjectionKey, type TieAddState } from "./state/tie-add-state";
+import { SettingsInjectionKey, type Settings } from "../state/settings-state";
 
 const props = defineProps<{
   tabLineIndex: number;
   guitarStore: GuitarStore;
   bars: Bar[];
   startRow: number;
-  barsPerLine: number;
   posToCol: (pos: number) => TablineColumn;
-  notchUnit: number;
-  subdivisions: number;
   columnsPerBar: number;
-  collapseEmpty?: boolean; // TODO: extract to provider
-  collapseSubdivisions?: boolean;
+  beatSize: number;
+  subUnit: number;
 }>();
 
-const subUnit = computed(() => props.notchUnit / props.subdivisions);
+const settings = inject(SettingsInjectionKey) as Settings;
 
 const tieAddState = inject(TieAddInjectionKey) as TieAddState;
 
@@ -55,12 +53,10 @@ const notesRow = computed(() =>
 
     <GuitarBar
       :stack-data="bar.stacks"
-      :subdivisions
-      :notch-unit
+      :sub-unit
+      :beat-size
       :start-column="i * (columnsPerBar + 1) + 2"
       :start-row="notesRow"
-      :collapse-empty
-      :collapse-subdivisions
       :tuning="guitarStore.tuning"
       :frets="guitarStore.frets"
       :num-strings="guitarStore.strings"

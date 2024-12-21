@@ -65,7 +65,7 @@ export interface ChordsData {
 export interface TabData {
   title: string;
   beatsPerBar: number;
-  beatSize: number;
+  beatSize: Spacing;
   lineBreaks: Set<number>;
   guitarData?: GuitarTabData; // optional because we'll add more primary views in the future
   annotations: Map<number, Annotation[]>; // annotation row -> annotations on that row

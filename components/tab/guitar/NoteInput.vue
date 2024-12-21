@@ -48,7 +48,7 @@ function focus() {
   emit("focus");
 }
 
-const editing = computed(
+const isEditing = computed(
   () =>
     editingNote?.position === props.position &&
     editingNote?.string === props.string,
@@ -113,7 +113,7 @@ function onClick(e: MouseEvent) {
 <template>
   <div
     class="note-input"
-    :class="{ hovering, editing, 'has-note': hasNote }"
+    :class="{ hovering, editing: isEditing, 'has-note': hasNote }"
     @mouseover="hover(string, position)"
   >
     <span class="input-bg">{{ noteText }}</span>
@@ -159,36 +159,7 @@ function onClick(e: MouseEvent) {
   display: grid;
   justify-items: center;
   align-items: center; /*comment this if you want other centering*/
-  /* grid-template-columns: 1fr 1fr 1fr; */
 }
-
-/* .side {
-  cursor: crosshair;
-  grid-row: 1;
-  height: 100%;
-  display: flex;
-  align-items: end;
-
-  &.hidden {
-    visibility: hidden;
-  }
-
-  &:hover {
-    background-color: var(--note-hover-color);
-  }
-
-  &.left {
-    grid-column: 1;
-  }
-
-  &.right {
-    grid-column: 3;
-  }
-
-  & span {
-    transform: translateY(3px);
-  }
-} */
 
 input {
   all: unset;
@@ -218,6 +189,8 @@ input {
   background-color: v-bind(blockingColor);
 }
 
+/* .hovering:not(.editing) > input,
+.hovering:not(.has-note) > input { */
 .hovering > input {
   background-color: var(--note-hover-color);
 }

@@ -8,15 +8,14 @@ import {
   SelectionInjectionKey,
   type SelectionState,
 } from "../state/selection-state";
+import { SettingsInjectionKey, type Settings } from "../state/settings-state";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
-  subdivisions: number;
-  notchUnit: number;
+  subUnit: number;
+  beatSize: number;
   startColumn: number;
   startRow: number;
-  collapseEmpty?: boolean;
-  collapseSubdivisions?: boolean;
   tuning: Midi[];
   frets: number;
   numStrings: number;
@@ -27,23 +26,24 @@ const emit = defineEmits<{
   noteChange: [position: number, string: number, note: GuitarNote];
 }>();
 
+const settings = inject(SettingsInjectionKey) as Settings;
+
 const selectionState = inject(SelectionInjectionKey) as SelectionState;
 
-const isNotch = (position: number) => position % props.notchUnit === 0;
-const subUnit = computed(() => props.notchUnit / props.subdivisions);
+const isNotch = (position: number) => position % props.beatSize === 0;
 
 const expanded = reactive<Set<number>>(new Set());
 
 const collapsedEmpty = computed<Set<number>>(() => {
   const collapsed = new Set<number>();
-  if (!props.collapseEmpty) return collapsed;
+  if (!settings.collapseEmpty) return collapsed;
   const emptyStack = (stack: NoteStack<GuitarNote>) =>
     stack.size === 0; /*  stack.every((spot) => !spot.data); */
   props.stackData.forEach((_, position) => {
     if (!isNotch(position)) return;
     const notchGroup: number[] = [];
-    for (let i = 0; i < props.subdivisions; i++) {
-      const subPos = position + i * subUnit.value;
+    for (let i = 0; i < settings.subdivisions; i++) {
+      const subPos = position + i * props.subUnit;
       const stack = props.stackData.get(subPos);
       if (stack && !emptyStack(stack)) return;
       notchGroup.push(subPos);
@@ -59,10 +59,10 @@ const collapsed = computed<Set<number>>(() => {
       .map(([position, _]) => position)
       .filter((position) => {
         if (expanded.has(position)) return false;
-        if (props.collapseEmpty && collapsedEmpty.value.has(position))
+        if (settings.collapseEmpty && collapsedEmpty.value.has(position))
           return true;
         if (isNotch(position)) return false;
-        if (props.collapseSubdivisions) return true;
+        if (settings.collapseSubdivisions) return true;
       }),
   );
   return positions;
@@ -70,8 +70,8 @@ const collapsed = computed<Set<number>>(() => {
 
 function toggleSubdivisions(notchPosition: number) {
   const collapse = expanded.has(notchPosition);
-  for (let i = 0; i < props.subdivisions; i++) {
-    const pos = notchPosition + i * subUnit.value;
+  for (let i = 0; i < settings.subdivisions; i++) {
+    const pos = notchPosition + i * props.subUnit;
     if (collapse) {
       expanded.delete(pos);
       continue;
@@ -114,20 +114,20 @@ function toggleSubdivisions(notchPosition: number) {
       <template v-if="collapsedEmpty.has(position)">
         <Overlay
           :start-column="startColumn + i"
-          :columns="props.subdivisions"
+          :columns="settings.subdivisions"
           :start-row
           :rows="numStrings"
           @mousedown="
             !selectionState.isSelected(position) &&
               selectionState.start(
                 position,
-                position + subUnit * (props.subdivisions - 1),
+                position + subUnit * (settings.subdivisions - 1),
               )
           "
           @mousemove="
             selectionState.drag(
               position,
-              position + subUnit * (props.subdivisions - 1),
+              position + subUnit * (settings.subdivisions - 1),
             )
           "
         >
@@ -138,23 +138,23 @@ function toggleSubdivisions(notchPosition: number) {
           />
         </Overlay>
       </template>
-      <template v-else-if="props.collapseSubdivisions">
+      <template v-else-if="settings.collapseSubdivisions">
         <Overlay
           :start-column="1 + startColumn + i"
-          :columns="props.subdivisions - 1"
+          :columns="settings.subdivisions - 1"
           :start-row
           :rows="numStrings"
           @mousedown="
             !selectionState.isSelected(position + subUnit) &&
               selectionState.start(
                 position,
-                position + subUnit * (props.subdivisions - 1),
+                position + subUnit * (settings.subdivisions - 1),
               )
           "
           @mousemove="
             selectionState.drag(
               position,
-              position + subUnit * (props.subdivisions - 1),
+              position + subUnit * (settings.subdivisions - 1),
             )
           "
         >
@@ -169,7 +169,7 @@ function toggleSubdivisions(notchPosition: number) {
         v-if="expanded.has(position + subUnit)"
         class="unexpander"
         :start-column="startColumn + i"
-        :columns="props.subdivisions"
+        :columns="settings.subdivisions"
         :row="startRow + numStrings"
         @click="toggleSubdivisions(position)"
       />

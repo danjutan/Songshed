@@ -16,7 +16,7 @@ import type {
 export interface TabStore {
   title: string;
   beatsPerBar: number;
-  beatSize: number;
+  beatSize: Spacing;
   lineBreaks: Set<number>;
   createGuitarTab: (
     tuning?: Midi[],
@@ -102,7 +102,7 @@ export function createTabStore(
     get beatSize() {
       return data.beatSize;
     },
-    set beatSize(beatSize: number) {
+    set beatSize(beatSize: Spacing) {
       data.beatSize = beatSize;
     },
     get lineBreaks() {

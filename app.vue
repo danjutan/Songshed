@@ -5,6 +5,11 @@ import { createTabStore } from "./model/stores";
 import { deserializeTabData } from "./model/serialize";
 import Tab from "./components/tab/Tab.vue";
 import ChordGroup from "./components/chords/ChordGroup.vue";
+import {
+  createSettingsState,
+  SettingsInjectionKey,
+} from "./components/tab/state/settings-state";
+import Toolbar from "./components/tab/toolbar/Toolbar.vue";
 
 const route = useRoute();
 const [_, id] = route.path.split("/");
@@ -142,19 +147,14 @@ function fretboardNoteChange(note: GuitarNote) {
   notes.deleteNote(position, string);
 } */
 
-const barsPerLine = ref(3);
-const notches = ref(4);
-const subdivisions = ref(4);
-const collapseSubdivisions = ref(true);
-const collapseEmpty = ref(true);
+const settings = createSettingsState();
+provide(SettingsInjectionKey, settings);
 
-const saveId = ref(id);
-
-async function save() {
-  if (tabStore.value && saveId.value) {
+async function save(saveId: string) {
+  if (tabStore.value && saveId) {
     const tabData = tabStore.value.serialize();
 
-    const url = "/api/tab-data/" + saveId.value;
+    const url = "/api/tab-data/" + saveId;
     const { data, pending, error, refresh } = await $fetch(url, {
       method: "POST",
       body: tabData,
@@ -166,31 +166,16 @@ async function save() {
 <template>
   <!-- <input type="checkbox" v-model="showDivisions"/> -->
   <div>
-    Bars per line:
-    <input v-model="barsPerLine" type="number" />
-    Notches per bar:
-    <input v-model="notches" type="number" />
-    Subdivide notches by:
-    <input v-model="subdivisions" type="number" />
-    Collapse subdivisions:
-    <input v-model="collapseSubdivisions" type="checkbox" />
-
-    Collapse empty notches:
-    <input v-model="collapseEmpty" type="checkbox" />
-
-    <input v-model="saveId" type="text" />
-    <button @click="save">Save</button>
+    <Toolbar
+      v-if="tabStore"
+      :id
+      v-model:beats-per-bar="tabStore.beatsPerBar"
+      v-model:beat-size="tabStore.beatSize"
+      @save="save"
+    />
   </div>
   <ChordGroup v-if="tabStore" :data="tabStore.chords" />
-  <Tab
-    v-if="tabStore"
-    :tabStore="tabStore"
-    :bars-per-line
-    :notches
-    :subdivisions
-    :collapse-subdivisions
-    :collapse-empty
-  />
+  <Tab v-if="tabStore" :tab-store="tabStore" />
   <!-- <Fretboard
     width="75%"
     :stack="activeStack"
@@ -198,8 +183,4 @@ async function save() {
   /> -->
 </template>
 
-<style scoped>
-input[type="number"] {
-  width: 50px;
-}
-</style>
+<style scoped></style>

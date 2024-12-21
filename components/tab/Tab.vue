@@ -25,28 +25,18 @@ import {
   BendEditInjectionKey,
   createBendEditState,
 } from "./guitar/state/bend-edit-state";
+import { SettingsInjectionKey, type Settings } from "./state/settings-state";
 
-const props = withDefaults(
-  defineProps<{
-    tabStore: TabStore;
-    barsPerLine?: number;
-    notches?: number; // per bar
-    subdivisions?: number; // per notch
-    collapseSubdivisions?: boolean;
-    collapseEmpty?: boolean;
-  }>(),
-  {
-    barsPerLine: 3,
-    notches: 2,
-    subdivisions: 4,
-  },
-);
+const props = defineProps<{
+  tabStore: TabStore;
+}>();
 
+const settings = inject(SettingsInjectionKey) as Settings;
 const barSize = computed(
   () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
 );
-const notchUnit = computed(() => barSize.value / props.notches);
-const subUnit = computed(() => notchUnit.value / props.subdivisions);
+// const notchUnit = computed(() => props.tabStore.beatSize);
+const subUnit = computed(() => props.tabStore.beatSize / settings.subdivisions);
 
 const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
 const newBarStart = ref(0);
@@ -108,7 +98,7 @@ const tabLines = computed<Array<Bar[]>>(() => {
   bars.value.forEach((bar, i) => {
     currTabLine.push(bar);
     if (
-      currTabLine.length === props.barsPerLine ||
+      currTabLine.length === settings.barsPerLine ||
       props.tabStore.lineBreaks.has((i + 1) * barSize.value)
     ) {
       tabLineBars.push(currTabLine);
@@ -124,7 +114,7 @@ const tabLines = computed<Array<Bar[]>>(() => {
 const gridTemplateColumns = computed<string>(() => {
   const barTemplateColumns = `repeat(${columnsPerBar.value}, 1fr)`;
   const bars = Array.from(
-    { length: props.barsPerLine },
+    { length: settings.barsPerLine },
     () => barTemplateColumns,
   ).join(" min-content ");
   return `var(--cell-height) ${bars} var(--note-font-size)`;
@@ -153,7 +143,8 @@ const posToCol = (pos: number): TablineColumn => {
   // const tabline = Math.floor(pos / (props.barsPerLine * barSize.value));
   // const colsInLine = cols - tabline * props.barsPerLine * columnsPerBar.value;
 
-  // TODO: document how these lines work and figure out why we need to add 1
+  // TODO: document how these lines work
+  // add 1 to work with grid columns
   let column = colsIntoLine + Math.ceil(colsIntoLine / columnsPerBar.value) + 1;
   if (column % (columnsPerBar.value + 1) === 1) {
     column += 1;
@@ -210,7 +201,7 @@ function onLeaveTab() {
 
 function newBarClick() {
   const lastBarStart = bars.value.at(-1)!.start;
-  newBarStart.value = lastBarStart + notchUnit.value * props.notches;
+  newBarStart.value = lastBarStart + barSize.value;
 }
 
 function deleteBar(start: number) {
@@ -337,13 +328,10 @@ const overlayedBarStart = ref<number | undefined>();
         :guitar-store="tabStore.guitar"
         :bars="tabLine"
         :start-row="annotationRows + 1"
-        :bars-per-line
         :pos-to-col
-        :notch-unit
-        :subdivisions
+        :beat-size="tabStore.beatSize"
+        :sub-unit
         :columns-per-bar
-        :collapse-empty
-        :collapse-subdivisions
       />
 
       <div

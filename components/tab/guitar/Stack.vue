@@ -50,6 +50,7 @@ const hovering = ref<number | undefined>();
 
 function onStackMouseDown() {
   selecting.start(props.position);
+  console.log(props.position);
 }
 
 function onStackMouseMove() {
