@@ -27,7 +27,9 @@ const noteSpots = computed(() => {
   return noteSpots;
 });
 
-const backgroundColor = computed(() => (props.selected ? "var(--highlight-color)" : "transparent"));
+const backgroundColor = computed(() =>
+  props.selected ? "var(--highlight-color)" : "transparent",
+);
 
 const hovering = ref<number | undefined>();
 
@@ -36,10 +38,11 @@ const inputRefs = ref<InputRef[]>([]);
 </script>
 
 <template>
-  <div class="stack" :class="{ collapse }">
+  <div class="stack">
     <div
       v-for="(note, string) in noteSpots"
       class="container"
+      :class="{ collapse }"
       @mouseover="hovering = string"
       @click="inputRefs[string]?.focus()"
       @mouseleave="hovering = undefined"
@@ -60,7 +63,9 @@ const inputRefs = ref<InputRef[]>([]);
           :blocking-color="selected ? 'transparent' : undefined"
           :hovering="hovering === string"
           @note-delete="emit('noteDelete', string)"
-          @note-change="(updated) => emit('noteChange', string, { ...note, ...updated })"
+          @note-change="
+            (updated) => emit('noteChange', string, { ...note, ...updated })
+          "
         />
       </div>
     </div>
@@ -69,8 +74,8 @@ const inputRefs = ref<InputRef[]>([]);
 
 <style scoped>
 .stack {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: subgrid;
   background-color: v-bind(backgroundColor);
 }
 
@@ -83,7 +88,7 @@ const inputRefs = ref<InputRef[]>([]);
   cursor: text;
 }
 
-.collapse .container {
+.container.collapse {
   container-type: size;
 }
 

@@ -28,6 +28,8 @@ const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't 
 
 const newBarStart = ref(0);
 
+const numStrings = computed(() => props.data.guitar?.strings);
+
 type Bar = {
   start: number;
   stacks: StackMap<GuitarNote>;
@@ -60,13 +62,16 @@ const tabLines = computed<Array<Bar[]>>(() => {
 
 const gridTemplateColumns = computed<string>(() => {
   const barTemplateColumns = `repeat(${columnsPerBar.value}, 1fr)`;
-  const bars = Array.from({ length: props.barsPerLine }, () => barTemplateColumns).join(
-    " min-content ",
-  );
+  const bars = Array.from(
+    { length: props.barsPerLine },
+    () => barTemplateColumns,
+  ).join(" min-content ");
   return `var(--cell-height) ${bars} var(--note-font-size)`;
 });
 
-const annotationRows = computed(() => Math.max(props.data.annotations.getRows().length, 1));
+const annotationRows = computed(() =>
+  Math.max(props.data.annotations.getRows().length, 1),
+);
 const notesRow = computed(() => annotationRows.value + 1);
 
 function newAnnotationRowClick() {
@@ -102,7 +107,12 @@ function annotationDragThrough(position: number) {
 }
 function annotationEnd() {
   const { row, start, end } = newAnnotation;
-  if (row !== undefined && start !== undefined && end !== undefined && start !== end) {
+  if (
+    row !== undefined &&
+    start !== undefined &&
+    end !== undefined &&
+    start !== end
+  ) {
     const first = Math.min(start, end);
     const last = Math.max(start, end);
     props.data.annotations.createAnnotation(row, {
@@ -191,7 +201,10 @@ const annotationRenders = computed(() => {
   <div class="tab" @mouseup="annotationEnd">
     <div v-for="(tabLine, tabLineIndex) in tabLines" class="tab-line">
       <template v-for="(bar, i) in tabLine" :key="bar.start">
-        <div class="divider hoverable" @click="data.guitar?.shiftFrom(bar.start, barSize)" />
+        <div
+          class="divider hoverable"
+          @click="data.guitar?.shiftFrom(bar.start, barSize)"
+        />
 
         <GuitarBar
           :stack-data="bar.stacks"
@@ -203,7 +216,7 @@ const annotationRenders = computed(() => {
           :collapse-subdivisions
           :tuning="data.guitar!.tuning"
           :frets="data.guitar!.frets"
-          :num-strings="data.guitar!.strings"
+          :num-strings="numStrings!"
           @note-change="data.guitar!.setNote"
           @note-delete="data.guitar!.deleteNote"
         />
@@ -228,7 +241,9 @@ const annotationRenders = computed(() => {
           />
         </template>
 
-        <div class="new-row-box" @click="newAnnotationRowClick"><span>+</span></div>
+        <div class="new-row-box" @click="newAnnotationRowClick">
+          <span>+</span>
+        </div>
       </template>
       <div
         v-if="tabLineIndex === tabLines.length - 1"
@@ -239,14 +254,25 @@ const annotationRenders = computed(() => {
       </div>
 
       <AnnotationRender
-        v-for="{ row, startColumn, endColumn, annotation } in annotationRenders.get(tabLineIndex)"
+        v-for="{
+          row,
+          startColumn,
+          endColumn,
+          annotation,
+        } in annotationRenders.get(tabLineIndex)"
         :key="startColumn"
         :row
-        :start-column="startColumn % (columnsPerBar + 1) === 1 ? startColumn + 1 : startColumn"
+        :start-column="
+          startColumn % (columnsPerBar + 1) === 1
+            ? startColumn + 1
+            : startColumn
+        "
         :end-column
         :annotation
         @update-title="(title) => (annotation!.title = title)"
-        @delete="data.annotations.deleteAnnotation(annotationRows - row, annotation!)"
+        @delete="
+          data.annotations.deleteAnnotation(annotationRows - row, annotation!)
+        "
       />
     </div>
   </div>
@@ -267,9 +293,10 @@ const annotationRenders = computed(() => {
 .tab-line {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
-  grid-template-rows: repeat(v-bind(annotationRows), var(--cell-height)) auto calc(
-      var(--cell-height) * 0.8
-    );
+  grid-template-rows:
+    repeat(v-bind(annotationRows), var(--cell-height))
+    repeat(v-bind(numStrings), var(--cell-height))
+    calc(var(--cell-height) * 0.8);
 }
 
 .new-row-box {
@@ -294,7 +321,7 @@ const annotationRenders = computed(() => {
 }
 
 .divider {
-  grid-row: v-bind(notesRow);
+  grid-row: v-bind(notesRow) / span v-bind(numStrings);
   width: calc(var(--cell-height) / 3);
   padding: 0px 1px;
   height: 100%;

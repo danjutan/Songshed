@@ -53,7 +53,8 @@ const collapsed = computed<Set<number>>(() => {
       .map(([position, _]) => position)
       .filter((position) => {
         if (expanded.has(position)) return false;
-        if (props.collapseEmpty && collapsedEmpty.value.has(position)) return true;
+        if (props.collapseEmpty && collapsedEmpty.value.has(position))
+          return true;
         if (isNotch(position)) return false;
         if (props.collapseSubdivisions) return true;
       }),
@@ -75,21 +76,30 @@ function toggleSubdivisions(notchPosition: number) {
 </script>
 
 <template>
-  <Strings :start-column :start-row :columns="stackData.size" :num-strings="numStrings" />
-  <template v-for="([position, stack], i) in stackData.entries()" :key="position">
+  <Strings
+    :start-column
+    :start-row
+    :columns="stackData.size"
+    :num-strings="numStrings"
+  />
+  <template
+    v-for="([position, stack], i) in stackData.entries()"
+    :key="position"
+  >
     <Stack
       :style="{
         // borderTop: isNotch(column.position) && '1px solid maroon',
         borderRight: i < stackData.size && '1px solid lightgray',
         gridColumn: startColumn + i,
-        gridRow: startRow,
+        gridRow: `${startRow} / span ${numStrings}`,
       }"
       :notes="stack"
       :collapse="collapsed.has(position)"
       :tuning
       :frets
       @note-change="
-        (string: number, note: GuitarNote) => emit('noteChange', position, string, note)
+        (string: number, note: GuitarNote) =>
+          emit('noteChange', position, string, note)
       "
       @note-delete="(string: number) => emit('noteDelete', position, string)"
     />
