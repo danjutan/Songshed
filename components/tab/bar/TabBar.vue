@@ -3,6 +3,7 @@ import type { PropType } from "vue";
 import type { NoteSpot, BarStore } from "../data";
 import { Spacing } from "../data";
 import { ExpansionStateKey } from "../providers/expansion-state";
+import { SelectionStateKey } from "../providers/selection-state";
 import Stack from "./Stack.vue";
 import Drape, { type DrapeData } from "./overlays/Drape.vue";
 import ExpanderOverlay from "./overlays/ExpanderOverlay.vue";
@@ -56,7 +57,7 @@ const hasSubstacks = (columnIndex: number) => columnData.value
 const columnData = computed<ColumnData[]>(() => {
   const columns: Array<ColumnData> = [];
 
-  const stackMap = props.data.getStacks();
+  const stackMap = props.data.stacks;
 
   for (let position = props.data.start; position < props.data.end; position += subunit.value) {
     const stack = stackMap.get(position) || props.data.tuning.map((_, string) => ({ string, position }));
@@ -126,15 +127,24 @@ const substackGroups = computed<DrapeData[]>(() => {
   return drapeData;
 });
 
-watchEffect(() => console.log(substackGroups.value));
-// everything will expand to var(--cell-height)
+const selectionState = inject(SelectionStateKey)!;
 
-/* const expandsTo = computed<{ [column: number]: string }>(
-  () => Object.fromEntries(
-    divisions.value.map(div => [
-      div.notchPosition,
-      div.substacks ? `calc(${subdivisions.value} * var(--cell-height))` : "var(--cell-height)",
-    ]))); */
+function selectColumn(column: ColumnData) {
+  const start = column.position;
+  const end = column.position + subunit.value;
+  selectionState.addSelected(start, end);
+}
+
+function selectNotch(column: ColumnData) {
+  selectionState.clear();
+  const start = column.position - (column.position % unit.value);
+  const end = start + unit.value;
+  selectionState.addSelected(start, end);
+}
+
+function isSelected(column: ColumnData) {
+  return selectionState.isSelected(column.position);
+}
 
 const gridTemplateColumns = computed<string>(() => {
   const columns: string[] = columnData.value.map((col, i) => {
@@ -151,11 +161,6 @@ const gridTemplateColumns = computed<string>(() => {
     columns.push("auto");
   } */
   return columns.join(" ");
-});
-
-const divisionPlacement = (column: number) => ({
-  gridRow: `1 / span ${strings.value}`,
-  gridColumn: `${column} / span 1`,
 });
 
 function noteChange(changed: NoteSpot) {
@@ -181,7 +186,12 @@ function noteChange(changed: NoteSpot) {
            :frets="data.frets"
            :tuning="data.tuning"
            :stack="col.stack"
-           :class="{ substack: col.position % unit !== 0, even: i % 2 === 0 }"
+           :class="{
+             substack: col.position % unit !== 0,
+             even: i % 2 === 0,
+             selected: isSelected(col),
+           }"
+           @mouseover="selectNotch(col)"
            @note-change="noteChange"
     />
     <Drape
@@ -237,6 +247,10 @@ function noteChange(changed: NoteSpot) {
 
 .stack {
   grid-row: 2 / span v-bind(strings);
+}
+
+.stack.selected {
+  background-color: var(--highlight-color);
 }
 
 .stack.substack {

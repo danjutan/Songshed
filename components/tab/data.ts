@@ -30,6 +30,8 @@ export type TabStore = {
   readonly strings: number
   readonly tuning: Midi[]
   readonly frets: number
+  readonly stacks: Map<number, NoteSpot[]>
+
   setNote: {
     (position: number, string: number, data: NoteData): void
     (position: number, string: number, midiString: string): void
@@ -41,7 +43,6 @@ export type TabStore = {
   deleteNote: (position: number, string: number) => void
   // ordered by ascending string #
   getStack: (position: number) => NoteSpot[] | undefined
-  getStacks: () => Map<number, NoteSpot[]>
   lastPosition: () => number | undefined
   getBar: (start: number, end: number) => BarStore
 };
@@ -51,7 +52,8 @@ export type BarStore = { readonly start: number, readonly end: number } &
 
 export function createTabStore(strings: number = 6, frets: number = 24, tuning: Midi[] = defaultTuning): TabStore {
   const tabData = reactive<TabData>(new Map());
-
+  // TODO: make strings, frets, tuning reactive and editable
+  //
   const furthestPos: number[] = []; // Stack
   /* function mapToNotes(start = 0, end?: number): NoteSpot[] {
     const notes: NoteSpot[] = [];
@@ -132,10 +134,12 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
     strings,
     frets,
     tuning,
+    get stacks() {
+      return getStacks();
+    },
     getNote,
     getNotes,
     getStack,
-    getStacks,
     deleteNote,
     setNote,
     lastPosition() {
@@ -162,9 +166,11 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
         end,
         strings,
         frets,
+        get stacks() {
+          return getStacks(start, end);
+        },
         tuning,
         getStack: ifInBounds(getStack),
-        getStacks: () => getStacks(start, end),
         getNotes: () => getNotes(start, end),
         getNote: ifInBounds(getNote),
         setNote: ifInBounds(setNote),

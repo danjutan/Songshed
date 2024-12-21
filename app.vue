@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { Spacing, createTabStore } from "./components/tab/data";
 import Tab from "./components/tab/Tab.vue";
+import { SelectionStateKey, createSelectionState } from "./components/tab/providers/selection-state";
+
+const selectionState = createSelectionState();
+provide(SelectionStateKey, selectionState);
 
 const notes = createTabStore();
 
