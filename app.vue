@@ -33,19 +33,6 @@ guitarNotes.forEach(([position, string, midiString]) => {
   guitar.setNote(noteSpot);
 });
 
-tabStore.annotations?.createAnnotation(tabStore.annotations.nextRow(), {
-  start: 1,
-  end: 2,
-  title: "test",
-});
-
-console.log(tabStore.annotations.getRows());
-tabStore.annotations?.createAnnotation(tabStore.annotations.nextRow(), {
-  start: 1,
-  end: 2,
-  title: "test2",
-});
-
 /*
 const activeStack = computed(() => {
   if (selectionState.start) {

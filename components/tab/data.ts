@@ -13,7 +13,7 @@ export interface GuitarTabData {
   strings: number;
   tuning: Midi[];
   frets: number;
-  stacks: Map<number, GuitarNote[]>;
+  stacks: StackMap<GuitarNote>;
 }
 
 export interface TabData {
@@ -36,11 +36,11 @@ export interface NoteSpot {
   data?: NoteData;
 }
 
+type StackMap<N extends NoteSpot> = Map<number, N[]>;
+
 export interface GuitarNote extends NoteSpot {
   string: number; // 0-indexed
 }
-
-export type StackMap = Map<number, NoteData>;
 
 export interface TabStore {
   title: string;
@@ -133,7 +133,6 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
   }
 
   function deleteAnnotation(row: number, data: Annotation) {
-    console.log(row);
     const ofRow = annotations.get(row);
     if (ofRow) {
       const toDelete = ofRow.findIndex((a) => a.start === data.start && a.end === data.end);
@@ -157,7 +156,7 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
 }
 
 interface AbstractNoteStore<N extends NoteSpot> {
-  getStacks: (start?: number, end?: number) => Map<number, N[]>;
+  getStacks: (start?: number, end?: number) => StackMap<N>;
   setStack: (position: number, stack: N[]) => void;
   lastPosition: () => number | undefined;
   shiftFrom: (position: number, shiftBy: number) => void;
@@ -167,13 +166,11 @@ interface NoteStore<N extends NoteSpot> extends AbstractNoteStore<N> {
   setNote: (note: N) => void;
 }
 
-function createAbstractNoteStore<N extends NoteSpot>(
-  stacks: Map<number, N[]>,
-): AbstractNoteStore<N> {
+function createAbstractNoteStore<N extends NoteSpot>(stacks: StackMap<N>): AbstractNoteStore<N> {
   const furthestPos: number[] = [];
 
   function getStacks(start = 0, end?: number) {
-    const subset = new Map<number, N[]>();
+    const subset: StackMap<N> = new Map();
     for (const position of [...stacks.keys()].sort((a, b) => a - b)) {
       if (start > 0 && position < start) continue;
       if (end && position > end) break;

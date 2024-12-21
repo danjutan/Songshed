@@ -33,7 +33,6 @@ watch(
   () => props.annotation,
   (data) => {
     if (data) {
-      console.log("here");
       setTimeout(() => titleEl.value!.focus(), 1);
     }
   },
