@@ -12,9 +12,9 @@ import {
 import { EditingInjectionKey, type EditingState } from "../state/editing-state";
 import { useTemplateRef } from "vue";
 import {
-  ResizeObserverInjectionKey,
-  type ResizeObserver,
-} from "../state/resize-observer";
+  StackResizeObserverInjectionKey,
+  type StackResizeObserver,
+} from "../state/stack-resize-observer";
 
 const props = withDefaults(
   defineProps<{
@@ -35,7 +35,9 @@ const emit = defineEmits<{
 const selecting = inject(SelectionInjectionKey) as SelectionState;
 const editing = inject(EditingInjectionKey) as EditingState;
 const tieAdd = inject(TieAddInjectionKey) as TieAddState;
-const resizeState = inject(ResizeObserverInjectionKey) as ResizeObserver;
+const resizeState = inject(
+  StackResizeObserverInjectionKey,
+) as StackResizeObserver;
 
 const noteSpots = computed(() => {
   const noteSpots = new Array<GuitarNote | undefined>(props.tuning.length);
