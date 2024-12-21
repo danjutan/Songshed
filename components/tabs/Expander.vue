@@ -47,9 +47,9 @@ const buttonText = computed(() => expanded.value ? "↤" : "⇥");
   /* z-index: var(--z-index-expander-button); */
 }
 @container expander (width < 16px) {
-  .expand-button, .preview {
+  /* .expand-button, .preview {
     display: none;
-  }
+  } */
   /* .preview {
     display: none;
   } */

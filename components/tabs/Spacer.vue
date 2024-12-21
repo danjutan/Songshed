@@ -67,41 +67,10 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
 
 @container (aspect-ratio < 1) { 
   .title {
+    position: absolute;
+    left: -100%;
     font-size: clamp(10px, 100cqw, 100%);
-    margin-left: -200cqw;
-    opacity: 0.1;
-  }
-}
-
- @container (aspect-ratio < 0.9) {
-
-  .title {
-    opacity: 0.2;
-  }
-}
-
-@container (aspect-ratio < 0.8) {
-  .title {
-    opacity: 0.3;
-  }
-}
-
-@container (aspect-ratio < 0.7) {
-  .title {
-    opacity: 0.4;
-  }
-}
-
-
-@container (aspect-ratio < 0.6) {
-  .title {
     opacity: 0.5;
-  }
-}
-
-@container (aspect-ratio < 0.5) {
-  .title {
-    opacity: 0.6;
   }
 }
 
