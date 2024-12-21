@@ -1,0 +1,39 @@
+<script setup lang="ts">
+const props = defineProps<{
+  startColumn: number
+  columns: number
+  row: number
+}>();
+</script>
+
+<template>
+  <div class="unexpander">
+    <div class="content">
+      <slot>
+        ↤
+      </slot>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.unexpander {
+  grid-column: v-bind(startColumn) / span v-bind(columns);
+  grid-row: v-bind(row);
+  height: 100%;
+  background-color: var(--substack-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: rgba(255, 0, 0, 0.2);
+  }
+}
+
+.content {
+  position: relative;
+  color: darkred;
+  font-size: var(--note-font-size);
+}
+</style>

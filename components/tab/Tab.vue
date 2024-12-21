@@ -3,6 +3,7 @@ import Stack from "./bar/Stack.vue";
 import { type GuitarNote, type NoteSpot, type TabStore } from "./data";
 import { ExpansionStateKey, createExpansionState } from "./providers/expansion-state";
 import Overlay from "./bar/Overlay.vue";
+import Unexpander from "./bar/Unexpander.vue";
 
 // TODO: move to app
 provide(ExpansionStateKey, createExpansionState());
@@ -76,25 +77,37 @@ function newBarClick() {
 
 const expanded = reactive<Set<number>>(new Set());
 
+watchEffect(() => {
+  console.log(expanded.has(19));
+});
 const collapsed = computed<Set<number>>(() => {
+  console.log("recalculating");
   const positions = new Set<number>(
     bars.value.flat().map(c => c.position).filter((position) => {
       if (expanded.has(position))
         return false;
       const isNotch = position % notchUnit.value === 0;
-      console.log(position, notchUnit.value, position % notchUnit.value, isNotch);
       if (isNotch)
         return false;
       if (props.collapseSubdivisions)
         return true;
     }),
   );
-  console.log(positions);
+  console.log(expanded);
   return positions;
 });
 
-// const notchInderes = (columns: ColumnData[]) => columns.map((_, i) => i)
-//  .filter(i => i % props.subdivisions === 0);
+function toggleSubdivisions(notchCol: ColumnData) {
+  const firstPos = notchCol.position + subUnit.value;
+  const collapse = expanded.has(firstPos);
+  for (let i = firstPos; i < firstPos + subUnit.value * (props.subdivisions - 1); i += subUnit.value) {
+    if (collapse) {
+      expanded.delete(i);
+      continue;
+    }
+    expanded.add(i);
+  }
+}
 </script>
 
 <template>
@@ -109,7 +122,6 @@ const collapsed = computed<Set<number>>(() => {
             :style="{
               gridRow: 1,
               gridColumn: columnPos(column),
-              borderTop: `2px solid ${collapsed.has(column.position) ? 'blue' : 'red'}`,
             }"
             :notes="column.stack"
             :collapse="collapsed.has(column.position)"
@@ -125,16 +137,23 @@ const collapsed = computed<Set<number>>(() => {
               :rows="numStrings">
               <div
                 class="overlay"
-                @click="console.log('overlay')"
+                @click="toggleSubdivisions(column)"
               />
             </Overlay>
+            <Unexpander v-if="expanded.has(column.position + subUnit)"
+                        :start-column="1 + columnPos(column)"
+                        :columns="props.subdivisions - 1"
+                        :row="2"
+                        @click="toggleSubdivisions(column)"
+            />
           </template>
         </template>
-        <div class="
-                  divider"
-        />
       </template>
     </div>
+
+    <div class="
+                  divider"
+    />
   </div>
 </template>
 
@@ -152,6 +171,7 @@ const collapsed = computed<Set<number>>(() => {
   .tab-line {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
+    grid-template-rows: auto calc(var(--cell-height) * 0.75);
   }
 
   .divider {
@@ -164,8 +184,11 @@ const collapsed = computed<Set<number>>(() => {
   .overlay {
     z-index: 1;
     height: 100%;
+    border-bottom: calc(var(--cell-height) / 8) solid var(--substack-bg);
     &:hover {
-      background-color: var(--substack-bg);
+      border-bottom: none;
+      height: calc(100% + 2px);
+      background: var(--substack-bg);
     }
   }
 </style>

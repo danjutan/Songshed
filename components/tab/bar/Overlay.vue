@@ -8,7 +8,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="overlay container">
+  <div class="container">
     <div class="content">
       <slot />
     </div>
