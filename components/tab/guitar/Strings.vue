@@ -33,6 +33,6 @@ defineProps<{
 
 .string {
   height: var(--string-width);
-  background-color: var(--string-color)
+  background-color: var(--string-color);
 }
 </style>

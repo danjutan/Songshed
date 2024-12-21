@@ -138,11 +138,11 @@ function toggleSubdivisions(notchCol: GuitarStack) {
 
 <style>
 .overlay-fill {
-    z-index: 1;
-    height: 100%;
-    cursor: pointer;
-    &:hover {
-      background: var(--substack-bg);
-    }
+  z-index: 1;
+  height: 100%;
+  cursor: pointer;
+  &:hover {
+    background: var(--substack-bg);
   }
+}
 </style>

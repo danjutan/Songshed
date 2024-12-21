@@ -55,13 +55,13 @@ text {
   user-select: none;
 }
 
-.container:hover text{
+.container:hover text {
   fill: white;
 }
 
 .selected .cover {
   stroke: none;
-  fill: v-bind(color)
+  fill: v-bind(color);
 }
 .container:hover .cover {
   stroke: v-bind(color);

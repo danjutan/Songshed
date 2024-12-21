@@ -108,7 +108,8 @@ input {
   /* z-index: var(--z-index-notes); */
 }
 
-.input-bg, input {
+.input-bg,
+input {
   grid-area: 1 / 1;
   font-size: var(--note-font-size);
   width: var(--note-font-size);
@@ -123,7 +124,7 @@ input {
   /* aspect-ratio: 1 / 1; */
 }
 
-.note-input:hover > input{
+.note-input:hover > input {
   background-color: var(--note-hover-color);
 }
 

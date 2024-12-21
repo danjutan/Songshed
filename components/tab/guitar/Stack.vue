@@ -74,7 +74,7 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
   .square {
     display: block;
   }
-   .input {
+  .input {
     display: none;
   }
 }

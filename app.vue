@@ -82,7 +82,7 @@ const collapseEmpty = ref(false);
 </template>
 
 <style scoped>
-  input[type=number] {
-    width: 50px;
-  }
+  input[type="number"] {
+  width: 50px;
+}
 </style>
