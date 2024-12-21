@@ -196,7 +196,6 @@ function createAnnotationStore(
 interface StackStore<N extends NoteData> {
   getStacks: (start?: number, end?: number) => StackMap<N>;
   setStack: (position: number, stack: NoteStack<N>) => void;
-  deleteStacks: (start: number, end: number) => void;
   lastPosition: () => number | undefined;
   shiftFrom: (position: number, shiftBy: number) => void;
 }
@@ -235,28 +234,23 @@ function createStackStore<N extends NoteData>(
     }
   }
 
-  function deleteStacks(start: number, end: number) {
-    for (const position of [...stacks.keys()].sort((a, b) => a - b)) {
-      if (position >= start && position <= end) {
-        stacks.delete(position);
-        if (position === furthestPos.at(-1)) {
-          furthestPos.pop();
-        }
-      }
-    }
-  }
+  // function deleteStacks(start: number, end: number) {
+  //   for (const position of [...stacks.keys()].sort((a, b) => a - b)) {
+  //     if (position >= start && position <= end) {
+  //       stacks.delete(position);
+  //       if (position === furthestPos.at(-1)) {
+  //         furthestPos.pop();
+  //       }
+  //     }
+  //   }
+  // }
 
   function lastPosition() {
     return furthestPos.at(-1);
   }
 
   function shiftFrom(position: number, shiftBy: number) {
-    if (
-      position < 0 ||
-      !furthestPos.length ||
-      position > furthestPos.at(-1)! ||
-      shiftBy <= 0
-    )
+    if (position < 0 || !furthestPos.length || position > furthestPos.at(-1)!)
       return;
 
     const keysFromBack = [...stacks.keys()]
@@ -272,7 +266,7 @@ function createStackStore<N extends NoteData>(
     }
   }
 
-  return { getStacks, setStack, deleteStacks, lastPosition, shiftFrom };
+  return { getStacks, setStack, lastPosition, shiftFrom };
 }
 
 export type Tie = TieData & {
@@ -288,6 +282,7 @@ export interface TieStore {
   setTie: (string: number, from: number, tie: TieData | BendData) => void;
   updateTie: (string: number, bend: Bend) => void;
   deleteTie: (string: number, from: number) => void;
+  deleteAt: (string: number, position: number) => void;
   getTies: () => TieMap;
   getBends: () => BendMap;
   shiftFrom: (position: number, shiftBy: number) => void;
@@ -312,6 +307,19 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
     const stringTies = guitarData.ties.get(string);
     if (stringTies) {
       stringTies.delete(from);
+    }
+  }
+
+  function deleteAt(string: number, position: number) {
+    const stringTies = guitarData.ties.get(string);
+    if (stringTies) {
+      deleteTie(string, position);
+      const tiedTo = [...stringTies.entries()].find(
+        ([from, tie]) => tie.to === position,
+      );
+      if (tiedTo) {
+        deleteTie(string, tiedTo[0]);
+      }
     }
   }
 
@@ -367,13 +375,22 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
     }
   }
 
-  return { setTie, updateTie, deleteTie, getTies, getBends, shiftFrom };
+  return {
+    setTie,
+    updateTie,
+    deleteTie,
+    deleteAt,
+    getTies,
+    getBends,
+    shiftFrom,
+  };
 }
 
 export interface GuitarStore
   extends Omit<StackStore<GuitarNote> & GuitarTabData, "getStacks" | "ties"> {
   setNote: (position: number, string: number, data: GuitarNote) => void;
   deleteNote: (position: number, string: number) => void;
+  deleteStacks: (start: number, end: number) => void;
   getStacks: (
     start: number,
     end: number,
@@ -405,13 +422,17 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     if (stack && stack.has(string)) {
       stack.delete(string);
       noteStore.setStack(position, stack);
+      tieStore.deleteAt(string, position);
+    }
+  }
 
-      const stringTies = tieStore.getTies().get(string);
-      if (stringTies) {
-        tieStore.deleteTie(string, position);
-        const tiedTo = stringTies.find((tie) => tie.to === position);
-        if (tiedTo) {
-          tieStore.deleteTie(string, tiedTo.from);
+  function deleteStacks(start: number, end: number) {
+    // const positions = [...guitarData.stacks.keys()].sort((a, b) => a - b).filter(pos =>pos >= start && )
+    for (const position of guitarData.stacks.keys()) {
+      if (position >= start && position < end) {
+        const stack = guitarData.stacks.get(position)!;
+        for (const [string, note] of stack) {
+          deleteNote(position, string);
         }
       }
     }
@@ -444,6 +465,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     getStacks,
     setNote,
     deleteNote,
+    deleteStacks,
     shiftFrom,
     ...guitarData,
     ties: tieStore,

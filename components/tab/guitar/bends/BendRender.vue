@@ -17,6 +17,13 @@ export type BendRenderProps = OverlayPosition & {
   half?: "left" | "right";
   fullUpswingColumns?: number;
   fullRestColumns?: number;
+  /* This is not an event because we need the function to work even if this
+   * component stops being rendered, as it will when we drag from
+   * a lower tabline back up, eliminating the half we started editing.
+   * An alternative solution would be to create a
+   * "bend-edit-state" provider that works across BendRenders.
+   */
+  updateBend: (bend: Bend) => void;
 };
 const props = defineProps<BendRenderProps & { bendRow: number }>();
 const emit = defineEmits<{
@@ -98,7 +105,7 @@ function onSelectInput(e: Event) {
     emit("delete");
     return;
   }
-  emit("updateBend", { ...props.bend, bend: +value });
+  props.updateBend({ ...props.bend, bend: +value });
 }
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
@@ -131,7 +138,9 @@ function updateOnDrag(type: HoveredRow, position: number) {
 
 cellHoverEvents.addHoverListener((type, position) => {
   if (dragging.value && !tieAddState.dragging) {
-    emit("updateBend", updateOnDrag(type, position));
+    const updated = updateOnDrag(type, position);
+    props.updateBend(updated);
+    // emit("updateBend", updated);
   }
 });
 
@@ -144,7 +153,7 @@ function onLabelHover() {
     const bend = { ...props.bend };
     bend.to = bend.through![0] + bend.from;
     bend.through = undefined;
-    emit("updateBend", bend);
+    props.updateBend(bend);
   }
 }
 </script>

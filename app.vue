@@ -36,7 +36,9 @@ if (id) {
     [Spacing.Quarter * 3, 4, "B3"],
     [Spacing.Quarter * 3 + Spacing.Sixteenth, 1, "B3"],
     [Spacing.Quarter * 4, 5, "A3"],
+    [Spacing.Quarter * 4 - Spacing.Eighth, 5, "A2"],
     [Spacing.Quarter * 4 + Spacing.Sixteenth, 1, "A4"],
+    [Spacing.Quarter * 5, 5, "C3"],
     [Spacing.Quarter * 6, 5, "G3"],
     [Spacing.Quarter * 8 - Spacing.Sixteenth, 2, "A3"],
     [Spacing.Quarter * 8, 2, "B3"],
@@ -68,20 +70,20 @@ if (id) {
     to: Spacing.Quarter * 5,
   });
 
-  ties.setTie(5, Spacing.Quarter * 5 - Spacing.Eighth, {
-    type: "bend",
-    releaseType: "hold",
-    bend: 0.5,
-    through: [Spacing.Sixteenth * 4],
-    to: Spacing.Quarter * 6,
-  });
+  // ties.setTie(5, Spacing.Quarter * 5 - Spacing.Eighth, {
+  //   type: "bend",
+  //   releaseType: "hold",
+  //   bend: 0.5,
+  //   through: [Spacing.Sixteenth * 4],
+  //   to: Spacing.Quarter * 6,
+  // });
 
-  ties.setTie(2, Spacing.Quarter * 3 - Spacing.Eighth, {
-    type: "bend",
-    releaseType: "hold",
-    bend: 1,
-    to: Spacing.Quarter * 3,
-  });
+  // ties.setTie(2, Spacing.Quarter * 3 - Spacing.Eighth, {
+  //   type: "bend",
+  //   releaseType: "hold",
+  //   bend: 1,
+  //   to: Spacing.Quarter * 3,
+  // });
 
   ties.setTie(2, Spacing.Quarter * 11, {
     type: "bend",

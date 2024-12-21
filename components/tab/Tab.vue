@@ -184,7 +184,7 @@ function newBarClick(lastBarStart?: number) {
 }
 
 function onKeyUp(e: KeyboardEvent) {
-  if (e.key === "Escape" || e.key === "Backspace") {
+  if (e.key === "Backspace") {
     if (props.data.guitar && selectionState.selectedRange) {
       props.data.guitar?.deleteStacks(
         selectionState.selectedRange.start,
@@ -194,6 +194,11 @@ function onKeyUp(e: KeyboardEvent) {
   }
 }
 
+function deleteBar(start: number) {
+  props.data.guitar!.deleteStacks(start, start + barSize.value);
+  props.data.guitar!.shiftFrom(start, -barSize.value);
+}
+
 onMounted(() => {
   document.addEventListener("keyup", onKeyUp);
 });
@@ -201,6 +206,8 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener("keyup", onKeyUp);
 });
+
+const overlayedBarStart = ref<number | undefined>();
 </script>
 
 <template>
@@ -212,8 +219,25 @@ onBeforeUnmount(() => {
           :style="{
             gridColumn: i * (columnsPerBar + 1) + 1,
           }"
-          @click="data.guitar?.shiftFrom(bar.start, barSize)"
-        />
+        >
+          <div class="buttons">
+            <div class="dummy">+</div>
+            <div
+              class="insert"
+              @click="data.guitar?.shiftFrom(bar.start, barSize)"
+            >
+              +
+            </div>
+            <div
+              class="delete"
+              @mouseover="overlayedBarStart = bar.start"
+              @mouseleave="overlayedBarStart = undefined"
+              @click="deleteBar(bar.start)"
+            >
+              &Cross;
+            </div>
+          </div>
+        </div>
 
         <!--provider instead?-->
         <GuitarBar
@@ -255,6 +279,15 @@ onBeforeUnmount(() => {
           :start-column="i * (columnsPerBar + 1) + 1"
           :bar-positions="[...bar.stacks.keys()]"
         />
+
+        <div
+          v-if="overlayedBarStart === bar.start"
+          class="bar-overlay"
+          :style="{
+            gridColumnStart: i * (columnsPerBar + 1) + 2,
+            gridColumnEnd: (i + 1) * (columnsPerBar + 1) + 2,
+          }"
+        />
         <div class="new-row-box" @click="newAnnotationRow">
           <span>+</span>
         </div>
@@ -289,7 +322,7 @@ onBeforeUnmount(() => {
           :key="render.startColumn"
           v-bind="render"
           :bend-row
-          @update-bend="
+          :update-bend="
             (bend) => data.guitar!.ties.updateTie(render.row - notesRow, bend)
           "
           @delete="
@@ -307,6 +340,7 @@ onBeforeUnmount(() => {
   --note-font-size: calc(var(--cell-height) * 0.8);
   --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);
+  --delete-overlay-bg: rgba(0, 0, 0, 0.15);
   --string-width: 1px;
   --string-color: gray;
   --highlight-color: rgba(172, 206, 247, 0.4);
@@ -357,19 +391,44 @@ onBeforeUnmount(() => {
   background: black;
   color: white;
   font-size: var(--cell-height);
-  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+
+  & .buttons {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    visibility: hidden;
+
+    & > div:hover {
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    & > .delete {
+      color: rgb(248, 85, 85);
+      font-size: calc(var(--note-font-size));
+    }
+
+    & > .dummy {
+      visibility: hidden;
+    }
+  }
 
   &.hoverable {
     &:hover {
       width: var(--note-font-size);
+
+      & .buttons {
+        visibility: visible;
+      }
     }
-    &:hover::before {
+    /* &:hover::before {
       content: "+";
-    }
+    } */
   }
 }
 
@@ -386,6 +445,18 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+
+  &:hover {
+    font-weight: bold;
+  }
+}
+
+.bar-overlay {
+  z-index: 1;
+  /* grid-row: v-bind(notesRow) / span v-bind(numStrings); */
+  grid-row: 1 / -1;
+  background-color: var(--delete-overlay-bg);
 }
 
 .bend-row-label {
