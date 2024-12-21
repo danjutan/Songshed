@@ -7,7 +7,7 @@ import Unexpander from "./Unexpander.vue";
 import {
   SelectionInjectionKey,
   type SelectionState,
-} from "./providers/selection-state";
+} from "../state/selection-state";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;

@@ -11,9 +11,19 @@ export interface NoteData {
 
 // "hammer" means hammer-on if going up, pull-off if going down
 export type TieType = "hammer" | "slide";
-export interface TieData {
+
+export type TieData = {
   type: TieType;
-  // from: number; //position
+  to: number;
+};
+
+// export type TieOrBendData = ({ type: "bend" } & BendData) | TieData;
+
+export interface BendData {
+  type: "bend";
+  releaseType: "stay" | "connect"; // whether the line release back down to note
+  bend: number;
+  through?: number[]; //relative to from
   to: number;
 }
 
@@ -36,7 +46,7 @@ export interface GuitarTabData {
   tuning: Midi[];
   frets: number;
   stacks: StackMap<GuitarNote>;
-  ties: Map<number, Map<number, TieData>>;
+  ties: Map<number, Map<number, TieData | BendData>>;
 }
 
 export interface ChordsData {

@@ -4,15 +4,9 @@ import NoteInput from "./NoteInput.vue";
 import {
   SelectionInjectionKey,
   type SelectionState,
-} from "./providers/selection-state";
-import {
-  TieAddInjectionKey,
-  type TieAddState,
-} from "./providers/tie-add-state";
-import {
-  EditingInjectionKey,
-  type EditingState,
-} from "./providers/editing-state";
+} from "../state/selection-state";
+import { TieAddInjectionKey, type TieAddState } from "../state/tie-add-state";
+import { EditingInjectionKey, type EditingState } from "../state/editing-state";
 
 const props = withDefaults(
   defineProps<{

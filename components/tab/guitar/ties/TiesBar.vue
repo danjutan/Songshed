@@ -1,16 +1,14 @@
 <script lang="ts" setup>
-import type { TieData } from "~/model/data";
 import TieRender, { type TieRenderProps } from "./TieRender.vue";
-import type { OverlayPosition } from "~/components/tab/overlay-objects";
 import type { Tie, TieMap, TieStore } from "~/model/stores";
 import {
   TieAddInjectionKey,
   type TieAddState,
-} from "../providers/tie-add-state";
+} from "../../state/tie-add-state";
 import {
   EditingInjectionKey,
   type EditingState,
-} from "../providers/editing-state";
+} from "../../state/editing-state";
 
 const props = defineProps<{
   ties: TieStore;

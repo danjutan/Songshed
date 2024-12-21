@@ -6,10 +6,17 @@ export interface NewAnnotation {
   endPos?: number;
 }
 
+export interface AnnotationAddState {
+  newAnnotation: NewAnnotation;
+  start: (row: number, position: number) => void;
+  drag: (position: number) => void;
+  end: () => void;
+}
+
 export function createAnnotationAddState(
   store: AnnotationStore,
   subUnit: ComputedRef<number>,
-) {
+): AnnotationAddState {
   const newAnnotation = reactive<NewAnnotation>({
     row: undefined,
     startPos: undefined,

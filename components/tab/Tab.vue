@@ -9,18 +9,14 @@ import {
   createSelectionState,
   SelectionInjectionKey,
   type SelectionState,
-} from "./guitar/providers/selection-state";
-import { createAnnotationAddState } from "./annotations/annotation-add-state";
-import { createAnnotationRenderState } from "./annotations/annotation-render-state";
-import {
-  createTieAddState,
-  TieAddInjectionKey,
-} from "./guitar/providers/tie-add-state";
-import {
-  createEditingState,
-  EditingInjectionKey,
-} from "./guitar/providers/editing-state";
+} from "./state/selection-state";
+import { createAnnotationAddState } from "./state/annotation-add-state";
+import { createAnnotationRenderState } from "./state/annotation-render-state";
+import { createTieAddState, TieAddInjectionKey } from "./state/tie-add-state";
+import { createEditingState, EditingInjectionKey } from "./state/editing-state";
 import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
+import { createBendRenderState } from "./state/bend-render-state";
+import BendRender from "./guitar/bends/BendRender.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -57,7 +53,7 @@ provide(TieAddInjectionKey, tieAddState);
 const editingState = createEditingState();
 provide(EditingInjectionKey, editingState);
 
-export type Bar = {
+type Bar = {
   start: number;
   stacks: StackMap<GuitarNote>;
 };
@@ -106,7 +102,10 @@ const posToCol = (pos: number): TablineColumn => {
   const tabline = Math.floor(cols / (props.barsPerLine * columnsPerBar.value));
   const colsInLine = cols - tabline * props.barsPerLine * columnsPerBar.value;
   // TODO: document how this works
-  const column = colsInLine + Math.ceil(colsInLine / columnsPerBar.value) + 1;
+  let column = colsInLine + Math.ceil(colsInLine / columnsPerBar.value) + 1;
+  if (column % (columnsPerBar.value + 1) === 1) {
+    column += 1;
+  }
   return {
     tabline,
     column,
@@ -129,14 +128,34 @@ const annotationRows = computed(() =>
   Math.max(props.data.annotations.getRows().length, 1),
 );
 
+const bendRenders = computed(() => {
+  if (props.data.guitar) {
+    return createBendRenderState(
+      props.data.guitar!.ties,
+      subUnit,
+      computed(() => annotationRows.value + 2),
+      posToCol,
+    ).value;
+  }
+  return undefined;
+});
+
+const bendRow = computed(() =>
+  bendRenders.value && bendRenders.value.size
+    ? annotationRows.value + 1
+    : undefined,
+);
+
+const notesRow = computed(() =>
+  bendRow.value ? bendRow.value + 1 : annotationRows.value + 1,
+);
+
 function newAnnotationRow() {
   if (props.data.annotations.getRows().length === annotationRows.value - 1) {
     props.data.annotations.createNextRow();
   }
   props.data.annotations.createNextRow();
 }
-
-const notesRow = computed(() => annotationRows.value + 1);
 
 function cancelSelection() {
   annotationAddState.end();
@@ -232,11 +251,7 @@ onBeforeUnmount(() => {
         } in annotationRenders.get(tabLineIndex)"
         :key="startColumn"
         :row
-        :start-column="
-          startColumn % (columnsPerBar + 1) === 1
-            ? startColumn + 1
-            : startColumn
-        "
+        :start-column
         :end-column
         :annotation
         @update-title="(title) => (annotation!.title = title)"
@@ -244,6 +259,27 @@ onBeforeUnmount(() => {
           data.annotations.deleteAnnotation(annotationRows - row, annotation!)
         "
       />
+
+      <template v-if="bendRow">
+        <!--TODO: only show this while dragging new bends/interacting with bends-->
+        <div class="bend-row-label">bend</div>
+        <BendRender
+          v-for="{
+            row,
+            startColumn,
+            endColumn,
+            upswingColumn,
+            bend,
+          } in bendRenders!.get(tabLineIndex)"
+          :key="startColumn"
+          :row
+          :start-column
+          :end-column
+          :upswing-column
+          :bend
+          :bend-row
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -334,5 +370,14 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.bend-row-label {
+  grid-row: v-bind(bendRow);
+  grid-column: 1;
+  font-size: calc(var(--note-font-size) * 0.75);
+  align-self: center;
+  /* writing-mode: vertical-rl;
+  text-orientation: upright; */
 }
 </style>

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { Annotation } from "~/model/data";
+import type { OverlayPosition } from "../overlay-objects";
 
-const props = defineProps<{
-  row: number;
-  startColumn: number;
-  endColumn: number;
-  annotation?: Annotation;
-}>();
+const props = defineProps<
+  OverlayPosition & {
+    annotation?: Annotation;
+  }
+>();
 
 const emit = defineEmits<{
   updateTitle: [string];
@@ -41,7 +41,13 @@ watch(
 
 <template>
   <div :class="`annotation annotation-${row}`">
-    <div ref="titleEl" class="title" contenteditable @input="titleInput" @focus="titleFocus">
+    <div
+      ref="titleEl"
+      class="title"
+      contenteditable
+      @input="titleInput"
+      @focus="titleFocus"
+    >
       {{ annotation?.title }}
     </div>
     <div v-if="annotation" class="delete" @click="emit('delete')">&Cross;</div>

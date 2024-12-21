@@ -9,6 +9,7 @@ import type {
   NoteStack,
   ChordsData,
   Chord,
+  BendData,
   TieData,
 } from "./data";
 
@@ -274,22 +275,24 @@ function createStackStore<N extends NoteData>(
   return { getStacks, setStack, deleteStacks, lastPosition, shiftFrom };
 }
 
-export interface Tie extends TieData {
+export type Tie = TieData & {
   from: number;
   midiFrom?: Midi;
   midiTo?: Midi;
-}
-
+};
+export type Bend = BendData & { from: number };
 export type TieMap = Map<number, Tie[]>;
+export type BendMap = Map<number, Bend[]>;
 
 export interface TieStore {
-  setTie: (string: number, from: number, tie: TieData) => void;
+  setTie: (string: number, from: number, tie: TieData | BendData) => void;
   deleteTie: (string: number, from: number) => void;
   getTies: () => TieMap;
+  getBends: () => BendMap;
 }
 
 function createTieStore(guitarData: GuitarTabData): TieStore {
-  function setTie(string: number, from: number, tie: TieData) {
+  function setTie(string: number, from: number, tie: TieData | BendData) {
     const stringTies = guitarData.ties.get(string);
     if (!stringTies) {
       guitarData.ties.set(string, new Map([[from, tie]]));
@@ -310,6 +313,7 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
     for (const [string, stringTies] of guitarData.ties) {
       const addTies: Tie[] = [];
       for (const [from, tie] of stringTies) {
+        if (tie.type === "bend") continue;
         const fromNote = guitarData.stacks.get(from)?.get(string);
         const toNote = guitarData.stacks.get(tie.to)?.get(string);
         addTies.push({
@@ -324,7 +328,21 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
     return map;
   }
 
-  return { setTie, deleteTie, getTies };
+  function getBends(): BendMap {
+    const map: BendMap = new Map();
+    for (const [string, stringTies] of guitarData.ties) {
+      const addBends: Bend[] = [];
+      for (const [from, tie] of stringTies) {
+        if (tie.type === "bend") {
+          addBends.push({ from, ...tie });
+        }
+      }
+      map.set(string, addBends);
+    }
+    return map;
+  }
+
+  return { setTie, deleteTie, getTies, getBends };
 }
 
 export interface GuitarStore
@@ -396,7 +414,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
   function shiftFrom(position: number, shiftBy: number) {
     noteStore.shiftFrom(position, shiftBy);
     for (const [string, ties] of guitarData.ties) {
-      const newTies = new Map<number, TieData>();
+      const newTies = new Map<number, TieData | BendData>();
       for (const [from, tie] of ties) {
         newTies.set(from + shiftBy, { ...tie, to: tie.to + shiftBy });
       }

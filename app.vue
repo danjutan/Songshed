@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GuitarNote, TabData, TieData } from "~/model/data";
+import type { GuitarNote, TabData, TieOrBendData } from "~/model/data";
 import type { TabStore } from "./model/stores";
 import { createTabStore } from "./model/stores";
 import { deserializeTabData } from "./model/serialize";
@@ -29,7 +29,7 @@ if (id) {
 
   const guitar = store.createGuitarTab();
 
-  const guitarNotes: Array<[number, number, string, TieData?]> = [
+  const guitarNotes: Array<[number, number, string, TieOrBendData?]> = [
     [0, 0, "B4"],
     [Spacing.Quarter * 2, 2, "B4"],
     [Spacing.Quarter * 2 + Spacing.Sixteenth, 2, "D4"],
@@ -43,7 +43,7 @@ if (id) {
     [Spacing.Quarter * 8, 5, "F3"],
     [Spacing.Quarter * 9 - Spacing.Sixteenth, 0, "G4"],
     [Spacing.Quarter * 9 - Spacing.Sixteenth, 2, "B3"],
-    [Spacing.Quarter * 9, 0, "F4"],
+    [Spacing.Quarter * 9, 0, "F#4"],
     [Spacing.Quarter * 9 + Spacing.Eighth + Spacing.Sixteenth, 0, "F4"],
     [Spacing.Quarter * 10 + Spacing.Sixteenth, 2, "F4"],
     [Spacing.Quarter * 12 - Spacing.Eighth, 2, "G4"],
@@ -59,6 +59,14 @@ if (id) {
   });
 
   const ties = guitar.ties;
+
+  ties.setTie(5, Spacing.Quarter * 4, {
+    type: "bend",
+    releaseType: "connect",
+    bend: 2,
+    through: [Spacing.Sixteenth * 3],
+    to: Spacing.Quarter * 5,
+  });
 
   ties.setTie(2, Spacing.Quarter * 2, {
     to: Spacing.Quarter * 2 + Spacing.Sixteenth,
@@ -80,7 +88,7 @@ if (id) {
     type: "slide",
   });
 
-  ties.setTie(0, Spacing.Quarter * 9 - Spacing.Sixteenth, {
+  ties.setTie(0, Spacing.Quarter * 9, {
     to: Spacing.Quarter * 10 - Spacing.Sixteenth,
     type: "slide",
   });
