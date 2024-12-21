@@ -17,7 +17,8 @@ export interface GuitarNote extends NoteData {
   bend?: string; */
 }
 
-export type StackMap<N extends NoteData> = Map<number, Array<N>>;
+export type NoteStack<N extends NoteData> = Map<number, N>;
+export type StackMap<N extends NoteData> = Map<number, NoteStack<N>>;
 
 export interface GuitarTabData {
   strings: number;

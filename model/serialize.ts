@@ -1,22 +1,25 @@
 import type { TabData, Annotation, GuitarNote, NoteData, GuitarTabData, StackMap } from "./data";
 
-type SerializeableStackMap<N extends NoteData> = Array<[number, N[]]>;
+type SerializeableStackMap<N extends NoteData> = Array<[number, Array<[number, N]>]>;
 
 export interface SerializeableGuitar extends Omit<GuitarTabData, "stacks"> {
-  stacks: SerializeableStackMap<GuitarNote>;
+  stacks: SerializeableStackMap<Omit<GuitarNote, "string">>;
 }
-
-
 export interface SerializeableTabData extends Omit<TabData, "guitarData" | "annotations"> {
   guitarData?: SerializeableGuitar;
   annotations: Array<[number, Annotation[]]>;
 }
 export function serializeTabData(data: TabData): string {
+  const withoutString = (guitarNote: GuitarNote) => {
+    const { string, ...rest } = guitarNote;
+    return rest;
+  };
+
   const guitarData: SerializeableGuitar | undefined = data.guitarData && {
     ...data.guitarData,
     stacks: [...data.guitarData!.stacks.entries()].map(([position, stack]) => [
       position,
-      stack.filter(Boolean) as GuitarNote[],
+      [...stack.entries()].map(([key, value]) => [key, withoutString(value)]),
     ]),
   };
 
@@ -38,13 +41,10 @@ export function deserializeTabData(data: string | SerializeableTabData): TabData
   if (parsed.guitarData) {
     const stacks: StackMap<GuitarNote> = new Map();
     for (const [position, stack] of parsed.guitarData.stacks) {
-      stacks.set(
-        position,
-        stack.reduce((arr, note) => {
-          arr[note.string] = note;
-          return arr;
-        }, new Array<GuitarNote>())
+      const withString = stack.map(
+        ([key, value]) => [key, { string: key, ...value }] as [number, GuitarNote],
       );
+      stacks.set(position, new Map(withString));
     }
     guitarData = {
       ...parsed.guitarData,

@@ -1,5 +1,13 @@
 import { serializeTabData } from "./serialize";
-import type { TabData, GuitarNote, Annotation, NoteData, StackMap, GuitarTabData } from "./data";
+import type {
+  TabData,
+  GuitarNote,
+  Annotation,
+  NoteData,
+  StackMap,
+  GuitarTabData,
+  NoteStack,
+} from "./data";
 
 export interface TabStore {
   title: string;
@@ -32,7 +40,7 @@ export function createTabStore(init?: TabData | Partial<typeof defaults>): TabSt
   const annotationStore = createAnnotationStore(data.annotations);
 
   function createGuitarTab(tuning = defaultTuning, strings = 6, frets = 24) {
-    const stacks: Map<number, GuitarNote[]> = new Map();
+    const stacks: StackMap<GuitarNote> = new Map();
     data.guitarData = {
       strings,
       tuning,
@@ -125,7 +133,7 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
 }
 interface StackStore<N extends NoteData> {
   getStacks: (start?: number, end?: number) => StackMap<N>;
-  setStack: (position: number, stack: N[]) => void;
+  setStack: (position: number, stack: NoteStack<N>) => void;
   lastPosition: () => number | undefined;
   shiftFrom: (position: number, shiftBy: number) => void;
 }
@@ -147,9 +155,9 @@ function createStackStore<N extends NoteData>(stacks: StackMap<N>): StackStore<N
     return subset;
   }
 
-  function setStack(position: number, stack: N[]) {
+  function setStack(position: number, stack: NoteStack<N>) {
     if (position < 0) return;
-    if (stack.filter(Boolean).length === 0) {
+    if (stack.size === 0) {
       stacks.delete(position);
       if (position === furthestPos.at(-1)) {
         furthestPos.pop();
@@ -199,10 +207,10 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
       let stack = guitarData.stacks.get(position);
 
       if (!stack) {
-        stack = new Array(guitarData.strings);
+        stack = new Map();
       }
 
-      stack[string] = data;
+      stack.set(string, data);
 
       noteStore.setStack(position, stack);
     }
@@ -211,9 +219,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
   function deleteNote(position: number, string: number) {
     const stack = guitarData.stacks.get(position);
     if (stack) {
-      // TODO: replace this mechanism with a map?
-      /* eslint-disable */
-      delete stack[string];
+      stack.delete(string);
       noteStore.setStack(position, stack);
     }
   }
@@ -222,14 +228,13 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     const subset = noteStore.getStacks(start, end);
     for (let i = start; i < end; i += subunit) {
       if (!subset.has(i)) {
-        subset.set(i, []);
+        subset.set(i, new Map());
       }
     }
     return new Map(
       [...subset.entries()]
         .sort((a, b) => a[0] - b[0])
-        .filter(([position, stack]) => position % subunit === 0)
-        .map(([position, stack]) => [position, stack.filter(Boolean)]),
+        .filter(([position, _]) => position % subunit === 0),
     );
   }
 

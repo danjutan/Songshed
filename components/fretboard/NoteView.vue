@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 const props = defineProps<{
-  lines?: boolean;
   noteRadius: number;
   cx: number;
   cy: number;
@@ -24,14 +23,7 @@ const text = computed(() => getNoteInfo(props.midi).name);
     cursor="pointer"
     @click="emit('toggle', !props.selected)"
   >
-    <circle
-      class="clip"
-      :r="noteRadius"
-      :cx="props.cx"
-      :cy="props.cy"
-      fill="white"
-      stroke="none"
-    />
+    <circle class="clip" :r="noteRadius" :cx="props.cx" :cy="props.cy" fill="white" stroke="none" />
     <circle
       class="cover"
       :r="noteRadius"

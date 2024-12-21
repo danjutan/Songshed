@@ -99,7 +99,7 @@ onMounted(() => {
 .note-input {
   display: grid;
   justify-items: center;
-  align-items: center;
+  align-items: center; /*comment this if you want other centering*/
 }
 
 input {
@@ -114,7 +114,7 @@ input {
   grid-area: 1 / 1;
   width: var(--note-font-size);
   font-size: var(--note-font-size);
-  text-align: center;
+  text-align: center; /*comment this if you want other centering*/
 }
 
 .input-bg {

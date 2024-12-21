@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Annotation } from "~/model/data";
+import type { Annotation, GuitarNote, NoteStack } from "~/model/data";
 import type { TabStore } from "~/model/stores";
 import type { GuitarStack } from "./guitar/GuitarBar.vue";
 import GuitarBar from "./guitar/GuitarBar.vue";
@@ -40,9 +40,17 @@ const bars = computed<Bar>(() => {
     i <= Math.max(newBarStart.value, props.data.guitar.lastPosition() ?? 0);
     i += barSize.value
   ) {
+    const toArray = (stack: NoteStack<GuitarNote>): GuitarNote[] => {
+      const arr = [];
+      for (const note of stack.values()) {
+        arr.push(note);
+      }
+      return arr;
+    };
+
     const columns: GuitarStack[] = [
       ...props.data.guitar.getStacks(i, i + barSize.value, subUnit.value).entries(),
-    ].map(([position, stack]) => ({ position, stack }));
+    ].map(([position, stack]) => ({ position, stack: toArray(stack) }));
 
     bars.push(columns);
   }

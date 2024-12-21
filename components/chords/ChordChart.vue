@@ -160,6 +160,7 @@ function onInputClick(e: Event) {
           />
         </g>
         <template v-else-if="notes[string].fret >= windowStart && notes[string].fret <= windowEnd">
+          <!--TODO: replace with NoteView-->
           <circle
             class="selected"
             :cx="gridStartX + (strings - string - 1) * cellWidth"
