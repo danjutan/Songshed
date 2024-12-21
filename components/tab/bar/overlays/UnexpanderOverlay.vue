@@ -1,15 +1,15 @@
 <template>
   <div class="unexpander">
     <div class="label">
-      <div>↦</div>
-      <div>↤</div>
+      <slot name="left" />
+      <slot name="right" />
     </div>
   </div>
 </template>
 
 <style>
 .unexpander {
-  background-color: rgba(255, 0, 0, 0.1);
+  background-color: rgba(255, 0, 0, 0.05);
   height: var(--cell-height);
   width: 100%;
   cursor: pointer;

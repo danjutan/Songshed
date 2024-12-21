@@ -58,9 +58,9 @@ function newBarClick() {
 
 <style scoped>
 .tab {
-  display: flex;
-  flex-flow: row wrap;
+  display: grid;
   gap: 5px;
+  grid-template-columns: 1fr 1fr 1fr;
   width: 100%;
   --cell-height: 23px;
   --note-font-size: calc(var(--cell-height) * 0.8);

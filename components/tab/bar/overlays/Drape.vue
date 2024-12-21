@@ -5,12 +5,16 @@ export type DrapeData = {
   columns: number
 };
 
+type CollapseBehavior = {
+  expanded: "show" | "hide"
+  collapsed: "show" | "hide"
+};
+
 const props = withDefaults(
   defineProps<
     DrapeData & {
-      default?: "show" | "hide"
-      collapsed?: "show" | "hide"
-      up?: "same" | "reverse"
+      down?: CollapseBehavior
+      up?: CollapseBehavior
       color?: string
       numStrings: number
       heightUnit?: string
@@ -18,9 +22,8 @@ const props = withDefaults(
     }
   >(),
   {
-    default: "show",
-    collapsed: "show",
-    up: "same",
+    down: () => ({ expanded: "show", collapsed: "show" }),
+    up: () => ({ expanded: "show", collapsed: "show" }),
     color: "transparent",
     rowStart: 1,
     // e.g. multiply this by 2 and the collapse will trigger at half the width
@@ -34,24 +37,12 @@ defineSlots<{
 }>();
 
 const toDisplay = (p: "show" | "hide") => (p === "show" ? "block" : "none");
-const toReverse = (p: "show" | "hide") => (p === "show" ? "hide" : "show");
 
-const defaultDisplay = computed(() => toDisplay(props.default));
-const collapsedDisplay = computed(() => toDisplay(props.collapsed));
+const defaultDisplay = toDisplay(props.down.expanded);
+const collapsedDisplay = toDisplay(props.down.collapsed);
+const upDefaultDisplay = toDisplay(props.up.expanded);
+const upCollapsedDisplay = toDisplay(props.up.collapsed);
 
-const upDefaultDisplay = computed(() => {
-  if (props.up === "same") {
-    return defaultDisplay.value;
-  }
-  return toDisplay(toReverse(props.default));
-});
-
-const upCollapsedDisplay = computed(() => {
-  if (props.up === "same") {
-    return collapsedDisplay.value;
-  }
-  return toDisplay(toReverse(props.collapsed));
-});
 // const columnEnd = computed(() => props.columns ? `span ${props.columns}` : "-1");
 </script>
 

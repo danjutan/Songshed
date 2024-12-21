@@ -80,7 +80,7 @@ const isExpanded = (column: number) =>
 const toggleExpanded = (column: number, num?: number) =>
   expansionState.toggleExpanded(props.data.start, props.notches * props.subdivisions, column, num);
 
-const spacers = computed<DrapeData[]>(() => {
+/* const spacers = computed<DrapeData[]>(() => {
   const drapeData: DrapeData[] = [];
   let firstNotchIndex: number | undefined;
   let lastNotchIndex: number | undefined;
@@ -110,17 +110,17 @@ const spacers = computed<DrapeData[]>(() => {
     drapeData.push({ start: firstNotchIndex + 1, columns });
   }
   return drapeData;
-});
+}); */
 
 const substackGroups = computed<DrapeData[]>(() => {
   const isFilledSubstack = (col: ColumnData) => !isNotch(col) && !isEmpty(col);
   const drapeData: DrapeData[] = [];
   for (let i = 0; i < columnData.value.length; i += props.subdivisions) {
     for (let c = 0; c < props.subdivisions; c++) {
-      if (isFilledSubstack(columnData.value[i + c])) {
-        drapeData.push({ start: i + 2, columns: props.subdivisions - 1 });
-        break;
-      }
+      // if (isFilledSubstack(columnData.value[i + c])) {
+      drapeData.push({ start: i + 2, columns: props.subdivisions - 1 });
+      //   break;
+      // }
     }
   }
 
@@ -148,8 +148,8 @@ function isSelected(column: ColumnData) {
 
 const gridTemplateColumns = computed<string>(() => {
   const columns: string[] = columnData.value.map((col, i) => {
-    if (isExpanded(i + 1) || (isNotch(col) && (!isEmpty(col) || hasSubstacks(i)))) {
-      return "var(--cell-height)";
+    if (isExpanded(i + 1) || (isNotch(col))) {
+      return "var(--note-font-size)";
     }
     return "1fr";
   });
@@ -186,16 +186,14 @@ function noteChange(changed: NoteSpot) {
            :frets="data.frets"
            :tuning="data.tuning"
            :stack="col.stack"
+           :substack="!isNotch(col)"
            :selected="isSelected(col)"
            :class="{
-             substack: col.position % unit !== 0,
              even: i % 2 === 0,
-             selected: isSelected(col),
            }"
-           @mouseover="selectColumn(col)"
            @note-change="noteChange"
     />
-    <Drape
+    <!-- <Drape
       v-for="{ start, columns } in spacers"
       :key="start"
       class="empty-spacer"
@@ -215,22 +213,27 @@ function noteChange(changed: NoteSpot) {
         #down>
         <ExpanderOverlay />
       </template>
-    </Drape>
+    </Drape> -->
     <Drape
       v-for="{ start, columns } in substackGroups"
       :key="start"
       class="substack-spacer"
-      collapsed="show"
-      default="hide"
-      up="reverse"
-      height-unit="var(--cell-height) * 2"
+      height-unit="var(--note-font-size) * 2"
+      :down="{ collapsed: 'show', expanded: 'hide' }"
       :start
       :columns
       :num-strings="strings"
       :row-start="2"
       @click="toggleExpanded(start, columns)">
       <template #up>
-        <UnexpanderOverlay v-if="isExpanded(start)" />
+        <UnexpanderOverlay v-if="isExpanded(start)">
+          <template #left>
+            <div>↦</div>
+          </template>
+          <template #right>
+            <div>↤</div>
+          </template>
+        </UnexpanderOverlay>
       </template>
       <template
         #down>

@@ -6,6 +6,7 @@ const props = withDefaults(defineProps<{
   frets: number
   tuning: Midi[]
   selected?: boolean
+  substack?: boolean
 }>(), {
 });
 
@@ -17,11 +18,12 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
 </script>
 
 <template>
-  <div class="stack">
+  <div class="stack"
+       :class="{ substack }">
     <div v-for="noteSpot in stack"
          :key="noteSpot.string"
          class="container">
-      <div v-if="noteSpot.data"
+      <div v-if="substack && noteSpot.data"
            class="square"
            :style="{
              backgroundColor: defaultColors[getChroma(noteSpot.data.midi)],
@@ -54,30 +56,35 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
   /* border: 1px solid red; */
   justify-content: flex-start;
   align-items: center;
-  container-type: size;
 }
 
-.input {
-  display: none;
+.substack .container {
+  container-type: size;
 }
 
 .square {
   width: 95%;
-  min-width: 5px;
   max-width: calc(var(--cell-height) / 2);
   aspect-ratio: 1;
   background-color: blue;
+  display: none;
 }
 
-@container (aspect-ratio < 0.1) or (aspect-ratio > 0.8) {
+@container (aspect-ratio < 0.8) {
   .square {
-    display: none;
+    display: block;
   }
 }
 
-@container (aspect-ratio > 0.8) {
+@container (aspect-ratio < 0.2) {
+  .square {
+    width: 100%;
+  }
+}
+
+@container (aspect-ratio < 0.8) {
    .input {
-    display: block;
+    display: none;
   }
 }
 </style>
