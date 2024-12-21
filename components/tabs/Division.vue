@@ -20,6 +20,7 @@ const emit = defineEmits<{
 const sortedSubstacks = computed(() => props.data.substacks?.toSorted((a, b) => a.notchPosition - b.notchPosition) || []);
 const numFilledSubstacks = computed(() => sortedSubstacks.value.length);
 const numSubstacks = computed(() => numFilledSubstacks.value && props.subdivisions - 1);
+watchEffect(() => console.log(numFilledSubstacks.value, numSubstacks.value, sortedSubstacks.value));
 const relativePositions = computed(() => sortedSubstacks.value.map(substack => substack.notchPosition - props.data.notchPosition));
 // const subunit = computed(() => SpacingsDescending.find(spacing => relativePositions.value?.every(relative => relative % spacing === 0)) || 1);
 const subunit = computed(() => 1 / props.subdivisions);
@@ -44,6 +45,9 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
       />
     </div>
     <!-- <TabsStrings /> -->
+    <div v-if="numFilledSubstacks"
+         class="substack-bg"
+    />
     <div v-for="(substack, i) in sortedSubstacks"
          :key="substack.notchPosition"
          class="substack"
@@ -85,7 +89,9 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
   flex-direction: column;
 }
 
-.substack {
+.substack-bg {
+  grid-row: 1 / -1;
+  grid-column: 2 / -1;
   background-color: var(--substack-bg);
 }
 

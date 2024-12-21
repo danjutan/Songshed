@@ -34,11 +34,13 @@ const props = defineProps<DrapeData & {
   .drape-down {
     background-color: v-bind(color);
     height: calc(v-bind(numStrings) * var(--min-division-width) / 2);
+    pointer-events: none;
+    display: none;
   }
 
-  @container drape (aspect-ratio > 1) {
+  @container drape (aspect-ratio < 0.5) {
     .drape-down {
-      display: none
+      display: block;
     }
   }
 </style>

@@ -132,7 +132,7 @@ input {
   background-color: #ACCEF7
 }
 
-@container collapser (aspect-ratio < 1) {
+@container collapser (aspect-ratio < 0.5) {
   /* .input-bg {
     width: 100cqw;
     background-color: var(--substack-bg);

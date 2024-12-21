@@ -69,11 +69,11 @@ const spacers = computed(() => emptyDivisions(props.divisions));
   opacity: 0.5;
 }
 
-@container notch (aspect-ratio < 1) {
+/* @container notch (aspect-ratio < 1) {
   .selectable {
     display: none;
   }
-}
+} */
 
 .selectable:hover {
   background-color: lightblue;
