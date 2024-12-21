@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { type BarStore, Spacing, type TabStore } from "./data";
 import TabBar from "./bar/TabBar.vue";
-import { VisualizationStateKey, createVisualizationState } from "./providers";
+import { ExpansionStateKey, createExpansionState } from "./providers/expansion-state";
 
 // TODO: move to app
-provide(VisualizationStateKey, createVisualizationState());
+provide(ExpansionStateKey, createExpansionState());
 
 const props = withDefaults(defineProps<{
   data: TabStore

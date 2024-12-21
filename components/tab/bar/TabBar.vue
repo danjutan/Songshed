@@ -2,7 +2,7 @@
 import type { PropType } from "vue";
 import type { NoteSpot, BarStore } from "../data";
 import { Spacing } from "../data";
-import { VisualizationStateKey } from "../providers";
+import { ExpansionStateKey } from "../providers/expansion-state";
 import Stack from "./Stack.vue";
 import Drape, { type DrapeData } from "./overlays/Drape.vue";
 import ExpanderOverlay from "./overlays/ExpanderOverlay.vue";
@@ -66,11 +66,11 @@ const columnData = computed<ColumnData[]>(() => {
   return columns;
 });
 
-const visualizationState = inject(VisualizationStateKey)!;
+const expansionState = inject(ExpansionStateKey)!;
 
 // TODO: make sure to set this up to work now that substacks aren't part of stacks
 const isExpanded = (column: number) =>
-  visualizationState.isExpanded(props.data.start, props.notches * props.subdivisions, column);
+  expansionState.isExpanded(props.data.start, props.notches * props.subdivisions, column);
 
 /* const expanded = computed<Set<number>>(() =>
   new Set(divisions.value
@@ -78,7 +78,7 @@ const isExpanded = (column: number) =>
     .filter(col => isExpanded(col)))); */
 
 const toggleExpanded = (column: number, num?: number) =>
-  visualizationState.toggleExpanded(props.data.start, props.notches * props.subdivisions, column, num);
+  expansionState.toggleExpanded(props.data.start, props.notches * props.subdivisions, column, num);
 
 const spacers = computed<DrapeData[]>(() => {
   const drapeData: DrapeData[] = [];
@@ -162,7 +162,7 @@ function noteChange(changed: NoteSpot) {
   const { position, string, data } = changed;
   const stack = props.data.getStack(position);
   if (!stack || (stack.filter(({ data }) => data).length === 1 && !data)) {
-    visualizationState.setExpanded(props.data.start, props.notches, false, 0, props.notches);
+    expansionState.setExpanded(props.data.start, props.notches, false, 0, props.notches);
   }
   if (data) {
     props.data.setNote(position, string, data);

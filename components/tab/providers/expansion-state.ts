@@ -1,15 +1,15 @@
 import type { InjectionKey } from "vue";
 
-export const VisualizationStateKey = Symbol() as InjectionKey<VisualizationState>;
+export const ExpansionStateKey = Symbol() as InjectionKey<ExpansionState>;
 
-type VisualizationState = {
+type ExpansionState = {
   isExpanded(tabStart: number, tabColumns: number, column: number): boolean
   setExpanded(tabStart: number, tabColumns: number, value: boolean, start: number, num?: number): void
   toggleExpanded(tabStart: number, tabColumns: number, start: number, num?: number): void
   clear(): void
 };
 
-export function createVisualizationState(): VisualizationState {
+export function createExpansionState(): ExpansionState {
   const expanded = reactive<Set<string>>(new Set());
   const key = (tabStart: number, tabColumns: number, column: number) => `${tabStart},${tabColumns},${column}`;
 
