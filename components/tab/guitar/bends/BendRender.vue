@@ -4,31 +4,32 @@ import type { OverlayPosition } from "../../overlay-objects";
 
 export type BendRenderProps = OverlayPosition & {
   bend: Bend;
-  throughColumns: number[];
+  throughColumn?: number;
   half?: "left" | "right";
-  fullColumns?: number; // if half
+  fullUpswingColumns?: number;
+  fullRestColumns?: number;
 };
 const props = defineProps<BendRenderProps & { bendRow: number }>();
 
-const upswingEndColumn = computed(
-  () => props.throughColumns[0] || props.endColumn,
+console.log(
+  props.throughColumn,
+  props.fullUpswingColumns,
+  props.fullRestColumns,
 );
+
+const justRelease = computed(
+  () => props.half === "right" && props.fullRestColumns,
+);
+
+const upswingEndColumn = computed(() => {
+  if (justRelease.value) {
+    return props.startColumn - 1;
+  }
+  return props.throughColumn || props.endColumn;
+});
 
 const upswingColumns = computed(
   () => upswingEndColumn.value - props.startColumn + 1,
-);
-
-const upswingTo = computed(
-  () =>
-    (props.half === "left" ? props.fullColumns! : upswingColumns.value) * vbu -
-    vbu / 2,
-);
-
-const upswingFrom = computed(
-  () =>
-    (props.half === "right" ? upswingColumns.value - props.fullColumns! : 0) *
-      vbu +
-    vbu * 0.75,
 );
 
 const restColumns = computed(() => props.endColumn - upswingEndColumn.value);
@@ -36,6 +37,40 @@ const restColumns = computed(() => props.endColumn - upswingEndColumn.value);
 const rowSpan = computed(() => props.row - props.bendRow + 1);
 
 const vbu = 12;
+
+const upswingFrom = computed(() => {
+  if (props.half === "right" && props.fullUpswingColumns) {
+    return (upswingColumns.value - props.fullUpswingColumns) * vbu + vbu * 0.75;
+  }
+  return vbu * 0.75;
+});
+
+const upswingTo = computed(() => {
+  const columns =
+    (props.half === "left" && props.fullUpswingColumns) || upswingColumns.value;
+  return columns * vbu - vbu / 2;
+});
+
+const downswingFrom = computed(() => {
+  if (justRelease.value) {
+    return vbu * (restColumns.value - props.fullRestColumns!);
+  }
+  return 0;
+});
+
+const downswingTo = computed(() => {
+  if (props.half === "left" && props.fullRestColumns) {
+    return vbu * props.fullRestColumns - vbu / 2;
+  }
+  return vbu * restColumns.value - vbu / 2;
+});
+
+const showLabel = computed(() => {
+  if (props.fullRestColumns) {
+    return props.half === "left";
+  }
+  return props.half !== "left";
+});
 
 const bendLabels: { [bend: number]: string } = {
   1: "full",
@@ -49,6 +84,7 @@ const endArrowHover = ref(false);
 
 <template>
   <svg
+    v-if="!justRelease"
     class="upswing"
     :viewBox="`0 0 ${vbu * upswingColumns} ${vbu * rowSpan}`"
     preserveAspectRatio="none"
@@ -96,8 +132,8 @@ const endArrowHover = ref(false);
       <path
         class="downswing-curve"
         :d="
-          `M ${vbu * 0.75} ${vbu * 0.6}` +
-          `Q ${vbu * restColumns - vbu / 2} ${vbu * 0.6} ${vbu * restColumns - vbu / 2} ${vbu * rowSpan - vbu * 0.85}`
+          `M ${downswingFrom} ${vbu * 0.6}` +
+          `Q ${downswingTo} ${vbu * 0.6} ${downswingTo} ${vbu * rowSpan - vbu * 0.85}`
         "
         :marker-end="endArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
@@ -110,8 +146,12 @@ const endArrowHover = ref(false);
     >
       <line
         class="hold-line"
-        :x1="vbu * 0.75"
-        :x2="vbu * restColumns - vbu / 2"
+        :x1="0"
+        :x2="
+          props.half === 'left'
+            ? vbu * restColumns
+            : vbu * restColumns - vbu / 2
+        "
         :y1="vbu * 0.6"
         :y2="vbu * 0.6"
         :marker-end="endArrowHover ? 'url(#hover-arrow)' : undefined"
@@ -127,7 +167,7 @@ const endArrowHover = ref(false);
       @mouseleave="endArrowHover = false"
     />
   </template>
-  <div v-if="props.half !== 'left'" class="label">
+  <div v-if="showLabel" class="label">
     <div class="row">
       <span>{{ bendLabels[props.bend.bend] || props.bend.bend }}</span>
       <div v-if="!restColumns" class="grabber right" />
@@ -169,7 +209,7 @@ const endArrowHover = ref(false);
 
 .downswing,
 .hold {
-  grid-column: v-bind(upswingEndColumn) / calc(v-bind(endColumn) + 1);
+  grid-column: calc(v-bind(upswingEndColumn) + 1) / calc(v-bind(endColumn) + 1);
 }
 
 .upswing-curve,

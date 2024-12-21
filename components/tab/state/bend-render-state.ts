@@ -28,39 +28,80 @@ export function createBendRenderState(
       for (const bend of bends) {
         const start = posToCol(bend.from);
         const end = posToCol(bend.to);
-        const throughColumns = bend.through
-          ? bend.through.map((p) => posToCol(p + bend.from).column)
-          : [];
+        const through = bend.through?.[0]
+          ? posToCol(bend.from + bend.through[0])
+          : undefined;
         const row = startRow.value + string;
         if (start.tabline !== end.tabline) {
-          // halves logic goes here
-          // continue;
-          const fullColumns = tablineColumns.value - start.column + end.column;
+          if (!through) {
+            const fullUpswingColumns =
+              tablineColumns.value - start.column + end.column;
+            push(start.tabline, {
+              startColumn: start.column,
+              endColumn: tablineColumns.value,
+              half: "left",
+              fullUpswingColumns,
+              row,
+              bend,
+            });
+            push(end.tabline, {
+              startColumn: 2,
+              endColumn: end.column,
+              half: "right",
+              fullUpswingColumns,
+              row,
+              bend,
+            });
+            continue;
+          }
+          if (through.tabline === end.tabline) {
+            const fullUpswingColumns =
+              tablineColumns.value - start.column + through.column;
+            push(start.tabline, {
+              startColumn: start.column,
+              endColumn: tablineColumns.value,
+              half: "left",
+              fullUpswingColumns,
+              row,
+              bend,
+            });
+            push(end.tabline, {
+              startColumn: 2,
+              throughColumn: through.column,
+              endColumn: end.column,
+              half: "right",
+              fullUpswingColumns,
+              row,
+              bend,
+            });
+            continue;
+          }
+          const fullRestColumns =
+            tablineColumns.value - through.column + end.column;
           push(start.tabline, {
-            row,
             startColumn: start.column,
-            throughColumns,
+            throughColumn: through.column,
             endColumn: tablineColumns.value,
-            bend,
             half: "left",
-            fullColumns,
+            fullRestColumns,
+            row,
+            bend,
           });
           push(end.tabline, {
-            row,
             startColumn: 2,
-            throughColumns,
             endColumn: end.column,
-            bend,
             half: "right",
-            fullColumns,
+            fullRestColumns,
+            row,
+            bend,
           });
           continue;
         }
         push(start.tabline, {
-          row,
           startColumn: start.column,
-          throughColumns,
+          throughColumn: through?.column,
           endColumn: end.column,
+          row,
           bend,
         });
       }

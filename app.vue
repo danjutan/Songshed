@@ -63,7 +63,7 @@ if (id) {
   ties.setTie(5, Spacing.Quarter * 4 - Spacing.Eighth, {
     type: "bend",
     releaseType: "connect",
-    bend: 2,
+    bend: 1,
     through: [Spacing.Sixteenth * 1],
     to: Spacing.Quarter * 5,
   });
@@ -72,7 +72,7 @@ if (id) {
     type: "bend",
     releaseType: "hold",
     bend: 1,
-    through: [Spacing.Sixteenth * 2],
+    through: [Spacing.Sixteenth * 4],
     to: Spacing.Quarter * 6,
   });
 
@@ -83,11 +83,12 @@ if (id) {
     to: Spacing.Quarter * 3,
   });
 
-  ties.setTie(3, Spacing.Quarter * 11 + Spacing.Sixteenth, {
+  ties.setTie(2, Spacing.Quarter * 11, {
     type: "bend",
-    releaseType: "hold",
+    releaseType: "connect",
     bend: 1,
-    to: Spacing.Quarter * 12 + Spacing.Sixteenth * 2,
+    through: [Spacing.Sixteenth * 2],
+    to: Spacing.Quarter * 12 + Spacing.Sixteenth * 1,
   });
 
   ties.setTie(2, Spacing.Quarter * 2, {
