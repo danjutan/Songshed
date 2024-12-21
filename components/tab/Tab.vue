@@ -285,7 +285,12 @@ const annotationRenders = computed(() => {
   &:hover {
     font-weight: bold;
     background-color: lightcoral;
+    color: white;
   }
+}
+
+.drag-start {
+  cursor: crosshair;
 }
 
 .divider {
