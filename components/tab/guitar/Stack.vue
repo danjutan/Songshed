@@ -60,8 +60,11 @@ function onSpotMouseEnter(string: number) {
 type InputRef = InstanceType<typeof NoteInput> | null;
 const inputRefs = ref<InputRef[]>([]);
 
-const tieable = (note: GuitarNote | undefined, string: number) =>
-  note &&
+const tieable = (
+  note: GuitarNote | undefined,
+  string: number,
+): note is { note: Midi } =>
+  note?.note !== "muted" &&
   editing.editingNote?.string === string &&
   editing.editingNote.position === props.position;
 
@@ -71,7 +74,7 @@ function onSpotMouseDown(
   note: GuitarNote | undefined,
 ) {
   if (tieable(note, string)) {
-    tieAdd.start(string, props.position, note!.midi);
+    tieAdd.start(string, props.position, note!.note);
     e.preventDefault(); //prevents default drag-drop behavior
     e.stopPropagation(); //prevents onStackMouseDown from triggering
   }
@@ -100,7 +103,7 @@ function onSpotMouseDown(
         v-if="collapse && note"
         class="square"
         :style="{
-          backgroundColor: defaultColors[getChroma(note.midi)],
+          backgroundColor: defaultColors[getChroma(note.note)],
         }"
       />
       <div class="input">

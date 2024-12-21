@@ -60,31 +60,38 @@ function onBlur(e: Event) {
   emit("blur");
 }
 
-const relativeNote = computed(() => {
+const noteText = computed(() => {
   if (props.data) {
-    return (props.data.midi - props.tuning) as Midi;
+    if (props.data.note === "muted") {
+      return "⨯";
+    }
+    return (props.data.note - props.tuning) as Midi;
   }
   return "";
 });
 
-const hasNote = computed(() => relativeNote.value !== "");
+const hasNote = computed(() => noteText.value !== "");
 
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
-  if (target.value.trim() == "") {
+  const trimmed = target.value.trim();
+  if (trimmed == "") {
     emit("noteDelete");
     return;
+  }
+  if (["m", "M", "x", "X"].includes(trimmed)) {
+    emit("noteChange", { note: "muted" });
   }
   const num = parseInt(target.value);
   if (Number.isInteger(num)) {
     if (num < 1 || num > props.frets) {
-      target.value = `${relativeNote.value}`;
+      target.value = `${noteText.value}`;
       return;
     }
-    emit("noteChange", { midi: (props.tuning + num) as Midi });
+    emit("noteChange", { note: (props.tuning + num) as Midi });
     return;
   }
-  target.value = `${relativeNote.value}`;
+  target.value = `${noteText.value}`;
 }
 
 onMounted(() => {
@@ -109,7 +116,7 @@ function onClick(e: MouseEvent) {
     :class="{ hovering, editing, 'has-note': hasNote }"
     @mouseover="hover(string, position)"
   >
-    <span class="input-bg">{{ relativeNote }}</span>
+    <span class="input-bg">{{ noteText }}</span>
     <!-- <div
       v-if="editing && relativeNote"
       class="side left"
@@ -123,7 +130,7 @@ function onClick(e: MouseEvent) {
     </div> -->
     <input
       ref="input"
-      :value="relativeNote"
+      :value="noteText"
       type="text"
       inputmode="numeric"
       pattern="[0-9]{1,2}"

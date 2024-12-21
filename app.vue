@@ -55,7 +55,7 @@ if (id) {
 
   guitarNotes.forEach(([position, string, midiString]) => {
     const data: GuitarNote = {
-      midi: toMidi(midiString),
+      note: toMidi(midiString),
     };
     guitar.setNote(position, string, data);
   });

@@ -6,7 +6,7 @@ export interface Annotation<D = unknown> {
 }
 
 export interface NoteData {
-  midi: Midi;
+  note: Midi | "muted";
 }
 
 // "hammer" means hammer-on if going up, pull-off if going down

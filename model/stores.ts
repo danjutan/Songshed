@@ -253,9 +253,15 @@ function createStackStore<N extends NoteData>(
     if (position < 0 || !furthestPos.length || position > furthestPos.at(-1)!)
       return;
 
+    // const entries = [...stacks.entries()]; // to avoid infinite iteration
+    // for (const [pos, stack] of entries) {
+    //   if (pos < position) continue;
+    //   setStack(pos + shiftBy, stack);
+    //   setStack(pos, new Map());
+    // }
     const keysFromBack = [...stacks.keys()]
       .filter((pos) => pos >= position)
-      .sort((a, b) => b - a);
+      .sort((a, b) => a - b);
 
     for (const pos of keysFromBack) {
       const stack = stacks.get(pos);
@@ -334,8 +340,9 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
         addTies.push({
           ...tie,
           from,
-          midiFrom: fromNote?.midi,
-          midiTo: toNote?.midi,
+          // if the ties were added correctly by the GUI, these will always be defined Midi
+          midiFrom: fromNote?.note === "muted" ? undefined : fromNote?.note,
+          midiTo: toNote?.note === "muted" ? undefined : toNote?.note,
         });
       }
       map.set(string, addTies);

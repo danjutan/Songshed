@@ -77,8 +77,8 @@ export function createTieAddState(
       from.value = position;
       to.value = dragFrom.value; // for when you've left the screen
       const stack = store.value?.stacks.get(position);
-      const note = stack?.get(dragFromString.value);
-      if (note) midiFrom.value = note.midi;
+      const noteData = stack?.get(dragFromString.value);
+      if (noteData && noteData.note !== "muted") midiFrom.value = noteData.note;
     } else {
       for (
         let i = dragFrom.value + subUnit.value;
@@ -95,8 +95,8 @@ export function createTieAddState(
       to.value = position;
       from.value = dragFrom.value;
       const stack = store.value?.stacks.get(position);
-      const note = stack?.get(dragFromString.value);
-      if (note) midiTo.value = note.midi;
+      const noteData = stack?.get(dragFromString.value);
+      if (noteData && noteData.note !== "muted") midiTo.value = noteData.note;
     }
   }
 

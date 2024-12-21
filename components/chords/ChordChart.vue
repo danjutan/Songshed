@@ -23,7 +23,7 @@ const fingering = computed(() => {
   } = {};
 
   for (const [string, note] of props.notes.entries()) {
-    const fret = note.midi - props.tuning[string];
+    const fret = note.note - props.tuning[string];
     fingering[string] = { ...note, fret };
   }
   return fingering;
@@ -85,7 +85,7 @@ function setFret(string: number, fret: number | false) {
   }
   emit("updateString", string, {
     ...note,
-    midi: (props.tuning[string] + fret) as Midi,
+    note: (props.tuning[string] + fret) as Midi,
   });
 }
 
