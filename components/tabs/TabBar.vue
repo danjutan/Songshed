@@ -159,6 +159,7 @@ function updateNote(note: NoteSpot) {
 <style>
 .bar {
   --min-division-width: 48px;
+  --note-font-size: calc(var(--min-division-width) * 0.4);
   /* --z-index-notes: 10; */
   /* border: 1px solid black; */
   margin: 10px;
