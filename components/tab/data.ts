@@ -104,6 +104,7 @@ interface AbstractNoteStore<N extends NoteSpot> {
   getStacks: (start?: number, end?: number) => Map<number, N[]>
   setStack: (position: number, stack: N[]) => void
   lastPosition: () => number | undefined
+  shiftFrom: (position: number, shiftBy: number) => void
 }
 
 interface NoteStore<N extends NoteSpot> extends AbstractNoteStore<N> {
@@ -142,7 +143,23 @@ function createAbstractNoteStore<N extends NoteSpot>(stacks: Map<number, N[]>): 
     return furthestPos.at(-1);
   }
 
-  return { getStacks, setStack, lastPosition };
+  function shiftFrom(position: number, shiftBy: number) {
+    if (position < 0 || !furthestPos.length || position > furthestPos.at(-1)! || shiftBy <= 0) return;
+
+    const keysFromBack = [...stacks.keys()]
+      .filter(pos => pos >= position)
+      .sort((a, b) => b - a);
+
+    for (const pos of keysFromBack) {
+      const stack = stacks.get(pos);
+      if (stack) {
+        setStack(pos + shiftBy, stack);
+        stacks.delete(pos);
+      }
+    }
+  }
+
+  return { getStacks, setStack, lastPosition, shiftFrom };
 }
 
 type GuitarStore = NoteStore<GuitarNote> & GuitarTabData;
@@ -161,8 +178,10 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
         return;
       }
 
-      if (!stack)
+      if (!stack) {
         stack = Array.from({ length: strings }, (_, string) => ({ position, string }));
+      }
+
       stack[string].data = data;
 
       noteStore.setStack(position, stack);

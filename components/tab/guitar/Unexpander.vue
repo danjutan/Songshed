@@ -20,6 +20,7 @@ const props = defineProps<{
   grid-row: v-bind(row);
   height: 100%;
   background-color: var(--substack-bg);
+  cursor: pointer;
   &:hover {
     background-color: rgba(255, 0, 0, 0.2);
   }

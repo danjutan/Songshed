@@ -22,15 +22,15 @@ const subUnit = computed(() => notchUnit.value / props.subdivisions);
 
 const columnsPerBar = computed(() => barSize.value / subUnit.value);
 
-const barsUntil = ref(props.data.guitar?.lastPosition() ?? 0);
-
 type Bar = Array<GuitarStack[]>;
+
+const newBarStart = ref(0);
 
 // TODO: swap out the view that's determining the bars / use the longest view
 const bars = computed<Bar>(() => {
   if (!props.data.guitar) return [];
   const bars: Array<GuitarStack[]> = [];
-  for (let i = 0; i <= barsUntil.value; i += barSize.value) {
+  for (let i = 0; i <= Math.max(newBarStart.value, props.data.guitar.lastPosition() ?? 0); i += barSize.value) {
     const columns = [];
     for (let position = i; position < i + barSize.value; position += subUnit.value) {
       const stack = props.data.guitar.stacks.get(position)
@@ -44,30 +44,34 @@ const bars = computed<Bar>(() => {
 
 const tabLines = computed<Bar[]>(() => {
   const tabLineBars = [];
-  for (let i = 0; i <= bars.value.length; i += props.barsPerLine) {
+  for (let i = 0; i < bars.value.length; i += props.barsPerLine) {
     tabLineBars.push(bars.value.slice(i, i + props.barsPerLine));
   }
+  console.log("tablines", tabLineBars);
   return tabLineBars;
 });
 
 const gridTemplateColumns = computed<string>(() => {
   const barTemplateColumns = `repeat(${columnsPerBar.value}, 1fr)`;
   const bars = Array.from({ length: props.barsPerLine }, () => barTemplateColumns).join(" min-content ");
-  return `min-content ${bars} min-content`;
+  return `min-content ${bars} var(--note-font-size)`;
 });
 
-function newBarClick() {
-  barsUntil.value = Math.max((props.data.guitar?.lastPosition() ?? 0), barsUntil.value + barSize.value);
+function newBarClick(lastColumn?: GuitarStack) {
+  if (lastColumn)
+    newBarStart.value = lastColumn.position + subUnit.value;
 }
 </script>
 
 <template>
   <div class="tab">
-    <div v-for="tabLine in tabLines"
+    <div v-for="(tabLine, tabLineIndex) in tabLines"
          class="tab-line">
-      <div class="divider" />
       <template v-for="(bar, i) in tabLine"
                 :key="bar[0].position">
+        <div class="divider"
+             @click="data.guitar?.shiftFrom(bar[0].position, barSize)"
+        />
         <GuitarBar
           :stack-data="bar"
           :subdivisions
@@ -80,9 +84,11 @@ function newBarClick() {
           :num-strings="data.guitar!.strings"
           @note-change="data.guitar!.setNote"
         />
-
-        <div class="divider" />
       </template>
+      <div v-if="tabLineIndex === tabLines.length - 1"
+           class="divider expanded"
+           @click="newBarClick(tabLine.at(-1)?.at(-1))"
+      />
     </div>
   </div>
 </template>
@@ -105,8 +111,25 @@ function newBarClick() {
   }
 
   .divider {
-  width: calc(var(--cell-height) / 4);
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
+    width: calc(var(--cell-height) / 3);
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: var(--cell-height);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &:hover, &.expanded {
+    width: var(--note-font-size);
+    }
+    &:hover::before, &.expanded::before {
+      content: '+'
+    }
+    &:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
   }
 </style>
