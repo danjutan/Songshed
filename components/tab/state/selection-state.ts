@@ -1,3 +1,5 @@
+import type { CellHoverState } from "./cell-hover-state";
+
 export interface SelectionState {
   selectedRange?: { start: number; end: number };
   start: (position: number, end?: number) => void;
@@ -8,7 +10,9 @@ export interface SelectionState {
   dragging: boolean;
 }
 
-export function createSelectionState(): SelectionState {
+export function createSelectionState(
+  cellHoverState: CellHoverState,
+): SelectionState {
   const startPosition = ref<number | undefined>();
   const endPosition = ref<number | undefined>();
   const dragging = ref(false);
@@ -21,6 +25,9 @@ export function createSelectionState(): SelectionState {
       end: endPosition.value,
     };
   };
+
+  cellHoverState.addHoverListener((string, position) => drag(position));
+  cellHoverState.addMouseUpListener(end);
 
   function start(position: number, end?: number) {
     dragging.value = true;

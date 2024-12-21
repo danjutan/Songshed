@@ -49,7 +49,7 @@ function onSelectInput(e: Event) {
       bottom: lastString,
     }"
   >
-    <div v-if="endColumn - startColumn >= (half ? 1 : 2)" class="block-notes" />
+    <!-- <div v-if="endColumn - startColumn >= (half ? 1 : 2)" class="block-notes" /> -->
 
     <div v-if="props.type === 'slide'" class="slide-box" />
     <!-- <svg

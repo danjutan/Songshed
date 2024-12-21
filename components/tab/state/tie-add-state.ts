@@ -1,5 +1,6 @@
 import type { InjectionKey } from "vue";
 import type { GuitarStore, Tie, TieStore } from "~/model/stores";
+import type { CellHoverState } from "./cell-hover-state";
 
 // export interface NewTie extends Partial<Tie> {
 //   string?: number;
@@ -11,6 +12,7 @@ export type NewTie =
   | ({ to?: undefined } & Partial<TieWithString>);
 
 export function createTieAddState(
+  cellHoverState: CellHoverState,
   store: ComputedRef<GuitarStore | undefined>,
   subUnit: ComputedRef<number>,
 ) {
@@ -28,6 +30,9 @@ export function createTieAddState(
     }
     return "right";
   });
+
+  cellHoverState.addHoverListener((string, position) => drag(position));
+  cellHoverState.addMouseUpListener(end);
 
   function start(string: number, position: number, midi: Midi) {
     dragFrom.value = position;

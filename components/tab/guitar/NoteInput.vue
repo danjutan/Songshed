@@ -6,6 +6,10 @@ import {
 } from "../state/selection-state";
 import { TieAddInjectionKey, type TieAddState } from "../state/tie-add-state";
 import { EditingInjectionKey, type EditingState } from "../state/editing-state";
+import {
+  CellHoverInjectionKey,
+  type CellHoverState,
+} from "../state/cell-hover-state";
 
 const props = withDefaults(
   defineProps<{
@@ -33,6 +37,7 @@ const emit = defineEmits<{
 }>();
 
 const { editingNote, setEditing } = inject(EditingInjectionKey) as EditingState;
+const { hover } = inject(CellHoverInjectionKey) as CellHoverState;
 
 const tieAdd = inject(TieAddInjectionKey) as TieAddState;
 
@@ -101,7 +106,11 @@ function onSideMouseDown(e: MouseEvent) {
 </script>
 
 <template>
-  <div class="note-input" :class="{ hovering, editing, 'has-note': hasNote }">
+  <div
+    class="note-input"
+    :class="{ hovering, editing, 'has-note': hasNote }"
+    @mouseover="hover(string, position)"
+  >
     <span class="input-bg">{{ relativeNote }}</span>
     <div
       v-if="editing && relativeNote"

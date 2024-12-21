@@ -11,18 +11,12 @@ export type BendRenderProps = OverlayPosition & {
 };
 const props = defineProps<BendRenderProps & { bendRow: number }>();
 
-console.log(
-  props.throughColumn,
-  props.fullUpswingColumns,
-  props.fullRestColumns,
-);
-
-const justRelease = computed(
+const noUpswing = computed(
   () => props.half === "right" && props.fullRestColumns,
 );
 
 const upswingEndColumn = computed(() => {
-  if (justRelease.value) {
+  if (noUpswing.value) {
     return props.startColumn - 1;
   }
   return props.throughColumn || props.endColumn;
@@ -52,7 +46,7 @@ const upswingTo = computed(() => {
 });
 
 const downswingFrom = computed(() => {
-  if (justRelease.value) {
+  if (noUpswing.value) {
     return vbu * (restColumns.value - props.fullRestColumns!);
   }
   return 0;
@@ -84,7 +78,7 @@ const endArrowHover = ref(false);
 
 <template>
   <svg
-    v-if="!justRelease"
+    v-if="!noUpswing"
     class="upswing"
     :viewBox="`0 0 ${vbu * upswingColumns} ${vbu * rowSpan}`"
     preserveAspectRatio="none"

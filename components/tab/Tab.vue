@@ -17,6 +17,10 @@ import { createEditingState, EditingInjectionKey } from "./state/editing-state";
 import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 import { createBendRenderState } from "./state/bend-render-state";
 import BendRender from "./guitar/bends/BendRender.vue";
+import {
+  CellHoverInjectionKey,
+  createCellHoverState,
+} from "./state/cell-hover-state";
 
 const props = withDefaults(
   defineProps<{
@@ -43,9 +47,12 @@ const newBarStart = ref(0);
 
 const numStrings = computed(() => props.data.guitar?.strings);
 
-const selectionState = createSelectionState();
+const cellHoverState = createCellHoverState();
+provide(CellHoverInjectionKey, cellHoverState);
+const selectionState = createSelectionState(cellHoverState);
 provide(SelectionInjectionKey, selectionState);
 const tieAddState = createTieAddState(
+  cellHoverState,
   computed(() => props.data.guitar),
   subUnit,
 );
@@ -160,8 +167,18 @@ function newAnnotationRow() {
 
 function cancelSelection() {
   annotationAddState.end();
-  selectionState.end();
+}
+
+function onMouseUp() {
+  cellHoverState.mouseup();
   editingState.blurEditing();
+  annotationAddState.end();
+}
+
+function onLeaveTab() {
+  cellHoverState.leaveTab();
+  editingState.blurEditing();
+  annotationAddState.end();
 }
 
 function newBarClick(lastBarStart?: number) {
@@ -190,7 +207,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="tab" @mouseup="cancelSelection" @mouseleave="cancelSelection">
+  <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
     <div v-for="(tabLine, tabLineIndex) in tabLines" class="tab-line">
       <template v-for="(bar, i) in tabLine" :key="bar.start">
         <div

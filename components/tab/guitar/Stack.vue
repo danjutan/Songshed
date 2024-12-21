@@ -26,7 +26,6 @@ const emit = defineEmits<{
 
 const selecting = inject(SelectionInjectionKey) as SelectionState;
 const editing = inject(EditingInjectionKey) as EditingState;
-const tieAdd = inject(TieAddInjectionKey) as TieAddState;
 
 const noteSpots = computed(() => {
   const noteSpots = new Array(props.tuning.length);
@@ -50,17 +49,11 @@ function onStackMouseDown() {
 }
 
 function onStackMouseMove() {
-  selecting.drag(props.position);
   if (selecting.dragging) (document.activeElement as HTMLElement).blur();
 }
 
 function onSpotMouseEnter(string: number) {
   hovering.value = string;
-  tieAdd.drag(props.position);
-}
-
-function onSpotMouseUp() {
-  tieAdd.end();
 }
 
 type InputRef = InstanceType<typeof NoteInput> | null;
@@ -79,7 +72,6 @@ const inputRefs = ref<InputRef[]>([]);
       :class="{
         collapse: editing.editingNote?.position !== position && collapse,
       }"
-      @mouseup="onSpotMouseUp"
       @mouseenter="onSpotMouseEnter(string)"
       @click="inputRefs[string]?.focus()"
       @mouseleave="hovering = undefined"
