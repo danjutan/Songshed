@@ -90,7 +90,7 @@ onMounted(() => {
 <style scoped>
 .note-input {
   display: grid;
-  width: var(--cell-height);
+  width: var(--note-font-size);
 }
 
 .collapse {
@@ -128,26 +128,8 @@ input {
 }
 
 @container collapser (aspect-ratio < 0.5) {
-  /* .input-bg {
-    width: 100cqw;
-    background-color: var(--substack-bg);
-  } */
   input {
     display: none;
   }
 }
-
-/* .note-input:has(input) {
-  .hover-bg {
-    display: none;
-  }
-
-  .input-bg {
-    display: inline;
-  }
-} */
-
-/* input::selection {
-  background-color: blue;
-} */
 </style>

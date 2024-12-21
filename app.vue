@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NoteSpot } from "./components/tab/data";
+import type { GuitarNote } from "./components/tab/data";
 import { Spacing, createTabStore } from "./components/tab/data";
 import Tab from "./components/tab/Tab.vue";
 import { SelectionStateKey, createSelectionState } from "./components/tab/providers/selection-state";
@@ -7,41 +7,37 @@ import { SelectionStateKey, createSelectionState } from "./components/tab/provid
 const selectionState = createSelectionState();
 provide(SelectionStateKey, selectionState);
 
-const notes = createTabStore();
+const tabStore = createTabStore();
 
-notes.setNote(0, 0, "B4");
-notes.setNote(Spacing.Quarter * 3, 0, "B4");
-notes.setNote(Spacing.Quarter * 4 - Spacing.Sixteenth, 0, "B4");
-/* notes.setNote(Spacing.Quarter * 4, 0, "F4");
-notes.setNote(Spacing.Quarter * 5, 1, "E4");
-// notes.setNote(Spacing.Quarter * 5 + Spacing.ThirtySecond * 3, 0, "E4");
-notes.setNote(Spacing.Quarter * 6, 2, "G4");
-notes.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth, 3, "G4");
-notes.setNote(Spacing.Quarter * 7 + Spacing.ThirtySecond, 4, "A4"); */
-notes.setNote(Spacing.Quarter * 8, 5, "F3");
-notes.setNote(Spacing.Quarter * 9, 0, "F4");
-notes.setNote(Spacing.Quarter * 9 + Spacing.ThirtySecond, 0, "F4");
-notes.setNote(Spacing.Quarter * 8, 2, "A4"),
+const guitar = tabStore.createGuitarTab();
 
-notes.setNote(Spacing.Quarter * 2, 0, "C5");
+const guitarNotes: Array<[number, number, string]> = [
+  [0, 0, "B4"],
+  [Spacing.Quarter * 2, 0, "B4"],
+  [Spacing.Quarter * 2 + Spacing.SixtyFourth, 1, "G4"],
+  [Spacing.Quarter * 2 + Spacing.ThirtySecond, 2, "D4"],
+  [Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 3, "C4"],
+  [Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 4, "C4"],
+  [Spacing.Quarter * 3, 4, "B3"],
+  [Spacing.Quarter * 4, 5, "A3"],
+  [Spacing.Quarter * 6, 5, "G3"],
+  [Spacing.Quarter * 6 + Spacing.SixtyFourth * 3, 4, "C4"],
+  [Spacing.Quarter * 8, 5, "F3"],
+  [Spacing.Quarter * 9, 0, "F4"],
+  [Spacing.Quarter * 9 + Spacing.ThirtySecond, 0, "F4"],
+  [Spacing.Quarter * 12, 0, "F4"],
+  [Spacing.Quarter * 12 + Spacing.ThirtySecond, 0, "F4"],
+];
 
-notes.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth, 1, "G5");
-notes.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 2, 4, "B3");
-notes.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 4, "C4");
-notes.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 5, "F3");
+guitarNotes.forEach(([position, string, midiString]) => {
+  const noteSpot: GuitarNote = { position, string };
+  noteSpot.data = {
+    midi: toMidi(midiString),
+  };
+  guitar.setNote(noteSpot);
+});
 
-notes.setNote(Spacing.Quarter * 2 + Spacing.Sixteenth, 5, "F2");
-
-notes.setNote(Spacing.Quarter * 6, 0, "C5");
-
-notes.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth, 1, "G5");
-// notes.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth * 2, 4, "B3");
-notes.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth * 3, 4, "C4");
-// notes.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth * 3, 5, "F3");
-
-notes.setNote(Spacing.Quarter * 7 + Spacing.SixtyFourth * 2, 1, "G5");
-notes.setNote(Spacing.Quarter * 7 + Spacing.SixtyFourth * 3, 4, "B3");
-
+/*
 const activeStack = computed(() => {
   if (selectionState.start) {
     return notes.getStack(selectionState.start);
@@ -49,16 +45,18 @@ const activeStack = computed(() => {
   return notes.tuning.map((_, string) => ({ position: -1, string }));
 });
 
-function fretboardNoteChange(note: NoteSpot) {
+function fretboardNoteChange(note: GuitarNote) {
   const { position, string, data } = note;
   if (data) {
     notes.setNote(position, string, data);
     return;
   }
   notes.deleteNote(position, string);
-}
-const notches = ref(4);
+} */
+
+const notches = ref(8);
 const subdivisions = ref(4);
+const collapse = ref(true);
 </script>
 
 <template>
@@ -67,19 +65,22 @@ const subdivisions = ref(4);
                            type="number">
   Subdivide notches by: <input v-model="subdivisions"
                                type="number">
-  <Tab :data="notes"
+  Collapse subdivisions: <input v-model="collapse"
+                                type="checkbox">
+  <Tab :data="tabStore"
        :notches
        :subdivisions
+       :collapse-subdivisions="collapse"
   />
-  <Fretboard
+  <!-- <Fretboard
     width="75%"
     :stack="activeStack"
     @note-change="fretboardNoteChange"
-  />
+  /> -->
 </template>
 
 <style scoped>
-  input {
+  input[type=number] {
     width: 50px;
   }
 </style>

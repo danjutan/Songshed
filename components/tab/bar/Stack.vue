@@ -1,17 +1,17 @@
 <script lang="ts" setup>
-import type { NoteSpot } from "../data";
+import type { GuitarNote } from "../data";
 
 const props = withDefaults(defineProps<{
-  stack: NoteSpot[]
+  notes: GuitarNote[]
   frets: number
   tuning: Midi[]
   selected?: boolean
-  substack?: boolean
+  collapse?: boolean
 }>(), {
 });
 
 const emit = defineEmits<{
-  noteChange: [note: NoteSpot]
+  noteChange: [note: GuitarNote]
 }>();
 
 const backgroundColor = computed(() => props.selected ? "var(--highlight-color)" : "transparent");
@@ -19,11 +19,11 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
 
 <template>
   <div class="stack"
-       :class="{ substack }">
-    <div v-for="noteSpot in stack"
+       :class="{ collapse }">
+    <div v-for="noteSpot in notes"
          :key="noteSpot.string"
          class="container">
-      <div v-if="substack && noteSpot.data"
+      <div v-if="collapse && noteSpot.data"
            class="square"
            :style="{
              backgroundColor: defaultColors[getChroma(noteSpot.data.midi)],
@@ -42,9 +42,8 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
   </div>
 </template>
 
-<style>
+<style scoped>
 .stack {
-  grid-row: 2 / -1;
   display: flex;
   flex-direction: column;
   background-color: v-bind(backgroundColor);
@@ -58,7 +57,7 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
   align-items: center;
 }
 
-.substack .container {
+.collapse .container {
   container-type: size;
 }
 
@@ -74,6 +73,9 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
   .square {
     display: block;
   }
+   .input {
+    display: none;
+  }
 }
 
 @container (aspect-ratio < 0.2) {
@@ -82,8 +84,8 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
   }
 }
 
-@container (aspect-ratio < 0.8) {
-   .input {
+@container (aspect-ratio < 0.1) {
+  .square {
     display: none;
   }
 }
