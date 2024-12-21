@@ -29,7 +29,7 @@ const fontSize =  `calc(var(--min-division-width) / 2)`;
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
   if (target.value.trim() == "") {
-    emit('dataChange', undefined);
+    return;
   }
   const num = parseInt(target.value);
   if (Number.isInteger(num)) {
@@ -47,7 +47,11 @@ function onInputClick(e: Event) {
   e.target && (e.target as HTMLInputElement).select();
 }
 
-function onInputBlur() {
+function onInputBlur(e: Event) {
+  const target = e.target as HTMLInputElement;
+  if (target.value.trim() == "") {
+    emit('dataChange', undefined);
+  }
 
 }
 
@@ -109,8 +113,9 @@ input {
 
 .input-bg {
   pointer-events: none;
-  color: green;
+  color: transparent;
   background-color: white;
+  /* display: none; */
   /* aspect-ratio: 1 / 1; */
 }
 

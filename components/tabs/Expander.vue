@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+const expanded = ref(false);
+const overflow = computed(() => expanded.value ? "visible" : "hidden");
 
 </script>
 
@@ -7,7 +9,7 @@
     <div class="preview">
       <slot/>
     </div>
-  <button class="expand-button"> <span>↦</span> </button>
+  <button class="expand-button" @click="expanded = !expanded"> <span>↦</span> </button>
   </div>
 </template>
 
@@ -17,37 +19,39 @@
   display: grid;
   grid-auto-flow: column;
   width: 100%;
-  overflow: hidden;
   container-type: size;
   container-name: expander;
 }
 
 .preview {
-  grid-column: 1 / -1;
-  grid-row: 1 / span 1;
-  opacity: 0.6;
+  grid-column: 1 / 1;
+  grid-row: 1 / 1;
   /* width: calc(var(--min-division-width) / 2); */
-  overflow: hidden;
+  overflow: v-bind(overflow);
+  background: white;
 }
 
 .expand-button {
-  grid-column: 1 / -1;
-  grid-row: 1 / span 1;
+  grid-column: 1 / 1;
+  grid-row: 1 / 1;
   justify-self: end;
-  width: 50%;
-  min-width: 18px;
-  height: 100%;
+  width: 100%;
+  min-width: calc(var(--min-division-width) / 4);
   background-color: gray;
   opacity: 0.5;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   cursor: pointer;
+  border: none;
 }
 
-@container expander (width < 18px) {
-  .preview, .expand-button {
+@container expander (width < 16px) {
+  .expand-button span {
     display: none;
   }
+  /* .preview {
+    display: none;
+  } */
 }
 </style>

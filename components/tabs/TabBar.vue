@@ -171,7 +171,7 @@ function emptySpotHover (string: number, notch: number) {
 
 <template>
   <div class="bar">
-    <div v-for="i in strings" :key="i" :style="`grid-row: ${i} / span 1`" class="string" />
+    <TabsStrings />
     <TabsDivision
       v-for="data in divisions"
       :key="data.notchPosition"
@@ -198,20 +198,14 @@ function emptySpotHover (string: number, notch: number) {
 <style>
 .bar {
   --min-division-width: 48px;
-  max-width: calc(var(--min-division-width) * 24);
+  /* border: 1px solid black; */
+  margin: 10px;
   display: grid;
   grid-template-columns: repeat(v-bind(notches), 1fr);
-  grid-template-rows: repeat(v-bind(strings), 1fr);
+  grid-template-rows: repeat(v-bind(strings), calc(var(--min-division-width) / 2))
   /* grid-template-rows:  */
   /* align-items: center; */
   /* grid-auto-flow: column; */
-}
-
-.string {
-  grid-column: 1 / -1;
-  align-self: center;
-  height: 1px;
-  background-color: gray;
 }
 
 .new-note {

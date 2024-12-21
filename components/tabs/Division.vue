@@ -21,8 +21,9 @@ const emit = defineEmits<{
 const sortedSubstacks = computed(() => props.data.substacks?.toSorted((a, b) => a.notchPosition - b.notchPosition) || []);
 const relativePositions = computed(() => sortedSubstacks.value.map(substack => substack.notchPosition - props.data.notchPosition));
 const subunit = computed(() => SpacingsDescending.find(spacing => relativePositions.value?.every(relative => relative % spacing === 0)) || 1);
-const columns = computed(() => 1 / subunit.value);
-const colPositions = sortedSubstacks.value.map(substack => substack.notchPosition / subunit.value);
+const columns = computed(() => (1 - subunit.value) / subunit.value);
+console.log(columns.value);
+const colPositions = relativePositions.value.map(pos => pos / subunit.value);
 
 const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150 ${(props.data.notchPosition + 1) % 2 * 255})`);
 
@@ -40,7 +41,11 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
     </div>
     <Expander v-if="sortedSubstacks.length">
       <div class="substack-grid">
-        <div v-for="(substack) in sortedSubstacks" :key="substack.notchPosition" class="substack">
+        <TabsStrings/>
+        <div
+            v-for="(substack, i) in sortedSubstacks" :key="substack.notchPosition" 
+            class="substack"
+            :style="{ gridColumn: colPositions[i]}">
           <TabsNoteInput 
             v-for="(noteSpot) in substack.stack" 
             :key="noteSpot.string"
@@ -59,7 +64,7 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
   min-width: calc(var(--min-division-width) * 0.75);
   grid-row: 1 / span v-bind(numStrings);
   grid-column: v-bind(column) / span 1;
-  border-top: 2px solid v-bind(debugColor);
+  /* border-top: 2px solid v-bind(debugColor); */
   display: flex;
 }
 
@@ -73,8 +78,13 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
   flex-direction: column;
 }
 
+.substack {
+  grid-row: 1 / 1;
+}
 .substack-grid {
   display: grid;
-  grid-auto-flow: column;
+  height: calc(var(--min-division-width) / 2 * v-bind(columns));
+  grid-template-columns: repeat(v-bind(columns), calc(var(--min-division-width) / 2));
+  grid-template-rows: 1fr;
 }
 </style>
