@@ -1,12 +1,19 @@
+export enum Spacing {
+  Whole = 4,
+  Half = 2,
+  Quarter = 1,
+  Eighth = 0.5,
+  Sixteenth = 0.25,
+  ThirtySecond = 0.125,
+  SixtyFourth = 0.0625,
+  OneTwentyEighth = 0.03125,
+}
+
 export interface Annotation<D = unknown> {
   start: number;
   end: number;
   title: string;
   readonly data?: D;
-}
-
-export interface AnnotationData {
-  title: string;
 }
 
 export interface GuitarTabData {
@@ -16,12 +23,54 @@ export interface GuitarTabData {
   stacks: StackMap<GuitarNote>;
 }
 
+interface SerializeableGuitar extends Omit<GuitarTabData, "stacks"> {
+  stacks: SerializeableStackMap<GuitarNote>;
+}
+
 export interface TabData {
   title: string;
   beatsPerBar: number;
   beatSize: number;
   guitarData?: GuitarTabData; // optional because we'll add more primary views in the future
   annotations: Map<number, Annotation[]>; // annotation row -> annotations on that row
+}
+
+interface SerializeableTabData extends Omit<TabData, "guitarData" | "annotations"> {
+  guitarData?: SerializeableGuitar;
+  annotations: Array<[number, Annotation[]]>;
+}
+
+function serializeTabData(data: TabData): string {
+  const guitarData: SerializeableGuitar | undefined = data.guitarData && {
+    ...data.guitarData,
+    stacks: [...data.guitarData!.stacks.entries()],
+  };
+
+  const { title, beatsPerBar, beatSize } = data;
+  const serializeable: SerializeableTabData = {
+    title,
+    beatSize,
+    beatsPerBar,
+    annotations: [...data.annotations.entries()],
+    ...(data.guitarData && { guitarData }),
+  };
+  return JSON.stringify(serializeable);
+}
+
+function deserializeTabData(data: string): TabData {
+  const parsed: SerializeableTabData = JSON.parse(data);
+  const guitarData: GuitarTabData | undefined = parsed.guitarData && {
+    ...parsed.guitarData,
+    stacks: new Map(parsed.guitarData.stacks),
+  };
+  const { title, beatsPerBar, beatSize } = parsed;
+  return {
+    title,
+    beatsPerBar,
+    beatSize,
+    annotations: new Map(parsed.annotations),
+    ...(guitarData && { guitarData }),
+  };
 }
 
 export interface NoteData {
@@ -37,6 +86,7 @@ export interface NoteSpot {
 }
 
 type StackMap<N extends NoteSpot> = Map<number, N[]>;
+type SerializeableStackMap<N extends NoteSpot> = Array<[number, N[]]>;
 
 export interface GuitarNote extends NoteSpot {
   string: number; // 0-indexed
@@ -49,18 +99,26 @@ export interface TabStore {
   createGuitarTab: (tuning?: Midi[], strings?: number, frets?: number) => GuitarStore;
   guitar?: GuitarStore;
   annotations: AnnotationStore;
+  serialize: () => string;
 }
-export function createTabStore(
-  title = "new tab",
+
+/* title = "new tab",
   beatsPerBar = 4,
-  beatSize = Spacing.Quarter,
-): TabStore {
-  const data: TabData = reactive({
-    title,
-    beatsPerBar,
-    beatSize,
-    annotations: new Map(),
-  });
+  beatSize = Spacing.Quarter, */
+const defaults = {
+  title: "new tab",
+  beatsPerBar: 4,
+  beatSize: Spacing.Quarter,
+};
+
+export function createTabStore(deserialize: string): TabStore;
+export function createTabStore(options: typeof defaults): TabStore;
+export function createTabStore(init: string | typeof defaults): TabStore {
+  const data: TabData = reactive(
+    typeof init === "object"
+      ? { ...defaults, ...init, annotations: new Map() }
+      : deserializeTabData(init),
+  );
 
   const guitarStore = ref<undefined | GuitarStore>();
   const annotationStore = createAnnotationStore(data.annotations);
@@ -80,6 +138,9 @@ export function createTabStore(
 
   return {
     createGuitarTab,
+    serialize() {
+      return serializeTabData(data);
+    },
     get guitar() {
       return guitarStore.value;
     },
@@ -248,17 +309,3 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
   const { stacks, strings, frets, tuning } = guitarData;
   return { ...noteStore, setNote, stacks, strings, frets, tuning };
 }
-
-export enum Spacing {
-  Whole = 4,
-  Half = 2,
-  Quarter = 1,
-  Eighth = 0.5,
-  Sixteenth = 0.25,
-  ThirtySecond = 0.125,
-  SixtyFourth = 0.0625,
-  OneTwentyEighth = 0.03125,
-}
-
-export const smallestSpacing = Spacing.SixtyFourth;
-// export const SpacingsDescending = (Object.values(Spacing).filter(Number) as number[]).sort((a, b) => b - a);

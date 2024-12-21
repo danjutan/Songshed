@@ -55,9 +55,7 @@ const subdivisions = ref(4);
 const collapseSubdivisions = ref(true);
 const collapseEmpty = ref(true);
 
-async function save() {
-  await hubKV().set("test", { potato: "hi" });
-}
+async function save() {}
 </script>
 
 <template>
