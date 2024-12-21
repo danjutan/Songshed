@@ -230,7 +230,7 @@ const annotationRenders = computed(() => {
         v-for="{ row, startColumn, endColumn, annotation } in annotationRenders.get(tabLineIndex)"
         :key="startColumn"
         :row
-        :start-column
+        :start-column="startColumn % (columnsPerBar + 1) === 1 ? startColumn + 1 : startColumn"
         :end-column
         :annotation
         @update-title="(title) => (annotation!.title = title)"
