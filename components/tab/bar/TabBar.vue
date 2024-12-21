@@ -57,8 +57,6 @@ const divisions = computed<DivisionData[]>(() => {
   return divisions;
 });
 
-console.log(divisions.value);
-
 const divisionPlacement = (column: number) => ({
   gridRow: `2 / span ${strings.value}`,
   gridColumn: `${column} / span 1`,

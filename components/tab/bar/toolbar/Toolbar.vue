@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { DivisionData } from "../TabBar.vue";
+import { VisualizationStateKey } from "../../providers";
 import type { DrapeData } from "./Drape.vue";
 import Drape from "./Drape.vue";
 import { emptyDivisions } from "./empty-divisions";
@@ -12,7 +13,7 @@ const props = defineProps<{
   subdivisions: number
 }>();
 
-const expanded = defineModel<Set<number>>("expanded", { default: new Set() });
+const { expanded, toggleExpanded } = inject(VisualizationStateKey)!;
 
 const expandsTo = computed<{ [column: number]: string }>(
   () => Object.fromEntries(
@@ -20,18 +21,6 @@ const expandsTo = computed<{ [column: number]: string }>(
       div.notchPosition + 1,
       div.substacks ? `calc(${props.subdivisions} * var(--cell-height))` : "var(--cell-height)",
     ])));
-
-function toggleExpanded(start: number, plus = 0) {
-  const newSet = new Set(expanded.value);
-  for (let i = start; i <= start + plus; i++) {
-    if (newSet.has(i)) {
-      newSet.delete(i);
-      continue;
-    }
-    newSet.add(i);
-  }
-  expanded.value = newSet;
-}
 
 const hovering = ref(0);
 

@@ -1,6 +1,9 @@
 <script lang="ts" setup>
 import { type BarStore, Spacing, type TabStore } from "./data";
 import TabBar from "./bar/TabBar.vue";
+import { VisualizationStateKey, createVisualizationState } from "./providers";
+
+provide(VisualizationStateKey, createVisualizationState());
 
 const props = withDefaults(defineProps<{
   data: TabStore
@@ -14,7 +17,6 @@ const props = withDefaults(defineProps<{
   beatsPerBar: 4,
   beatSize: Spacing.Quarter,
 });
-
 const barSize = computed(() => props.beatsPerBar * props.beatSize);
 
 const bars = computed<BarStore[]>(() => {
