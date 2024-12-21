@@ -2,12 +2,12 @@
 import type { SpacerData } from "./TabBar.vue";
 
 const props = defineProps<{
-  data: SpacerData;
-  strings: number;
+  data: SpacerData
+  strings: number
 }>();
 
 const emit = defineEmits<{
-  hover: [string: number, notch: number];
+  hover: [string: number, notch: number]
 }>();
 
 const notchStart = computed(() => props.data.notchStart + 1);

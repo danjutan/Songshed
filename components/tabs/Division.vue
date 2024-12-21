@@ -1,13 +1,13 @@
 <!-- eslint-disable vue/html-closing-bracket-newline -->
 <script lang="ts" setup>
-import { type NoteSpot, SpacingsDescending } from './data';
-import type { DivisionData } from './TabBar.vue';
-import Expander from './Expander.vue';
+import { type NoteSpot, SpacingsDescending } from "./data";
+import type { DivisionData } from "./TabBar.vue";
+import Expander from "./Expander.vue";
 
 const props = withDefaults(defineProps<{
-  data: DivisionData;
-  frets: number;
-  tuning: Midi[];
+  data: DivisionData
+  frets: number
+  tuning: Midi[]
 }>(), {
 });
 
@@ -15,7 +15,7 @@ const numStrings = computed(() => props.tuning.length);
 const column = computed((() => props.data.notchPosition + 1));
 
 const emit = defineEmits<{
-  noteChange: [note: NoteSpot];
+  noteChange: [note: NoteSpot]
 }>();
 
 const sortedSubstacks = computed(() => props.data.substacks?.toSorted((a, b) => a.notchPosition - b.notchPosition) || []);
@@ -29,26 +29,51 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
 </script>
 
 <template>
-  <div class="division" @click="console.log(data)">
+  <div class="division"
+       @click="console.log(data)">
     <div class="stack">
-      <TabsNoteInput v-for="(noteSpot) in props.data.stack" :key="noteSpot.string" :data="noteSpot.data"
-        :tuning="props.tuning[noteSpot.string]" :frets="props.frets"
-        @data-change="emit('noteChange', { ...noteSpot, data: $event })" />
+      <TabsNoteInput v-for="(noteSpot) in props.data.stack"
+                     :key="noteSpot.string"
+                     :data="noteSpot.data"
+                     :tuning="props.tuning[noteSpot.string]"
+                     :frets="props.frets"
+                     @data-change="emit('noteChange', { ...noteSpot, data: $event })"
+      />
     </div>
-    <Expander v-if="sortedSubstacks.length" v-slot="{ expanded }">
-      <div class="substack-grid" :class="{ squish: !expanded }">
+    <Expander v-if="sortedSubstacks.length"
+              v-slot="{ expanded }">
+      <div class="substack-grid"
+           :class="{ squish: !expanded }">
         <TabsStrings />
-        <div v-for="(substack, i) in sortedSubstacks" :key="substack.notchPosition" class="substack"
-          :style="{ gridColumn: colPositions[i] }">
+        <div v-for="(substack, i) in sortedSubstacks"
+             :key="substack.notchPosition"
+             class="substack"
+             :style="{ gridColumn: colPositions[i] }">
           <template v-if="expanded">
-            <TabsNoteInput v-for="noteSpot in substack.stack" :key="noteSpot.string" :data="noteSpot.data"
-              :background-color="expanded ? 'white' : 'transparent'" :tuning="props.tuning[noteSpot.string]"
-              :frets="props.frets" @data-change="emit('noteChange', { ...noteSpot, data: $event })" />
+            <TabsNoteInput v-for="noteSpot in substack.stack"
+                           :key="noteSpot.string"
+                           :data="noteSpot.data"
+                           :background-color="expanded ? 'white' : 'transparent'"
+                           :tuning="props.tuning[noteSpot.string]"
+                           :frets="props.frets"
+                           @data-change="emit('noteChange', { ...noteSpot, data: $event })"
+            />
           </template>
           <template v-else>
-            <div class="indicator" v-for="notespot in substack.stack">
-              <div v-if="notespot.data" class="square"
-                :style="{ backgroundColor: defaultColors[getChroma(notespot.data.midi)] }" />
+            <div v-for="noteSpot in substack.stack"
+                 :key="noteSpot.string"
+                 class="indicator">
+              <div v-if="noteSpot.data"
+                   class="square"
+                   :style="{ backgroundColor: defaultColors[getChroma(noteSpot.data.midi)] }"
+              />
+              <div class="input">
+                <TabsNoteInput :data="noteSpot.data"
+                               :tuning="props.tuning[noteSpot.string]"
+                               :frets="props.frets"
+                               @data-change="emit('noteChange', { ...noteSpot, data: $event })"
+                />
+              </div>
             </div>
           </template>
         </div>
@@ -93,15 +118,25 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
 }
 
 .square {
-  width: 60%;
+  width: 75%;
   max-width: calc(var(--min-division-width) / 4);
   aspect-ratio: 1;
   background-color: blue;
 }
 
-@container (aspect-ratio < 0.3) {
+.indicator .input {
+  display: none;
+}
+
+@container (aspect-ratio < 0.2) or (aspect-ratio > 1) {
   .square {
     display: none;
+  }
+}
+
+@container (aspect-ratio > 1) {
+  .indicator .input {
+    display: block;
   }
 }
 
