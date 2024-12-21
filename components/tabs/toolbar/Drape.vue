@@ -27,7 +27,9 @@ const props = defineProps<DrapeData & {
   .drape {
     grid-column: v-bind(start) / span v-bind(columns);
     height: calc(var(--min-division-width) / 2 * v-bind(columns));
+    pointer-events: none;
   }
+
   .drape-child {
     background-color: v-bind(color);
     margin-top: calc(var(--min-division-width) / 2);
