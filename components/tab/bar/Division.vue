@@ -9,6 +9,7 @@ const props = withDefaults(
     subdivisions?: number
     frets: number
     tuning: Midi[]
+    unit: number /* How long, in data time, is a division? */
     debug?: boolean
   }>(),
   {
@@ -28,17 +29,6 @@ const sortedSubstacks = computed(
       (a, b) => a.notchPosition - b.notchPosition,
     ) || [],
 );
-
-const emptySubstackPositions = computed(() => {
-  const notchPositions = [];
-  const filled = new Set(sortedSubstacks.value.map(({ notchPosition }) => notchPosition));
-  for (let i = 0; i < props.subdivisions - 1; i++) {
-    if (!filled.has(i)) {
-      notchPositions.push(i);
-    }
-  }
-  return notchPositions;
-});
 
 const numFilledSubstacks = computed(() => sortedSubstacks.value.length);
 const numSubstacks = computed(
@@ -64,13 +54,28 @@ const substackMinWidth = computed(() =>
   substacksExpanded.value ? "var(--cell-height)" : "1px",
 );
 
+const emptySubstacks = computed(() => {
+  const notchPositions: Array<{ column: number, position: number }> = [];
+  const filled = new Set(colPositions.value);
+  for (let i = 2; i <= props.subdivisions; i++) {
+    if (!filled.has(i)) {
+      const stackPos = props.data.stack[0].position;
+      const newPosition = stackPos + (props.unit / props.subdivisions) * (i - 1);
+      notchPositions.push({
+        column: i,
+        position: newPosition,
+      });
+    }
+  }
+  return notchPositions;
+});
 // Next task: all draping goes in toolbar
 </script>
 
 <template>
   <div
     class="division"
-    @click="debug && console.log({ subunit, subdivisions, colPositions })">
+    @click="debug && console.log({ notchPosition: data.notchPosition, substacks: data.substacks, subunit, subdivisions, colPositions })">
     <div class="stack">
       <TabBarNoteInput
         v-for="noteSpot in props.data.stack"
@@ -83,15 +88,19 @@ const substackMinWidth = computed(() =>
       />
     </div>
 
-    <!-- <div v-for="i in emptySubstackPositions"
-         :key="i"
-         class="substack"
-         :style="{ gridColumn: i + 1 }">
-    >
-    <TabBarNoteInput
-      v-for="string in tuning"
-
-  </div> -->
+    <template v-if="numFilledSubstacks">
+      <div v-for="{ column, position } in emptySubstacks"
+           :key="column"
+           class="substack"
+           :style="{ gridColumn: column }">
+        <TabBarNoteInput
+          v-for="(string, s) in tuning"
+          :tuning="string"
+          :frets="props.frets"
+          @data-change="emit('noteChange', { position, string: s, data: $event })"
+        />
+      </div>
+    </template>
 
     <div
       v-for="(substack, i) in sortedSubstacks"
@@ -177,10 +186,5 @@ const substackMinWidth = computed(() =>
   .indicator .input {
     display: block;
   }
-}
-
-.substack-grid {
-  display: grid;
-  flex-grow: 1;
 }
 </style>

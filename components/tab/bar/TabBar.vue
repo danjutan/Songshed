@@ -109,6 +109,8 @@ const divisions = computed<DivisionData[]>(() => {
     []);
 });
 
+console.log("divisions", divisions.value);
+
 function modifyNotes(transform: (map: StackMap) => StackMap) {
   const transformed = transform(stackMap.value);
   const stacks = transformed.values();
@@ -150,6 +152,7 @@ const subdivisions = computed(() => (Spacing.Whole / smallestSpacing) / props.no
       debug
       :subdivisions
       :data
+      :unit
       :tuning
       :frets
       :style="divisionPlacement(data.notchPosition + 1)"
