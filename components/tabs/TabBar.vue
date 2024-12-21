@@ -24,11 +24,11 @@ const props = defineProps(
     },
     frets: {
       type: Number,
-      default: 12,
+      default: 24,
     },
     beats: {
       type: Number,
-      default: 4,
+      default: Spacing.Quarter * 4,
       validator: (beats: number, props) => {
         const notes = props.modelValue as FilledSpot[];
         return notes.every(note => note.position >= 0 && note.position < beats);
@@ -59,7 +59,6 @@ const stackMap = computed(() => {
   const stackMap = new Map<number, StackData>();
   for (const note of notes.value) {
     const position = note.position;
-    console.log(position);
     if (position >= props.beats) continue;
     if (!stackMap.has(position)) {
       stackMap.set(position, props.tuning.map((_, string) => ({ string, position })));
@@ -72,7 +71,7 @@ const stackMap = computed(() => {
 type StackMap = typeof stackMap.value;
 
 const divisions = computed<DivisionData[]>(() => {
-  const sorted = [...stackMap.value].sort(([pos1], [pos2]) => pos2 - pos1);
+  const sorted = [...stackMap.value].sort(([pos1], [pos2]) => pos1 - pos2);
   const normalized: Array<[number, NoteSpot[]]> = sorted.map( 
     ([pos, stack]) => ([pos / unit.value, stack]
   ));

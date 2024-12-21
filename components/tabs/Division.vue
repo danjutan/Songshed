@@ -36,7 +36,7 @@ const emit = defineEmits<{
 .division {
   border: 1px dashed black;
   display: flex;
-  min-width: var(--min-division-width);
+  min-width: calc(var(--min-division-width) * 0.75);
   grid-row: 1 / span v-bind(numStrings);
   grid-column: v-bind(column) / 1;
   overflow: hidden;
