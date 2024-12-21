@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+// TODO: use a big square container sensor to hide all of the drape stuff when the entire drape is big enough
 export type DrapeData = {
   start: number
   columns: number

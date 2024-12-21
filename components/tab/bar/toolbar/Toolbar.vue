@@ -40,7 +40,7 @@ const stackExpanderStarts = computed<number[]>(
       :style="{
         gridColumn: `${i} / span 1`,
       }"
-      :class="{ border: i != hovering, even: i % 2 === 0, odd: i % 2 === 1 }"
+      :class="{ noTop: expanded.has(i), border: i != hovering, even: i % 2 === 0, odd: i % 2 === 1 }"
       class="notch">
       <div
         class="selectable"
@@ -48,6 +48,7 @@ const stackExpanderStarts = computed<number[]>(
         @mouseleave="hovering = 0"
       />
     </div>
+
     <Drape
       v-for="{ start, columns } in spacers"
       :key="start"
@@ -61,12 +62,11 @@ const stackExpanderStarts = computed<number[]>(
       :row-start="2"
       color="var(--substack-bg)"
       @click="emit('toggleExpanded', start, columns)">
-      <template v-if="expanded.has(start)"
-                #up>
-        <UnexpanderOverlay />
+      <template #up>
+        <UnexpanderOverlay v-if="expanded.has(start)" />
       </template>
-      <template v-else
-                #down>
+      <template
+        #down>
         <ExpanderOverlay />
       </template>
     </Drape>
@@ -96,9 +96,10 @@ const stackExpanderStarts = computed<number[]>(
       <template #down>
         <ExpanderOverlay />
       </template>
-      <template v-if="expanded.has(start)"
-                #up>
-        <UnexpanderOverlay />
+      <template #up>
+        <UnexpanderOverlay v-if="expanded.has(start)"
+                           @mouseover="hovering = start"
+        />
       </template>
     </Drape>
   </div>
@@ -123,12 +124,16 @@ const stackExpanderStarts = computed<number[]>(
   container-type: size;
 }
 
-.notch.border.odd {
+.notch.noTop {
+  opacity: 0;
+}
+
+.debug .notch.border.odd {
   border-bottom: 2px solid rgba(0, 0, 0, 0.1);
   margin-top: -2px;
 }
 
-.notch.border.even {
+.debug .notch.border.even {
   /* border-bottom: 2px solid rgba(0, 100, 255, 0.5); */
   border-bottom: 2px solid rgba(0, 0, 0, 0.3);
   margin-top: -2px;
@@ -138,12 +143,6 @@ const stackExpanderStarts = computed<number[]>(
   width: 100%;
   height: 100%;
 }
-
-/* @container notch (aspect-ratio < 1) {
-  .selectable {
-    display: none;
-  }
-} */
 
 .selectable:hover {
   background-color: var(--highlight-color);

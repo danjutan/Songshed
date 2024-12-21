@@ -99,6 +99,10 @@ const divisionPlacement = (column: number) => ({
 
 function noteChange(changed: NoteSpot) {
   const { position, string, data } = changed;
+  const stack = props.data.getStack(position);
+  if (!stack || (stack.filter(({ data }) => data).length === 1 && !data)) {
+    visualizationState.setExpanded(props.data.start, props.notches, false, 0, props.notches);
+  }
   if (data) {
     props.data.setNote(position, string, data);
     return;
