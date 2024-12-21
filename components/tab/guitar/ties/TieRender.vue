@@ -11,6 +11,9 @@ export type TieRenderProps = OverlayPosition & {
   direction: "up" | "down";
 };
 
+const emit = defineEmits<{
+  updateType: [type: TieType];
+}>();
 const props = defineProps<TieRenderProps>();
 
 const hammerText = computed(() => (props.direction === "up" ? "H" : "P"));
@@ -21,6 +24,11 @@ const labelText = computed(() => {
   }
   return "S";
 });
+
+function onSelectInput(e: Event) {
+  const value = (e.target as HTMLSelectElement).value;
+  emit("updateType", value as TieType);
+}
 </script>
 
 <template>
@@ -42,9 +50,11 @@ const labelText = computed(() => {
     </div>
 
     <div v-if="props.half !== 'left'" class="indicator" :class="{ editing }">
-      <select>
-        <option value="hammer">{{ hammerText }}</option>
-        <option value="slide">S</option>
+      <select @input="onSelectInput">
+        <option value="hammer" :selected="type === 'hammer'">
+          {{ hammerText }}
+        </option>
+        <option value="slide" :selected="type === 'slide'">S</option>
       </select>
       <div class="label">{{ labelText }}</div>
     </div>
@@ -235,7 +245,6 @@ const labelText = computed(() => {
 .indicator {
   pointer-events: auto;
   z-index: 1;
-  transform: translateY(-48%);
 
   & select,
   .label {
@@ -254,6 +263,14 @@ const labelText = computed(() => {
       display: block;
     }
   }
+}
+
+.slide .indicator {
+  transform: translateY(-38%);
+}
+
+.hammer .indicator {
+  transform: translateY(-54%);
 }
 
 .right .indicator {

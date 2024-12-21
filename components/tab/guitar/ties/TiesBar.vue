@@ -15,7 +15,7 @@ const props = defineProps<{
 
 // Assumes ties can stretch over one divider, but not two
 
-const ties = computed<TieRenderProps[]>(() => {
+const tieRenders = computed<TieRenderProps[]>(() => {
   const ties: TieRenderProps[] = [];
   for (const [string, stringTies] of props.ties.getTies()) {
     for (const tie of stringTies) {
@@ -73,7 +73,18 @@ const ties = computed<TieRenderProps[]>(() => {
 </script>
 
 <template>
-  <TieRender v-for="(props, i) in ties" :key="i" v-bind="props" />
+  <TieRender
+    v-for="(data, i) in tieRenders"
+    :key="i"
+    v-bind="data"
+    @update-type="
+      (type) =>
+        ties.setTie(data.row - startRow, data.from, {
+          type,
+          to: data.to,
+        })
+    "
+  />
 </template>
 
 <style scoped></style>
