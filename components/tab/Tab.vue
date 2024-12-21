@@ -48,6 +48,21 @@ provide(SelectionInjectionKey, selectionState);
 const editingState = createEditingState();
 provide(EditingInjectionKey, editingState);
 
+const tieAddState = createTieAddState(
+  cellHoverEvents,
+  computed(() => props.tabStore.guitar),
+  computed(() => subUnit.value),
+);
+provide(TieAddInjectionKey, tieAddState);
+
+const bendEditState = createBendEditState(
+  cellHoverEvents,
+  tieAddState,
+  computed(() => props.tabStore.guitar?.ties),
+);
+
+provide(BendEditInjectionKey, bendEditState);
+
 export type Bar = {
   start: number;
   stacks: StackMap<GuitarNote>;
@@ -120,14 +135,10 @@ const posToCol = (pos: number): TablineColumn => {
   }
   const colsIntoLine = pos / subUnit.value;
   const tablineCols = tabLineLength / subUnit.value;
-  // const cols = pos / subUnit.value; // convert position to columns
-  // // const tabline = Math.floor(cols / (props.barsPerLine * columnsPerBar.value)); // figure out which tabline these columns reach
-  // const tabline = Math.floor(pos / (props.barsPerLine * barSize.value));
-  // const colsInLine = cols - tabline * props.barsPerLine * columnsPerBar.value;
 
-  // TODO: document how these lines work
   // add 1 to work with grid columns
   let column = colsIntoLine + Math.ceil(colsIntoLine / columnsPerBar.value) + 1;
+  // TODO: document how this works
   if (column % (columnsPerBar.value + 1) === 1) {
     column += 1;
   }

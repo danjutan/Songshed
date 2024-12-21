@@ -19,6 +19,7 @@ import {
 import {
   BendEditInjectionKey,
   createBendEditState,
+  type BendEditState,
 } from "./state/bend-edit-state";
 
 const props = defineProps<{
@@ -32,21 +33,7 @@ const props = defineProps<{
   subUnit: number;
 }>();
 
-const cellHoverEvents = inject(CellHoverInjectionKey) as CellHoverEvents;
-
-const tieAddState = createTieAddState(
-  cellHoverEvents,
-  computed(() => props.guitarStore),
-  computed(() => props.subUnit),
-);
-provide(TieAddInjectionKey, tieAddState);
-
-const bendEditState = createBendEditState(
-  cellHoverEvents,
-  tieAddState,
-  computed(() => props.guitarStore.ties),
-);
-provide(BendEditInjectionKey, bendEditState);
+const tieAddState = inject(TieAddInjectionKey) as TieAddState;
 
 const bendRenders = createBendRenderState(
   props.guitarStore.ties,

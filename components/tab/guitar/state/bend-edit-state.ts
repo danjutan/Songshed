@@ -23,6 +23,11 @@ export function createBendEditState(
     const bend = { ...draggingBend.value! };
     if (dragging.value === "upswing" && position >= bend.from) {
       if (bend.through) {
+        if (position >= bend.to) {
+          bend.through = undefined;
+          bend.to = position;
+          return bend;
+        }
         bend.through = [position - bend.from];
         return bend;
       }
@@ -38,6 +43,7 @@ export function createBendEditState(
       }
       bend.to = position;
       bend.releaseType = typeof type === "number" ? "connect" : "hold";
+      draggingBend.value = bend;
       return bend;
     }
     return bend;

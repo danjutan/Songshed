@@ -27,9 +27,10 @@ export function createBendRenderState(
     function pushBend(bend: Bend) {
       const start = posToCol(bend.from);
       const end = posToCol(bend.to);
-      const through = bend.through?.[0]
-        ? posToCol(bend.from + bend.through[0])
-        : undefined;
+      const through =
+        bend.through?.[0] !== undefined
+          ? posToCol(bend.from + bend.through[0])
+          : undefined;
       const row = startRow.value + bend.string;
       if (start.tabline !== end.tabline) {
         if (!through) {

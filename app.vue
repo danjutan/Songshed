@@ -71,7 +71,7 @@ if (id) {
     type: "bend",
     releaseType: "connect",
     bend: 1,
-    through: [Spacing.Sixteenth * 1],
+    through: [Spacing.Sixteenth],
     to: Spacing.Quarter * 5,
   });
 

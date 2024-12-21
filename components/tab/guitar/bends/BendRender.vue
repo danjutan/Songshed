@@ -15,7 +15,6 @@ export type BendRenderProps = OverlayPosition & {
 };
 
 const props = defineProps<BendRenderProps & { bendRow: number }>();
-
 const bendEditState = inject(BendEditInjectionKey) as BendEditState;
 
 const noUpswing = computed(
@@ -131,9 +130,9 @@ const releaseArrowHover = ref(false);
       class="upswing-curve"
       :d="
         prebend
-          ? `M ${vbu / 2} ${vbu * rowSpan - vbu}` + `V ${vbu * 1.1}`
+          ? `M ${vbu / 2} ${vbu * rowSpan - vbu * 0.85}` + `V ${vbu * 0.75}`
           : `M ${upswingFrom} ${vbu * rowSpan - vbu * 0.6}` +
-            `Q ${upswingTo} ${vbu * rowSpan - vbu * 0.75} ${upswingTo} ${vbu * 1.1}`
+            `Q ${upswingTo} ${vbu * rowSpan - vbu * 0.55} ${upswingTo} ${vbu * 0.75}`
       "
       :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
     />
@@ -148,8 +147,8 @@ const releaseArrowHover = ref(false);
       <path
         class="downswing-curve"
         :d="
-          `M ${downswingFrom} ${vbu * 0.6}` +
-          `Q ${downswingTo} ${vbu * 0.6} ${downswingTo} ${vbu * rowSpan - vbu * 0.95}`
+          `M ${downswingFrom} ${vbu * 0.35}` +
+          `Q ${downswingTo} ${vbu * 0.35} ${downswingTo} ${vbu * rowSpan - vbu * 0.95}`
         "
         :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
@@ -168,8 +167,8 @@ const releaseArrowHover = ref(false);
             ? vbu * restColumns
             : vbu * restColumns - vbu / 2
         "
-        :y1="vbu * 0.6"
-        :y2="vbu * 0.6"
+        :y1="vbu * 0.35"
+        :y2="vbu * 0.35"
         :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : undefined"
       />
     </svg>
@@ -266,12 +265,12 @@ const releaseArrowHover = ref(false);
   height: 100%;
   font-size: calc(var(--note-font-size) * 0.75);
   justify-self: center;
-  align-self: end;
+  align-self: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  width: calc(120%);
+  /* justify-content: center; */
+  width: 120%;
 
   &:not(.dragging):hover {
     span {
@@ -284,7 +283,6 @@ const releaseArrowHover = ref(false);
 
   & select {
     position: absolute;
-    transform: translateX(-12%);
     z-index: 1;
     display: none;
     text-align: center;
@@ -327,7 +325,7 @@ const releaseArrowHover = ref(false);
   grid-column: calc(v-bind(upswingEndColumn) + 1) / span 2; /*span 2 so that it is fully visible over a divider*/
   width: 50%;
   display: flex;
-  align-items: center;
+  /* align-items: center; */
   cursor: move;
 }
 .grabber {
@@ -335,8 +333,8 @@ const releaseArrowHover = ref(false);
   height: calc(var(--note-font-size) * 0.4);
   background-color: black;
   border-radius: 50%;
-  margin-bottom: calc(var(--note-font-size) * -0.4);
-  margin-left: calc(var(--note-font-size) * 0.1);
+  /* margin-bottom: calc(var(--note-font-size) * -0.1); */
+  transform: translateY(55%) translateX(10%);
   visibility: hidden;
 }
 /* maybe always have the grabber visible */
