@@ -169,12 +169,6 @@ function noteChange(changed: NoteSpot) {
 
 <style>
 .bar {
-  --cell-height: 23px;
-  --note-font-size: calc(var(--cell-height) * 0.8);
-  --substack-bg: rgba(255, 0, 0, 0.1);
-  --string-width: 1px;
-  --string-color: gray;
-  --highlight-color: rgba(172, 206, 247, 0.6);
   display: grid;
   grid-template-columns: repeat(v-bind(notches), 1fr);
   grid-template-rows: var(--cell-height) repeat(v-bind(strings), var(--cell-height))

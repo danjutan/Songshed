@@ -8,7 +8,11 @@ const notes = createTabStore();
 notes.setNote(0, 0, "B4");
 notes.setNote(Spacing.Quarter * 3, 0, "B4");
 notes.setNote(Spacing.Quarter * 4 - Spacing.Sixteenth, 0, "B4");
-notes.setNote(Spacing.Quarter * 4, 0, "G4");
+notes.setNote(Spacing.Quarter * 4, 0, "F4");
+notes.setNote(Spacing.Quarter * 5, 0, "E4");
+notes.setNote(Spacing.Quarter * 6, 0, "G4");
+notes.setNote(Spacing.Quarter * 7, 0, "A4");
+notes.setNote(Spacing.Quarter * 8, 0, "F4");
 // notes.addNote(Spacing.Quarter * 8, 2, "A4"),
 
 notes.setNote(Spacing.Quarter * 2, 0, "C5");

@@ -25,7 +25,6 @@
   /* font-size: 100cqw; */
   /* font-size: var(--cell-height); */
   color: rgb(255, 0, 0);
-  font-weight: bold;
   font-size: min(100cqw, var(--cell-height));
   display: flex;
   align-items: center;

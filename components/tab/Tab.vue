@@ -33,6 +33,9 @@ const bars = computed<BarStore[]>(() => {
             :beats="barSize"
             :notches="resolution * beatsPerBar"
     />
+    <div class="new-button">
+      <span>+</span>
+    </div>
   </div>
 </template>
 
@@ -40,9 +43,26 @@ const bars = computed<BarStore[]>(() => {
 .tab {
   display: flex;
   width: 100%;
+  --cell-height: 23px;
+  --note-font-size: calc(var(--cell-height) * 0.8);
+  --substack-bg: rgba(255, 0, 0, 0.1);
+  --string-width: 1px;
+  --string-color: gray;
+  --highlight-color: rgba(172, 206, 247, 0.6);
 }
 
-.tab div {
-  width: 50%;
+.new-button {
+  margin-top: calc(var(--cell-height) * 1.5);
+  margin-bottom: calc(var(--cell-height) / 2);
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(150, 150, 150, 0.1);
+}
+
+.new-button span {
+  color: gray;
+  font-size: 16px;
 }
 </style>

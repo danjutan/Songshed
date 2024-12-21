@@ -84,7 +84,7 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
     const stacks: StacksData = [];
     for (const position of tabData.keys()) {
       if (start > 0 && position < start) continue;
-      if (end && position > end) continue;
+      if (end && position >= end) continue;
       stacks.push([position, getStack(position)!]);
     }
     return stacks;
