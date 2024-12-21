@@ -60,6 +60,7 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
           <TabsNoteInput :data="noteSpot.data"
                          :tuning="props.tuning[noteSpot.string]"
                          :frets="props.frets"
+                         blocking-color="transparent"
                          @data-change="emit('noteChange', { ...noteSpot, data: $event })"
           />
         </div>

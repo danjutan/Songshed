@@ -7,8 +7,10 @@ const props = withDefaults(defineProps<{
   frets: number
   collapse?: boolean
   startFocused?: boolean
+  blockingColor?: string
 }>(), {
   data: undefined,
+  blockingColor: "white",
 });
 
 const emit = defineEmits<{
@@ -119,7 +121,7 @@ input {
   width: min-content;
   pointer-events: none;
   color: transparent;
-  background-color: white;
+  background-color: v-bind(blockingColor);
   /* display: none; */
   /* aspect-ratio: 1 / 1; */
 }

@@ -37,6 +37,6 @@ const notes = ref<FilledSpot[]>([
 
 <style scoped>
 div {
-  width: 50%;
+  width: 75%;
 }
 </style>
