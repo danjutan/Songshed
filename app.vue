@@ -22,12 +22,14 @@ const guitarNotes: Array<[number, number, string]> = [
 ];
 
 guitarNotes.forEach(([position, string, midiString]) => {
-  const noteSpot: GuitarNote = { position, string };
-  noteSpot.data = {
+  const data: GuitarNote = {
+    string,
     midi: toMidi(midiString),
   };
-  guitar.setNote(noteSpot);
+  guitar.setNote(position, data);
 });
+
+console.log(tabStore.serialize());
 
 /*
 const activeStack = computed(() => {

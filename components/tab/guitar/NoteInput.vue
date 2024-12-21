@@ -1,9 +1,9 @@
 <script lang="ts" setup>
-import type { NoteData } from "../data";
+import type { GuitarNote } from "../data";
 
 const props = withDefaults(
   defineProps<{
-    data?: NoteData;
+    data?: GuitarNote;
     tuning: Midi;
     frets: number;
     collapse?: boolean;
@@ -17,7 +17,8 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  dataChange: [data: NoteData | undefined];
+  noteChange: [data: Partial<GuitarNote>];
+  noteDelete: [];
   startEdit: [];
   endEdit: [];
 }>();
@@ -37,9 +38,10 @@ function onInput(e: Event) {
   const num = parseInt(target.value);
   if (Number.isInteger(num)) {
     if (num < 1 || num > props.frets) {
-      return (target.value = `${relativeNote.value}`);
+      target.value = `${relativeNote.value}`;
+      return;
     }
-    emit("dataChange", { ...props.data, midi: (props.tuning + num) as Midi });
+    emit("noteChange", { midi: (props.tuning + num) as Midi });
     return;
   }
   target.value = `${relativeNote.value}`;
@@ -53,7 +55,7 @@ function onInputClick(e: Event) {
 function onInputBlur(e: Event) {
   const target = e.target as HTMLInputElement;
   if (props.data && target.value.trim() == "") {
-    emit("dataChange", undefined);
+    emit("noteDelete");
   }
 }
 

@@ -4,7 +4,7 @@ import NoteInput from "./NoteInput.vue";
 
 const props = withDefaults(
   defineProps<{
-    notes: GuitarNote[];
+    notes: Array<GuitarNote>;
     frets: number;
     tuning: Midi[];
     selected?: boolean;
@@ -14,31 +14,39 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
+  noteDelete: [string: number];
   noteChange: [note: GuitarNote];
 }>();
 
-const backgroundColor = computed(() =>
-  props.selected ? "var(--highlight-color)" : "transparent",
-);
+const noteSpots = computed(() => {
+  const noteSpots = new Array(props.tuning.length);
+  for (const note of props.notes) {
+    noteSpots[note.string] = note;
+  }
+  return noteSpots;
+});
+
+const backgroundColor = computed(() => (props.selected ? "var(--highlight-color)" : "transparent"));
 </script>
 
 <template>
   <div class="stack" :class="{ collapse }">
-    <div v-for="noteSpot in notes" :key="noteSpot.string" class="container">
+    <div v-for="(note, string) in noteSpots" class="container">
       <div
-        v-if="collapse && noteSpot.data"
+        v-if="collapse && note"
         class="square"
         :style="{
-          backgroundColor: defaultColors[getChroma(noteSpot.data.midi)],
+          backgroundColor: defaultColors[getChroma(note.midi)],
         }"
       />
       <div class="input">
         <NoteInput
-          :data="noteSpot.data"
-          :tuning="props.tuning[noteSpot.string]"
+          :data="note"
+          :tuning="props.tuning[string]"
           :frets="props.frets"
           :blocking-color="selected ? 'transparent' : undefined"
-          @data-change="emit('noteChange', { ...noteSpot, data: $event })"
+          @note-delete="emit('noteDelete', string)"
+          @note-change="(updated) => emit('noteChange', { ...note, string, ...updated })"
         />
       </div>
     </div>

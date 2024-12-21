@@ -18,23 +18,19 @@ export interface Annotation<D = unknown> {
 
 export interface NoteData {
   midi: Midi;
+}
+
+export interface GuitarNote extends NoteData {
+  string: number;
+  /*
   muted?: boolean;
   slide?: boolean;
-  bend?: string;
+  bend?: string; */
 }
 
-// TODO: Do we actually need to store the position? remove
-export interface NoteSpot {
-  position: number;
-  data?: NoteData;
-}
+type StackMap<N extends NoteData> = Map<number, Array<N | undefined>>;
+type SerializeableStackMap<N extends NoteData> = Array<[number, N[]]>;
 
-type StackMap<N extends NoteSpot> = Map<number, N[]>;
-type SerializeableStackMap<N extends NoteSpot> = Array<[number, N[]]>;
-
-export interface GuitarNote extends NoteSpot {
-  string: number; // 0-indexed
-}
 export interface GuitarTabData {
   strings: number;
   tuning: Midi[];
@@ -62,7 +58,10 @@ interface SerializeableTabData extends Omit<TabData, "guitarData" | "annotations
 function serializeTabData(data: TabData): string {
   const guitarData: SerializeableGuitar | undefined = data.guitarData && {
     ...data.guitarData,
-    stacks: [...data.guitarData!.stacks.entries()],
+    stacks: [...data.guitarData!.stacks.entries()].map(([position, stack]) => [
+      position,
+      stack.filter(Boolean) as GuitarNote[],
+    ]),
   };
 
   const { title, beatsPerBar, beatSize } = data;
@@ -78,10 +77,23 @@ function serializeTabData(data: TabData): string {
 
 function deserializeTabData(data: string): TabData {
   const parsed: SerializeableTabData = JSON.parse(data);
-  const guitarData: GuitarTabData | undefined = parsed.guitarData && {
-    ...parsed.guitarData,
-    stacks: new Map(parsed.guitarData.stacks),
-  };
+  let guitarData: GuitarTabData | undefined;
+  if (parsed.guitarData) {
+    const stacks: StackMap<GuitarNote> = new Map();
+    for (const [position, stack] of parsed.guitarData.stacks) {
+      stacks.set(
+        position,
+        stack.reduce((arr, note) => {
+          arr[note.string] = note;
+          return arr;
+        }, new Array<GuitarNote>()),
+      );
+    }
+    guitarData = {
+      ...parsed.guitarData,
+      stacks: stacks,
+    };
+  }
   const { title, beatsPerBar, beatSize } = parsed;
   return {
     title,
@@ -217,36 +229,30 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
   return { createAnnotation, deleteAnnotation, getAnnotations, getRows, nextRow };
 }
 
-interface AbstractNoteStore<N extends NoteSpot> {
+interface StackStore<N extends NoteData> {
   getStacks: (start?: number, end?: number) => StackMap<N>;
-  setStack: (position: number, stack: N[]) => void;
+  setStack: (position: number, stack: Array<N | undefined>) => void;
   lastPosition: () => number | undefined;
   shiftFrom: (position: number, shiftBy: number) => void;
 }
 
-interface NoteStore<N extends NoteSpot> extends AbstractNoteStore<N> {
-  setNote: (note: N) => void;
-}
-
-function createAbstractNoteStore<N extends NoteSpot>(stacks: StackMap<N>): AbstractNoteStore<N> {
+function createStackStore<N extends NoteData>(stacks: StackMap<N>): StackStore<N> {
   const furthestPos: number[] = [];
 
   function getStacks(start = 0, end?: number) {
     const subset: StackMap<N> = new Map();
     for (const position of [...stacks.keys()].sort((a, b) => a - b)) {
       if (start > 0 && position < start) continue;
-      if (end && position > end) break;
+      if (end && position >= end) break;
       subset.set(position, stacks.get(position)!);
     }
     return subset;
   }
 
-  function setStack(position: number, stack: N[]) {
+  function setStack(position: number, stack: Array<N | undefined>) {
     if (position < 0) return;
-    if (stack.filter((s) => s.data).length === 0) {
-      console.log(stacks);
+    if (stack.filter(Boolean).length === 0) {
       stacks.delete(position);
-      console.log(stacks);
       if (position === furthestPos.at(-1)) {
         furthestPos.pop();
       }
@@ -280,36 +286,51 @@ function createAbstractNoteStore<N extends NoteSpot>(stacks: StackMap<N>): Abstr
   return { getStacks, setStack, lastPosition, shiftFrom };
 }
 
-type GuitarStore = NoteStore<GuitarNote> & GuitarTabData;
-
+interface GuitarStore extends Omit<StackStore<GuitarNote> & GuitarTabData, "getStacks"> {
+  setNote: (position: number, data: GuitarNote) => void;
+  deleteNote: (position: number, string: number) => void;
+  getStacks: (start: number, end: number, subunit: number) => Array<GuitarNote[]>;
+}
 function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
-  const noteStore = createAbstractNoteStore(guitarData.stacks);
+  const noteStore = createStackStore(guitarData.stacks);
 
   // TODO: refactor to store only the data that is needed, while keeping the entire stack reactive
-  function setNote({ position, string, data }: GuitarNote): void {
+  function setNote(position: number, data: GuitarNote): void {
+    const string = data.string;
     if (position >= 0 && string >= 0 && string < guitarData.strings) {
       let stack = guitarData.stacks.get(position);
 
-      if (!data) {
-        if (!stack) return;
-        stack[string].data = undefined;
-        noteStore.setStack(position, stack);
-        return;
-      }
-
       if (!stack) {
-        stack = Array.from({ length: strings }, (_, string) => ({
-          position,
-          string,
-        }));
+        stack = new Array(guitarData.strings);
       }
 
-      stack[string].data = data;
+      stack[string] = data;
 
       noteStore.setStack(position, stack);
     }
   }
 
+  function deleteNote(position: number, string: number) {
+    const stack = guitarData.stacks.get(position);
+    if (stack) {
+      stack[string] = undefined;
+      noteStore.setStack(position, stack);
+    }
+  }
+
+  function getStacks(start = 0, end: number, subunit: number): Array<GuitarNote[]> {
+    const subset = noteStore.getStacks(start, end);
+    for (let i = start; i < end; i += subunit) {
+      if (!subset.has(i)) {
+        subset.set(i, []);
+      }
+    }
+    return [...subset.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .filter(([position, _]) => position % subunit === 0)
+      .map(([_, stack]) => stack.filter(Boolean) as GuitarNote[]);
+  }
+
   const { stacks, strings, frets, tuning } = guitarData;
-  return { ...noteStore, setNote, stacks, strings, frets, tuning };
+  return { ...noteStore, getStacks, setNote, deleteNote, stacks, strings, frets, tuning };
 }

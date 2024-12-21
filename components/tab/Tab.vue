@@ -39,13 +39,16 @@ const bars = computed<Bar>(() => {
     i <= Math.max(newBarStart.value, props.data.guitar.lastPosition() ?? 0);
     i += barSize.value
   ) {
-    const columns = [];
+    /* const columns: GuitarStack[] = [];
     for (let position = i; position < i + barSize.value; position += subUnit.value) {
       const stack =
         props.data.guitar.stacks.get(position) ??
         props.data.guitar.tuning.map((_, string) => ({ string, position }));
       columns.push({ stack, position });
-    }
+    } */
+    const columns: GuitarStack[] = props.data.guitar
+      .getStacks(i, i + barSize.value, subUnit.value)
+      .map((stack, p) => ({ position: i + p * subUnit.value, stack }));
     bars.push(columns);
   }
   return bars;
@@ -191,6 +194,7 @@ const annotationRenders = computed(() => {
           :frets="data.guitar!.frets"
           :num-strings="data.guitar!.strings"
           @note-change="data.guitar!.setNote"
+          @note-delete="data.guitar!.deleteNote"
         />
         <template v-for="(_, rowIndex) in annotationRows">
           <div
@@ -289,11 +293,5 @@ const annotationRenders = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.drag-start {
-  /* &:hover {
-    background-color: lightblue;
-  } */
 }
 </style>

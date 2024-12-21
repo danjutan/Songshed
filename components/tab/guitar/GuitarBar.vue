@@ -6,7 +6,7 @@ import Overlay from "./Overlay.vue";
 import Unexpander from "./Unexpander.vue";
 
 export type GuitarStack = {
-  stack: GuitarNote[];
+  stack: Array<GuitarNote>;
   position: number;
 };
 
@@ -24,7 +24,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  noteChange: [note: GuitarNote];
+  noteDelete: [position: number, string: number];
+  noteChange: [position: number, note: GuitarNote];
 }>();
 
 const isNotch = (position: number) => position % props.notchUnit === 0;
@@ -35,7 +36,8 @@ const expanded = reactive<Set<number>>(new Set());
 const collapsedEmpty = computed<Set<number>>(() => {
   const collapsed = new Set<number>();
   if (!props.collapseEmpty) return collapsed;
-  const emptyStack = (stack: GuitarNote[]) => stack.every((spot) => !spot.data);
+  const emptyStack = (stack: Array<GuitarNote>) =>
+    stack.length === 0; /*  stack.every((spot) => !spot.data); */
   props.stackData.forEach((notch, i) => {
     if (!isNotch(notch.position)) return;
     const notchGroup = props.stackData.slice(i, i + props.subdivisions);
@@ -46,6 +48,8 @@ const collapsedEmpty = computed<Set<number>>(() => {
   });
   return collapsed;
 });
+
+console.log(props.stackData);
 
 const collapsed = computed<Set<number>>(() => {
   const positions = new Set<number>(
@@ -89,7 +93,8 @@ function toggleSubdivisions(notchCol: GuitarStack) {
       :collapse="collapsed.has(column.position)"
       :tuning
       :frets
-      @note-change="(spot: GuitarNote) => emit('noteChange', spot)"
+      @note-change="(note: GuitarNote) => emit('noteChange', column.position, note)"
+      @note-delete="(string: number) => emit('noteDelete', column.position, string)"
     />
     <template v-if="isNotch(column.position)">
       <template v-if="collapsedEmpty.has(column.position)">
