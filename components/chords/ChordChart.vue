@@ -1,17 +1,33 @@
 <script setup lang="ts">
-type Fingering = {
-  [string: number]: { fret: number /*,finger?: number*/ }; //string is 0-indexed
-};
+import type { ChordNote, NoteStack } from "~/model/data";
 
 const props = withDefaults(
   defineProps<{
     strings?: number;
-    notes: Fingering;
+    notes: NoteStack<ChordNote>;
+    tuning: Midi[];
   }>(),
   {
     strings: 6,
   },
 );
+
+const emit = defineEmits<{
+  updateString: [string: number, data: ChordNote];
+  muteString: [string: number];
+}>();
+
+const fingering = computed(() => {
+  const fingering: {
+    [string: number]: ChordNote & { fret: number };
+  } = {};
+
+  for (const [string, note] of props.notes.entries()) {
+    const fret = note.midi - props.tuning[string];
+    fingering[string] = { ...note, fret };
+  }
+  return fingering;
+});
 
 const cellWidth = 24; // relative to a border width of 1
 const cellRatio = 4 / 3; // height / width
@@ -20,7 +36,7 @@ const topEndHeight = cellHeight / 4;
 const noteRadius = cellWidth / 3;
 
 const frets = computed(() =>
-  Object.values(props.notes)
+  Object.values(fingering.value)
     .map(({ fret }) => fret)
     .toSorted(),
 );
@@ -40,23 +56,34 @@ function decrementWindowOffset() {
   if (windowStart.value - 1 >= 1) windowOffset.value--;
 }
 
+watch(fretStart, () => {
+  windowOffset.value = 0;
+});
+
 const windowStart = computed(() => fretStart.value + windowOffset.value);
 const windowEnd = computed(() => windowStart.value + numFrets.value - 1);
 
 // const fretLabelWidth = computed(() => (windowStart.value === 0 ? 0 : cellWidth));
 const gridStartX = computed(() => cellWidth);
-const gridStartY = computed(() =>
-  windowStart.value === 1 ? cellHeight + topEndHeight : cellHeight,
-);
+const gridStartY = computed(() => cellHeight);
 const gridEndX = computed(() => gridStartX.value + (props.strings - 1) * cellWidth);
 const gridEndY = computed(() => gridStartY.value + numFrets.value * cellHeight);
 
 const totalWidth = computed(() => gridEndX.value + cellWidth / 2);
-const totalHeight = computed(() => cellHeight * (numFrets.value + 1) + gridStartY.value);
+const totalHeight = computed(() => cellHeight * (numFrets.value + 0.5) + gridStartY.value);
 
 const viewBox = computed(() => `0 0 ${totalWidth.value} ${totalHeight.value}`);
 
 // const fingerLabels = computed(() => new Array({length: numFrets}, i =>
+function setFret(string: number, fret: number | false) {
+  console.log(string, fret);
+  const note = props.notes.get(string);
+  if (fret === false) {
+    emit("muteString", string);
+    return;
+  }
+  emit("updateString", string, { ...note, midi: (props.tuning[string] + fret) as Midi });
+}
 
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
@@ -114,7 +141,11 @@ function onInputClick(e: Event) {
 
     <template v-for="(_, x) in strings">
       <template v-for="(f, y) in numFrets">
-        <g v-if="notes[strings - x - 1]?.fret !== f + windowStart - 1" class="selectable-group">
+        <g
+          v-if="fingering[strings - x - 1]?.fret !== f + windowStart - 1"
+          class="selectable-group"
+          @click="setFret(strings - x - 1, f + windowStart - 1)"
+        >
           <circle
             class="selectable"
             :cx="gridStartX + x * cellWidth"
@@ -133,11 +164,11 @@ function onInputClick(e: Event) {
     </template>
 
     <template v-for="(_, string) in strings">
-      <template v-if="notes[string]">
-        <g class="open-group" v-if="notes[string].fret === 0">
+      <template v-if="fingering[string]">
+        <g v-if="fingering[string].fret === 0" class="open-group" @click="setFret(string, false)">
           <circle
             class="open"
-            :cx="gridStartX + (strings - +string - 1) * cellWidth"
+            :cx="gridStartX + (strings - string - 1) * cellWidth"
             :cy="gridStartY - cellHeight * 0.65"
             :r="noteRadius * 0.75"
             fill="transparent"
@@ -159,15 +190,18 @@ function onInputClick(e: Event) {
             fill="transparent"
           />
         </g>
-        <template v-else-if="notes[string].fret >= windowStart && notes[string].fret <= windowEnd">
+        <template
+          v-else-if="fingering[string].fret >= windowStart && fingering[string].fret <= windowEnd"
+        >
           <!--TODO: replace with NoteView-->
           <circle
             class="selected"
             :cx="gridStartX + (strings - string - 1) * cellWidth"
-            :cy="gridStartY + (notes[string].fret - windowStart) * cellHeight + cellHeight / 2"
+            :cy="gridStartY + (fingering[string].fret - windowStart) * cellHeight + cellHeight / 2"
             :r="noteRadius"
+            @click="setFret(string, false)"
           />
-          <g class="selected-open-group">
+          <g class="selected-open-group" @click="setFret(string, 0)">
             <circle
               class="open"
               :cx="gridStartX + (strings - string - 1) * cellWidth"
@@ -185,7 +219,7 @@ function onInputClick(e: Event) {
           </g>
         </template>
       </template>
-      <g v-else class="muted-group">
+      <g v-else class="muted-group" @click="setFret(string, 0)">
         <text
           class="muted"
           text-anchor="middle"

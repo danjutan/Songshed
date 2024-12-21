@@ -10,6 +10,7 @@ export interface NoteData {
 }
 
 export interface GuitarNote extends NoteData {
+  //TODO: probably: remove string property (cleans up serialization). pass around NoteStacks like we do with chords
   string: number;
   /*
   muted?: boolean;
@@ -17,8 +18,13 @@ export interface GuitarNote extends NoteData {
   bend?: string; */
 }
 
+export interface ChordNote extends NoteData {
+  finger?: number; // to implement
+}
+
 export type NoteStack<N extends NoteData> = Map<number, N>;
 export type StackMap<N extends NoteData> = Map<number, NoteStack<N>>;
+export type Chord = { title: string; notes: NoteStack<ChordNote> };
 
 export interface GuitarTabData {
   strings: number;
@@ -27,11 +33,16 @@ export interface GuitarTabData {
   stacks: StackMap<GuitarNote>;
 }
 
+export interface ChordsData {
+  tuning: Midi[];
+  chords: Chord[];
+}
+
 export interface TabData {
   title: string;
   beatsPerBar: number;
   beatSize: number;
   guitarData?: GuitarTabData; // optional because we'll add more primary views in the future
   annotations: Map<number, Annotation[]>; // annotation row -> annotations on that row
-  chords: StackMap<GuitarNote>;
+  chordsData: ChordsData;
 }

@@ -5,7 +5,7 @@ import type { SerializeableTabData } from "./model/serialize";
 import { createTabStore } from "./model/stores";
 import { deserializeTabData } from "./model/serialize";
 import Tab from "./components/tab/Tab.vue";
-import ChordChart from "./components/chords/ChordChart.vue";
+import ChordGroup from "./components/chords/ChordGroup.vue";
 
 const route = useRoute();
 const [_, id] = route.path.split("/");
@@ -95,21 +95,23 @@ async function save() {
 
 <template>
   <!-- <input type="checkbox" v-model="showDivisions"/> -->
-  Bars per line:
-  <input v-model="barsPerLine" type="number" />
-  Notches per bar:
-  <input v-model="notches" type="number" />
-  Subdivide notches by:
-  <input v-model="subdivisions" type="number" />
-  Collapse subdivisions:
-  <input v-model="collapseSubdivisions" type="checkbox" />
+  <div>
+    Bars per line:
+    <input v-model="barsPerLine" type="number" />
+    Notches per bar:
+    <input v-model="notches" type="number" />
+    Subdivide notches by:
+    <input v-model="subdivisions" type="number" />
+    Collapse subdivisions:
+    <input v-model="collapseSubdivisions" type="checkbox" />
 
-  Collapse empty notches:
-  <input v-model="collapseEmpty" type="checkbox" />
+    Collapse empty notches:
+    <input v-model="collapseEmpty" type="checkbox" />
 
-  <input v-model="saveId" type="text" />
-  <button @click="save">Save</button>
-
+    <input v-model="saveId" type="text" />
+    <button @click="save">Save</button>
+  </div>
+  <ChordGroup v-if="tabStore" :data="tabStore.chords" />
   <Tab
     v-if="tabStore"
     :data="tabStore"
@@ -119,20 +121,6 @@ async function save() {
     :collapse-subdivisions
     :collapse-empty
   />
-
-  <ChordChart
-    :notes="{
-      0: { fret: 1 },
-      1: { fret: 1 },
-      2: { fret: 1 },
-      3: { fret: 1 },
-      4: { fret: 6 },
-      5: { fret: 6 },
-    }"
-    width="200px"
-  />
-  <ChordChart :notes="{ 1: { fret: 0 } }" width="200px" />
-  <ChordChart :notes="{ 2: { fret: 4 }, 3: { fret: 5 } }" width="200px" />
   <!-- <Fretboard
     width="75%"
     :stack="activeStack"

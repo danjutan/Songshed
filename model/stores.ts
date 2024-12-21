@@ -7,6 +7,8 @@ import type {
   StackMap,
   GuitarTabData,
   NoteStack,
+  ChordsData,
+  Chord,
 } from "./data";
 
 export interface TabStore {
@@ -16,14 +18,15 @@ export interface TabStore {
   createGuitarTab: (tuning?: Midi[], strings?: number, frets?: number) => GuitarStore;
   guitar?: GuitarStore;
   annotations: AnnotationStore;
+  chords: ChordStore;
   serialize: () => string;
 }
 
-const defaults: Pick<TabData, "title" | "beatsPerBar" | "beatSize" | "chords"> = {
+const defaults: Pick<TabData, "title" | "beatsPerBar" | "beatSize" | "chordsData"> = {
   title: "new tab",
   beatsPerBar: 4,
   beatSize: Spacing.Quarter,
-  chords: new Map(),
+  chordsData: { tuning: defaultTuning, chords: [{ title: "", notes: new Map() }] },
 };
 
 export function createTabStore(tabData: TabData): TabStore;
@@ -38,6 +41,7 @@ export function createTabStore(init?: TabData | Partial<typeof defaults>): TabSt
   }
 
   const annotationStore = createAnnotationStore(data.annotations);
+  const chordStore = createChordStore(data.chordsData);
 
   function createGuitarTab(tuning = defaultTuning, strings = 6, frets = 24) {
     const stacks: StackMap<GuitarNote> = new Map();
@@ -61,6 +65,9 @@ export function createTabStore(init?: TabData | Partial<typeof defaults>): TabSt
       return guitarStore.value;
     },
     annotations: annotationStore,
+    get chords() {
+      return chordStore;
+    },
     // TODO: validation?
     get title() {
       return data.title;
@@ -82,6 +89,22 @@ export function createTabStore(init?: TabData | Partial<typeof defaults>): TabSt
     },
   };
 }
+
+function createChordStore({ tuning, chords }: ChordsData) {
+  // TODO: edit tuning, swap chords, etc
+  return {
+    chords,
+    tuning,
+    setChord(index: number, chord: Chord) {
+      chords[index] = chord;
+    },
+    addChord(chord: Chord) {
+      chords.push(chord);
+    },
+  };
+}
+
+export type ChordStore = ReturnType<typeof createChordStore>;
 
 interface AnnotationStore {
   createAnnotation: (row: number, data: Annotation) => Annotation | false;
