@@ -1,5 +1,4 @@
 <script setup lang="ts">
-const cellHeight = "var(--cell-height)";
 const props = withDefaults(defineProps<{
   rows: number
   rowHeight?: string
@@ -7,15 +6,17 @@ const props = withDefaults(defineProps<{
   expanded: Set<number>
   expandTo?: string
 }>(), {
-  rowHeight: cellHeight,
-  expandTo: cellHeight,
+  rowHeight: "var(--cell-height)",
+  expandTo: "var(--note-font-size)",
 });
 
 const gridTemplateColumns = computed<string>(() => {
   const widths = [];
   for (let i = 1; i <= props.columns; i++) {
-    if (props.expanded.has(i))
+    if (props.expanded.has(i)) {
       widths.push(props.expandTo);
+      continue;
+    }
     widths.push("1fr");
   }
   return widths.join(" ");
