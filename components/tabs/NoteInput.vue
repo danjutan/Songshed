@@ -52,7 +52,7 @@ function onInputClick(e: Event) {
 
 function onInputBlur(e: Event) {
   const target = e.target as HTMLInputElement;
-  if (target.value.trim() == "") {
+  if (props.data && target.value.trim() == "") {
     emit("dataChange", undefined);
   }
 }
@@ -109,7 +109,6 @@ input {
 }
 
 .input-bg, input, .hover-bg {
-  /* border: 1px dashed blue; */
   grid-area: 1 / 1;
   font-size: v-bind(fontSize);
   min-height: calc(var(--min-division-width) / 2);

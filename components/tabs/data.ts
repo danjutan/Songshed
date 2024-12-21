@@ -1,7 +1,7 @@
 export type NoteSpot = {
-  position: number; // 0-indexed
-  string: number; // 0-indexed
-  data?: NoteData;
+  position: number // 0-indexed
+  string: number // 0-indexed
+  data?: NoteData
 };
 
 export function createNote(position: number, string: number, midi: Midi | string) {
@@ -9,7 +9,7 @@ export function createNote(position: number, string: number, midi: Midi | string
     position,
     string,
     data: {
-      midi: typeof midi === 'string' ? toMidi(midi) : midi,
+      midi: typeof midi === "string" ? toMidi(midi) : midi,
     },
   };
 }
@@ -17,10 +17,10 @@ export function createNote(position: number, string: number, midi: Midi | string
 export type FilledSpot = Required<NoteSpot>;
 
 export type NoteData = {
-  midi: Midi;
-  muted?: boolean;
-  slide?: boolean;
-  bend?: string;
+  midi: Midi
+  muted?: boolean
+  slide?: boolean
+  bend?: string
 };
 
 export enum Spacing {

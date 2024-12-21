@@ -21,9 +21,9 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
 
 <template>
   <div class="spacer">
-    <div class="header">
+    <!-- <div class="header">
       <span class="title">↔</span>
-    </div>
+    </div> -->
     <template v-for="(n, ni) in notches"
               :key="n">
       <div
@@ -46,6 +46,7 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
   display: grid;
   grid-template-columns: repeat(v-bind(notches), 1fr);
   grid-template-rows: repeat(v-bind(strings), 1fr);
+  /* border: 1px dashed red; */
 }
 
 .spot {

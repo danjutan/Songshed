@@ -21,8 +21,7 @@ const sortedSubstacks = computed(() => props.data.substacks?.toSorted((a, b) => 
 const relativePositions = computed(() => sortedSubstacks.value.map(substack => substack.notchPosition - props.data.notchPosition));
 const subunit = computed(() => SpacingsDescending.find(spacing => relativePositions.value?.every(relative => relative % spacing === 0)) || 1);
 const numColumns = computed(() => (1 - subunit.value) / subunit.value);
-console.log(numColumns.value);
-const colPositions = relativePositions.value.map(pos => pos / subunit.value);
+const colPositions = computed(() => relativePositions.value.map(pos => pos / subunit.value));
 
 const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150 ${(props.data.notchPosition + 1) % 2 * 255})`);
 </script>

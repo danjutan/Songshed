@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { PropType } from "vue";
-import type { NoteData, NoteSpot, FilledSpot } from "./data";
+import type { NoteSpot, FilledSpot } from "./data";
 import { SpacingsDescending, Spacing } from "./data";
 
 type StackData = NoteSpot[];
@@ -10,11 +10,6 @@ export type DivisionData = {
   notchPosition: number
   stack: StackData
   substacks?: Array<{ notchPosition: number, stack: NoteSpot[] }> // relative to root's notches
-};
-
-export type SpacerData = {
-  notchStart: number
-  notches: number
 };
 
 const props = defineProps(
@@ -110,24 +105,15 @@ const divisions = computed<DivisionData[]>(() => {
     []);
 });
 
-/*
-  e.g: 0, 8, 9, 12, 15
-  gaps: 8, 1, 3, 3
-  slots: 7, 0, 2, 2
-  (position + 1) span (slots): (0 + 1) span 7, (8 + 1) span 0, (9 + 1) span 2, (12 + 1) span 2
-  filtered: 1 span 7, 10 span 2, 13 span 2
-*/
-const emptyDivisions = computed<SpacerData[]>(() => {
-  const spacers: SpacerData[] = [];
+const emptyDivisions = computed<DivisionData[]>(() => {
+  const empties: DivisionData[] = [];
   const filledPositions = divisions.value.map(note => note.notchPosition);
-  const gaps = filledPositions.slice(1).map((n, i) => n - filledPositions[i]);
-  const slots = gaps.map(gap => gap - 1);
-  slots.forEach((slot, i) => {
-    if (slot) {
-      spacers.push({ notchStart: filledPositions[i] + 1, notches: slot });
+  for (let i = 0; i < props.notches; i++) {
+    if (!filledPositions.includes(i)) {
+      empties.push({ notchPosition: i, stack: [] });
     }
-  });
-  return spacers;
+  }
+  return empties;
 });
 
 function modifyNotes(transform: (map: StackMap) => StackMap) {
@@ -153,17 +139,6 @@ function updateNote(note: NoteSpot) {
     return stackMap;
   });
 }
-
-const newNoteCol = ref(0);
-const newNoteRow = ref(0);
-const showNewNote = ref(false);
-const newNoteData = ref<NoteData>();
-
-function emptySpotHover(string: number, notch: number) {
-  showNewNote.value = true;
-  newNoteCol.value = notch;
-  newNoteRow.value = string;
-}
 </script>
 
 <template>
@@ -177,23 +152,22 @@ function emptySpotHover(string: number, notch: number) {
       :frets
       @note-change="updateNote"
     />
-    <TabsSpacer
+    <TabsDivision
+      v-for="data in emptyDivisions"
+      :key="data.notchPosition"
+      class="empty"
+      :data
+      :tuning
+      :frets
+      @note-change="updateNote"
+    />
+    <!-- <TabsSpacer
       v-for="data in emptyDivisions"
       :key="data.notchStart"
       :data="data"
       :strings="strings"
       @hover="emptySpotHover"
-    />
-    <TabsNoteInput
-      v-if="showNewNote"
-      start-focused
-      collapse
-      class="new-note"
-      :data="newNoteData"
-      :tuning="tuning[newNoteRow - 1]"
-      :frets="frets"
-      @mouseleave="() => showNewNote = false"
-    />
+    /> -->
   </div>
 </template>
 
@@ -212,10 +186,7 @@ function emptySpotHover(string: number, notch: number) {
   /* grid-auto-flow: column; */
 }
 
-.new-note {
-  grid-row: v-bind(newNoteRow) / span 1;
-  grid-column: v-bind(newNoteCol) / span 1;
-  /* max-width: 100%; */
-  /* border: 1px dashed red; */
+.empty {
+  border: 1px solid blue;
 }
 </style>
