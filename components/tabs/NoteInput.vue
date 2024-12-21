@@ -59,22 +59,31 @@ function onInputBlur() {
   </div>
 </template>
 
-<style>
-.input-bg {
-  grid-area: 1 / 1;
-  width: min-content;
-  pointer-events: none;
-  font-size: x-small;
-  color: green;
-  background-color: white;
+<style scoped>
+
+div {
+  /* width: calc(var(--min-division-width) / 2); */
+  display: grid;
+  /* border: 1px red dashed; */
 }
 
 input {
   all: unset;
+}
+
+.input-bg, input {
   grid-area: 1 / 1;
-  font-size: x-small;
+  font-size: calc(var(--min-division-width / 2));
   width: min-content;
 }
+
+.input-bg {
+  pointer-events: none;
+  color: green;
+  background-color: white;
+}
+
+
 
 /* input::selection {
   background-color: blue;

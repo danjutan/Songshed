@@ -3,7 +3,7 @@ import type { Division } from './components/tabs/data';
 import { createEmptyDivision } from './components/tabs/data';
 
 
-const divnum = ref([1/2,1/6,1/6,1/6,1/2,1/4,1/4,2].map(d => createEmptyDivision(d, 6)));
+const divnum = ref([0.5, 0.5, 2, 1].map(d => createEmptyDivision(d, 6)));
 
 divnum.value[0].notes[1].note = 70;
 
@@ -26,6 +26,6 @@ const another = ref([1, 1, 1, 1].map(d => createEmptyDivision(d, 6)));
 </template>
 <style scoped>
 div {
-  width: 50%;
+  width: 100%;
 }
 </style>./components/tabs/data
