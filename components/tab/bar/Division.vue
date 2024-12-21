@@ -70,7 +70,16 @@ const emptySubstacks = computed(() => {
   <div
     class="division"
     @click="debug && console.log({ notchPosition: data.notchPosition, substacks: data.substacks, subunit, subdivisions, colPositions })">
-    <div class="stack">
+    <div class="selector">
+      <div v-for="(s, i) of sortedSubstacks"
+           :key="s.notchPosition"
+           :style="{ gridColumn: i + 2 }"
+           class="substack-selector">
+        <div class="selector-trigger" />
+      </div>
+    </div>
+    <div class="
+             stack">
       <TabBarNoteInput
         v-for="({ string, position, data: noteData }) in props.data.stack"
         :key="string"
@@ -131,14 +140,37 @@ const emptySubstacks = computed(() => {
   display: grid;
   grid-template-columns: v-bind(firstColWidth) repeat(
       v-bind(numSubstacks), auto);
-  grid-template-rows: repeat(v-bind(numStrings), var(--cell-height));
+  grid-template-rows: var(--cell-height) repeat(v-bind(numStrings), var(--cell-height));
 }
 
 .stack,
 .substack {
-  grid-row: 1 / -1;
+  grid-row: 2 / -1;
   display: flex;
   flex-direction: column;
+}
+
+.selector {
+  grid-row: 1 / 1;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  border: 1px solid orange;
+}
+
+.substack-selector {
+  container-type: size;
+}
+
+.selector-trigger {
+  background-color: blue;
+  height: 100%;
+}
+
+@container (aspect-ratio < 1) {
+  .selector-trigger {
+    display: none;
+  }
 }
 
 .substack-bg {

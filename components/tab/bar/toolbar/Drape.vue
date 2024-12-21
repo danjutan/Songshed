@@ -73,7 +73,7 @@ const upCollapsedDisplay = computed(() => {
 
 .drape {
   grid-column: v-bind(start) / span v-bind(columns);
-  grid-row: v-bind(rowStart) / -1;
+  grid-row: v-bind(rowStart) / span v-bind(numStrings);
   /* rid-row: 2; */
   height: calc(v-bind(heightUnit) * v-bind(columns));
   pointer-events: none;

@@ -17,10 +17,7 @@ const emit = defineEmits<{
   toggleExpanded: [start: number, num?: number]
 }>();
 
-const hovering = ref(0);
-
 const numStrings = computed(() => props.tuning.length);
-const numNotches = computed(() => props.divisions.length);
 const spacers = computed<DrapeData[]>(() => emptyDivisions(props.divisions));
 const stackExpanderStarts = computed<number[]>(
   () => props.divisions
@@ -34,21 +31,6 @@ const stackExpanderStarts = computed<number[]>(
     <span v-for="i in expanded">{{ i }},</span>
   </div> -->
   <div class="toolbar">
-    <div
-      v-for="i in numNotches"
-      :key="i"
-      :style="{
-        gridColumn: `${i} / span 1`,
-      }"
-      :class="{ border: i != hovering, even: i % 2 === 0, odd: i % 2 === 1 }"
-      class="notch">
-      <div
-        class="selectable"
-        @mouseover="hovering = i"
-        @mouseleave="hovering = 0"
-      />
-    </div>
-
     <Drape
       v-for="{ start, columns } in spacers"
       :key="start"
@@ -71,14 +53,14 @@ const stackExpanderStarts = computed<number[]>(
       </template>
     </Drape>
 
-    <Drape
-      v-if="hovering"
-      :start="hovering"
-      :columns="1"
-      :row-start="2"
-      :num-strings
-      color="var(--highlight-color)"
-    />
+    <!-- <Drape -->
+    <!--   v-if="hovering" -->
+    <!--   :start="hovering" -->
+    <!--   :columns="1" -->
+    <!--   :row-start="2" -->
+    <!--   :num-strings -->
+    <!--   color="var(--highlight-color)" -->
+    <!-- /> -->
 
     <Drape
       v-for="start in stackExpanderStarts"
@@ -97,10 +79,7 @@ const stackExpanderStarts = computed<number[]>(
         <ExpanderOverlay />
       </template>
       <template #up>
-        <UnexpanderOverlay v-if="expanded.has(start)"
-                           @mouseover="hovering = start"
-                           @mouseleave="hovering = 0"
-        />
+        <UnexpanderOverlay v-if="expanded.has(start)" />
       </template>
     </Drape>
   </div>
@@ -117,31 +96,5 @@ const stackExpanderStarts = computed<number[]>(
 
 .spacer {
   min-width: calc(var(--cell-height) * 2);
-}
-
-.notch {
-  grid-row: 1 / span 1;
-  container-name: notch;
-  container-type: size;
-}
-
-.debug .notch.border.odd {
-  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-  margin-top: -2px;
-}
-
-.debug .notch.border.even {
-  /* border-bottom: 2px solid rgba(0, 100, 255, 0.5); */
-  border-bottom: 2px solid rgba(0, 0, 0, 0.3);
-  margin-top: -2px;
-}
-
-.selectable {
-  width: 100%;
-  height: 100%;
-}
-
-.selectable:hover {
-  background-color: var(--highlight-color);
 }
 </style>

@@ -22,7 +22,6 @@ const barSize = computed(() => props.beatsPerBar * props.beatSize);
 const bars = computed<BarStore[]>(() => {
   const barStores: BarStore[] = [];
   const lastPosition = props.data.lastPosition();
-  console.log(lastPosition);
   for (let i = 0; i <= (props.data.lastPosition() ?? 0); i += barSize.value) {
     barStores.push(props.data.getBar(i, i + barSize.value));
   }
