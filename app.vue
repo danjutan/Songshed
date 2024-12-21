@@ -129,10 +129,10 @@ async function save() {
       4: { fret: 6 },
       5: { fret: 6 },
     }"
-    width="300px"
+    width="200px"
   />
+  <ChordChart :notes="{ 1: { fret: 0 } }" width="200px" />
   <ChordChart :notes="{ 2: { fret: 4 }, 3: { fret: 5 } }" width="200px" />
-  <ChordChart :notes="{ 1: { fret: 0 } }" width="300px" />
   <!-- <Fretboard
     width="75%"
     :stack="activeStack"

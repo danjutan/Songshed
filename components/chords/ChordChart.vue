@@ -45,7 +45,9 @@ const windowEnd = computed(() => windowStart.value + numFrets.value - 1);
 
 // const fretLabelWidth = computed(() => (windowStart.value === 0 ? 0 : cellWidth));
 const gridStartX = computed(() => cellWidth);
-const gridStartY = computed(() => (fretStart.value === 1 ? cellHeight + topEndHeight : cellHeight));
+const gridStartY = computed(() =>
+  windowStart.value === 1 ? cellHeight + topEndHeight : cellHeight,
+);
 const gridEndX = computed(() => gridStartX.value + (props.strings - 1) * cellWidth);
 const gridEndY = computed(() => gridStartY.value + numFrets.value * cellHeight);
 
@@ -85,7 +87,7 @@ function onInputClick(e: Event) {
   <svg :viewBox>
     <rect
       v-if="windowStart === 1"
-      :y="cellHeight"
+      :y="gridStartY - topEndHeight"
       :height="topEndHeight"
       :x="gridStartX - 0.5"
       :width="gridEndX - gridStartX + 1"
@@ -99,8 +101,6 @@ function onInputClick(e: Event) {
       :y1="gridStartY"
       :y2="gridEndY"
       :stroke="'black'"
-      Joel
-      osteen
     />
 
     <line
@@ -166,7 +166,7 @@ function onInputClick(e: Event) {
             :cy="gridStartY + (notes[string].fret - windowStart) * cellHeight + cellHeight / 2"
             :r="noteRadius"
           />
-          <g class="open-group">
+          <g class="selected-open-group">
             <circle
               class="open"
               :cx="gridStartX + (strings - string - 1) * cellWidth"
@@ -226,6 +226,7 @@ function onInputClick(e: Event) {
     </template>
 
     <text
+      v-if="windowStart > 1"
       class="arrow"
       text-anchor="middle"
       :x="cellWidth / 2"
@@ -343,7 +344,7 @@ input {
   }
 }
 
-.open-group:hover .open {
+.selected-open-group:hover .open {
   stroke: rgb(80, 80, 80);
 }
 
@@ -356,7 +357,7 @@ input {
 
 .open-group rect,
 .muted-group rect,
-.open-group rect,
+.selected-open-group rect,
 .selectable-group rect,
 .selected {
   cursor: pointer;

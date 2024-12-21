@@ -83,6 +83,11 @@ function annotationStart(row: number, position: number) {
 }
 function annotationDragThrough(position: number) {
   if (newAnnotation.start !== undefined) {
+    /* if (position > newAnnotation.start) {
+      newAnnotation.end = position + subUnit.value;
+    } else {
+      newAnnotation.end = position;
+    } */
     newAnnotation.end = position;
   }
 }
@@ -93,7 +98,7 @@ function annotationEnd() {
     const last = Math.max(start, end);
     props.data.annotations.createAnnotation(row, {
       start: first,
-      end: last,
+      end: last + subUnit.value,
       title: "",
     });
   }
@@ -108,7 +113,8 @@ const posToCol = (pos: number): TablineColumn => {
   const cols = pos / subUnit.value;
   const tabline = Math.floor(cols / (props.barsPerLine * columnsPerBar.value));
   const colsInLine = cols - tabline * props.barsPerLine * columnsPerBar.value;
-  const column = colsInLine + Math.floor(colsInLine / columnsPerBar.value) + 2;
+  // TODO: document how this works
+  const column = colsInLine + Math.ceil(colsInLine / columnsPerBar.value) + 1;
   return {
     tabline,
     column,
@@ -147,10 +153,10 @@ const annotationRenders = computed(() => {
       const end = posToCol(annotation.end);
       if (start.tabline !== end.tabline) {
         push(start.tabline, row, start.column, -2, annotation);
-        push(end.tabline, row, 2, end.column + 1, annotation);
+        push(end.tabline, row, 1, end.column, annotation);
         continue;
       }
-      push(start.tabline, row, start.column, end.column + 1, annotation);
+      push(start.tabline, row, start.column, end.column, annotation);
     }
   });
 
@@ -159,12 +165,12 @@ const annotationRenders = computed(() => {
     const start = newAnnotation.start;
     const end = newAnnotation.end ?? start;
     const first = posToCol(Math.min(start, end));
-    const last = posToCol(Math.max(start, end));
+    const last = posToCol(Math.max(start, end) + subUnit.value);
     if (first.tabline !== last.tabline) {
       push(first.tabline, row, first.column, -2);
-      push(last.tabline, row, 2, last.column + 1);
+      push(last.tabline, row, 1, last.column);
     } else {
-      push(first.tabline, row, first.column, last.column + 1);
+      push(first.tabline, row, first.column, last.column);
     }
   }
 

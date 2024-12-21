@@ -11,10 +11,11 @@ export interface TabStore {
   serialize: () => string;
 }
 
-const defaults = {
+const defaults: Pick<TabData, "title" | "beatsPerBar" | "beatSize" | "chords"> = {
   title: "new tab",
   beatsPerBar: 4,
   beatSize: Spacing.Quarter,
+  chords: new Map(),
 };
 
 export function createTabStore(tabData: TabData): TabStore;
@@ -92,7 +93,8 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
 
     // Revist: <= vs <; do we need this check at all?
     const overlaps = ofRow.some(
-      (a: Annotation) => (a.start < data.start && a.end > data.start) || (a.start > data.start && a.end < data.end)
+      (a: Annotation) =>
+        (a.start < data.start && a.end > data.start) || (a.start > data.start && a.end < data.end),
     );
     if (overlaps) return false;
     ofRow.push(data);
@@ -227,7 +229,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
       [...subset.entries()]
         .sort((a, b) => a[0] - b[0])
         .filter(([position, stack]) => position % subunit === 0)
-        .map(([position, stack]) => [position, stack.filter(Boolean)])
+        .map(([position, stack]) => [position, stack.filter(Boolean)]),
     );
   }
 
