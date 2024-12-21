@@ -10,39 +10,32 @@ provide(SelectionStateKey, selectionState);
 const tabStore = createTabStore();
 
 const guitar = tabStore.createGuitarTab();
-guitar.setNote(0, 0, "B4");
-guitar.setNote(Spacing.Quarter * 3, 0, "B4");
-guitar.setNote(Spacing.Quarter * 4 - Spacing.Sixteenth, 0, "B4");
-/* guitar.setNote(Spacing.Quarter * 4, 0, "F4");
-guitar.setNote(Spacing.Quarter * 5, 1, "E4");
-// guitar.setNote(Spacing.Quarter * 5 + Spacing.ThirtySecond * 3, 0, "E4");
-guitar.setNote(Spacing.Quarter * 6, 2, "G4");
-guitar.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth, 3, "G4");
-guitar.setNote(Spacing.Quarter * 7 + Spacing.ThirtySecond, 4, "A4"); */
-guitar.setNote(Spacing.Quarter * 8, 5, "F3");
-guitar.setNote(Spacing.Quarter * 9, 0, "F4");
-guitar.setNote(Spacing.Quarter * 9 + Spacing.ThirtySecond, 0, "F4");
-guitar.setNote(Spacing.Quarter * 8, 2, "A4"),
 
-guitar.setNote(Spacing.Quarter * 2, 0, "C5");
+const guitarNotes: Array<[number, number, string]> = [
+  [0, 0, "B4"],
+  [Spacing.Quarter * 2, 0, "B4"],
+  [Spacing.Quarter * 2 + Spacing.SixtyFourth, 1, "G4"],
+  [Spacing.Quarter * 2 + Spacing.ThirtySecond, 2, "D4"],
+  [Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 3, "C4"],
+  [Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 4, "C4"],
+  [Spacing.Quarter * 3, 4, "B3"],
+  [Spacing.Quarter * 4, 5, "A3"],
+  [Spacing.Quarter * 6, 5, "G3"],
+  [Spacing.Quarter * 6 + Spacing.SixtyFourth * 3, 4, "C4"],
+  [Spacing.Quarter * 8, 5, "F3"],
+  [Spacing.Quarter * 9, 0, "F4"],
+  [Spacing.Quarter * 9 + Spacing.ThirtySecond, 0, "F4"],
+];
 
-guitar.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth, 1, "G5");
-guitar.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 2, 4, "B3");
-guitar.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 4, "C4");
-guitar.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 5, "F3");
+guitarNotes.forEach(([position, string, midiString]) => {
+  const noteSpot: GuitarNote = { position, string };
+  noteSpot.data = {
+    midi: toMidi(midiString),
+  };
+  guitar.setNote(noteSpot);
+});
 
-guitar.setNote(Spacing.Quarter * 2 + Spacing.Sixteenth, 5, "F2");
-
-guitar.setNote(Spacing.Quarter * 6, 0, "C5");
-
-guitar.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth, 1, "G5");
-// guitar.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth * 2, 4, "B3");
-guitar.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth * 3, 4, "C4");
-// guitar.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth * 3, 5, "F3");
-
-guitar.setNote(Spacing.Quarter * 7 + Spacing.SixtyFourth * 2, 1, "G5");
-guitar.setNote(Spacing.Quarter * 7 + Spacing.SixtyFourth * 3, 4, "B3");
-
+/*
 const activeStack = computed(() => {
   if (selectionState.start) {
     return notes.getStack(selectionState.start);
@@ -57,7 +50,8 @@ function fretboardNoteChange(note: GuitarNote) {
     return;
   }
   notes.deleteNote(position, string);
-}
+} */
+
 const notches = ref(4);
 const subdivisions = ref(4);
 </script>
@@ -68,15 +62,15 @@ const subdivisions = ref(4);
                            type="number">
   Subdivide notches by: <input v-model="subdivisions"
                                type="number">
-  <Tab :data="notes"
+  <Tab :data="tabStore"
        :notches
        :subdivisions
   />
-  <Fretboard
+  <!-- <Fretboard
     width="75%"
     :stack="activeStack"
     @note-change="fretboardNoteChange"
-  />
+  /> -->
 </template>
 
 <style scoped>

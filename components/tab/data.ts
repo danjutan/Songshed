@@ -43,7 +43,14 @@ export interface GuitarNote extends NoteSpot {
 
 export type StackMap = Map<number, NoteData>;
 
-export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize: Spacing.Quarter) {
+export interface TabStore {
+  title: string
+  beatsPerBar: number
+  beatSize: number
+  createGuitarTab: (tuning?: Midi[], strings?: number, frets?: number) => GuitarStore
+  guitar?: GuitarStore
+}
+export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize = Spacing.Quarter): TabStore {
   const data: TabData = reactive({
     title,
     beatsPerBar,
@@ -70,29 +77,23 @@ export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize: Spa
     guitar: guitarStore,
     createGuitarTab,
     // TODO: validation?
-    title: {
-      get() {
-        return data.title;
-      },
-      set(title: string) {
-        data.title = title;
-      },
+    get title() {
+      return data.title;
     },
-    beatsPerBar: {
-      get() {
-        return data.beatsPerBar;
-      },
-      set(beatsPerBar: number) {
-        data.beatsPerBar = beatsPerBar;
-      },
+    set title(title: string) {
+      data.title = title;
     },
-    beatSize: {
-      get() {
-        return data.beatSize;
-      },
-      set(beatSize: number) {
-        data.beatSize = beatSize;
-      },
+    get beatsPerBar() {
+      return data.beatsPerBar;
+    },
+    set beatsPerBar(beatsPerBar: number) {
+      data.beatsPerBar = beatsPerBar;
+    },
+    get beatSize() {
+      return data.beatSize;
+    },
+    set beatSize(beatSize: number) {
+      data.beatSize = beatSize;
     },
   };
 };
@@ -125,7 +126,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
       }
 
       const stack: GuitarNote[] = guitarData.stacks.get(position)
-        || new Array({ length: guitarData.strings }).map((_, string) => ({ position, string }));
+        || Array.from({ length: strings }, (_, string) => ({ position, string }));
       stack[string].data = data;
       guitarData.stacks.set(position, stack);
       if (position > (furthestPos.at(-1) ?? 0)) {

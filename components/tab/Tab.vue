@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import { type BarStore, Spacing, type TabStore } from "./data";
-import TabBar from "./bar/TabBar.vue";
+import { type TabStore } from "./data";
 import { ExpansionStateKey, createExpansionState } from "./providers/expansion-state";
 
 // TODO: move to app
@@ -9,41 +8,46 @@ provide(ExpansionStateKey, createExpansionState());
 const props = withDefaults(defineProps<{
   data: TabStore
   notches?: number
-  subdivisions: number
+  subdivisions?: number
+  barsPerLine?: number
   // The top part of a time signature
-  beatsPerBar?: number
   // The bottom part of a time signature
-  beatSize?: number
 }>(), {
   notches: 2,
   subdivisions: 4,
-  beatsPerBar: 4,
-  beatSize: Spacing.Quarter,
-});
-const barSize = computed(() => props.beatsPerBar * props.beatSize);
-
-const barsUntil = ref(props.data.lastPosition() ?? 0);
-
-const bars = computed<BarStore[]>(() => {
-  const barStores: BarStore[] = [];
-  for (let i = 0; i <= barsUntil.value; i += barSize.value) {
-    barStores.push(props.data.getBar(i, i + barSize.value));
-  }
-  /* for (i; i <= newBarUntil; i += barSize.value) {
-    barStores.push(props
-  } */
-  return barStores;
 });
 
-function newBarClick() {
-  barsUntil.value = Math.max((props.data.lastPosition() || 0), barsUntil.value + barSize.value);
-}
+// const barSize = computed(() => props.beatsPerBar * props.beatSize);
+//
+// const barsUntil = ref(props.data.lastPosition() ?? 0);
+//
+// const bars = computed<BarStore[]>(() => {
+//   const barStores: BarStore[] = [];
+//   for (let i = 0; i <= barsUntil.value; i += barSize.value) {
+//     barStores.push(props.data.getBar(i, i + barSize.value));
+//   }
+//   /* for (i; i <= newBarUntil; i += barSize.value) {
+//     barStores.push(props
+//   } */
+//   return barStores;
+// });
+//
+// function newBarClick() {
+//   barsUntil.value = Math.max((props.data.lastPosition() || 0), barsUntil.value + barSize.value);
+// }
 </script>
 
 <template>
   <div class="tab">
-    <TabBar v-for="barStore in bars"
-            :key="barStore.start"
+    <template v-if="data.guitar?.lastPosition()">
+      <div v-for="i in data.guitar.lastPosition() / data.beatSize"
+           class="stack">
+        i
+      </div>
+    </template>
+  </div>
+</template>
+    <!-- <TabBar v-for="barStore in bars"
             :data="barStore"
             :beats="barSize"
             :notches="notches * beatsPerBar"
@@ -52,15 +56,11 @@ function newBarClick() {
     <div class="new-button"
          @click="newBarClick">
       <span>+</span>
-    </div>
-  </div>
-</template>
+    </div> -->
 
 <style scoped>
 .tab {
   display: grid;
-  gap: 5px;
-  grid-template-columns: 1fr 1fr 1fr;
   width: 100%;
   --cell-height: 23px;
   --note-font-size: calc(var(--cell-height) * 0.8);
