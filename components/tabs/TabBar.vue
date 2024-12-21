@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { PropType } from "vue";
 import type { NoteSpot, FilledSpot } from "./data";
-import { SpacingsDescending, Spacing } from "./data";
+import { Spacing, smallestSpacing } from "./data";
 
 type StackData = NoteSpot[];
 
@@ -51,7 +51,7 @@ const notes = defineModel<FilledSpot[]>({
   required: true,
   validator: (notes: FilledSpot[]) => {
     const noConflict = notes.length === (new Set(notes.map(note => `${note.string},${note.position}`))).size;
-    const inGrid = notes.every(note => note.position % SpacingsDescending.at(-1)! == 0);
+    const inGrid = notes.every(note => note.position % smallestSpacing == 0);
     // TODO
     return noConflict && inGrid;
   },
@@ -59,11 +59,15 @@ const notes = defineModel<FilledSpot[]>({
 
 const stackMap = computed(() => {
   const stackMap = new Map<number, StackData>();
+  const emptyStack = (position: number) => props.tuning.map((_, string) => ({ string, position }));
+  for (let position = 0; position < props.beats; position += unit.value) {
+    stackMap.set(position, emptyStack(position));
+  }
   for (const note of notes.value) {
     const position = note.position;
-    if (position >= props.beats) continue;
     if (!stackMap.has(position)) {
-      stackMap.set(position, props.tuning.map((_, string) => ({ string, position })));
+      // These are the substacks, which don't fit on the grid lines in the last loop
+      stackMap.set(position, emptyStack(position));
     }
     stackMap.get(note.position)![note.string] = Object.assign({}, note);
   }
@@ -105,17 +109,6 @@ const divisions = computed<DivisionData[]>(() => {
     []);
 });
 
-const emptyDivisions = computed<DivisionData[]>(() => {
-  const empties: DivisionData[] = [];
-  const filledPositions = divisions.value.map(note => note.notchPosition);
-  for (let i = 0; i < props.notches; i++) {
-    if (!filledPositions.includes(i)) {
-      empties.push({ notchPosition: i, stack: [] });
-    }
-  }
-  return empties;
-});
-
 function modifyNotes(transform: (map: StackMap) => StackMap) {
   const transformed = transform(stackMap.value);
   const stacks = transformed.values();
@@ -147,15 +140,7 @@ function updateNote(note: NoteSpot) {
     <TabsDivision
       v-for="data in divisions"
       :key="data.notchPosition"
-      :data
-      :tuning
-      :frets
-      @note-change="updateNote"
-    />
-    <TabsDivision
-      v-for="data in emptyDivisions"
-      :key="data.notchPosition"
-      class="empty"
+      :subdivisions="(Spacing.Whole / smallestSpacing) / notches"
       :data
       :tuning
       :frets

@@ -46,7 +46,7 @@ function onInput(e: Event) {
 }
 
 function onInputClick(e: Event) {
-  console.log("click", input.value?.getBoundingClientRect().width);
+  // console.log("click", input.value?.getBoundingClientRect().width);
   e.target && (e.target as HTMLInputElement).select();
 }
 
@@ -73,10 +73,11 @@ onMounted(() => {
 <template>
   <div
     class="note-input"
-    :class="collapse ? 'collapse' : ''"
+    :class="{ collapse: false }"
     @mouseover="mouseOver"
     @mouseleave="emit('endEdit')">
-    <span class="input-bg">{{ relativeNote }}</span>
+    <span v-if="relativeNote"
+          class="input-bg">{{ relativeNote }}</span>
     <input
       ref="input"
       :size="2"
@@ -94,7 +95,7 @@ onMounted(() => {
 .note-input {
   display: grid;
   height: calc(var(--min-division-width) / 2);
-  width: calc(var(--min-division-width) / 2);
+  /* width: calc(var(--min-division-width) / 2); */
 }
 
 .collapse {
@@ -105,20 +106,21 @@ onMounted(() => {
 input {
   all: unset;
   text-shadow: 1px 1px 0px lightgray;
+  border-left: 1px solid pink;
+  max-width: calc(var(--min-division-width) / 2);
   /* z-index: var(--z-index-notes); */
 }
 
 .input-bg, input, .hover-bg {
   grid-area: 1 / 1;
   font-size: v-bind(fontSize);
-  min-height: calc(var(--min-division-width) / 2);
-  width: min-content;
+  /* min-height: calc(var(--min-division-width) / 2); */
+  /* width: min-content; */
   /* min-width: calc(var(--min-division-width) / 2); */
 }
 
 .input-bg {
-  height: 5px;
-  align-self: center;
+  width: min-content;
   pointer-events: none;
   color: transparent;
   background-color: v-bind(backgroundColor);
@@ -126,17 +128,17 @@ input {
   /* aspect-ratio: 1 / 1; */
 }
 
-.note-input:hover > .input-bg {
+.note-input:hover > input{
   width: calc(var(--min-division-width) / 2);
-  height: 100%;
+  /* height: 100%; */
   background-color: #ACCEF7
 }
 
-@container collapser (aspect-ratio < 0.5) {
+/* @container collapser (aspect-ratio < 0.5) {
   input,  .input-bg {
     display: none;
   }
-}
+} */
 
 /* .note-input:has(input) {
   .hover-bg {

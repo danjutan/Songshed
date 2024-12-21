@@ -33,4 +33,5 @@ export enum Spacing {
   SixtyFourth = 0.0625,
 }
 
-export const SpacingsDescending = (Object.values(Spacing).filter(Number) as number[]).sort((a, b) => b - a);
+export const smallestSpacing = Spacing.SixtyFourth;
+// export const SpacingsDescending = (Object.values(Spacing).filter(Number) as number[]).sort((a, b) => b - a);
