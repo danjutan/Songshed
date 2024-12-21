@@ -10,6 +10,7 @@ export type TieRenderProps = OverlayPosition & {
   otherHalfColumns?: number;
   editing?: boolean;
   direction: "up" | "down";
+  lastString?: boolean;
 };
 
 const emit = defineEmits<{
@@ -18,10 +19,6 @@ const emit = defineEmits<{
   blockClicked: [];
 }>();
 const props = defineProps<TieRenderProps>();
-
-// if (props.half) {
-//   console.log(props.type, props.half, props.otherHalfColumns);
-// }
 
 const hammerText = computed(() => (props.direction === "up" ? "H" : "P"));
 
@@ -49,6 +46,7 @@ function onSelectInput(e: Event) {
       down: direction === 'down',
       slide: type === 'slide',
       hammer: type === 'hammer',
+      bottom: lastString,
     }"
   >
     <div v-if="endColumn - startColumn >= (half ? 1 : 2)" class="block-notes" />
@@ -87,9 +85,6 @@ function onSelectInput(e: Event) {
   pointer-events: none;
   grid-row: v-bind(row);
   grid-column: v-bind(startColumn) / calc(v-bind(endColumn) + 1);
-  /* height: calc(
-    var(--cell-height) * (v-bind(endColumn) + 1 - v-bind(startColumn))
-  ); */
   height: var(--cell-height);
   display: grid;
   align-items: start;
@@ -210,13 +205,9 @@ function onSelectInput(e: Event) {
   grid-row: 1 / 1;
   grid-column: 1 / 1;
   width: 100%;
-  /* border: 1px solid black; */
   z-index: 1;
-  /* align-self: center; */
-  /* margin-bottom: calc(var(--cell-height) * -2); */
   margin-top: calc(var(--cell-height) * 0.85);
   height: calc(var(--cell-height) * 0.5);
-  /* height: 50%; */
   display: flex;
   align-items: end;
   overflow: hidden;
@@ -261,14 +252,17 @@ function onSelectInput(e: Event) {
 .right .arc-rect {
   --margin-left: calc(-100% / (2 * var(--column-span)));
   --left-path-point: calc(-1 * var(--margin-left));
+  --gap-multiplier: 0.7;
   --right-path-point: calc(
-    var(--left-path-point) + var(--label-font-size) * 0.7
+    var(--left-path-point) + var(--label-font-size) * var(--gap-multiplier)
   );
 
   border-bottom-left-radius: 0px;
   width: 100%;
   margin-left: var(--margin-left);
+}
 
+.right .arc-rect {
   clip-path: polygon(
     0% 0%,
     0% 100%,
@@ -287,6 +281,16 @@ function onSelectInput(e: Event) {
   border-bottom-right-radius: 0px;
   width: 100%;
   margin-right: calc(-100% / (2 * var(--column-span)));
+}
+
+.right.bottom .arc-rect {
+  width: calc(100% + var(--note-font-size));
+  --margin-left: calc(-100% / (2 * var(--column-span)) - var(--note-font-size));
+  --gap-multiplier: 1;
+}
+
+.right.bottom .tie-box {
+  width: calc(100% + var(--cell-height) * 2);
 }
 
 .indicator {
@@ -346,5 +350,9 @@ function onSelectInput(e: Event) {
     margin-left: 1px;
   }
   /* transform: translateX(-200%) translateY(30%); */
+}
+
+.right.bottom .indicator {
+  transform: translateX(-100%) translateY(-50%);
 }
 </style>

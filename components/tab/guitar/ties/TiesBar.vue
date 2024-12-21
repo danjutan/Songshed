@@ -28,6 +28,7 @@ const editingState = inject(EditingInjectionKey) as EditingState;
 
 function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
   const direction = (tie.midiFrom ?? 0) < (tie.midiTo ?? 0) ? "up" : "down";
+  const lastString = string === props.numStrings - 1;
   if (tie.from >= props.startPosition && tie.from < props.endPosition) {
     const startColumn =
       props.startColumn + (tie.from - props.startPosition) / props.subUnit;
@@ -41,6 +42,7 @@ function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
         from: tie.from,
         to: tie.to,
         direction,
+        lastString,
       };
     }
     return {
@@ -55,6 +57,7 @@ function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
       to: tie.to,
       half: "left",
       otherHalfColumns: (tie.to - props.endPosition) / props.subUnit + 1,
+      lastString,
       direction,
     };
   }
@@ -69,6 +72,7 @@ function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
       to: tie.to,
       half: "right",
       otherHalfColumns: (props.startPosition - tie.from) / props.subUnit,
+      lastString,
       direction,
     };
   }
