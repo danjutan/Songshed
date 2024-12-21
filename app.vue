@@ -68,16 +68,20 @@ function fretboardNoteChange(note: GuitarNote) {
   notes.deleteNote(position, string);
 } */
 
+const barsPerLine = ref(3);
 const notches = ref(4);
 const subdivisions = ref(4);
 const collapseSubdivisions = ref(true);
 const collapseEmpty = ref(true);
 
+const saveId = ref(id);
+
 async function save() {
-  if (tabStore.value) {
+  if (tabStore.value && saveId.value) {
     const tabData = tabStore.value.serialize();
 
-    const { data, pending, error, refresh } = await $fetch("/api/tab-data/test", {
+    const url = "/api/tab-data/" + saveId.value;
+    const { data, pending, error, refresh } = await $fetch(url, {
       method: "POST",
       body: tabData,
     });
@@ -87,6 +91,8 @@ async function save() {
 
 <template>
   <!-- <input type="checkbox" v-model="showDivisions"/> -->
+  Bars per line:
+  <input v-model="barsPerLine" type="number" />
   Notches per bar:
   <input v-model="notches" type="number" />
   Subdivide notches by:
@@ -97,11 +103,13 @@ async function save() {
   Collapse empty notches:
   <input v-model="collapseEmpty" type="checkbox" />
 
+  <input v-model="saveId" type="text" />
   <button @click="save">Save</button>
 
   <Tab
     v-if="tabStore"
     :data="tabStore"
+    :bars-per-line
     :notches
     :subdivisions
     :collapse-subdivisions
