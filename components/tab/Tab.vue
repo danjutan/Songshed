@@ -92,7 +92,7 @@ function annotationEnd() {
     const last = Math.max(start, end);
     props.data.annotations.createAnnotation(row, {
       start: first,
-      end: last + subUnit.value,
+      end: last,
       title: "",
     });
   }
@@ -146,10 +146,10 @@ const annotationRenders = computed(() => {
       const end = posToCol(annotation.end);
       if (start.tabline !== end.tabline) {
         push(start.tabline, row, start.column, -2, annotation);
-        push(end.tabline, row, 2, end.column, annotation);
+        push(end.tabline, row, 2, end.column + 1, annotation);
         continue;
       }
-      push(start.tabline, row, start.column, end.column, annotation);
+      push(start.tabline, row, start.column, end.column + 1, annotation);
     }
   });
 
@@ -254,7 +254,6 @@ const annotationRenders = computed(() => {
 }
 
 .divider {
-  justify-self: end;
   grid-row: v-bind(notesRow);
   width: calc(var(--cell-height) / 3);
   padding: 0px 1px;
@@ -276,6 +275,10 @@ const annotationRenders = computed(() => {
       content: "+";
     }
   }
+}
+
+.divider:first-of-type {
+  justify-self: end;
 }
 
 /* We don't want this last divider to take up extra space in the grid and throw it off */
