@@ -27,14 +27,11 @@ const relativePositions = computed(() => sortedSubstacks.value.map(substack => s
 const subunit = computed(() => 1 / props.subdivisions);
 const colPositions = computed(() => relativePositions.value.map(pos => 1 + pos / subunit.value));
 
-const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150 ${(props.data.notchPosition + 1) % 2 * 255})`);
-
 const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-font-size)" : "1fr");
 </script>
 
 <template>
   <div class="division"
-       :class="{ debug }"
        @click="debug && console.log({ subunit, subdivisions, colPositions })">
     <div class="stack">
       <TabsNoteInput v-for="(noteSpot) in props.data.stack"
@@ -86,11 +83,6 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
   display: grid;
   grid-template-columns: v-bind(firstColWidth) repeat(v-bind(numSubstacks), minmax(10px, 1fr));
   grid-template-rows: repeat(v-bind(numStrings), calc(var(--min-division-width) / 2));
-}
-
-.division.debug {
-  border-top: 2px solid v-bind(debugColor);
-  margin-top: -2px;
 }
 
 .stack,

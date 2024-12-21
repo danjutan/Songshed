@@ -13,8 +13,6 @@ const hovering = ref(0);
 const numStrings = computed(() => props.tuning.length);
 const numNotches = computed(() => props.divisions.length);
 const spacers = computed(() => emptyDivisions(props.divisions));
-
-// TODO: drape up (slot? no background?)
 </script>
 
 <template>
@@ -22,6 +20,7 @@ const spacers = computed(() => emptyDivisions(props.divisions));
     <div v-for="i in numNotches"
          :key="i"
          :style="{ gridColumn: `${i} / span 1` }"
+         :class="{ 'border-even': i % 2 === 0, 'border-odd': i % 2 === 1 }"
          class="notch">
       <div class="selectable"
            @mouseover="hovering = i"
@@ -44,10 +43,10 @@ const spacers = computed(() => emptyDivisions(props.divisions));
         <div class="spacer-overlay">
           <div class="indicator-container">
             <div class="spacer-indicator">
-              ←
+              ⇤
             </div>
             <div class="spacer-indicator">
-              →
+              ⇥
             </div>
           </div>
         </div>
@@ -79,6 +78,17 @@ const spacers = computed(() => emptyDivisions(props.divisions));
   container-type: size;
 }
 
+.notch.border-odd {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  margin-top: -2px;
+}
+
+.notch.border-even {
+  /* border-bottom: 2px solid rgba(0, 100, 255, 0.5); */
+  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+  margin-top: -2px;
+}
+
 .spacer-overlay {
   display: flex;
   height: 100%;
@@ -99,10 +109,18 @@ const spacers = computed(() => emptyDivisions(props.divisions));
 .spacer-indicator {
   /* margin-top: -50%; */
   font-size: clamp(10px, 50cqw, var(--min-division-width));
-  color: red;
+  color: rgba(255, 0, 0, 0.6);
 }
 
-@container (aspect-ratio < 1) {
+.spacer-indicator:first-child {
+  margin-left: -2cqw;
+}
+
+.spacer-indicator:last-child {
+  margin-right: -2cqw;
+}
+
+@container (aspect-ratio < 0.8) {
   .spacer-indicator {
     display: none;
   }
