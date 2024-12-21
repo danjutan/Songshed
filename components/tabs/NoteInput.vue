@@ -24,6 +24,7 @@ const relativeNote = computed(() =>
   },
 );
 
+const fontSize =  `calc(var(--min-division-width) / 2)`;
 
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
@@ -100,7 +101,7 @@ input {
 .input-bg, input, .hover-bg {
   /* border: 1px dashed blue; */
   grid-area: 1 / 1;
-  font-size: calc(var(--min-division-width) / 2);
+  font-size: v-bind(fontSize);
   width: min-content;
   /* min-width: calc(var(--min-division-width) / 2); */
 }
