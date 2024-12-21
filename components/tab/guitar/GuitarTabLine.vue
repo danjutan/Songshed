@@ -74,7 +74,13 @@ const notesRow = computed(() =>
     />
   </template>
   <template v-if="bendRow">
-    <div class="bend-row-label" :style="{ gridRow: bendRow }">bend</div>
+    <!-- <div
+      v-if="tieAddState.newBend"
+      class="bend-row-label"
+      :style="{ gridRow: bendRow }"
+    >
+      bend
+    </div> -->
     <BendRender
       v-for="render in bendRenders!.get(tabLineIndex)"
       :key="render.startColumn"
@@ -87,9 +93,10 @@ const notesRow = computed(() =>
 <style scoped>
 .bend-row-label {
   /* 
-    For some reason, this refuses to update for the first tabline, after save/loading. Using :style instead
-    grid-row: v-bind(bendRow); 
+    Using :style instead, in case we want to show the bend label all the time.
+    For some reason, this refuses to update for the first tabline, after save/loading. 
   */
+  /* grid-row: v-bind(bendRow); */
   grid-column: 1;
   font-size: calc(var(--note-font-size) * 0.75);
   align-self: center;

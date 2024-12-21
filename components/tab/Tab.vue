@@ -175,7 +175,8 @@ const annotationRows = computed(() =>
 );
 
 const notesRow = computed(() => {
-  const hasBend = props.tabStore.guitar?.ties.getBends().length;
+  const hasBend =
+    tieAddState.newBend || props.tabStore.guitar?.ties.getBends().length;
   return annotationRows.value + (hasBend ? 2 : 1);
 });
 
