@@ -2,7 +2,7 @@ export type NoteData = { note: Midi, muted: boolean, slide: boolean, bend: strin
 /*
   We're dividing an entire bar, not a beat (which would usually be 1/4 of a bar).
   A half note is considered 2 beats, but 1/2 of a bar. */
-export type Division = [length: number, strings?: NoteData[]]
+export type Division = [length: number, notes: NoteData[]]
 /*
 this following model doesn't support triplets, because it assumes equal time for each number:
 1 1 1 1 <- four equal subdivisions (4 quarter notes)

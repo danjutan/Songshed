@@ -4,8 +4,9 @@ import type { Division } from './types';
 const divisions = defineModel<Division[]>({ required: true });
 const props = withDefaults(defineProps<{
   strings?: number,
+  frets?: number
 }
->(), { strings: 6 });
+>(), { strings: 6, frets: 12 });
 /*
 smallest should get a min-width of minWidth.
 then your minwidth is proportional to the smallest.
@@ -18,27 +19,46 @@ const templateColumns = computed<string>(() => lengths.value.map(length => lengt
 
 function split(index: number) {
   const halfTime = lengths.value[index] / 2;
-  divisions.value.splice(index, 1, [halfTime, divisions.value[index][1]], [halfTime]);
+  divisions.value.splice(index, 1, [halfTime, divisions.value[index][1]], [halfTime, []]);
 }
 
 const dragging = ref(0);
+
+const editing = ref<{col: number, string: number}>();
+
+const isEditing = (col: number, string: number) => 
+  col === editing.value?.col && string === editing?.value.string;
+
+const filled = (col: number, string: number) => {
+  return divisions.value[col][1][string];
+}
+
+// const inputs = reactive([]); 
+
+function onInputClick(payload: MouseEvent) {
+  console.log(payload.target);
+  payload.target.select();
+}
+
 </script>
 
 <template>
   <div class="bar">
     <div v-for="string in props.strings" :style="`grid-row: ${string} / span ${1}`" class="string"></div>
-    <div v-for="([length, notes], i) in divisions" class="division"
-      :style="`min-width: calc(${length / smallest} * var(--min-division-width)); grid-column: ${i + 1} / span 1`">
+    <div v-for="([length, notes], col) in divisions" class="division"
+      :style="`min-width: calc(${length / smallest} * var(--min-division-width)); grid-column: ${col + 1} / span 1`">
       <div class="notes">
-        <div v-for="string in props.strings" class="row">
-          <div class="spot">
+        <div v-for="(_, string) in props.strings" class="row">
+          <div class="spot" @mouseover="editing = {col, string}" @mouseleave="editing = undefined">
+              <span class="input-bg">{{ divisions[col][1][string]}}</span>
+              <input @click="onInputClick" v-model="divisions[col][1][string]" type="number" min="1" :max="frets"/>
           </div>
         </div>
       </div>
-      <div class="half-bar" @click="split(i)"></div>
-      <div class="divider" @mousedown="dragging = i + 1" @mouseup="dragging = 0"></div>
+      <div v-show="!editing" class="half-bar" @click="split(col)"></div>
+      <div class="divider" @mousedown="dragging = col + 1" @mouseup="dragging = 0"></div>
     </div>
-    <div v-if="dragging" @mouseup="dragging = 0" class="dragger"></div>
+    <div v-if="dragging" @mouseup="dragging = 0" @mouseout="dragging = 0" class="dragger"></div>
   </div>
 </template>
 
@@ -101,7 +121,8 @@ const dragging = ref(0);
 
 .half-bar {
   height: 100%;
-  width: calc(50% - 1px);
+  max-width: calc(50%);
+  flex-grow: 1;
   border-left: 1px dashed transparent;
 }
 
@@ -112,10 +133,31 @@ const dragging = ref(0);
 
 .row .spot {
   width: calc(var(--min-division-width) / 2);
+  display: grid;
   aspect-ratio: 1;
+  align-items: center;
+
+  & .input-bg {
+    grid-area: 1 / 1;
+    width: min-content;
+    pointer-events: none;
+    font-size: x-small;
+    color: green;
+    background-color: white;
+  }
+
+  & input {
+    all: unset;
+    grid-area: 1 / 1;
+    font-size: x-small;
+  }
+
+  & input::selection {
+    background-color: blue;
+  }
+
+
 }
 
-.row:hover .spot {
-  background-color: rgb(210, 237, 246);
-}
+
 </style>
