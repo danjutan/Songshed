@@ -4,6 +4,10 @@ import Strings from "./Strings.vue";
 import Stack from "./Stack.vue";
 import Overlay from "./Overlay.vue";
 import Unexpander from "./Unexpander.vue";
+import {
+  SelectionInjectionKey,
+  type SelectionStore,
+} from "./providers/selection";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
@@ -22,6 +26,8 @@ const emit = defineEmits<{
   noteDelete: [position: number, string: number];
   noteChange: [position: number, string: number, note: GuitarNote];
 }>();
+
+const selectionState = inject(SelectionInjectionKey) as SelectionStore;
 
 const isNotch = (position: number) => position % props.notchUnit === 0;
 const subUnit = computed(() => props.notchUnit / props.subdivisions);
@@ -97,11 +103,14 @@ function toggleSubdivisions(notchPosition: number) {
       :collapse="collapsed.has(position)"
       :tuning
       :frets
+      :selected="selectionState.isSelected(position)"
       @note-change="
         (string: number, note: GuitarNote) =>
           emit('noteChange', position, string, note)
       "
       @note-delete="(string: number) => emit('noteDelete', position, string)"
+      @mousedown="selectionState.start(position)"
+      @mousemove="selectionState.drag(position)"
     />
     <template v-if="isNotch(position)">
       <template v-if="collapsedEmpty.has(position)">

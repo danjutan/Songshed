@@ -60,6 +60,10 @@ onMounted(() => {
     input.value?.focus();
   }
 });
+
+function onClick(e: MouseEvent) {
+  focus();
+}
 </script>
 
 <template>
@@ -72,7 +76,7 @@ onMounted(() => {
       inputmode="numeric"
       pattern="[0-9]{1,2}"
       @input="onInput"
-      @click="focus"
+      @click="onClick"
     />
   </div>
 </template>
@@ -94,7 +98,7 @@ input {
 .input-bg,
 input {
   grid-area: 1 / 1;
-  width: var(--note-font-size);
+  width: var(--cell-height);
   font-size: var(--note-font-size);
   text-align: center; /*comment this if you want other centering*/
 }

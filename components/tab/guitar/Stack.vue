@@ -60,7 +60,7 @@ const inputRefs = ref<InputRef[]>([]);
           :data="note"
           :tuning="props.tuning[string]"
           :frets="props.frets"
-          :blocking-color="selected ? 'transparent' : undefined"
+          :blocking-color="selected ? 'var(--highlight-blocking)' : undefined"
           :hovering="hovering === string"
           @note-delete="emit('noteDelete', string)"
           @note-change="

@@ -4,6 +4,12 @@ import type { TabStore } from "~/model/stores";
 import GuitarBar from "./guitar/GuitarBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 
+import {
+  createSelectionStore,
+  SelectionInjectionKey,
+  type SelectionStore,
+} from "./guitar/providers/selection";
+
 const props = withDefaults(
   defineProps<{
     data: TabStore;
@@ -19,6 +25,9 @@ const props = withDefaults(
     subdivisions: 4,
   },
 );
+
+const selectionState = createSelectionStore();
+provide(SelectionInjectionKey, selectionState);
 
 const barSize = computed(() => props.data.beatsPerBar * props.data.beatSize);
 const notchUnit = computed(() => barSize.value / props.notches);
@@ -195,10 +204,15 @@ const annotationRenders = computed(() => {
 
   return annotationRenders;
 });
+
+function cancelSelection() {
+  annotationEnd();
+  selectionState.end();
+}
 </script>
 
 <template>
-  <div class="tab" @mouseup="annotationEnd">
+  <div class="tab" @mouseup="cancelSelection" @mouseleave="cancelSelection">
     <div v-for="(tabLine, tabLineIndex) in tabLines" class="tab-line">
       <template v-for="(bar, i) in tabLine" :key="bar.start">
         <div
@@ -286,6 +300,8 @@ const annotationRenders = computed(() => {
   --string-width: 1px;
   --string-color: gray;
   --highlight-color: rgba(172, 206, 247, 0.4);
+  /*https://graphicdesign.stackexchange.com/a/113050*/
+  --highlight-blocking: rgb(221.8, 235.4, 251.8);
   --note-hover-color: rgba(172, 206, 247, 0.8);
   user-select: none;
 }
