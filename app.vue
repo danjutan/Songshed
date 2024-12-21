@@ -35,7 +35,9 @@ if (id) {
     [Spacing.Quarter * 2, 2, "B4"],
     [Spacing.Quarter * 2 + Spacing.Sixteenth, 2, "D4"],
     [Spacing.Quarter * 3, 4, "B3"],
+    [Spacing.Quarter * 3 + Spacing.Sixteenth, 1, "B3"],
     [Spacing.Quarter * 4, 5, "A3"],
+    [Spacing.Quarter * 4 + Spacing.Sixteenth, 1, "A4"],
     [Spacing.Quarter * 6, 5, "G3"],
     [Spacing.Quarter * 8, 5, "F3"],
     [Spacing.Quarter * 9, 0, "F4"],
@@ -54,6 +56,11 @@ if (id) {
   guitar.setTie(2, Spacing.Quarter * 2, {
     to: Spacing.Quarter * 2 + Spacing.Sixteenth,
     type: "h",
+  });
+
+  guitar.setTie(1, Spacing.Quarter * 3 + Spacing.Sixteenth, {
+    to: Spacing.Whole + Spacing.Sixteenth,
+    type: "p",
   });
 
   guitar.setTie(0, Spacing.Quarter * 9, {
