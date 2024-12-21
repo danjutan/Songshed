@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import { defaultFrameColor } from "~/composables/colors";
 import NoteView from "./NoteView.vue";
+import { defaultFrameColor } from "~/composables/colors";
 
 const props = withDefaults(
   defineProps<{
-    tuning?: Midi[];
-    frets?: number;
-    colors?: NoteColors;
-    labeledNotes?: Midi[];
+    tuning?: Midi[]
+    frets?: number
+    colors?: NoteColors
+    labeledNotes?: Midi[]
   }>(),
   {
     tuning: () => defaultTuning,
@@ -17,12 +17,12 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  noteClicked: [note: Midi];
+  noteClicked: [note: Midi]
 }>();
 
 const stringValues: Array<Midi | false> = reactive([...props.tuning]);
 
-const cellRatio = 15 / 25; //height / width
+const cellRatio = 15 / 25; // height / width
 const cellWidth = 50;
 const cellHeight = cellWidth * cellRatio;
 const noteRadius = cellWidth / 4;
@@ -38,7 +38,7 @@ const nextMidiClamp = (midi: number) => {
   return 127;
 };
 
-const rows: Midi[][] = props.tuning.map((startNote) =>
+const rows: Midi[][] = props.tuning.map(startNote =>
   range(startNote - 1, startNote + props.frets - 1).map(nextMidiClamp),
 );
 
@@ -58,6 +58,7 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
   stringValues[string] = props.tuning[string];
 };
 </script>
+
 <template>
   <svg :viewBox>
     <line
@@ -77,8 +78,7 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
       :y="rowLinesY[rowLinesY.length - 1] + 25"
       :fill="defaultFrameColor"
       font-family="sans-serif"
-      font-size="8pt"
-    >
+      font-size="8pt">
       {{ label }}
     </text>
 
@@ -96,12 +96,12 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
         v-for="(midi, xi) in row"
         :color="defaultColors[getChroma(midi)]"
         :selected="stringValues[yi] === midi"
-        @toggle="(selected) => noteToggle(selected, yi, midi)"
-        :frameColor="defaultFrameColor"
+        :frame-color="defaultFrameColor"
         :midi
-        :noteRadius
+        :note-radius
         :cx="cellWidth / 2 + xi * cellWidth"
         :cy="rowLinesY[yi]"
+        @toggle="(selected) => noteToggle(selected, yi, midi)"
       />
     </template>
 
@@ -116,4 +116,5 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
     />
   </svg>
 </template>
+
 <style></style>

@@ -9,17 +9,17 @@ export const defaultTuning = ["E4", "B3", "G3", "D3", "A2", "E2"].map(toMidi);
 
 export function validMidi(midi: number | null): midi is Midi {
   return (
-    typeof midi === "number" &&
-    Number.isInteger(midi) &&
-    midi < 128 &&
-    midi >= 0
+    typeof midi === "number"
+    && Number.isInteger(midi)
+    && midi < 128
+    && midi >= 0
   );
 }
 
-//Note.get already caches for us https://github.com/tonaljs/tonal/blob/3eb59b7cc0e02f6a66d07756d9d6dec8637abf2f/packages/core/src/note.ts#L44-L48
+// Note.get already caches for us https://github.com/tonaljs/tonal/blob/3eb59b7cc0e02f6a66d07756d9d6dec8637abf2f/packages/core/src/note.ts#L44-L48
 export function getNoteInfo(nameOrMidi: string | number) {
-  const note =
-    typeof nameOrMidi === "number" ? Note.fromMidi(nameOrMidi) : nameOrMidi;
+  const note
+    = typeof nameOrMidi === "number" ? Note.fromMidi(nameOrMidi) : nameOrMidi;
 
   const noteData = Note.get(note);
 

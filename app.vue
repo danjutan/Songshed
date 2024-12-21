@@ -16,6 +16,7 @@ const notes = ref<FilledSpot[]>([
 
   createNote(Spacing.Quarter * 2 + Spacing.Sixteenth, 5, "F2"),
 ]);
+
 // const showDivisions = ref(false);
 </script>
 
@@ -25,6 +26,7 @@ const notes = ref<FilledSpot[]>([
     <TabBar v-model="notes"
             :notches="8"
     />
+
     <TabBar v-model="notes" />
     <TabBar v-model="notes"
             :notches="32"

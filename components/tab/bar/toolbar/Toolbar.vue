@@ -4,6 +4,7 @@ import type { DrapeData } from "./Drape.vue";
 import Drape from "./Drape.vue";
 import { emptyDivisions } from "./empty-divisions";
 import ExpanderOverlay from "./ExpanderOverlay.vue";
+import UnexpanderOverlay from "./UnexpanderOverlay.vue";
 
 const props = defineProps<{
   divisions: DivisionData[]
@@ -106,12 +107,7 @@ const stackExpanderStarts = computed<number[]>(
       </template>
       <template v-if="expanded.has(start)"
                 #up>
-        <div class="unexpander">
-          <div class="label">
-            <div>↦</div>
-            <div>↤</div>
-          </div>
-        </div>
+        <UnexpanderOverlay />
       </template>
     </Drape>
   </div>
@@ -141,32 +137,6 @@ const stackExpanderStarts = computed<number[]>(
   /* border-bottom: 2px solid rgba(0, 100, 255, 0.5); */
   border-bottom: 2px solid rgba(0, 0, 0, 0.3);
   margin-top: -2px;
-}
-
-.unexpander {
-  background-color: var(--substack-bg);
-  height: var(--cell-height);
-  width: 100%;
-  cursor: pointer;
-  container-name: unexpander;
-  container-type: size;
-}
-
-.unexpander .label {
-  /* font-size: 100cqw; */
-  /* font-size: var(--cell-height); */
-  color: rgb(255, 0, 0);
-  font-weight: bold;
-  font-size: min(100cqw, var(--cell-height));
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-@container unexpander (aspect-ratio < 1) {
-  .unexpander .label {
-    display: none;
-  }
 }
 
 /* .spacer-indicator:first-child {
