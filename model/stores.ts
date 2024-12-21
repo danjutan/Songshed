@@ -263,13 +263,17 @@ function createStackStore<N extends NoteData>(
   };
 }
 
-export type Tie = TieData & {
+export interface Tie extends TieData {
   string: number;
   from: number;
   midiFrom?: Midi;
   midiTo?: Midi;
-};
-export type Bend = BendData & { string: number; from: number };
+}
+
+export interface Bend extends BendData {
+  string: number;
+  from: number;
+}
 
 export interface TieStore {
   setTie: (string: number, from: number, tie: TieData | BendData) => void;

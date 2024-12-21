@@ -17,4 +17,6 @@ export default defineNuxtConfig({
       remote: true,
     },
   },
+
+  compatibilityDate: "2024-12-12",
 });
