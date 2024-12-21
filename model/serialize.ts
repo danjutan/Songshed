@@ -6,13 +6,23 @@ function replacer(key: string, value: object) {
       _entries: [...value],
     };
   }
+  if (value instanceof Set) {
+    return {
+      _svalues: [...value],
+    };
+  }
   return value;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function reviver(key: string, value: any) {
-  if (typeof value === "object" && value._entries) {
-    return new Map(value._entries as Array<[unknown, unknown]>);
+  if (typeof value === "object") {
+    if (value._entries) {
+      return new Map(value._entries as Array<[unknown, unknown]>);
+    }
+    if (value._svalues) {
+      return new Set(value._svalues as Array<unknown>);
+    }
   }
   return value;
 }
