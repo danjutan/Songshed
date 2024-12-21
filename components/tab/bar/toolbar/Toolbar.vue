@@ -21,9 +21,9 @@ const expandsTo = computed<{ [column: number]: string }>(
       div.substacks ? `calc(${props.subdivisions} * var(--cell-height))` : "var(--cell-height)",
     ])));
 
-function toggleExpanded(start: number, end?: number) {
+function toggleExpanded(start: number, plus = 0) {
   const newSet = new Set(expanded.value);
-  for (let i = start; i <= (end ?? start); i++) {
+  for (let i = start; i <= start + plus; i++) {
     if (newSet.has(i)) {
       newSet.delete(i);
       continue;
@@ -46,6 +46,9 @@ const stackExpanderStarts = computed<number[]>(
 </script>
 
 <template>
+  <!-- <div style="position: absolute">
+    <span v-for="i in expanded">{{ i }},</span>
+  </div> -->
   <div class="toolbar">
     <div
       v-for="i in numNotches"
@@ -67,15 +70,19 @@ const stackExpanderStarts = computed<number[]>(
       :key="start"
       collapsed="show"
       default="hide"
+      up="reverse"
       :start
       :columns
       :num-strings
       :row-start="2"
-      color="var(--substack-bg)">
-      <!-- <template #up>
-        <div :style="{ width: '100%', height: 'var(--cell-height)', pointerEvents: 'auto' }" />
-      </template> -->
-      <template #down>
+      color="var(--substack-bg)"
+      @click="toggleExpanded(start, columns)">
+      <template v-if="expanded.has(start)"
+                #up>
+        <UnexpanderOverlay />
+      </template>
+      <template v-else
+                #down>
         <ExpanderOverlay />
       </template>
     </Drape>
