@@ -4,7 +4,6 @@ import type { Division } from './types';
 const divisions = defineModel<Division[]>({ required: true });
 const props = withDefaults(defineProps<{
   strings?: number,
-  showDivisions?: boolean
 }
 >(), { strings: 6 });
 /*
@@ -22,7 +21,7 @@ function split(index: number) {
   divisions.value.splice(index, 1, [halfTime, divisions.value[index][1]], [halfTime]);
 }
 
-//try overlay + subgrid. then try equal spaced columns
+const dragging = ref(0);
 </script>
 
 <template>
@@ -37,9 +36,9 @@ function split(index: number) {
         </div>
       </div>
       <div class="half-bar" @click="split(i)"></div>
-      <div class="divider" :class="{ 'with-border': showDivisions }"></div>
+      <div class="divider" @mousedown="dragging = i + 1" @mouseup="dragging = 0"></div>
     </div>
-    <!-- <div class="dragger"></div> -->
+    <div v-if="dragging" @mouseup="dragging = 0" class="dragger"></div>
   </div>
 </template>
 
@@ -68,10 +67,9 @@ function split(index: number) {
 .dragger {
   background-color: red;
   opacity: 0.3;
-  grid-column: 1 / 2;
-  grid-row: 1 / 6;
-  /* grid-column: 2 / span 1;
-  grid-row: 1 / span 1; */
+  margin-left: -5px;
+  grid-column: v-bind(dragging) / span 2;
+  grid-row: 1 / span v-bind(strings);
 }
 
 .division {

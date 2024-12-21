@@ -9,12 +9,12 @@ const d = (...nums: number[]) => [...nums.map(n => [n] as Division)];
 const divnum = ref(d(1/2,1/6,1/6,1/6,1/2,1/4,1/4,2));
 const another = ref(d(1,1,1,1));
 
-const showDivisions = ref(false);
+// const showDivisions = ref(false);
 </script>
 <template>
-  <input type="checkbox" v-model="showDivisions"/>
-  <TabsTabBar v-model="divnum" :show-divisions></TabsTabBar>
-  <TabsTabBar :model-value="another" :show-divisions></TabsTabBar>
+  <!-- <input type="checkbox" v-model="showDivisions"/> -->
+  <TabsTabBar v-model="divnum"></TabsTabBar>
+  <TabsTabBar :model-value="another"</TabsTabBar>
   <Fretboard/>
 </template>
 <style scoped>
