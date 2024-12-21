@@ -189,36 +189,38 @@ const releaseArrowHover = ref(false);
         :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : undefined"
       />
     </g>
-    <rect
-      class="release-grabber"
-      :x="coords.through ? coords.to.left : coords.to.right"
-      :y="
-        coords.through && bend.releaseType === 'connect'
-          ? startY - cellHeight * 1.5
-          : 0
-      "
-      :width="coords.to.right - coords.to.left"
-      :height="cellHeight"
-      opacity="0"
-      @mousedown="bendEditState.start('release', props.bend)"
-      @click="
-        bendEditState.onReleaseGrabberClick(
-          resizeObserver.getNextStackPos(props.bend.to)!,
-        )
-      "
-      @mouseover="releaseArrowHover = true"
-      @mouseleave="releaseArrowHover = false"
-    />
-    <line
-      v-if="!coords.through"
-      :x1="coords.to.right"
-      :y1="cellHeight * 0.35"
-      :x2="coords.to.right + (coords.to.right - coords.to.left) * 0.6"
-      :y2="cellHeight * 0.35"
-      stroke="black"
-      opacity="0.4"
-      :marker-end="'url(#arrow)'"
-    />
+    <g v-if="!bendEditState.dragging">
+      <rect
+        class="release-grabber"
+        :x="coords.through ? coords.to.left : coords.to.right"
+        :y="
+          coords.through && bend.releaseType === 'connect'
+            ? startY - cellHeight * 1.5
+            : 0
+        "
+        :width="coords.to.right - coords.to.left"
+        :height="cellHeight"
+        opacity="0"
+        @mousedown="bendEditState.start('release', props.bend)"
+        @click="
+          bendEditState.onReleaseGrabberClick(
+            resizeObserver.getNextStackPos(props.bend.to)!,
+          )
+        "
+        @mouseover="releaseArrowHover = true"
+        @mouseleave="releaseArrowHover = false"
+      />
+      <line
+        v-if="!coords.through"
+        :x1="coords.to.right"
+        :y1="cellHeight * 0.35"
+        :x2="coords.to.right + (coords.to.right - coords.to.left) * 0.6"
+        :y2="cellHeight * 0.35"
+        stroke="black"
+        opacity="0.4"
+        :marker-end="'url(#arrow)'"
+      />
+    </g>
   </g>
 </template>
 
@@ -235,6 +237,7 @@ const releaseArrowHover = ref(false);
 .bend-label {
   display: grid;
   justify-content: center;
+  align-items: end;
   /* justify-content: center; */
   width: 120%;
   &:not(.dragging) {
@@ -244,13 +247,11 @@ const releaseArrowHover = ref(false);
   }
 
   & span {
+    /* align-self: start; */
     font-size: calc(var(--note-font-size) * 0.75);
     cursor: text;
-    background: white;
-    padding-left: 10px;
-    padding-right: 10px;
-    margin-left: -2px;
-    margin-top: 1px;
+    padding: 0px 7px;
+    margin-bottom: 2px;
     grid-row: 1 / 1;
     grid-column: 1 / 1;
   }
@@ -263,6 +264,7 @@ const releaseArrowHover = ref(false);
     appearance: none;
     border: none;
     outline: none;
+    color: transparent;
     text-align: center;
     height: v-bind(selectHeight);
     grid-row: 1 / 1;

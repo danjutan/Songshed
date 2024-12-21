@@ -12,20 +12,6 @@ import {
   TieAddInjectionKey,
   type TieAddState,
 } from "./state/tie-add-state";
-import { SettingsInjectionKey, type Settings } from "../state/settings-state";
-import {
-  CellHoverInjectionKey,
-  type CellHoverEvents,
-} from "../state/cell-hover-events";
-import {
-  BendEditInjectionKey,
-  createBendEditState,
-  type BendEditState,
-} from "./state/bend-edit-state";
-import {
-  createStackResizeObserver,
-  StackResizeObserverInjectionKey,
-} from "../state/stack-resize-observer";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -39,19 +25,6 @@ const props = defineProps<{
 }>();
 
 const tieAddState = inject(TieAddInjectionKey) as TieAddState;
-
-const bendRenders = createBendRenderState(
-  props.guitarStore.ties,
-  computed(() => props.startRow + 1),
-  props.posToCol,
-  computed(() => tieAddState.newBend),
-);
-
-const bendRow = computed(
-  () =>
-    // bendRenders.value.has(props.tabLineIndex) ? props.startRow : undefined,
-    props.startRow,
-);
 
 const notesRow = computed(() =>
   bendRow.value ? bendRow.value + 1 : props.startRow,
@@ -69,10 +42,15 @@ const tablineLast = computed(
 
 const inBounds = (position: number) =>
   position >= tablineStart.value && position <= tablineLast.value;
-const bends = computed(() =>
-  props.guitarStore.ties
-    .getBends()
-    .filter((bend) => inBounds(bend.from) || inBounds(bend.to)),
+
+const bends = computed(() => {
+  const bends = props.guitarStore.ties.getBends();
+  const withNew = tieAddState.newBend ? [...bends, tieAddState.newBend] : bends;
+  return withNew.filter((bend) => inBounds(bend.from) || inBounds(bend.to));
+});
+
+const bendRow = computed(() =>
+  bends.value.length ? props.startRow : undefined,
 );
 
 const columnEnd = computed(
@@ -112,21 +90,6 @@ const columnEnd = computed(
       :start-position="bar.start"
       :end-position="bar.start + bar.stacks.size * subUnit"
       :sub-unit="subUnit"
-    /> -->
-  </template>
-  <template v-if="bendRow">
-    <!-- <div
-      v-if="tieAddState.newBend"
-      class="bend-row-label"
-      :style="{ gridRow: bendRow }"
-    >
-      bend
-    </div> -->
-    <!-- <BendRender
-      v-for="render in bendRenders!.get(tabLineIndex)"
-      :key="render.startColumn"
-      v-bind="render"
-      :bend-row
     /> -->
   </template>
   <ClientOnly>
