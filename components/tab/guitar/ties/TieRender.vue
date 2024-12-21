@@ -64,6 +64,7 @@ const props = defineProps<TieRenderProps>();
 }
 .tie-box {
   --column-span: calc(v-bind(endColumn) - v-bind(startColumn) + 1);
+  --label-font-size: calc(var(--cell-height) * 0.6);
   width: 100%;
   /* border: 1px solid black; */
   z-index: 1;
@@ -80,6 +81,10 @@ const props = defineProps<TieRenderProps>();
   &.right {
     justify-content: start;
   }
+
+  &.left {
+    justify-content: end;
+  }
 }
 
 .arc-rect {
@@ -89,19 +94,16 @@ const props = defineProps<TieRenderProps>();
   width: calc(100% - 100% / var(--column-span));
   /* width: 100%; */
   aspect-ratio: 1;
-  display: flex;
-  justify-content: center;
-  align-items: end;
 }
 
 .tie-box.full .arc-rect {
   clip-path: polygon(
     0% 0%,
     0% 100%,
-    calc(50% - 4px) 100%,
-    calc(50% - 4px) 80%,
-    calc(50% + 4px) 80%,
-    calc(50% + 4px) 100%,
+    calc(50% - var(--label-font-size) / 4 - 1px) 100%,
+    calc(50% - var(--label-font-size) / 4 - 1px) 80%,
+    calc(50% + var(--label-font-size) / 4 + 1px) 80%,
+    calc(50% + var(--label-font-size) / 4 + 1px) 100%,
     25% 100%,
     25% 100%,
     100% 100%,
@@ -109,16 +111,24 @@ const props = defineProps<TieRenderProps>();
   );
 }
 
-.tie-box.right .arc-rect {
+.right .arc-rect {
+  --margin-left: calc(-100% / (2 * var(--column-span)));
+  --left-path-point: calc(-1 * var(--margin-left) + 3px);
+  --right-path-point: calc(var(--left-path-point) + var(--label-font-size) / 2);
+
+  border-bottom-left-radius: 0px;
+  width: 100%;
+  margin-left: var(--margin-left);
+
   clip-path: polygon(
     0% 0%,
     0% 100%,
-    16px 100%,
-    16px 50%,
-    24px 50%,
-    24px 100%,
-    75% 100%,
-    75% 100%,
+    var(--left-path-point) 100%,
+    var(--left-path-point) 80%,
+    var(--right-path-point) 80%,
+    var(--right-path-point) 100%,
+    25% 100%,
+    25% 100%,
     100% 100%,
     100% 0%
   );
@@ -126,21 +136,19 @@ const props = defineProps<TieRenderProps>();
 
 .left .arc-rect {
   border-bottom-right-radius: 0px;
-  width: calc(2 * (100% - 50% / var(--column-span)));
-  transform: translateX(calc(var(--cell-height) / 2));
-}
-
-.right .arc-rect {
-  border-bottom-left-radius: 0px;
-  /* width: calc(100% - 50% / (v-bind(endColumn) - v-bind(startColumn) + 1)); */
-  width: calc(2 * (100% - 50% / var(--column-span)));
-  transform: translateX(calc(var(--cell-height) / -2));
+  width: 100%;
+  margin-right: calc(-100% / (2 * var(--column-span)));
 }
 
 .indicator {
   pointer-events: auto;
   position: absolute;
   transform: translateY(40%);
+
+  & select,
+  .label {
+    font-size: var(--label-font-size);
+  }
 
   & select {
     display: none;

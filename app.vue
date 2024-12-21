@@ -75,7 +75,7 @@ if (id) {
     type: "S",
   });
 
-  guitar.setTie(2, Spacing.Whole * 3 - Spacing.Sixteenth, {
+  guitar.setTie(2, Spacing.Whole * 3 - Spacing.Eighth, {
     to: Spacing.Whole * 3,
     type: "H",
   });
