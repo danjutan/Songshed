@@ -229,7 +229,7 @@ function onInputClick(e: Event) {
           class="open"
           :cx="gridStartX + (strings - +string - 1) * cellWidth"
           :cy="gridStartY - cellHeight * 0.65"
-          :r="noteRadius * 0.75"
+          :r="noteRadius"
           fill="transparent"
           stroke="gray"
         />
