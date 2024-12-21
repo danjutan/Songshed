@@ -57,20 +57,23 @@ const tabLines = computed<Bar[]>(() => {
 const gridTemplateColumns = computed<string>(() => {
   const barTemplateColumns = `repeat(${columnsPerBar.value}, 1fr)`;
   const bars = Array.from({ length: props.barsPerLine }, () => barTemplateColumns).join(" min-content ");
-  return `var(--note-font-size) ${bars} var(--note-font-size)`;
+  return `var(--cell-height) ${bars} var(--note-font-size)`;
 });
 
-const notesRow = computed(() => 2);
+const annotationRows = computed(() => Math.max(props.data.annotations.getRows().length, 1));
+const notesRow = computed(() => annotationRows.value + 1);
 
 function newBarClick(lastColumn?: GuitarStack) {
   if (lastColumn) newBarStart.value = lastColumn.position + subUnit.value;
 }
 
 const newAnnotation = reactive<{
+  row: undefined | number;
   start: undefined | number;
   end: undefined | number;
-}>({ start: undefined, end: undefined });
-function annotationStart(position: number) {
+}>({ row: undefined, start: undefined, end: undefined });
+function annotationStart(row: number, position: number) {
+  newAnnotation.row = row;
   newAnnotation.start = position;
 }
 function annotationDragThrough(position: number) {
@@ -79,11 +82,11 @@ function annotationDragThrough(position: number) {
   }
 }
 function annotationEnd() {
-  const { start, end } = newAnnotation;
-  if (start !== undefined && end !== undefined && start !== end) {
+  const { row, start, end } = newAnnotation;
+  if (row !== undefined && start !== undefined && end !== undefined && start !== end) {
     const first = Math.min(start, end);
     const last = Math.max(start, end);
-    props.data.annotations.createAnnotation({ type: "note", start: first, end: last + subUnit.value, title: "yo" });
+    props.data.annotations.createAnnotation(row, { start: first, end: last + subUnit.value, title: "yo" });
   }
   newAnnotation.start = newAnnotation.end = undefined;
 }
@@ -105,27 +108,44 @@ const posToCol = (pos: number): TablineColumn => {
 
 // TODO: rows <-> types
 const annotationRenders = computed(() => {
-  const annotations = props.data.annotations.getAnnotations("note");
   const annotationRenders: Map<
     number, // tabline index
-    Array<{ startColumn: number; endColumn: number; annotation: Annotation }>
+    Array<{ row: number; startColumn: number; endColumn: number; annotation: Annotation | undefined }>
   > = new Map();
 
-  function push(tablineIndex: number, startColumn: number, endColumn: number, annotation: Annotation) {
+  function push(tablineIndex: number, row: number, startColumn: number, endColumn: number, annotation?: Annotation) {
     const atTabline = annotationRenders.get(tablineIndex) || [];
-    atTabline.push({ startColumn, endColumn, annotation });
+    atTabline.push({ row, startColumn, endColumn, annotation });
     annotationRenders.set(tablineIndex, atTabline);
   }
 
-  for (const annotation of annotations) {
-    const start = posToCol(annotation.start);
-    const end = posToCol(annotation.end);
-    if (start.tabline !== end.tabline) {
-      push(start.tabline, start.column, -1, annotation);
-      push(end.tabline, 1, end.column, annotation);
-      continue;
+  props.data.annotations.getRows().forEach((rowIndex) => {
+    const annotations = props.data.annotations.getAnnotations(rowIndex);
+    const row = annotationRows.value - rowIndex;
+    for (const annotation of annotations) {
+      const start = posToCol(annotation.start);
+      const end = posToCol(annotation.end);
+      if (start.tabline !== end.tabline) {
+        push(start.tabline, row, start.column, -1, annotation);
+        push(end.tabline, row, 2, end.column, annotation);
+        continue;
+      }
+      push(start.tabline, row, start.column, end.column, annotation);
     }
-    push(start.tabline, start.column, end.column, annotation);
+  });
+
+  if (newAnnotation.start !== undefined) {
+    const row = annotationRows.value - newAnnotation.row!;
+    const start = newAnnotation.start;
+    const end = newAnnotation.end ?? start;
+    const first = posToCol(Math.min(start, end));
+    const last = posToCol(Math.max(start, end));
+    if (first.tabline !== last.tabline) {
+      push(first.tabline, row, first.column, -1);
+      push(last.tabline, row, 2, last.column + 1);
+    } else {
+      push(first.tabline, row, first.column, last.column + 1);
+    }
   }
 
   console.log(annotationRenders);
@@ -151,53 +171,35 @@ const annotationRenders = computed(() => {
           :num-strings="data.guitar!.strings"
           @note-change="data.guitar!.setNote"
         />
-        <div
-          class="drag-start between"
-          :style="{
-            gridColumn: i * (columnsPerBar + 1) + 1,
-            gridRow: 1,
-          }"
-          @mousedown="annotationStart(bar[0].position)"
-        />
-        <div
-          v-for="(stack, s) in bar"
-          class="drag-start"
-          :style="{
-            gridColumn: i * (columnsPerBar + 1) + 2 + s,
-            gridRow: 1,
-          }"
-          @mousedown="annotationStart(stack.position)"
-          @mouseover="annotationDragThrough(stack.position)"
-        />
+        <template v-for="(_, rowIndex) in annotationRows">
+          <div
+            class="drag-start between"
+            :style="{
+              gridColumn: i * (columnsPerBar + 1) + 1,
+              gridRow: annotationRows - rowIndex,
+            }"
+            @mousedown="annotationStart(rowIndex, bar[0].position)"
+          />
+          <div
+            v-for="(stack, s) in bar"
+            class="drag-start"
+            :style="{
+              gridColumn: i * (columnsPerBar + 1) + 2 + s,
+              gridRow: annotationRows - rowIndex,
+            }"
+            @mousedown="annotationStart(rowIndex, stack.position)"
+            @mouseover="annotationDragThrough(stack.position)"
+          />
+        </template>
       </template>
-      <div
-        v-if="newAnnotation.start !== undefined && posToCol(newAnnotation.start!).tabline === tabLineIndex"
-        :style="{
-          background: 'blue',
-          gridColumn: posToCol(newAnnotation.start!).column,
-          gridRow: 1,
-        }"
-        @mouseover="annotationDragThrough(newAnnotation.start)"
-      />
-      <div
-        v-if="
-          newAnnotation.end !== undefined &&
-          newAnnotation.end != newAnnotation.start &&
-          posToCol(newAnnotation.end!).tabline === tabLineIndex
-        "
-        :style="{
-          background: 'red',
-          gridColumn: posToCol(newAnnotation.end!).column,
-          gridRow: 1,
-        }"
-      />
       <div v-if="tabLineIndex === tabLines.length - 1" class="divider" @click="newBarClick(tabLine.at(-1)?.at(-1))">
         <div class="new-button">+</div>
       </div>
+
       <AnnotationRender
-        v-for="{ startColumn, endColumn, annotation } in annotationRenders.get(tabLineIndex)"
+        v-for="{ row, startColumn, endColumn, annotation } in annotationRenders.get(tabLineIndex)"
         :key="startColumn"
-        :row="1"
+        :row
         :start-column
         :end-column
         :annotation
@@ -221,7 +223,7 @@ const annotationRenders = computed(() => {
 .tab-line {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
-  grid-template-rows: var(--cell-height) auto calc(var(--cell-height) * 0.8);
+  grid-template-rows: repeat(v-bind(annotationRows), var(--cell-height)) auto calc(var(--cell-height) * 0.8);
 }
 
 .divider {
@@ -261,6 +263,8 @@ const annotationRenders = computed(() => {
 }
 
 .drag-start {
-  background-color: rgba(0, 100, 255, 0.1);
+  /* &:hover {
+    background-color: lightblue;
+  } */
 }
 </style>

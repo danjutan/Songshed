@@ -5,20 +5,25 @@ const props = defineProps<{
   row: number;
   startColumn: number;
   endColumn: number;
-  annotation: Annotation;
+  annotation?: Annotation;
 }>();
+
+const pointerEvents = computed(() => (props.annotation ? "auto" : "none"));
 </script>
 
 <template>
-  <div :class="`annotation ${annotation.type}`">
-    {{ annotation.title }}
+  <div :class="`annotation annotation-${row}`">
+    {{ annotation?.title }}
   </div>
 </template>
 
 <style scoped>
 .annotation {
-  grid-column: v-bind(startColumn) / v-bind(endColumn);
+  border: 1px solid gray;
+  grid-column-start: v-bind(startColumn);
+  grid-column-end: v-bind(endColumn);
   grid-row: v-bind(row);
   background-color: lightblue;
+  pointer-events: v-bind(pointerEvents);
 }
 </style>

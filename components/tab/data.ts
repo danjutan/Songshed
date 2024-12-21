@@ -1,5 +1,4 @@
 export interface Annotation<D = unknown> {
-  readonly type: string;
   start: number;
   end: number;
   title: string;
@@ -22,7 +21,7 @@ export interface TabData {
   beatsPerBar: number;
   beatSize: number;
   guitarData?: GuitarTabData; // optional because we'll add more primary views in the future
-  annotations: Map<string, Annotation[]>; // annotation type -> annotations of that type
+  annotations: Map<number, Annotation[]>; // annotation row -> annotations on that row
 }
 
 export interface NoteData {
@@ -104,46 +103,51 @@ export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize = Sp
 }
 
 interface AnnotationStore {
-  createAnnotation: (data: Annotation) => Annotation | false;
-  deleteAnnotation: (data: Annotation) => void;
-  getAnnotations: (type: string) => Annotation[];
-  getTypes: () => string[];
+  createAnnotation: (row: number, data: Annotation) => Annotation | false;
+  deleteAnnotation: (row: number, data: Annotation) => void;
+  getAnnotations: (row: number) => Annotation[];
+  getRows: () => number[];
+  nextRow: () => number;
 }
 
-function createAnnotationStore(annotations: Map<string, Annotation[]>): AnnotationStore {
-  function createAnnotation(data: Annotation) {
-    const ofType = annotations.get(data.type);
-    if (!ofType) {
-      annotations.set(data.type, [data]);
-      return annotations.get(data.type)![0]; // goal is to return a reactive object; if irrelevant or broken, just return data
+function createAnnotationStore(annotations: Map<number, Annotation[]>): AnnotationStore {
+  function createAnnotation(row: number, data: Annotation) {
+    const ofRow = annotations.get(row);
+    if (!ofRow) {
+      annotations.set(row, [data]);
+      return annotations.get(row)![0]; // goal is to return a reactive object; if irrelevant or broken, just return data
     }
 
     // Revist: <= vs <; do we need this check at all?
-    const overlaps = ofType.some(
-      (a: Annotation) => (a.start < data.start && a.end > data.start) || (a.start > data.start && a.end < data.start),
+    const overlaps = ofRow.some(
+      (a: Annotation) => (a.start < data.start && a.end > data.start) || (a.start > data.start && a.end < data.end),
     );
     if (overlaps) return false;
-    ofType.push(data);
-    return ofType.at(-1)!; // see last comment
+    ofRow.push(data);
+    return ofRow.at(-1)!; // see last comment
   }
 
-  function deleteAnnotation(data: Annotation) {
-    const ofType = annotations.get(data.type);
-    if (ofType) {
-      const toDelete = ofType.findIndex((a) => a.start === data.start && a.end === data.end);
-      ofType.splice(toDelete, 1);
+  function deleteAnnotation(row: number, data: Annotation) {
+    const ofRow = annotations.get(row);
+    if (ofRow) {
+      const toDelete = ofRow.findIndex((a) => a.start === data.start && a.end === data.end);
+      ofRow.splice(toDelete, 1);
     }
   }
 
-  function getAnnotations(type: string) {
-    return annotations.get(type) || [];
+  function getAnnotations(row: number) {
+    return annotations.get(row) || [];
   }
 
-  function getTypes() {
+  function getRows() {
     return [...annotations.keys()];
   }
 
-  return { createAnnotation, deleteAnnotation, getAnnotations, getTypes };
+  function nextRow() {
+    return getRows().length;
+  }
+
+  return { createAnnotation, deleteAnnotation, getAnnotations, getRows, nextRow };
 }
 
 interface AbstractNoteStore<N extends NoteSpot> {
