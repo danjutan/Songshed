@@ -1,14 +1,16 @@
-export type NoteData = { note: Midi | false, muted?: boolean, slide?: boolean, bend?: string }
-/*
-  We're dividing an entire bar, not a beat (which would usually be 1/4 of a bar).
-  A half note is considered 2 beats, but 1/2 of a bar. */
+export type NoteData = undefined | { note: Midi, muted?: boolean, slide?: boolean, bend?: string }
+export type NoteStack = NoteData[];
+export type QuarterNotes = number;
 
-export type Division = {duration: number, notes: NoteData[]}
+//TODO: use this to validate stuff
+export const timeUnits: QuarterNotes[] = [4, 2, 1, 1/2, 1/4, 1/8, 1/16, 1/32] // [whole, half, quarter, eighth, sixteenth, thirty-second, sixty-fourth]
 
-export function createEmptyDivision (duration: number, numNotes: number): Division {
-  const notes = new Array<NoteData>(numNotes);
-  for (let i = 0; i < numNotes; i++) {
-    notes[i] = {note: false};
-  }
-  return {duration, notes};
+// Divisions are EVENLY SPACED notes. Duration and start are in quarter notes.
+// start is zero indexed
+export type Division = {start: number, duration: number, stacks: NoteStack[]}
+
+export function createDivision(start: QuarterNotes, duration: QuarterNotes, ...stacks: NoteStack[]): Division {
+    return {duration, start, stacks: stacks}
 }
+
+// Now there's always a parent to shrink, and we don't need { note: false }, just an empty array for a stack

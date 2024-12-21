@@ -2,20 +2,20 @@
 import type { NoteData } from './data';
 
 const props = defineProps<{
-  data: NoteData,
+  data?: NoteData,
   tuning: Midi, 
   frets: number 
 }>()
 
 const emit = defineEmits<{
-  dataChange: [data: NoteData],
+  dataChange: [data: NoteData | undefined],
   startEdit: [],
   endEdit: [],
 }>()
 
 const relativeNote = computed(() =>
   {
-    if (props.data.note !== false) {
+    if (props.data) {
       return props.data.note - props.tuning as Midi;
     }
     return "";
@@ -27,7 +27,7 @@ function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
   if (target.value.trim() == "") {
     console.log("empty");
-    emit('dataChange', {...props.data, note: false})
+    emit('dataChange', undefined);
   }
   const num = parseInt(target.value);
   if (Number.isInteger(num)) {
@@ -42,7 +42,7 @@ function onInput(e: Event) {
 
 function onInputClick(e: Event) {
   e.target && (e.target as HTMLInputElement).select();
-  // console.log(relativeNote.value, props.data.note)
+  console.log(relativeNote.value, props.data);
 }
 
 function onInputBlur() {
@@ -72,9 +72,11 @@ input {
 }
 
 .input-bg, input {
+  /* border: 1px dashed blue; */
   grid-area: 1 / 1;
-  font-size: calc(var(--min-division-width / 2));
+  font-size: calc(var(--min-division-width) / 2);
   width: min-content;
+  /* min-width: var(--min-division-width); */
 }
 
 .input-bg {
