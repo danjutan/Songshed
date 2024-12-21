@@ -54,6 +54,10 @@ const notches = ref(4);
 const subdivisions = ref(4);
 const collapseSubdivisions = ref(true);
 const collapseEmpty = ref(true);
+
+async function save() {
+  await hubKV().set("test", { potato: "hi" });
+}
 </script>
 
 <template>
@@ -67,6 +71,8 @@ const collapseEmpty = ref(true);
 
   Collapse empty notches:
   <input v-model="collapseEmpty" type="checkbox" />
+
+  <button @click="save">Save</button>
 
   <Tab :data="tabStore" :notches :subdivisions :collapse-subdivisions :collapse-empty />
   <!-- <Fretboard

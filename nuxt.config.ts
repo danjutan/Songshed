@@ -6,5 +6,15 @@ export default defineNuxtConfig({
     port: 3001,
   },
 
-  modules: ["@nuxt/eslint"]
+  modules: ["@nuxt/eslint", "@nuxthub/core"],
+
+  hub: {
+    kv: true,
+  },
+
+  $development: {
+    hub: {
+      remote: true,
+    },
+  },
 });
