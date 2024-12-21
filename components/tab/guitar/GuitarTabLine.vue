@@ -20,8 +20,6 @@ const props = defineProps<{
   subUnit: number;
 }>();
 
-const settings = inject(SettingsInjectionKey) as Settings;
-
 const tieAddState = inject(TieAddInjectionKey) as TieAddState;
 
 const bendRenders = computed(() => {
@@ -76,7 +74,7 @@ const notesRow = computed(() =>
     />
   </template>
   <template v-if="bendRow">
-    <div class="bend-row-label">bend</div>
+    <div class="bend-row-label" :style="{ gridRow: bendRow }">bend</div>
     <BendRender
       v-for="render in bendRenders!.get(tabLineIndex)"
       :key="render.startColumn"
@@ -88,7 +86,10 @@ const notesRow = computed(() =>
 
 <style scoped>
 .bend-row-label {
-  grid-row: v-bind(bendRow);
+  /* 
+    For some reason, this refuses to update for the first tabline, after save/loading. Using :style instead
+    grid-row: v-bind(bendRow); 
+  */
   grid-column: 1;
   font-size: calc(var(--note-font-size) * 0.75);
   align-self: center;
