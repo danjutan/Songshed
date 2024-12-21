@@ -53,6 +53,10 @@ const emit = defineEmits<{
   container-type: size;
 }
 
+.input {
+  display: none;
+}
+
 .square {
   width: 95%;
   max-width: calc(var(--cell-height) / 2);
@@ -60,20 +64,14 @@ const emit = defineEmits<{
   background-color: blue;
 }
 
-@container (aspect-ratio < 0.1) or (aspect-ratio > 1) {
+@container (aspect-ratio < 0.1) or (aspect-ratio > 0.8) {
   .square {
     display: none;
   }
 }
 
-@container (aspect-ratio < 1) {
-  .container .input {
-    display: none;
-  }
-}
-
-@container (aspect-ratio > 1) {
-  .container .input {
+@container (aspect-ratio > 0.8) {
+   .input {
     display: block;
   }
 }

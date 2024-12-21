@@ -3,6 +3,7 @@ import { type BarStore, Spacing, type TabStore } from "./data";
 import TabBar from "./bar/TabBar.vue";
 import { VisualizationStateKey, createVisualizationState } from "./providers";
 
+// TODO: move to app
 provide(VisualizationStateKey, createVisualizationState());
 
 const props = withDefaults(defineProps<{
@@ -22,7 +23,7 @@ const barSize = computed(() => props.beatsPerBar * props.beatSize);
 const bars = computed<BarStore[]>(() => {
   const barStores: BarStore[] = [];
   const lastPosition = props.data.lastPosition();
-  for (let i = 0; i <= (props.data.lastPosition() ?? 0); i += barSize.value) {
+  for (let i = 0; i <= (lastPosition ?? 0); i += barSize.value) {
     barStores.push(props.data.getBar(i, i + barSize.value));
   }
   return barStores;

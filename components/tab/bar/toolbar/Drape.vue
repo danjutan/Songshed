@@ -11,7 +11,7 @@ const props = withDefaults(
       default?: "show" | "hide"
       collapsed?: "show" | "hide"
       up?: "same" | "reverse"
-      color: string
+      color?: string
       numStrings: number
       heightUnit?: string
       rowStart?: number
@@ -21,6 +21,7 @@ const props = withDefaults(
     default: "show",
     collapsed: "show",
     up: "same",
+    color: "transparent",
     rowStart: 1,
     // e.g. multiply this by 2 and the collapse will trigger at half the width
     heightUnit: "var(--cell-height)",
