@@ -22,7 +22,7 @@ const emit = defineEmits<{
 <template>
   <div class="division">
     <div class="stack">
-      <TabsNoteInput
+      <TabsNoteInput 
         v-for="(noteSpot) in props.data.stack" 
         :key="noteSpot.string"
         :data="noteSpot.data" 

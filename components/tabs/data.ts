@@ -4,10 +4,17 @@ export type NoteSpot = {
   data?: NoteData 
 }
 
+export function createNote(position: number, string: number, midi: Midi | string) {
+    return {
+        position,
+        string,
+        data: {
+            midi: typeof midi === "string" ? toMidi(midi) : midi
+        }
+    }
+}
+
 export type FilledSpot = Required<NoteSpot>
-
-const test: number = 5;
-
 
 export type NoteData = {
   midi: Midi,
@@ -15,6 +22,7 @@ export type NoteData = {
   slide?: boolean,
   bend?: string
 }
+
 
 export enum Spacing {
   Whole = 4,

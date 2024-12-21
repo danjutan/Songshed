@@ -28,7 +28,11 @@ const props = defineProps(
     },
     beats: {
       type: Number,
-      default: 4
+      default: 4,
+      validator: (beats: number, props) => {
+        const notes = props.modelValue as FilledSpot[];
+        return notes.every(note => note.position >= 0 && note.position < beats);
+      },
     },
     notches: {
       type: Number,
@@ -55,6 +59,7 @@ const stackMap = computed(() => {
   const stackMap = new Map<number, StackData>();
   for (const note of notes.value) {
     const position = note.position;
+    if (position >= props.beats) continue;
     if (!stackMap.has(position)) {
       stackMap.set(position, props.tuning.map((_, string) => ({ string, position })));
     }
