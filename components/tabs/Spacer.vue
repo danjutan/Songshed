@@ -8,20 +8,94 @@ const props = defineProps<{
 
 const notchStart = computed(() => props.data.notchStart + 1);
 const notches = computed(() => props.data.notches);
+
+const headerPos = computed(() => Math.ceil(props.data.notches / 2));
+const headerSpan = computed(() => props.data.notches % 2 === 0 ? 2 : 1);
+const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%");
+// const adjust = computed(() => (props.data.notches % 2))
 </script>
 
 <template>
-  <div/>
+  <div class="spacer"> 
+    <div class="header"><span class="title">↔</span></div>
+    <template v-for="n in notches" :key="n">
+      <div v-for="s in strings" :key="s" class="spot" :style="{ gridColumn: n, gridRow: s}" />
+    </template>
+  </div>
 </template>
 
 <style scoped>
-div {
+.spacer {
   grid-row: 1 / span v-bind(strings);
   grid-column: v-bind(notchStart) / span v-bind(notches);
-  background-color: gray;
-  opacity: 0.2;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(v-bind(notches), 1fr);
+  grid-template-rows: repeat(v-bind(strings), 1fr);
+}
+
+.spot {
+  border: 1px solid white;
   width: 100%;
   height: 100%;
 }
 
+.header {
+  grid-row: 1 / 1;
+  grid-column: v-bind(headerPos) / span v-bind(headerSpan);
+  text-align: center;
+  container-type: size;
+  margin: 0px v-bind(headerMargin);
+  /* width: min(100%, calc(var(--min-division-width) / 2 * v-bind(notches))); */
+  /* display: none; */
+}
+
+.title {
+  opacity: 0;
+  /* transition: opacity 0.1s; */
+}
+
+@container (aspect-ratio < 1) {
+  .title {
+    opacity: 0.1;
+  }
+}
+
+@container (aspect-ratio < 0.9) {
+  .title {
+    opacity: 0.2;
+  }
+}
+
+@container (aspect-ratio < 0.8) {
+  .title {
+    opacity: 0.3;
+  }
+}
+
+@container (aspect-ratio < 0.7) {
+  .title {
+    opacity: 0.4;
+  }
+}
+
+
+@container (aspect-ratio < 0.6) {
+  .title {
+    opacity: 0.5;
+  }
+}
+
+@container (aspect-ratio < 0.5) {
+  .title {
+    opacity: 0.6;
+  }
+}
+
+@container (aspect-ratio < 0.4) {
+  .title {
+    opacity: 0.7;
+  }
+}
 </style>
