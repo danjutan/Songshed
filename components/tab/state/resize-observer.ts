@@ -6,14 +6,23 @@ export interface StackCoords {
   center: number;
   right: number;
 }
-export interface ResizeState {
+
+export interface ResizeObserver {
   registerStackRef: (startPos: number, stack: HTMLDivElement | null) => void;
   getStackCoords: (startPos: number) => StackCoords | undefined;
   getPreviousStackPos: (startPosition: number) => number | undefined;
   getNextStackPos: (startPosition: number) => number | undefined;
 }
 
-export function createResizeState(): ResizeState {
+export function withOffset(coords: StackCoords, offset: number): StackCoords {
+  return {
+    left: coords.left + offset,
+    center: coords.center + offset,
+    right: coords.right + offset,
+  };
+}
+
+export function createResizeObserver(): ResizeObserver {
   interface Stack {
     x: StackCoords; //reactive computed
     prev?: number;
@@ -22,28 +31,27 @@ export function createResizeState(): ResizeState {
   const posToX = new Map<number, Stack>();
 
   let firstPos = Infinity;
-  let lastPos = 0;
 
   function registerStackRef(startPos: number, stack: HTMLDivElement | null) {
-    if (!stack) {
-      const current = posToX.get(startPos);
-      if (current) {
-        const { prev, next } = current;
+    // if (!stack) {
+    //   const current = posToX.get(startPos);
+    //   if (current) {
+    //     const { prev, next } = current;
 
-        if (prev !== undefined) {
-          const prevNode = posToX.get(prev);
-          if (prevNode) prevNode.next = next;
-        }
+    //     if (prev !== undefined) {
+    //       const prevNode = posToX.get(prev);
+    //       if (prevNode) prevNode.next = next;
+    //     }
 
-        if (next !== undefined) {
-          const nextNode = posToX.get(next);
-          if (nextNode) nextNode.prev = prev;
-        }
+    //     if (next !== undefined) {
+    //       const nextNode = posToX.get(next);
+    //       if (nextNode) nextNode.prev = prev;
+    //     }
 
-        posToX.delete(startPos);
-      }
-      return;
-    }
+    //     posToX.delete(startPos);
+    //   }
+    //   return;
+    // }
 
     const { x, width } = useElementBounding(stack);
 
@@ -82,20 +90,13 @@ export function createResizeState(): ResizeState {
     posToX.set(startPos, newStack);
 
     if (startPos < firstPos) firstPos = startPos;
-    if (startPos > lastPos) {
-      lastPos = startPos;
-    }
   }
 
   function getStackCoords(startPos: number) {
     const coords = posToX.get(startPos);
     if (!coords) return;
-    const offset = (x: number) => x - posToX.get(firstPos)!.x.left;
-    return {
-      left: offset(coords.x.left),
-      center: offset(coords.x.center),
-      right: offset(coords.x.right),
-    };
+    // WARNING: assumes all tablines start at the same x position
+    return withOffset(coords.x, -posToX.get(firstPos)!.x.left);
   }
 
   function getNextStackPos(startPosition: number): number | undefined {
@@ -105,23 +106,6 @@ export function createResizeState(): ResizeState {
   function getPreviousStackPos(startPosition: number): number | undefined {
     return posToX.get(startPosition)?.prev;
   }
-  // if (steps === 0) return getStackCoords(startPosition);
-
-  // let position = startPosition;
-
-  // while (steps >= 1) {
-  //   const currentStack = posToX.get(position);
-
-  //   if (!currentStack?.prev) {
-  //     break;
-  //   }
-
-  //   position = currentStack.prev;
-  //   steps--;
-  // }
-
-  // return getStackCoords(position);
-  // }
 
   return {
     registerStackRef,
@@ -131,4 +115,5 @@ export function createResizeState(): ResizeState {
   };
 }
 
-export const ResizeStateInjectionKey = Symbol() as InjectionKey<ResizeState>;
+export const ResizeObserverInjectionKey =
+  Symbol() as InjectionKey<ResizeObserver>;

@@ -62,6 +62,14 @@ ties.setTie(2, Spacing.Quarter * 3 - Spacing.Eighth, {
   to: Spacing.Quarter * 3,
 });
 
+ties.setTie(2, Spacing.Quarter * 7, {
+  type: "bend",
+  releaseType: "connect",
+  bend: 1,
+  // through: [Spacing.Sixteenth * 2],
+  to: Spacing.Quarter * 8,
+});
+
 ties.setTie(2, Spacing.Quarter * 11, {
   type: "bend",
   releaseType: "connect",

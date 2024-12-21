@@ -2,17 +2,18 @@
 import type { Bend } from "~/model/stores";
 import {
   type StackCoords,
-  ResizeStateInjectionKey,
-  type ResizeState,
-} from "../../state/resize-state";
+  ResizeObserverInjectionKey,
+  type ResizeObserver,
+  withOffset,
+} from "../../state/resize-observer";
 import {
   SettingsInjectionKey,
   type Settings,
 } from "../../state/settings-state";
 
 const { getStackCoords, getPreviousStackPos, getNextStackPos } = inject(
-  ResizeStateInjectionKey,
-) as ResizeState;
+  ResizeObserverInjectionKey,
+) as ResizeObserver;
 const settingState = inject(SettingsInjectionKey) as Settings;
 const cellHeight = computed(() => parseInt(settingState.cellHeight));
 
@@ -22,7 +23,6 @@ const props = defineProps<{
   tablineLast: number;
 }>();
 
-// console.log(props.bend);
 const prebend = computed(() => props.bend.from === props.bend.to);
 const throughPoint = computed(() =>
   props.bend.through?.length ? props.bend.through[0] : undefined,
@@ -30,7 +30,6 @@ const throughPoint = computed(() =>
 
 const isRightHalf = computed(() => props.bend.from < props.tablineStart);
 const isLeftHalf = computed(() => props.bend.to > props.tablineLast);
-// const throughHalf = computed(() => throughPoint.value && (isRightHalf.value || isLeftHalf.value) && throughHalf < props.tablineStart);
 
 const lastLineEnd = computed(
   () => getStackCoords(getPreviousStackPos(props.tablineStart)!)!.right,
@@ -39,14 +38,6 @@ const lastLineEnd = computed(
 const nextLineStart = computed(
   () => getStackCoords(getNextStackPos(props.tablineLast)!)!.left,
 );
-
-const withOffset = (coords: StackCoords, offset: number): StackCoords => {
-  return {
-    left: coords.left + offset,
-    right: coords.right + offset,
-    center: coords.center + offset,
-  };
-};
 
 const fromCoords = computed(() => {
   const coords = getStackCoords(props.bend.from);
@@ -61,7 +52,6 @@ const fromCoords = computed(() => {
 });
 
 const toCoords = computed(() => {
-  // if (props.bend.to > props.tablineLast) {
   const coords = getStackCoords(props.bend.to);
   if (!coords) return;
   if (isLeftHalf.value) {
@@ -86,7 +76,7 @@ const throughCoords = computed<StackCoords | undefined>(() => {
   }
   if (isLeftHalf.value) {
     if (throughPoint.value > props.tablineLast) {
-      const offset = coords.left - nextLineStart.value; // will be positive;
+      const offset = coords.right - nextLineStart.value; // will be positive;
       return withOffset(getStackCoords(props.tablineLast)!, offset);
     }
   }

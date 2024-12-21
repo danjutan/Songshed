@@ -23,9 +23,9 @@ import {
   type BendEditState,
 } from "./state/bend-edit-state";
 import {
-  createResizeState,
-  ResizeStateInjectionKey,
-} from "../state/resize-state";
+  createResizeObserver,
+  ResizeObserverInjectionKey,
+} from "../state/resize-observer";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -73,6 +73,10 @@ const bends = computed(() =>
   props.guitarStore.ties
     .getBends()
     .filter((bend) => inBounds(bend.from) || inBounds(bend.to)),
+);
+
+const columnEnd = computed(
+  () => props.columnsPerBar * props.bars.length + props.bars.length + 1,
 );
 </script>
 
@@ -145,7 +149,7 @@ const bends = computed(() =>
 }
 
 .overlay {
-  grid-column: 2 / -1;
+  grid-column: 2 / v-bind(columnEnd);
   grid-row: v-bind(bendRow) / span calc(v-bind(numStrings) + 1);
 }
 </style>

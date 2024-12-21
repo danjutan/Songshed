@@ -12,9 +12,9 @@ import {
 import { EditingInjectionKey, type EditingState } from "../state/editing-state";
 import { useTemplateRef } from "vue";
 import {
-  ResizeStateInjectionKey,
-  type ResizeState,
-} from "../state/resize-state";
+  ResizeObserverInjectionKey,
+  type ResizeObserver,
+} from "../state/resize-observer";
 
 const props = withDefaults(
   defineProps<{
@@ -35,7 +35,7 @@ const emit = defineEmits<{
 const selecting = inject(SelectionInjectionKey) as SelectionState;
 const editing = inject(EditingInjectionKey) as EditingState;
 const tieAdd = inject(TieAddInjectionKey) as TieAddState;
-const resizeState = inject(ResizeStateInjectionKey) as ResizeState;
+const resizeState = inject(ResizeObserverInjectionKey) as ResizeObserver;
 
 const noteSpots = computed(() => {
   const noteSpots = new Array<GuitarNote | undefined>(props.tuning.length);
@@ -86,13 +86,19 @@ function onSpotMouseDown(
     e.stopPropagation(); //prevents onStackMouseDown from triggering
   }
 }
+
+let refRegistered: boolean;
 </script>
 
 <template>
   <div
     :ref="
-      (el) =>
-        resizeState.registerStackRef(position, el as HTMLDivElement | null)
+      (el) => {
+        if (!refRegistered) {
+          resizeState.registerStackRef(position, el as HTMLDivElement | null);
+          refRegistered = true;
+        }
+      }
     "
     class="stack"
     @mousedown="onStackMouseDown"
