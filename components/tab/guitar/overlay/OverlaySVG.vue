@@ -7,23 +7,28 @@ import {
   SettingsInjectionKey,
   type Settings,
 } from "../../state/settings-state";
+import BendRender from "./Bend.vue";
+import type { Bend } from "~/model/stores";
 
-const resizeState = inject(ResizeStateInjectionKey) as ResizeState;
-const settingState = inject(SettingsInjectionKey) as Settings;
-const cellHeight = computed(() => parseInt(settingState.cellHeight));
+const props = defineProps<{
+  bends: Bend[];
+  tablineStart: number;
+  tablineLast: number;
+}>();
 
-const lineStart = computed(() => resizeState.getStackCoords(0).value?.center);
-const lineEnd = computed(
-  () => resizeState.getStackCoords(resizeState.subUnit.value * 4).value?.center,
-);
+// const lineStart = computed(() => resizeState.getStackCoords(0).value?.center);
+// const lineEnd = computed(
+//   () => resizeState.getStackCoords(resizeState.subUnit.value * 4).value?.center,
+// );
 </script>
 <template>
   <svg>
-    <line
-      :x1="lineStart"
-      :x2="lineEnd"
-      :y1="cellHeight * 5"
-      :y2="cellHeight * 5"
+    <BendRender
+      v-for="bend in bends"
+      :key="`${bend.from}${bend.string}`"
+      :bend
+      :tabline-start
+      :tabline-last
     />
   </svg>
 </template>
@@ -33,14 +38,5 @@ svg {
   width: 100%;
   height: 100%;
   pointer-events: none;
-}
-
-svg * {
-  pointer-events: all;
-}
-
-line {
-  stroke-width: 1px;
-  stroke: black;
 }
 </style>

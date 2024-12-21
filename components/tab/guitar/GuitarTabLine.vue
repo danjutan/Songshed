@@ -40,15 +40,12 @@ const props = defineProps<{
 
 const tieAddState = inject(TieAddInjectionKey) as TieAddState;
 
-// const bendRenders = createBendRenderState(
-//   props.guitarStore.ties,
-//   computed(() => props.startRow + 1),
-//   props.posToCol,
-//   computed(() => tieAddState.newBend),
-// );
-
-const resizeState = createResizeState(computed(() => props.subUnit));
-provide(ResizeStateInjectionKey, resizeState);
+const bendRenders = createBendRenderState(
+  props.guitarStore.ties,
+  computed(() => props.startRow + 1),
+  props.posToCol,
+  computed(() => tieAddState.newBend),
+);
 
 const bendRow = computed(
   () =>
@@ -61,6 +58,22 @@ const notesRow = computed(() =>
 );
 
 const numStrings = computed(() => props.guitarStore.strings);
+
+const tablineStart = computed(() => props.bars[0].start);
+const tablineLast = computed(
+  () =>
+    tablineStart.value +
+    props.bars.length * props.columnsPerBar * props.subUnit -
+    props.subUnit,
+);
+
+const inBounds = (position: number) =>
+  position >= tablineStart.value && position <= tablineLast.value;
+const bends = computed(() =>
+  props.guitarStore.ties
+    .getBends()
+    .filter((bend) => inBounds(bend.from) || inBounds(bend.to)),
+);
 </script>
 
 <template>
@@ -113,7 +126,7 @@ const numStrings = computed(() => props.guitarStore.strings);
     /> -->
   </template>
   <ClientOnly>
-    <OverlaySVG class="overlay" />
+    <OverlaySVG class="overlay" :bends :tabline-start :tabline-last />
   </ClientOnly>
 </template>
 

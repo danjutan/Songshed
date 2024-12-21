@@ -47,20 +47,20 @@ ties.setTie(5, Spacing.Quarter * 4 - Spacing.Eighth, {
   to: Spacing.Quarter * 5,
 });
 
-// ties.setTie(5, Spacing.Quarter * 5 - Spacing.Eighth, {
-//   type: "bend",
-//   releaseType: "hold",
-//   bend: 0.5,
-//   through: [Spacing.Sixteenth * 4],
-//   to: Spacing.Quarter * 6,
-// });
+ties.setTie(5, Spacing.Quarter * 5 - Spacing.Eighth, {
+  type: "bend",
+  releaseType: "hold",
+  bend: 0.5,
+  through: [Spacing.Sixteenth * 4],
+  to: Spacing.Quarter * 6,
+});
 
-// ties.setTie(2, Spacing.Quarter * 3 - Spacing.Eighth, {
-//   type: "bend",
-//   releaseType: "hold",
-//   bend: 1,
-//   to: Spacing.Quarter * 3,
-// });
+ties.setTie(2, Spacing.Quarter * 3 - Spacing.Eighth, {
+  type: "bend",
+  releaseType: "hold",
+  bend: 1,
+  to: Spacing.Quarter * 3,
+});
 
 ties.setTie(2, Spacing.Quarter * 11, {
   type: "bend",
