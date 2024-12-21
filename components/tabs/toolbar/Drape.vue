@@ -6,7 +6,7 @@ export type DrapeData = {
 
 const props = withDefaults(defineProps<DrapeData & {
   default?: "show" | "hide"
-  collapsed: "show" | "hide"
+  collapsed?: "show" | "hide"
   color: string
   numStrings: number
   heightUnit?: string
@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<DrapeData & {
   collapsed: "show",
   rowStart: 1,
   // e.g. multiply this by 2 and the collapse will trigger at half the width
-  heightUnit: "var(--min-division-width) / 2",
+  heightUnit: "var(--cell-height)",
 });
 
 defineSlots<{
@@ -57,7 +57,7 @@ const collapsedDisplay = computed(() => props.collapsed === "show" ? "block" : "
   .drape-down {
     background-color: v-bind(color);
     pointer-events: auto;
-    height: calc(v-bind(numStrings) * var(--min-division-width) / 2);
+    height: calc(v-bind(numStrings) * var(--cell-height));
     display: v-bind(defaultDisplay);
   }
 

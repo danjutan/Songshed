@@ -71,7 +71,7 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
            default="hide"
            :start="2"
            :columns="numSubstacks"
-           height-unit="var(--min-division-width)"
+           height-unit="var(--cell-height) * 2"
            color="var(--substack-bg)"
            :num-strings
     />
@@ -82,7 +82,7 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
 .division {
   display: grid;
   grid-template-columns: v-bind(firstColWidth) repeat(v-bind(numSubstacks), minmax(10px, 1fr));
-  grid-template-rows: repeat(v-bind(numStrings), calc(var(--min-division-width) / 2));
+  grid-template-rows: repeat(v-bind(numStrings), var(--cell-height));
 }
 
 .stack,
@@ -100,7 +100,7 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
 
 .indicator {
   display: flex;
-  height: calc(var(--min-division-width) / 2);
+  height: var(--cell-height);
   /* border: 1px solid red; */
   justify-content: flex-start;
   align-items: center;
@@ -109,7 +109,7 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
 
 .square {
   width: 75%;
-  max-width: calc(var(--min-division-width) / 4);
+  max-width: calc(var(--cell-height) / 2);
   aspect-ratio: 1;
   background-color: blue;
 }
@@ -136,6 +136,5 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
 .substack-grid {
   display: grid;
   flex-grow: 1;
-  /* height: calc(var(--min-division-width) / 2 * v-bind(numStrings)); */
 }
 </style>

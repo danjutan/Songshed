@@ -90,8 +90,8 @@ onMounted(() => {
 <style scoped>
 .note-input {
   display: grid;
-  width: calc(var(--min-division-width) / 2);
-  min-width: calc(var(--min-division-width) / 8);
+  width: var(--cell-height);
+  min-width: calc(var(--cell-height) / 4);
 }
 
 .collapse {
@@ -105,7 +105,7 @@ onMounted(() => {
 input {
   all: unset;
   /* text-shadow: 1px 1px 0px lightgray; */
-  height: calc(var(--min-division-width) / 2);
+  height: var(--cell-height);
   /* z-index: var(--z-index-notes); */
 }
 
@@ -113,9 +113,6 @@ input {
   grid-area: 1 / 1;
   font-size: var(--note-font-size);
   width: var(--note-font-size);
-  /* min-height: calc(var(--min-division-width) / 2); */
-  /* width: min-content; */
-  /* min-width: calc(var(--min-division-width) / 2); */
 }
 
 .input-bg {
@@ -128,9 +125,7 @@ input {
 }
 
 .note-input:hover > input{
-  /* width: calc(var(--min-division-width) / 2); */
-  /* height: 100%; */
-  background-color: #ACCEF7
+  background-color: var(--highlight-color);
 }
 
 @container collapser (aspect-ratio < 0.5) {

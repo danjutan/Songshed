@@ -37,7 +37,7 @@ const spacers = computed(() => emptyDivisions(props.divisions));
            :row-start="2"
            color="var(--substack-bg)">
       <!-- <template #up>
-        <div :style="{ width: '100%', height: 'var(--min-division-width)', pointerEvents: 'auto' }" />
+        <div :style="{ width: '100%', height: 'var(--cell-height)', pointerEvents: 'auto' }" />
       </template> -->
       <template #down>
         <div class="spacer-overlay">
@@ -58,7 +58,7 @@ const spacers = computed(() => emptyDivisions(props.divisions));
            :columns="1"
            :row-start="2"
            :num-strings
-           color="rgba(0,170,255,0.1)"
+           color="var(--highlight-color)"
     />
   </div>
 </template>
@@ -69,7 +69,7 @@ const spacers = computed(() => emptyDivisions(props.divisions));
   grid-column: -1 / 1;
   display: grid;
   grid-template-columns: subgrid;
-  grid-template-rows: calc(var(--min-division-width) / 2);
+  grid-template-rows: var(--cell-height);
 }
 
 .notch {
@@ -98,8 +98,8 @@ const spacers = computed(() => emptyDivisions(props.divisions));
 
 .indicator-container {
   width: 100%;
-  /* margin-top: calc(var(--min-division-width) / 2); */
-  height: calc(var(--min-division-width));
+  /* margin-top: calc(var(--cell-height) / 2); */
+  height: calc(var(--cell-height) * 2);
   container-type: size;
   display: flex;
   justify-content: space-between;
@@ -112,7 +112,7 @@ const spacers = computed(() => emptyDivisions(props.divisions));
 }
 .spacer-indicator {
   /* margin-top: -50%; */
-  font-size: clamp(10px, 50cqw, var(--min-division-width));
+  font-size: clamp(10px, 50cqw, calc(var(--cell-height) * 2));
   color: rgb(255, 0, 0);
 }
 
@@ -137,7 +137,6 @@ const spacers = computed(() => emptyDivisions(props.divisions));
 .selectable {
   width: 100%;
   height: 100%;
-  opacity: 0.5;
 }
 
 /* @container notch (aspect-ratio < 1) {
@@ -147,10 +146,6 @@ const spacers = computed(() => emptyDivisions(props.divisions));
 } */
 
 .selectable:hover {
-  background-color: lightblue;
-}
-
-.selected {
-  background-color: lightblue;
+  background-color: var(--highlight-color);
 }
 </style>

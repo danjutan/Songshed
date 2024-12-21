@@ -60,8 +60,6 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
   text-align: center;
   container-type: size;
   margin: 0% v-bind(headerMargin);
-  /* width: min(100%, calc(var(--min-division-width) / 2 * v-bind(notches))); */
-  /* display: none; */
 }
 
 .title {

@@ -170,21 +170,16 @@ const divisionPlacement = (column: number) => ({
 
 <style>
 .bar {
-  --min-division-width: 46px;
-  --note-font-size: calc(var(--min-division-width) * 0.4);
+  --cell-height: 16px;
+  --note-font-size: calc(var(--cell-height) * 0.8);
   --substack-bg: rgba(255, 0, 0, 0.1);
   --string-width: 1px;
   --string-color: gray;
-  /* --z-index-notes: 10; */
-  /* border: 1px solid black; */
+  --highlight-color: #ACCEF7;
   margin: 10px;
   display: grid;
   grid-template-columns: repeat(v-bind(notches), 1fr);
-  grid-template-rows: calc(var(--min-division-width) / 2) repeat(v-bind(strings), calc(var(--min-division-width) / 2))
-  /* height: calc(var(--min-division-width) / 2 * v-bind(strings)); */
-  /* grid-template-rows:  */
-  /* align-items: center; */
-  /* grid-auto-flow: column; */
+  grid-template-rows: var(--cell-height) repeat(v-bind(strings), var(--cell-height))
 }
 
 .empty {

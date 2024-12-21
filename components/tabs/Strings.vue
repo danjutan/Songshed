@@ -21,7 +21,7 @@
 
 .string-box {
   width: 100%;
-  height: calc(var(--min-division-width) / 2);
+  height: var(--cell-height);
   display: flex;
   flex-direction: column;
   justify-content: center;
