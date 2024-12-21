@@ -84,7 +84,7 @@ const gridTemplateColumns = computed<string>(() => {
   const columns: string[] = [];
   for (const column of divisions.value.map(({ notchPosition }) => notchPosition)) {
     if (isExpanded(column)) {
-      columns.push(expandsTo.value[column]);
+      columns.push(`minmax(${expandsTo.value[column]}, auto)`);
       continue;
     }
     columns.push("auto");
@@ -145,6 +145,6 @@ function noteChange(changed: NoteSpot) {
 .bar {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
-  grid-template-rows: var(--cell-height) repeat(v-bind(strings), var(--cell-height))
+  grid-template-rows: var(--cell-height) repeat(v-bind(strings), var(--cell-height)) var(--cell-height)
 }
 </style>

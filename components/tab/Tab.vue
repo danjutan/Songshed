@@ -58,7 +58,7 @@ const bars = computed<BarStore[]>(() => {
 
 .tab > .bar {
   border-right: 1px solid black;
-  flex-grow: 1;
+  flex-grow: 1
 }
 
 .new-button {

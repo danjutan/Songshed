@@ -56,11 +56,11 @@ const upCollapsedDisplay = computed(() => {
 
 <template>
   <div class="drape collapse">
-    <div class="drape-up">
-      <slot name="up" />
-    </div>
     <div class="drape-down">
       <slot name="down" />
+    </div>
+    <div class="drape-up">
+      <slot name="up" />
     </div>
   </div>
 </template>
@@ -90,7 +90,7 @@ const upCollapsedDisplay = computed(() => {
   width: 100%;
   pointer-events: auto;
   position: absolute;
-  top: calc(-1 * var(--cell-height));
+  top: calc(v-bind(numStrings) * var(--cell-height));
   display: v-bind(upDefaultDisplay);
 }
 

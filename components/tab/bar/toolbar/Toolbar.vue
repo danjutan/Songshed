@@ -40,7 +40,7 @@ const stackExpanderStarts = computed<number[]>(
       :style="{
         gridColumn: `${i} / span 1`,
       }"
-      :class="{ noTop: expanded.has(i), border: i != hovering, even: i % 2 === 0, odd: i % 2 === 1 }"
+      :class="{ border: i != hovering, even: i % 2 === 0, odd: i % 2 === 1 }"
       class="notch">
       <div
         class="selectable"
@@ -122,10 +122,6 @@ const stackExpanderStarts = computed<number[]>(
   grid-row: 1 / span 1;
   container-name: notch;
   container-type: size;
-}
-
-.notch.noTop {
-  opacity: 0;
 }
 
 .debug .notch.border.odd {
