@@ -65,7 +65,7 @@ const collapsedDisplay = computed(() => props.collapsed === "show" ? "block" : "
     width: 100%;
     pointer-events: auto;
     position: absolute;
-    top: calc(-1 * v-bind(heightUnit));
+    top: calc(-1 * var(--cell-height));
   }
 
   @container drape (aspect-ratio < 0.5) {

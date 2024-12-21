@@ -28,6 +28,9 @@ const subunit = computed(() => 1 / props.subdivisions);
 const colPositions = computed(() => relativePositions.value.map(pos => 1 + pos / subunit.value));
 
 const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-font-size)" : "1fr");
+
+const expanded = ref(false);
+const substackMinWidth = computed(() => expanded.value ? "var(--cell-height)" : "1px");
 </script>
 
 <template>
@@ -43,7 +46,6 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
                      @data-change="emit('noteChange', { ...noteSpot, data: $event })"
       />
     </div>
-    <!-- <TabsStrings /> -->
 
     <div v-for="(substack, i) in sortedSubstacks"
          :key="substack.notchPosition"
@@ -66,6 +68,7 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
         </div>
       </div>
     </div>
+
     <Drape v-if="numFilledSubstacks"
            collapsed="show"
            default="hide"
@@ -74,14 +77,20 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
            height-unit="var(--cell-height) * 2"
            color="var(--substack-bg)"
            :num-strings
-    />
+           @click="expanded = !expanded">
+      <template #up>
+        <div class="unexpander">
+          test
+        </div>
+      </template>
+    </Drape>
   </div>
 </template>
 
 <style scoped>
 .division {
   display: grid;
-  grid-template-columns: v-bind(firstColWidth) repeat(v-bind(numSubstacks), minmax(10px, 1fr));
+  grid-template-columns: v-bind(firstColWidth) repeat(v-bind(numSubstacks), minmax(v-bind(substackMinWidth), 1fr));
   grid-template-rows: repeat(v-bind(numStrings), var(--cell-height));
 }
 
@@ -96,6 +105,12 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
   grid-row: 1 / -1;
   grid-column: 2 / -1;
   background-color: var(--substack-bg);
+}
+
+.unexpander {
+  background-color: green;
+  height: 100%;
+  width: 100%;
 }
 
 .indicator {

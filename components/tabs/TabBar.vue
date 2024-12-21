@@ -181,8 +181,4 @@ const divisionPlacement = (column: number) => ({
   grid-template-columns: repeat(v-bind(notches), 1fr);
   grid-template-rows: var(--cell-height) repeat(v-bind(strings), var(--cell-height))
 }
-
-.empty {
-  border: 1px solid blue;
-}
 </style>

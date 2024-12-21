@@ -35,8 +35,8 @@ const notes = ref<FilledSpot[]>([
   <Fretboard width="50%" />
 </template>
 
-<style scoped>
-div {
-  width: 75%;
+<style>
+.bar {
+  width: 50%;
 }
 </style>
