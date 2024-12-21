@@ -82,7 +82,7 @@ function newBarClick(lastColumn?: GuitarStack) {
     <div v-for="(tabLine, tabLineIndex) in tabLines" class="tab-line">
       <template v-for="(bar, i) in tabLine" :key="bar[0].position">
         <div
-          class="divider"
+          class="divider hoverable"
           @click="data.guitar?.shiftFrom(bar[0].position, barSize)"
         />
         <GuitarBar
@@ -100,9 +100,11 @@ function newBarClick(lastColumn?: GuitarStack) {
       </template>
       <div
         v-if="tabLineIndex === tabLines.length - 1"
-        class="divider expanded"
+        class="divider"
         @click="newBarClick(tabLine.at(-1)?.at(-1))"
-      />
+      >
+        <div class="new-button">+</div>
+      </div>
     </div>
   </div>
 </template>
@@ -126,8 +128,9 @@ function newBarClick(lastColumn?: GuitarStack) {
 
 .divider {
   width: calc(var(--cell-height) / 3);
+  padding: 0px 1px;
   height: 100%;
-  background: rgba(0, 0, 0, 0.8);
+  background: black;
   color: white;
   font-size: var(--cell-height);
   font-weight: bold;
@@ -136,16 +139,28 @@ function newBarClick(lastColumn?: GuitarStack) {
   justify-content: center;
   cursor: pointer;
 
-  &:hover,
-  &.expanded {
-    width: var(--note-font-size);
+  &.hoverable {
+    &:hover {
+      width: var(--note-font-size);
+    }
+    &:hover::before {
+      content: "+";
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.9);
+    }
   }
-  &:hover::before,
-  &.expanded::before {
-    content: "+";
-  }
-  &:hover {
-    background: rgba(0, 0, 0, 0.9);
-  }
+}
+
+/* We don't want this last divider to take up extra space in the grid and throw it off */
+.divider .new-button {
+  margin-left: calc(var(--cell-height) * 0.4);
+  padding-right: calc(var(--cell-height) * 0.1);
+  background: black;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

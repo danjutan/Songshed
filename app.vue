@@ -53,7 +53,7 @@ function fretboardNoteChange(note: GuitarNote) {
 const notches = ref(8);
 const subdivisions = ref(4);
 const collapseSubdivisions = ref(true);
-const collapseEmpty = ref(false);
+const collapseEmpty = ref(true);
 </script>
 
 <template>
