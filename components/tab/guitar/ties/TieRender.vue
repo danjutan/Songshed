@@ -60,7 +60,7 @@ function onSelectInput(e: Event) {
         </option>
         <option value="slide" :selected="type === 'slide'">S</option>
       </select>
-      <div class="label">{{ labelText }}</div>
+      <div v-if="type === 'hammer'" class="label">{{ labelText }}</div>
       <div class="delete" @click="emit('delete')">&Cross;</div>
     </div>
   </div>
@@ -270,6 +270,7 @@ function onSelectInput(e: Event) {
   pointer-events: auto;
   z-index: 1;
   display: flex;
+  justify-content: center;
   align-items: start;
 
   & select,
@@ -299,6 +300,7 @@ function onSelectInput(e: Event) {
 .indicator.editing,
 .indicator:hover {
   margin-right: calc(var(--label-font-size) * -1.6);
+  width: calc(100% - 100% / var(--column-span));
   & .label {
     display: none;
   }

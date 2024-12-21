@@ -110,8 +110,12 @@ function onSideMouseDown(e: MouseEvent) {
   <div class="note-input" :class="{ hovering, editing, 'has-note': hasNote }">
     <span class="input-bg">{{ relativeNote }}</span>
     <div
-      v-if="editing && relativeNote && !(tieAdd.dragDirection /*=== 'right'*/)"
+      v-if="editing && relativeNote"
       class="side left"
+      :class="{
+        hidden:
+          tieAdd.dragDirection === 'left' || tieAdd.hasLeft(string, position),
+      }"
       @mousedown="onSideMouseDown"
     >
       <span>&ldca;</span>
@@ -128,8 +132,12 @@ function onSideMouseDown(e: MouseEvent) {
       @keyup="(e) => e.stopPropagation()"
     />
     <div
-      v-if="editing && hasNote && !(tieAdd.dragDirection /*=== 'left'*/)"
+      v-if="editing && hasNote"
       class="side right"
+      :class="{
+        hidden:
+          tieAdd.dragDirection === 'right' || tieAdd.hasRight(string, position),
+      }"
       @mousedown="onSideMouseDown"
     >
       <span>&rdca;</span>
@@ -154,6 +162,10 @@ function onSideMouseDown(e: MouseEvent) {
   height: 100%;
   display: flex;
   align-items: end;
+
+  &.hidden {
+    visibility: hidden;
+  }
 
   &:hover {
     background-color: var(--note-hover-color);

@@ -47,31 +47,18 @@ export function createTieAddState(
           i > position;
           i -= subUnit.value
         ) {
-          // debugger;
           const stack = store.value?.stacks.get(i);
           if (stack?.get(newTie.string)) {
             position = i;
             break;
           }
         }
-        // if (hitNote.value !== undefined) {
-        //   if (hitNote.value > dragFrom.value) hitNote.value = undefined;
-        //   else if (position < hitNote.value) return;
-        // }
         newTie.from = position;
         newTie.to = dragFrom.value; // for when you've left the screen
         const stack = store.value?.stacks.get(position);
         const note = stack?.get(newTie.string);
         if (note) newTie.midiFrom = note.midi;
-
-        // if (midi) {
-        //   hitNote.value = position;
-        // }
       } else {
-        // if (hitNote.value !== undefined) {
-        //   if (hitNote.value < dragFrom.value) hitNote.value = undefined;
-        //   else if (position > hitNote.value) return;
-        // }
         for (
           let i = dragFrom.value + subUnit.value;
           i < position;
@@ -85,23 +72,17 @@ export function createTieAddState(
         }
 
         newTie.to = position;
-        // newTie.midiTo = midi;
         newTie.from = dragFrom.value;
         const stack = store.value?.stacks.get(position);
         const note = stack?.get(newTie.string);
         if (note) newTie.midiTo = note.midi;
-        // if (midi) {
-        //   hitNote.value = position;
-        // }
       }
     }
   }
 
   function end() {
     if (!store.value) return;
-    // const { string, startPos: start, endPos: end } = newTie;
     if (newTie.to !== undefined && newTie.to !== newTie.from) {
-      // const [from, to] = [start, end].sort((a, b) => a - b);
       store.value.ties.setTie(newTie.string, newTie.from, {
         type: newTie.type,
         to: newTie.to,
@@ -109,6 +90,18 @@ export function createTieAddState(
     }
     newTie.from = newTie.to = undefined;
     dragFrom.value = undefined;
+  }
+
+  function hasLeft(string: number, position: number) {
+    const stringTies = store.value?.ties.getTies().get(string);
+    if (!stringTies) return false;
+    return stringTies.some((tie) => tie.to === position);
+  }
+
+  function hasRight(string: number, position: number) {
+    const stringTies = store.value?.ties.getTies().get(string);
+    if (!stringTies) return false;
+    return stringTies.some((tie) => tie.from === position);
   }
 
   return reactive({
@@ -122,6 +115,8 @@ export function createTieAddState(
     start,
     drag,
     end,
+    hasLeft,
+    hasRight,
   });
 }
 
