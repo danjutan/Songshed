@@ -359,6 +359,7 @@ export interface GuitarStore
 
 function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
   const noteStore = createStackStore(guitarData.stacks);
+  const tieStore = createTieStore(guitarData);
 
   function setNote(position: number, string: number, data: GuitarNote): void {
     if (position >= 0 && string >= 0 && string < guitarData.strings) {
@@ -380,14 +381,12 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
       stack.delete(string);
       noteStore.setStack(position, stack);
 
-      const ties = guitarData.ties.get(string);
-      if (ties) {
-        ties.delete(position);
-        const tiedTo = [...ties.entries()].find(
-          ([_, tie]) => tie.to === position,
-        );
+      const stringTies = tieStore.getTies().get(string);
+      if (stringTies) {
+        tieStore.deleteTie(string, position);
+        const tiedTo = stringTies.find((tie) => tie.to === position);
         if (tiedTo) {
-          ties.delete(tiedTo[0]);
+          tieStore.deleteTie(string, tiedTo.from);
         }
       }
     }
@@ -428,6 +427,6 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     deleteNote,
     shiftFrom,
     ...guitarData,
-    ties: createTieStore(guitarData),
+    ties: tieStore,
   };
 }

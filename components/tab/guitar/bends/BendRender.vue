@@ -8,7 +8,6 @@ export type BendRenderProps = OverlayPosition & {
 };
 const props = defineProps<BendRenderProps & { bendRow: number }>();
 
-console.log(props.bendRow);
 const upswingEndColumn = computed(
   () => props.throughColumns[0] || props.endColumn,
 );
@@ -17,14 +16,9 @@ const upswingColumns = computed(
   () => upswingEndColumn.value - props.startColumn + 1,
 );
 
-console.log({
-  throughColumns: props.throughColumns,
-  upswingColumns: upswingColumns.value,
-});
+const restColumns = computed(() => props.endColumn - upswingEndColumn.value);
 
-// const restColumns = computed(
-//   () => props.endColumn - props.startColumn - upswingColumns.value,
-// );
+console.log(restColumns.value);
 
 const rowSpan = computed(() => props.row - props.bendRow + 1);
 
@@ -38,9 +32,6 @@ const bendLabels: { [bend: number]: string } = {
 </script>
 
 <template>
-  <div class="label">
-    <span>{{ bendLabels[props.bend.bend] || props.bend.bend }}</span>
-  </div>
   <svg
     class="upswing"
     :viewBox="`0 0 ${vbu * upswingColumns} ${vbu * rowSpan}`"
@@ -62,20 +53,45 @@ const bendLabels: { [bend: number]: string } = {
       class="upswing-curve"
       :d="
         `M ${vbu * 0.75} ${vbu * rowSpan - vbu * 0.75}` +
-        `Q ${vbu * upswingColumns - vbu / 2} ${vbu * rowSpan - vbu * 0.75} ${vbu * upswingColumns - vbu / 2} ${(vbu * 3) / 4}`
+        `Q ${vbu * upswingColumns - vbu / 2} ${vbu * rowSpan - vbu * 0.75} ${vbu * upswingColumns - vbu / 2} ${vbu * 0.8}`
       "
       marker-end="url(#arrow)"
     />
-
-    <!-- <rect
-      :x="0"
-      :y="0"
-      :width="vbu * upswingColumns"
-      :height="vbu * rowSpan"
-      fill="transparent"
-      stroke="blue"
-    /> -->
   </svg>
+  <template v-if="restColumns > 0">
+    <svg
+      v-if="bend.releaseType === 'connect'"
+      class="downswing"
+      :viewBox="`0 0 ${vbu * restColumns} ${vbu * rowSpan}`"
+      preserveAspectRatio="none"
+    >
+      <path
+        class="downswing-curve"
+        :d="
+          `M ${vbu * 0.75} ${vbu * 0.35}` +
+          `Q ${vbu * restColumns - vbu / 2} ${vbu / 2} ${vbu * restColumns - vbu / 2} ${vbu * rowSpan - vbu * 0.85}`
+        "
+        marker-end="url(#arrow)"
+      />
+    </svg>
+    <svg
+      v-else
+      class="hold"
+      :viewBox="`0 0 ${vbu * restColumns} ${vbu}`"
+      preserveAspectRatio="none"
+    >
+      <line
+        class="hold-line"
+        :x1="vbu * 0.75"
+        :x2="vbu * restColumns - vbu / 2"
+        :y1="vbu * 0.35"
+        :y2="vbu * 0.35"
+      />
+    </svg>
+  </template>
+  <div class="label">
+    <span>{{ bendLabels[props.bend.bend] || props.bend.bend }}</span>
+  </div>
 </template>
 
 <style scoped>
@@ -84,21 +100,42 @@ const bendLabels: { [bend: number]: string } = {
   grid-column: v-bind(upswingEndColumn);
   font-size: calc(var(--note-font-size) * 0.75);
   justify-self: center;
+  background-color: white;
+  height: min-content;
 }
+
+.upswing,
+.downswing,
+.hold {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.upswing,
+.downswing {
+  grid-row: v-bind(bendRow) / calc(v-bind(row) + 1);
+}
+
+.hold {
+  grid-row: v-bind(bendRow);
+}
+
 .upswing {
   /* background-color: yellow;
   opacity: 0.5; */
-  /* width: calc(100% - 100% / v-bind(upswingColumns)); */
-  width: 100%;
-  justify-self: center;
-  height: 100%;
-  /* grid-column: v-bind(startColumn) / calc(v-bind(endColumn) + 1); */
   grid-column: v-bind(startColumn) / calc(v-bind(upswingEndColumn) + 1);
-  grid-row: v-bind(bendRow) / calc(v-bind(row) + 1);
-  overflow: visible;
 }
 
-.upswing-curve {
+.downswing,
+.hold {
+  grid-column: v-bind(upswingEndColumn) / calc(v-bind(endColumn) + 1);
+}
+
+.upswing-curve,
+.downswing-curve,
+.hold-line {
   stroke: black;
   stroke-width: 1;
   fill: none;

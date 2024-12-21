@@ -21,9 +21,9 @@ export type TieData = {
 
 export interface BendData {
   type: "bend";
-  releaseType: "stay" | "connect"; // whether the line release back down to note
   bend: number;
-  through?: number[]; //relative to from
+  through?: number[]; //relative to from. this is an array in case we later want to add consecutive bend segments https://archive.steinberg.help/dorico/v3/en/dorico/topics/notation_reference/notation_reference_guitar_bends/notation_reference_guitar_bends_c.html#:~:text=consecutive%20guitar%20bends
+  releaseType: "hold" | "connect"; // whether the line releases down to "to" note. ignored if no "through" point.
   to: number;
 }
 
