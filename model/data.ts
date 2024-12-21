@@ -9,7 +9,7 @@ export interface NoteData {
   midi: Midi;
 }
 
-export type TieType = "h" | "p" | "slide";
+export type TieType = "h" | "p" | "s";
 export interface Tie {
   type: TieType;
   // from: number; //position

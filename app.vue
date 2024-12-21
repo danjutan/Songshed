@@ -40,8 +40,10 @@ if (id) {
     [Spacing.Quarter * 4 + Spacing.Sixteenth, 1, "A4"],
     [Spacing.Quarter * 6, 5, "G3"],
     [Spacing.Quarter * 8, 5, "F3"],
+    [Spacing.Quarter * 9 - Spacing.Sixteenth, 0, "G4"],
     [Spacing.Quarter * 9, 0, "F4"],
     [Spacing.Quarter * 9 + Spacing.Eighth, 0, "F4"],
+    [Spacing.Quarter * 10 + Spacing.Sixteenth, 2, "F4"],
     [Spacing.Quarter * 12, 0, "F4"],
     [Spacing.Quarter * 12 + Spacing.Sixteenth, 0, "F4"],
   ];
@@ -68,11 +70,20 @@ if (id) {
     type: "p",
   });
 
-  guitar.setTie(0, Spacing.Quarter * 9, {
-    to: Spacing.Quarter * 10,
+  guitar.setTie(2, Spacing.Whole * 2 - Spacing.Sixteenth, {
+    to: Spacing.Whole * 2,
+    type: "s",
+  });
+
+  guitar.setTie(0, Spacing.Quarter * 9 - Spacing.Sixteenth, {
+    to: Spacing.Quarter * 10 - Spacing.Sixteenth,
     type: "p",
   });
 
+  guitar.setTie(2, Spacing.Quarter * 9 - Spacing.Sixteenth, {
+    to: Spacing.Quarter * 10 + Spacing.Sixteenth,
+    type: "p",
+  });
   tabStore.value = store;
 }
 

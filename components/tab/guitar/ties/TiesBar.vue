@@ -19,32 +19,26 @@ const props = defineProps<{
   subUnit: number;
 }>();
 
-interface TieRenderData extends OverlayPosition {
-  props: TieRenderProps;
-}
-
 // Assumes ties can stretch over one divider, but not two
 
-const ties = computed<TieRenderData[]>(() => {
-  const ties: TieRenderData[] = [];
+const ties = computed<TieRenderProps[]>(() => {
+  const ties: TieRenderProps[] = [];
   for (const [string, stack] of props.ties) {
     for (const [position, tie] of stack) {
       // if (position === Spacing.Whole * 2) debugger;
       if (position >= props.startPosition && position < props.endPosition) {
         const startColumn =
           props.startColumn + (position - props.startPosition) / props.subUnit;
-        if (tie.to <= props.endPosition) {
+        if (tie.to < props.endPosition) {
           ties.push({
             row: props.startRow + string,
             startColumn,
             endColumn:
               props.startColumn +
               (tie.to - props.startPosition) / props.subUnit,
-            props: {
-              type: tie.type,
-              from: position,
-              to: tie.to,
-            },
+            type: tie.type,
+            from: position,
+            to: tie.to,
           });
           continue;
         }
@@ -55,12 +49,10 @@ const ties = computed<TieRenderData[]>(() => {
             props.startColumn +
             (props.endPosition - props.startPosition) / props.subUnit -
             1,
-          props: {
-            type: tie.type,
-            from: position,
-            to: tie.to,
-            half: "left",
-          },
+          type: tie.type,
+          from: position,
+          to: tie.to,
+          half: "left",
         });
         continue;
       }
@@ -70,12 +62,10 @@ const ties = computed<TieRenderData[]>(() => {
           startColumn: props.startColumn,
           endColumn:
             props.startColumn + (tie.to - props.startPosition) / props.subUnit,
-          props: {
-            type: tie.type,
-            from: position,
-            to: tie.to,
-            half: "right",
-          },
+          type: tie.type,
+          from: position,
+          to: tie.to,
+          half: "right",
         });
         continue;
       }
@@ -86,15 +76,7 @@ const ties = computed<TieRenderData[]>(() => {
 </script>
 
 <template>
-  <TieRender
-    v-for="{ row, startColumn, endColumn, props } in ties"
-    :key="`${row}${startColumn}`"
-    v-bind="props"
-    :style="{
-      gridRow: row,
-      gridColumn: `${startColumn} / ${endColumn + 1}`,
-    }"
-  />
+  <TieRender v-for="(props, i) in ties" :key="i" v-bind="props" />
 </template>
 
 <style scoped></style>
