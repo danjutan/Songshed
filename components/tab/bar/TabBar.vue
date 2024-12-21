@@ -51,7 +51,7 @@ const stacksMap = computed<StacksMap>(() => {
     }
     map.set(position, stack); */
   }
-  for (const [position, stack] of props.data.getStacks()) {
+  for (const [position, stack] of props.data.stacks.value) {
     const existing = map.get(position) || emptyStack(position);
     for (const note of stack) {
       existing[note.string] = note;
@@ -125,6 +125,15 @@ const divisionPlacement = (column: number) => ({
 });
 
 const subdivisions = computed(() => (Spacing.Whole / smallestSpacing) / props.notches);
+
+function noteChange(changed: NoteSpot) {
+  const { position, string, data } = changed;
+  if (data) {
+    props.data.setNote(position, string, data);
+    return;
+  }
+  props.data.deleteNote(position, string);
+}
 </script>
 
 <template>
@@ -141,7 +150,7 @@ const subdivisions = computed(() => (Spacing.Whole / smallestSpacing) / props.no
       :tuning="data.tuning"
       :frets="data.frets"
       :style="divisionPlacement(div.notchPosition + 1)"
-      @note-change="data.setNote"
+      @note-change="noteChange"
     />
     <TabBarToolbar
       :divisions

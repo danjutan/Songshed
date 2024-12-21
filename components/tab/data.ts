@@ -29,16 +29,17 @@ type StackMap = Map<number, NoteData>;
 export type TabData = Map<number, StackMap>;
 
 export type TabStore = {
-  // readonly notes: ReturnType<typeof computed<NoteSpot[]>>
   readonly strings: number
   readonly tuning: Midi[]
   readonly frets: number
+  readonly stacks: ReturnType<typeof computed<StacksData>>
   setNote: {
     (position: number, string: number, data: NoteData): void
     (position: number, string: number, midiString: string): void
     (position: number, string: number, midi: Midi): void
   }
   getNote: (position: number, string: number) => NoteData | undefined
+  getNotes: (start?: number, end?: number) => NoteSpot[]
   // updateNote: (position: number, string: number, properties: Partial<NoteData>) => void
   deleteNote: (position: number, string: number) => void
   // ordered by ascending string #
@@ -103,6 +104,7 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
   };
 
   function setNote(position: number, string: number, data: NoteData | Midi | string): void {
+    console.log("setNote called", arguments);
     if (position >= 0 && string >= 0 && string < strings) {
       const stackMap = tabData.get(position) || new Map<number, NoteData>();
       const noteData = typeof data === "object"
@@ -111,6 +113,7 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
             midi: typeof data === "string" ? toMidi(data) : data,
           };
       stackMap.set(string, noteData);
+      console.log("setting");
       tabData.set(position, stackMap);
       if (position > (furthestPos.at(-1) ?? 0)) {
         furthestPos.push(position);
@@ -132,13 +135,17 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
   };
 
   return {
-    getNotes,
     strings,
     frets,
     tuning,
     getNote,
+    getNotes,
     getStack,
     getStacks,
+    stacks: computed(() => {
+      console.log("recomputing");
+      return getStacks();
+    }),
     deleteNote,
     setNote,
     lastPosition() {
@@ -152,7 +159,6 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
           return func(position, ...otherArgs);
       }
       return {
-        // notes: subset,
         start,
         end,
         strings,
@@ -160,6 +166,8 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
         tuning,
         getStack: position => ifInBounds(getStack, position),
         getStacks: () => getStacks(start, end),
+        stacks: computed(() => getStacks(start, end)),
+        getNotes: () => getNotes(start, end),
         getNote: (position, ...args) => ifInBounds(getNote, position, ...args),
         setNote: (position, ...args) => ifInBounds(setNote, position, ...args),
         deleteNote,
