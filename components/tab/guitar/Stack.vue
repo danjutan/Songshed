@@ -72,7 +72,8 @@ function onSpotMouseDown(
 ) {
   if (tieable(note, string)) {
     tieAdd.start(string, props.position, note!.midi);
-    e.preventDefault();
+    e.preventDefault(); //prevents default drag-drop behavior
+    e.stopPropagation(); //prevents onStackMouseDown from triggering
   }
 }
 </script>

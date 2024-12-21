@@ -237,7 +237,12 @@ function onLabelHover() {
       @mouseleave="releaseArrowHover = false"
     />
   </template>
-  <div v-if="showLabel" class="label" @mouseover="onLabelHover">
+  <div
+    v-if="showLabel"
+    class="label"
+    :class="{ dragging }"
+    @mouseover="onLabelHover"
+  >
     <span v-html="bendLabels[props.bend.bend] || props.bend.bend" />
     <select @input="onSelectInput">
       <option
@@ -311,17 +316,17 @@ function onLabelHover() {
 .label {
   grid-row: v-bind(bendRow);
   grid-column: v-bind(upswingEndColumn);
+  height: 100%;
   font-size: calc(var(--note-font-size) * 0.75);
   justify-self: center;
   align-self: end;
-  height: min-content;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: transparent;
+  justify-content: flex-end;
   width: calc(120%);
 
-  &:hover {
+  &:not(.dragging):hover {
     span {
       display: none;
     }
@@ -331,6 +336,9 @@ function onLabelHover() {
   }
 
   & select {
+    position: absolute;
+    transform: translateX(-12%);
+    z-index: 1;
     display: none;
     text-align: center;
 
@@ -369,7 +377,7 @@ function onLabelHover() {
 
 .grabber-hover {
   grid-row: v-bind(bendRow);
-  grid-column: calc(v-bind(upswingEndColumn) + 1);
+  grid-column: calc(v-bind(upswingEndColumn) + 1) / span 2; /*span 2 so that it is fully visible over a divider*/
   width: 50%;
   display: flex;
   align-items: center;

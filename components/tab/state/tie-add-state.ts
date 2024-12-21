@@ -110,7 +110,7 @@ export function createTieAddState(
         bend: 1,
       });
     } else if (to.value !== from.value) {
-      store.value.ties.setTie(dragFromString.value, dragFrom.value, {
+      store.value.ties.setTie(dragFromString.value, from.value, {
         type: tieType,
         to: to.value,
       });
