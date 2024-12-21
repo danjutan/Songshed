@@ -2,14 +2,15 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   devServer: {
-    port: 3001
+    port: 3001,
   },
   modules: [
-    '@nuxt/eslint'
+    "@nuxt/eslint",
   ],
   eslint: {
     config: {
-      stylistic: true
-    }
-  }
-})
+      // the stylistic config object doesn't actually do anything, so just set true
+      stylistic: true,
+    },
+  },
+});

@@ -1,12 +1,13 @@
+<!-- eslint-disable vue/html-closing-bracket-newline -->
 <script lang="ts" setup>
 import { type NoteSpot, SpacingsDescending } from './data';
 import type { DivisionData } from './TabBar.vue';
 import Expander from './Expander.vue';
 
 const props = withDefaults(defineProps<{
-  data: DivisionData,
-  frets: number,
-  tuning: Midi[],
+  data: DivisionData;
+  frets: number;
+  tuning: Midi[];
 }>(), {
 });
 
@@ -14,9 +15,8 @@ const numStrings = computed(() => props.tuning.length);
 const column = computed((() => props.data.notchPosition + 1));
 
 const emit = defineEmits<{
-  noteChange: [note: NoteSpot],
-}>()
-
+  noteChange: [note: NoteSpot];
+}>();
 
 const sortedSubstacks = computed(() => props.data.substacks?.toSorted((a, b) => a.notchPosition - b.notchPosition) || []);
 const relativePositions = computed(() => sortedSubstacks.value.map(substack => substack.notchPosition - props.data.notchPosition));
@@ -26,32 +26,40 @@ console.log(columns.value);
 const colPositions = relativePositions.value.map(pos => pos / subunit.value);
 
 const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150 ${(props.data.notchPosition + 1) % 2 * 255})`);
-
 </script>
 
 <template>
-  <div class="division" @click="console.log(data)">
+  <div class="division"
+       @click="console.log(data)">
     <div class="stack">
-      <TabsNoteInput 
-        v-for="(noteSpot) in props.data.stack" 
-        :key="noteSpot.string"
-        :data="noteSpot.data" 
-        :tuning="props.tuning[noteSpot.string]" :frets="props.frets"
-        @data-change="emit('noteChange', { ...noteSpot, data: $event })" />
+      <TabsNoteInput v-for="(noteSpot) in props.data.stack"
+                     :key="noteSpot.string"
+                     :data="noteSpot.data"
+                     :tuning="props.tuning[noteSpot.string]"
+                     :frets="props.frets"
+                     @data-change="emit('noteChange', { ...noteSpot, data: $event })"
+      />
     </div>
-    <Expander v-if="sortedSubstacks.length">
-      <div class="substack-grid">
-        <TabsStrings/>
-        <div
-            v-for="(substack, i) in sortedSubstacks" :key="substack.notchPosition" 
-            class="substack"
-            :style="{ gridColumn: colPositions[i]}">
-          <TabsNoteInput 
-            v-for="(noteSpot) in substack.stack"
-            :key="noteSpot.string"
-            :data="noteSpot.data" 
-            :tuning="props.tuning[noteSpot.string]" :frets="props.frets"
-            @data-change="emit('noteChange', { ...noteSpot, data: $event })" />
+    <Expander v-if="sortedSubstacks.length"
+              v-slot="{ expanded }">
+      <div class="substack-grid"
+           :class="{ squish: !expanded }">
+        <TabsStrings />
+        <div v-for="(substack, i) in sortedSubstacks"
+             :key="substack.notchPosition"
+             class="substack"
+             :style="{ gridColumn: colPositions[i] }">
+          <template v-if="expanded">
+            <TabsNoteInput
+              v-for="(noteSpot) in substack.stack"
+              :key="noteSpot.string"
+              :data="noteSpot.data"
+              :background-color="expanded ? 'white' : 'transparent'"
+              :tuning="props.tuning[noteSpot.string]"
+              :frets="props.frets"
+              @data-change="emit('noteChange', { ...noteSpot, data: $event })"
+            />
+          </template>
         </div>
       </div>
     </Expander>
@@ -59,7 +67,6 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
 </template>
 
 <style scoped>
-
 .division {
   /* min-width: calc(var(--min-division-width) * 0.75); */
   /* For scrollbar height */
@@ -75,7 +82,8 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
   /* border: 1px solid green; */
 }
 
-.stack, .substack {
+.stack,
+.substack {
   display: flex;
   flex-direction: column;
 }
@@ -83,10 +91,12 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
 .substack {
   grid-row: 1 / 1;
 }
+
 .substack-grid {
   display: grid;
   height: calc(var(--min-division-width) / 2 * v-bind(numStrings));
-  grid-template-columns: repeat(v-bind(columns), calc(var(--min-division-width) / 2));
+  grid-template-columns: repeat(v-bind(columns), calc(var(--min-division-width) / 2 / v-bind(columns))) 1fr;
+  /* grid-template-columns: repeat(v-bind(columns), calc(var(--min-division-width) / 2)); */
   grid-template-rows: 1fr;
   color: red;
 }

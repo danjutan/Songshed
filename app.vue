@@ -10,6 +10,7 @@ const notes = ref<FilledSpot[]>([
 
   createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth, 1, "C5"),
   createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 2, 4, "C5"),
+  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 4, "C5"),
   createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 5, "C5"),
 
   createNote(Spacing.Quarter * 2 + Spacing.Sixteenth, 5, "B4"),

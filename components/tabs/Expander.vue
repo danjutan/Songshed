@@ -2,13 +2,14 @@
 const expanded = ref(false);
 const overflow = computed(() => expanded.value ? "visible" : "auto");
 const buttonText = computed(() => expanded.value ? "↤" : "⇥");
+const test = "single";
 </script>
 
 <template>
   <div class="expander">
     <!-- <button class="expand-button" @click="expanded = !expanded">{{ buttonText }} </button> -->
     <div class="preview">
-      <slot/>
+      <slot :expanded="expanded" />
     </div>
   </div>
 </template>
@@ -27,8 +28,9 @@ const buttonText = computed(() => expanded.value ? "↤" : "⇥");
 .preview {
   grid-column: 1 / 1;
   grid-row: 1 / 1;
+  overflow: hidden;
   /* width: calc(var(--min-division-width) / 2); */
-  overflow-x: v-bind(overflow);
+  /* overflow-x: v-bind(overflow); */
 }
 
 .expand-button {

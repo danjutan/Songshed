@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import type { SpacerData } from './TabBar.vue';
+import type { SpacerData } from "./TabBar.vue";
 
 const props = defineProps<{
-  data: SpacerData
-  strings: number
+  data: SpacerData;
+  strings: number;
 }>();
 
 const emit = defineEmits<{
-  hover: [string: number, notch: number]
+  hover: [string: number, notch: number];
 }>();
 
 const notchStart = computed(() => props.data.notchStart + 1);
@@ -20,16 +20,19 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
 </script>
 
 <template>
-  <div class="spacer"> 
-    <div class="header"><span class="title">↔</span></div>
-    <template v-for="(n, ni) in notches" :key="n">
-      <div 
-       v-for="(s) in strings"
-       :key="s" 
-       class="spot" 
-       :style="{ gridColumn: n, gridRow: s}" 
-       @mouseover="emit('hover', s, notchStart + ni)"
-       />
+  <div class="spacer">
+    <div class="header">
+      <span class="title">↔</span>
+    </div>
+    <template v-for="(n, ni) in notches"
+              :key="n">
+      <div
+        v-for="(s) in strings"
+        :key="s"
+        class="spot"
+        :style="{ gridColumn: n, gridRow: s }"
+        @mouseover="emit('hover', s, notchStart + ni)"
+      />
     </template>
   </div>
 </template>
@@ -65,7 +68,8 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
   /* transition: opacity 0.1s; */
 }
 
-@container (aspect-ratio < 1) { 
+@container (aspect-ratio < 1) {
+
   .title {
     position: absolute;
     left: -100%;
@@ -73,5 +77,4 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
     opacity: 0.5;
   }
 }
-
 </style>

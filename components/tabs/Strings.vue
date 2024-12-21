@@ -3,16 +3,19 @@
 
 <template>
   <div class="strings">
-    <div v-for="i in 10" :key="i" class="string-box">
-      <div class="string"/>
+    <div v-for="i in 10"
+         :key="i"
+         class="string-box">
+      <div class="string" />
     </div>
   </div>
 </template>
 
 <style scoped>
 .strings {
-  grid-row: 1 / -1; 
+  grid-row: 1 / -1;
   grid-column: 1 / -1;
+  width: 100%;
   overflow-y: hidden;
 }
 
@@ -28,6 +31,4 @@
   height: 1px;
   background-color: gray;
 }
-
-
 </style>
