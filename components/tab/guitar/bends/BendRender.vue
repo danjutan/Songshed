@@ -18,8 +18,6 @@ const upswingColumns = computed(
 
 const restColumns = computed(() => props.endColumn - upswingEndColumn.value);
 
-console.log(restColumns.value);
-
 const rowSpan = computed(() => props.row - props.bendRow + 1);
 
 const vbu = 12;
@@ -29,6 +27,9 @@ const bendLabels: { [bend: number]: string } = {
   0.5: "1/2",
   1.5: "1 1/2",
 };
+
+const upswingArrowHover = ref(false);
+const endArrowHover = ref(false);
 </script>
 
 <template>
@@ -49,13 +50,25 @@ const bendLabels: { [bend: number]: string } = {
       <path d="M 0 0 L 10 5 L 0 10 z" />
     </marker>
 
+    <marker
+      id="hover-arrow"
+      viewBox="0 0 10 10"
+      refX="5"
+      refY="5"
+      markerWidth="8"
+      markerHeight="8"
+      orient="auto-start-reverse"
+    >
+      <path d="M 0 0 L 10 5 L 0 10 z" />
+    </marker>
+
     <path
       class="upswing-curve"
       :d="
         `M ${vbu * 0.75} ${vbu * rowSpan - vbu * 0.75}` +
-        `Q ${vbu * upswingColumns - vbu / 2} ${vbu * rowSpan - vbu * 0.75} ${vbu * upswingColumns - vbu / 2} ${vbu * 0.8}`
+        `Q ${vbu * upswingColumns - vbu / 2} ${vbu * rowSpan - vbu * 0.75} ${vbu * upswingColumns - vbu / 2} ${vbu * 1.1}`
       "
-      marker-end="url(#arrow)"
+      :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
     />
   </svg>
   <template v-if="restColumns > 0">
@@ -68,10 +81,10 @@ const bendLabels: { [bend: number]: string } = {
       <path
         class="downswing-curve"
         :d="
-          `M ${vbu * 0.75} ${vbu * 0.35}` +
-          `Q ${vbu * restColumns - vbu / 2} ${vbu / 2} ${vbu * restColumns - vbu / 2} ${vbu * rowSpan - vbu * 0.85}`
+          `M ${vbu * 0.75} ${vbu * 0.6}` +
+          `Q ${vbu * restColumns - vbu / 2} ${vbu * 0.6} ${vbu * restColumns - vbu / 2} ${vbu * rowSpan - vbu * 0.85}`
         "
-        marker-end="url(#arrow)"
+        :marker-end="endArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
     </svg>
     <svg
@@ -84,33 +97,42 @@ const bendLabels: { [bend: number]: string } = {
         class="hold-line"
         :x1="vbu * 0.75"
         :x2="vbu * restColumns - vbu / 2"
-        :y1="vbu * 0.35"
-        :y2="vbu * 0.35"
+        :y1="vbu * 0.6"
+        :y2="vbu * 0.6"
+        :marker-end="endArrowHover ? 'url(#hover-arrow)' : undefined"
       />
     </svg>
+    <div
+      :class="
+        bend.releaseType === 'connect'
+          ? 'downswing-arrow-hover'
+          : 'hold-arrow-hover'
+      "
+      @mouseover="endArrowHover = true"
+      @mouseleave="endArrowHover = false"
+    />
   </template>
   <div class="label">
-    <span>{{ bendLabels[props.bend.bend] || props.bend.bend }}</span>
+    <div class="row">
+      <span>{{ bendLabels[props.bend.bend] || props.bend.bend }}</span>
+      <div v-if="!restColumns" class="grabber right" />
+    </div>
   </div>
+  <div
+    class="upswing-arrow-hover"
+    @mouseover="upswingArrowHover = true"
+    @mouseleave="upswingArrowHover = false"
+  />
 </template>
 
 <style scoped>
-.label {
-  grid-row: v-bind(bendRow);
-  grid-column: v-bind(upswingEndColumn);
-  font-size: calc(var(--note-font-size) * 0.75);
-  justify-self: center;
-  background-color: white;
-  height: min-content;
-}
-
 .upswing,
 .downswing,
 .hold {
   width: 100%;
   height: 100%;
   overflow: visible;
-  pointer-events: none;
+  /* pointer-events: none; */
 }
 
 .upswing,
@@ -142,8 +164,69 @@ const bendLabels: { [bend: number]: string } = {
   vector-effect: non-scaling-stroke;
 }
 
-marker,
-marker path {
-  vector-effect: non-scaling-size;
+.label {
+  grid-row: v-bind(bendRow);
+  grid-column: v-bind(upswingEndColumn);
+  font-size: calc(var(--note-font-size) * 0.75);
+  justify-self: center;
+  align-self: end;
+  /* background-color: yellow; */
+  height: min-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: transparent;
+  /* height: calc(100% + var(--cell-height) / 2); */
+  width: calc(120%);
+  /* margin-bottom: calc(var(--cell-height) * -0.75); */
+
+  & .row {
+    display: flex;
+    align-items: center;
+  }
+
+  &:hover .grabber {
+    visibility: visible;
+  }
+}
+
+.upswing-arrow-hover,
+.downswing-arrow-hover,
+.hold-arrow-hover {
+  z-index: 1;
+  width: 100%;
+  cursor: move;
+}
+.upswing-arrow-hover {
+  grid-row: calc(v-bind(bendRow) + 1);
+  grid-column: v-bind(upswingEndColumn);
+  height: calc(100% + var(--cell-height) * 0.1);
+  margin-top: calc(var(--cell-height) * -0.1);
+  /* height: calc(var(--cell-height) / 2); */
+}
+
+.downswing-arrow-hover {
+  height: 100%;
+  margin-top: -30%;
+  grid-row: v-bind(row);
+  grid-column: v-bind(endColumn);
+}
+
+.hold-arrow-hover {
+  grid-row: v-bind(bendRow);
+  grid-column: v-bind(endColumn);
+}
+
+.grabber {
+  width: calc(var(--note-font-size) * 0.4);
+  height: calc(var(--note-font-size) * 0.4);
+  background-color: black;
+  border-radius: 50%;
+  visibility: hidden;
+
+  &.right {
+    margin-right: calc(var(--note-font-size) * -0.5);
+    margin-left: calc(var(--note-font-size) * 0.1);
+  }
 }
 </style>

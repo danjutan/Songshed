@@ -72,8 +72,15 @@ if (id) {
     type: "bend",
     releaseType: "hold",
     bend: 1,
-    through: [Spacing.Sixteenth * 1],
+    through: [Spacing.Sixteenth * 2],
     to: Spacing.Quarter * 6,
+  });
+
+  ties.setTie(2, Spacing.Quarter * 3 - Spacing.Eighth, {
+    type: "bend",
+    releaseType: "hold",
+    bend: 1,
+    to: Spacing.Quarter * 3,
   });
 
   ties.setTie(2, Spacing.Quarter * 2, {

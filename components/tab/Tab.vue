@@ -296,8 +296,7 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
   grid-template-rows:
-    repeat(v-bind(annotationRows), var(--cell-height))
-    repeat(v-bind(numStrings), var(--cell-height))
+    repeat(calc(v-bind(notesRow) - 1 + v-bind(numStrings)), var(--cell-height))
     calc(var(--cell-height) * 0.8);
 }
 
