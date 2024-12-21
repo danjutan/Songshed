@@ -26,37 +26,28 @@ function split(index: number) {
 </script>
 
 <template>
-  <Overlay>
-    <div class="string-background">
-      <div v-for="string in props.strings" class="string" />
-    </div>
-    <div class="bar">
-      <div v-for="([length, notes], i) in divisions" class="division"
-        :style="`min-width: calc(${length / smallest} * var(--min-division-width));`">
-        <div class="notes">
-          <div v-for="string in props.strings" class="row">
-            <div class="spot">
-            </div>
+  <div class="bar">
+    <div v-for="string in props.strings" :style="`grid-row: ${string} / span ${1}`" class="string"></div>
+    <div v-for="([length, notes], i) in divisions" class="division"
+      :style="`min-width: calc(${length / smallest} * var(--min-division-width)); grid-column: ${i + 1} / span 1`">
+      <div class="notes">
+        <div v-for="string in props.strings" class="row">
+          <div class="spot">
           </div>
         </div>
-        <div class="half-bar" @click="split(i)"></div>
-        <div class="divider" :class="{ 'with-border': showDivisions }"></div>
       </div>
-      <!-- <div class="dragger"></div> -->
+      <div class="half-bar" @click="split(i)"></div>
+      <div class="divider" :class="{ 'with-border': showDivisions }"></div>
     </div>
-  </Overlay>
+    <!-- <div class="dragger"></div> -->
+  </div>
 </template>
 
 <style>
-.string-background {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
-}
-
 .string {
+  grid-column: 1 / -1;
+  align-self: center;
   height: 1px;
-  width: 100%;
   background-color: gray;
 }
 
@@ -64,6 +55,9 @@ function split(index: number) {
   --min-division-width: 32px;
   display: grid;
   grid-template-columns: v-bind(templateColumns);
+  grid-template-rows: repeat(v-bind(strings), calc(var(--min-division-width) / 2));
+  /* align-items: center; */
+  /* grid-auto-flow: column; */
 }
 
 .subgrid {
@@ -74,13 +68,16 @@ function split(index: number) {
 .dragger {
   background-color: red;
   opacity: 0.3;
-  grid-column: 2 / span 1;
-  grid-row: 1 / span 1;
+  grid-column: 1 / 2;
+  grid-row: 1 / 6;
+  /* grid-column: 2 / span 1;
+  grid-row: 1 / span 1; */
 }
 
 .division {
   display: flex;
   justify-content: flex-end;
+  grid-row: 1 / span v-bind(strings);
 }
 
 .divider {
