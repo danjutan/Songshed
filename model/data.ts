@@ -9,8 +9,9 @@ export interface NoteData {
   midi: Midi;
 }
 
+export type TieType = "h" | "p" | "slide";
 export interface Tie {
-  type: "h" | "p" | "slide";
+  type: TieType;
   to: number; //position
 }
 export interface GuitarNote extends NoteData {

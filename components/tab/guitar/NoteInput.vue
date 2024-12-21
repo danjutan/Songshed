@@ -91,9 +91,7 @@ function onClick(e: MouseEvent) {
 
 input {
   all: unset;
-  /* text-shadow: 1px 1px 0px lightgray; */
   height: var(--cell-height);
-  /* z-index: var(--z-index-notes); */
 }
 
 .input-bg,

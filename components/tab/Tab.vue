@@ -2,6 +2,7 @@
 import type { Annotation, GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
 import GuitarBar from "./guitar/GuitarBar.vue";
+import TiesBar from "./guitar/ties/TiesBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 
 import {
@@ -147,6 +148,7 @@ onBeforeUnmount(() => {
           @click="data.guitar?.shiftFrom(bar.start, barSize)"
         />
 
+        <!--provider instead?-->
         <GuitarBar
           :stack-data="bar.stacks"
           :subdivisions
@@ -161,6 +163,15 @@ onBeforeUnmount(() => {
           @note-change="data.guitar!.setNote"
           @note-delete="data.guitar!.deleteNote"
         />
+        <!--fix prevstack to incorporate prev line -->
+        <TiesBar
+          :stack-data="bar.stacks"
+          :prev-stack="data.guitar!.stacks.get(bar.start - subUnit)"
+          :start-row="notesRow"
+          :start-column="i * (columnsPerBar + 1) + 2"
+          :sub-unit="subUnit"
+        />
+
         <template v-for="(_, rowIndex) in annotationRows">
           <div
             class="drag-start between"

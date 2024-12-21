@@ -34,7 +34,7 @@ if (id) {
     [0, 0, "B4"],
     [
       Spacing.Quarter * 2,
-      0,
+      2,
       "B4",
       { type: "h", to: Spacing.Quarter * 2 + Spacing.Sixteenth },
     ],
@@ -43,8 +43,16 @@ if (id) {
     [Spacing.Quarter * 4, 5, "A3"],
     [Spacing.Quarter * 6, 5, "G3"],
     [Spacing.Quarter * 8, 5, "F3"],
-    [Spacing.Quarter * 9, 0, "F4"],
-    [Spacing.Quarter * 9 + Spacing.Sixteenth, 0, "F4"],
+    [
+      Spacing.Quarter * 9,
+      0,
+      "F4",
+      {
+        type: "h",
+        to: Spacing.Quarter * 9 + Spacing.Eighth,
+      },
+    ],
+    [Spacing.Quarter * 9 + Spacing.Eighth, 0, "F4"],
     [Spacing.Quarter * 12, 0, "F4"],
     [Spacing.Quarter * 12 + Spacing.Sixteenth, 0, "F4"],
   ];
