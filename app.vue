@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import type { GuitarNote, SerializeableTabData, TabData, TabStore } from "~/model/data";
-import { Spacing, createTabStore, deserializeTabData } from "~/model/data";
+import type { GuitarNote, TabData } from "~/model/data";
+import type { TabStore } from "./model/stores";
+import type { SerializeableTabData } from "./model/serialize";
+import { createTabStore } from "./model/stores";
+import { deserializeTabData } from "./model/serialize";
 import Tab from "./components/tab/Tab.vue";
 import ChordChart from "./components/chords/ChordChart.vue";
 

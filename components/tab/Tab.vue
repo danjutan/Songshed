@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Annotation, TabStore } from "~/model/data";
+import type { Annotation } from "~/model/data";
+import type { TabStore } from "~/model/stores";
 import type { GuitarStack } from "./guitar/GuitarBar.vue";
 import GuitarBar from "./guitar/GuitarBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
