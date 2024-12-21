@@ -158,13 +158,13 @@ function onStackMouseMove(position: number) {
           @mousedown="
             !selectionState.isSelected(position + subUnit) &&
               selectionState.start(
-                position + subUnit,
+                position,
                 position + subUnit * (props.subdivisions - 1),
               )
           "
           @mousemove="
             selectionState.drag(
-              position + subUnit,
+              position,
               position + subUnit * (props.subdivisions - 1),
             )
           "

@@ -9,7 +9,12 @@ export interface NoteData {
   midi: Midi;
 }
 
+export interface Tie {
+  type: "h" | "p" | "slide";
+  to: number; //position
+}
 export interface GuitarNote extends NoteData {
+  tie?: Tie;
   /*
   muted?: boolean;
   slide?: boolean;

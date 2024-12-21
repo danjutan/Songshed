@@ -9,6 +9,7 @@ import {
   SelectionInjectionKey,
   type SelectionState,
 } from "./guitar/providers/selection";
+import { createAnnotationRenderState } from "./annotations/render-state";
 
 const props = withDefaults(
   defineProps<{
@@ -78,65 +79,11 @@ const gridTemplateColumns = computed<string>(() => {
   return `var(--cell-height) ${bars} var(--note-font-size)`;
 });
 
-const annotationRows = computed(() =>
-  Math.max(props.data.annotations.getRows().length, 1),
-);
-const notesRow = computed(() => annotationRows.value + 1);
-
-function newAnnotationRowClick() {
-  if (props.data.annotations.getRows().length === annotationRows.value - 1) {
-    props.data.annotations.createNextRow();
-  }
-  props.data.annotations.createNextRow();
-}
-
-function newBarClick(lastBarStart?: number) {
-  if (lastBarStart !== undefined)
-    newBarStart.value = lastBarStart + notchUnit.value * props.notches;
-}
-
-const newAnnotation = reactive<{
-  row: undefined | number;
-  start: undefined | number;
-  end: undefined | number;
-}>({ row: undefined, start: undefined, end: undefined });
-function annotationStart(row: number, position: number) {
-  newAnnotation.row = row;
-  newAnnotation.start = position;
-}
-function annotationDragThrough(position: number) {
-  if (newAnnotation.start !== undefined) {
-    /* if (position > newAnnotation.start) {
-      newAnnotation.end = position + subUnit.value;
-    } else {
-      newAnnotation.end = position;
-    } */
-    newAnnotation.end = position;
-  }
-}
-function annotationEnd() {
-  const { row, start, end } = newAnnotation;
-  if (
-    row !== undefined &&
-    start !== undefined &&
-    end !== undefined &&
-    start !== end
-  ) {
-    const first = Math.min(start, end);
-    const last = Math.max(start, end);
-    props.data.annotations.createAnnotation(row, {
-      start: first,
-      end: last + subUnit.value,
-      title: "",
-    });
-  }
-  newAnnotation.start = newAnnotation.end = undefined;
-}
-
-type TablineColumn = {
+export type TablineColumn = {
   tabline: number;
   column: number;
 };
+
 const posToCol = (pos: number): TablineColumn => {
   const cols = pos / subUnit.value;
   const tabline = Math.floor(cols / (props.barsPerLine * columnsPerBar.value));
@@ -149,65 +96,24 @@ const posToCol = (pos: number): TablineColumn => {
   };
 };
 
-// TODO: rows <-> types
-const annotationRenders = computed(() => {
-  const annotationRenders: Map<
-    number, // tabline index
-    Array<{
-      row: number;
-      startColumn: number;
-      endColumn: number;
-      annotation: Annotation | undefined;
-    }>
-  > = new Map();
+const annotationRenders = createAnnotationRenderState(
+  props.data.annotations,
+  subUnit,
+  posToCol,
+);
 
-  function push(
-    tablineIndex: number,
-    row: number,
-    startColumn: number,
-    endColumn: number,
-    annotation?: Annotation,
-  ) {
-    const atTabline = annotationRenders.get(tablineIndex) || [];
-    atTabline.push({ row, startColumn, endColumn, annotation });
-    annotationRenders.set(tablineIndex, atTabline);
-  }
+const annotationRows = computed(() => annotationRenders.rows);
 
-  props.data.annotations.getRows().forEach((rowIndex) => {
-    const annotations = props.data.annotations.getAnnotations(rowIndex);
-    const row = annotationRows.value - rowIndex;
-    for (const annotation of annotations) {
-      const start = posToCol(annotation.start);
-      const end = posToCol(annotation.end);
-      if (start.tabline !== end.tabline) {
-        push(start.tabline, row, start.column, -2, annotation);
-        push(end.tabline, row, 1, end.column, annotation);
-        continue;
-      }
-      push(start.tabline, row, start.column, end.column, annotation);
-    }
-  });
-
-  if (newAnnotation.start !== undefined) {
-    const row = annotationRows.value - newAnnotation.row!;
-    const start = newAnnotation.start;
-    const end = newAnnotation.end ?? start;
-    const first = posToCol(Math.min(start, end));
-    const last = posToCol(Math.max(start, end) + subUnit.value);
-    if (first.tabline !== last.tabline) {
-      push(first.tabline, row, first.column, -2);
-      push(last.tabline, row, 1, last.column);
-    } else {
-      push(first.tabline, row, first.column, last.column);
-    }
-  }
-
-  return annotationRenders;
-});
+const notesRow = computed(() => annotationRows.value + 1);
 
 function cancelSelection() {
-  annotationEnd();
+  annotationRenders.newEnd();
   selectionState.end();
+}
+
+function newBarClick(lastBarStart?: number) {
+  if (lastBarStart !== undefined)
+    newBarStart.value = lastBarStart + notchUnit.value * props.notches;
 }
 
 function onKeyUp(e: KeyboardEvent) {
@@ -262,7 +168,7 @@ onBeforeUnmount(() => {
               gridColumn: i * (columnsPerBar + 1) + 1,
               gridRow: annotationRows - rowIndex,
             }"
-            @mousedown="annotationStart(rowIndex, bar.start)"
+            @mousedown="annotationRenders.newStart(rowIndex, bar.start)"
           />
           <div
             v-for="([position], s) in bar.stacks"
@@ -271,12 +177,12 @@ onBeforeUnmount(() => {
               gridColumn: i * (columnsPerBar + 1) + 2 + s,
               gridRow: annotationRows - rowIndex,
             }"
-            @mousedown="annotationStart(rowIndex, position)"
-            @mouseover="annotationDragThrough(position)"
+            @mousedown="annotationRenders.newStart(rowIndex, position)"
+            @mouseover="annotationRenders.newDrag(position)"
           />
         </template>
 
-        <div class="new-row-box" @click="newAnnotationRowClick">
+        <div class="new-row-box" @click="annotationRenders.newRow">
           <span>+</span>
         </div>
       </template>
@@ -294,7 +200,7 @@ onBeforeUnmount(() => {
           startColumn,
           endColumn,
           annotation,
-        } in annotationRenders.get(tabLineIndex)"
+        } in annotationRenders.renders.get(tabLineIndex)"
         :key="startColumn"
         :row
         :start-column="

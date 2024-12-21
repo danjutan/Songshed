@@ -131,7 +131,7 @@ function createChordStore({ tuning, chords }: ChordsData) {
 
 export type ChordStore = ReturnType<typeof createChordStore>;
 
-interface AnnotationStore {
+export interface AnnotationStore {
   createAnnotation: (row: number, data: Annotation) => Annotation | false;
   deleteAnnotation: (row: number, data: Annotation) => void;
   getAnnotations: (row: number) => Annotation[];

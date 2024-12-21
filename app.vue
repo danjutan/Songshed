@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GuitarNote, TabData } from "~/model/data";
+import type { GuitarNote, TabData, Tie } from "~/model/data";
 import type { TabStore } from "./model/stores";
 import type { SerializeableTabData } from "./model/serialize";
 import { createTabStore } from "./model/stores";
@@ -30,24 +30,30 @@ if (id) {
 
   const guitar = store.createGuitarTab();
 
-  const guitarNotes: Array<[number, number, string]> = [
+  const guitarNotes: Array<[number, number, string, Tie?]> = [
     [0, 0, "B4"],
-    [Spacing.Quarter * 2, 0, "B4"],
-    [Spacing.Quarter * 2 + Spacing.ThirtySecond, 2, "D4"],
+    [
+      Spacing.Quarter * 2,
+      0,
+      "B4",
+      { type: "h", to: Spacing.Quarter * 2 + Spacing.Sixteenth },
+    ],
+    [Spacing.Quarter * 2 + Spacing.Sixteenth, 2, "D4"],
     [Spacing.Quarter * 3, 4, "B3"],
     [Spacing.Quarter * 4, 5, "A3"],
     [Spacing.Quarter * 6, 5, "G3"],
     [Spacing.Quarter * 8, 5, "F3"],
     [Spacing.Quarter * 9, 0, "F4"],
-    [Spacing.Quarter * 9 + Spacing.ThirtySecond, 0, "F4"],
+    [Spacing.Quarter * 9 + Spacing.Sixteenth, 0, "F4"],
     [Spacing.Quarter * 12, 0, "F4"],
-    [Spacing.Quarter * 12 + Spacing.ThirtySecond, 0, "F4"],
+    [Spacing.Quarter * 12 + Spacing.Sixteenth, 0, "F4"],
   ];
 
-  guitarNotes.forEach(([position, string, midiString]) => {
+  guitarNotes.forEach(([position, string, midiString, tie]) => {
     const data: GuitarNote = {
       midi: toMidi(midiString),
     };
+    if (tie) data.tie = tie;
     guitar.setNote(position, string, data);
   });
 

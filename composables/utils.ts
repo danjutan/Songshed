@@ -1,4 +1,4 @@
-// TOD: remove
+// TODO: remove or move to Fretboard.vue
 export function range(count: number): number[];
 export function range(start: number, end: number): number[];
 export function range(countOrStart: number, end?: number) {
