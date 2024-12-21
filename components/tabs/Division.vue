@@ -20,7 +20,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="division">
+  <div class="division" @click="console.log(data)">
     <div class="stack">
       <TabsNoteInput 
         v-for="(noteSpot) in props.data.stack" 
@@ -36,6 +36,7 @@ const emit = defineEmits<{
 .division {
   border: 1px dashed black;
   display: flex;
+  min-width: var(--min-division-width);
   grid-row: 1 / span v-bind(numStrings);
   grid-column: v-bind(column) / 1;
   overflow: hidden;

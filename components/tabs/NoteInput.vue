@@ -26,7 +26,6 @@ const relativeNote = computed(() =>
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
   if (target.value.trim() == "") {
-    console.log("empty");
     emit('dataChange', undefined);
   }
   const num = parseInt(target.value);
@@ -42,7 +41,6 @@ function onInput(e: Event) {
 
 function onInputClick(e: Event) {
   e.target && (e.target as HTMLInputElement).select();
-  console.log(relativeNote.value, props.data);
 }
 
 function onInputBlur() {

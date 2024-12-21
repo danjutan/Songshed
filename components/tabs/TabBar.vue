@@ -59,6 +59,7 @@ const stackMap = computed(() => {
   const stackMap = new Map<number, StackData>();
   for (const note of notes.value) {
     const position = note.position;
+    console.log(position);
     if (position >= props.beats) continue;
     if (!stackMap.has(position)) {
       stackMap.set(position, props.tuning.map((_, string) => ({ string, position })));
@@ -72,11 +73,9 @@ type StackMap = typeof stackMap.value;
 
 const divisions = computed<DivisionData[]>(() => {
   const sorted = [...stackMap.value].sort(([pos1], [pos2]) => pos2 - pos1);
-  console.log("sorted", sorted);
   const normalized: Array<[number, NoteSpot[]]> = sorted.map( 
     ([pos, stack]) => ([pos / unit.value, stack]
   ));
-  console.log(normalized);
 
   return normalized.reduce<DivisionData[]>(
     (acc, [notchPosition, stack]) => {
@@ -141,7 +140,6 @@ function updateNote(note: NoteSpot) {
   })
 }
 
-console.log(stackMap.value, divisions.value);
 </script>
 
 <template>
@@ -165,7 +163,8 @@ console.log(stackMap.value, divisions.value);
 }
 
 .bar {
-  --min-division-width: 64px;
+  --min-division-width: 48px;
+  max-width: calc(var(--min-division-width) * 24);
   display: grid;
   grid-template-columns: repeat(v-bind(notches), 1fr);
   /* align-items: center; */
