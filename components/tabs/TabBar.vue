@@ -160,6 +160,7 @@ function updateNote(note: NoteSpot) {
 .bar {
   --min-division-width: 48px;
   --note-font-size: calc(var(--min-division-width) * 0.4);
+  --substack-bg: rgba(255, 0, 0, 0.1);
   /* --z-index-notes: 10; */
   /* border: 1px solid black; */
   margin: 10px;

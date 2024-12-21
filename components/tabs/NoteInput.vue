@@ -5,12 +5,10 @@ const props = withDefaults(defineProps<{
   data?: NoteData
   tuning: Midi
   frets: number
-  backgroundColor?: string
   collapse?: boolean
   startFocused?: boolean
 }>(), {
   data: undefined,
-  backgroundColor: "white",
 });
 
 const emit = defineEmits<{
@@ -71,11 +69,10 @@ onMounted(() => {
 <template>
   <div
     class="note-input"
-    :class="{ collapse: !relativeNote }"
+    :class="{ collapse: collapse && !relativeNote }"
     @mouseover="mouseOver"
     @mouseleave="emit('endEdit')">
-    <span v-if="relativeNote"
-          class="input-bg">{{ relativeNote }}</span>
+    <span class="input-bg">{{ relativeNote }}</span>
     <input
       ref="input"
       :value="relativeNote"
@@ -95,19 +92,21 @@ onMounted(() => {
 }
 
 .collapse {
-  width: calc(var(--min-division-width) / 8);
-  /* container-type: size;
-  container-name: collapser; */
+  width: 100%;
+  height: 100%;
+  container-type: size;
+  container-name: collapser;
+  /* border: 1px solid black; */
 }
 
 input {
   all: unset;
-  text-shadow: 1px 1px 0px lightgray;
+  /* text-shadow: 1px 1px 0px lightgray; */
   height: calc(var(--min-division-width) / 2);
   /* z-index: var(--z-index-notes); */
 }
 
-.input-bg, input, .hover-bg {
+.input-bg, input {
   grid-area: 1 / 1;
   font-size: var(--note-font-size);
   width: var(--note-font-size);
@@ -120,7 +119,7 @@ input {
   width: min-content;
   pointer-events: none;
   color: transparent;
-  background-color: v-bind(backgroundColor);
+  background-color: white;
   /* display: none; */
   /* aspect-ratio: 1 / 1; */
 }
@@ -131,11 +130,15 @@ input {
   background-color: #ACCEF7
 }
 
-/* @container collapser (aspect-ratio < 0.5) {
-  input,  .input-bg {
+@container collapser (aspect-ratio < 1) {
+  /* .input-bg {
+    width: 100cqw;
+    background-color: var(--substack-bg);
+  } */
+  input {
     display: none;
   }
-} */
+}
 
 /* .note-input:has(input) {
   .hover-bg {

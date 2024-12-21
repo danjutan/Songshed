@@ -11,7 +11,6 @@ const props = withDefaults(defineProps<{
   subdivisions: 4,
 });
 
-console.log(props.subdivisions);
 const numStrings = computed(() => props.tuning.length);
 const column = computed((() => props.data.notchPosition + 1));
 
@@ -20,6 +19,7 @@ const emit = defineEmits<{
 }>();
 
 const sortedSubstacks = computed(() => props.data.substacks?.toSorted((a, b) => a.notchPosition - b.notchPosition) || []);
+const numSubstacks = computed(() => sortedSubstacks.value.length);
 const relativePositions = computed(() => sortedSubstacks.value.map(substack => substack.notchPosition - props.data.notchPosition));
 // const subunit = computed(() => SpacingsDescending.find(spacing => relativePositions.value?.every(relative => relative % spacing === 0)) || 1);
 const subunit = computed(() => 1 / props.subdivisions);
@@ -36,7 +36,7 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
     <div class="stack">
       <TabsNoteInput v-for="(noteSpot) in props.data.stack"
                      :key="noteSpot.string"
-                     collapse
+                     :collapse="numSubstacks == 0"
                      :data="noteSpot.data"
                      :tuning="props.tuning[noteSpot.string]"
                      :frets="props.frets"
@@ -79,28 +79,23 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
   display: grid;
 
   /* grid-template-columns: calc(var(--min-division-width) / 2) repeat(calc(v-bind(subdivisions) - 1), 1fr); */
-  grid-template-columns: v-bind(firstColWidth) repeat(v-bind(subdivisions), 1fr);
+  grid-template-columns: v-bind(firstColWidth) repeat(v-bind(numSubstacks), 1fr);
   grid-template-rows: repeat(v-bind(numStrings), calc(var(--min-division-width) / 2));
   /* grid-template-columns: repeat(v-bind(numColumns), min(calc(var(--min-division-width / 2)), 1fr)); */
   /* grid-template-columns: repeat(v-bind(numColumns), calc(var(--min-division-width) / 2 / v-bind(numColumns))) 1fr; */
   /* border-top: 2px solid v-bind(debugColor); */
 }
 
-.stack {
-  /* min-width: calc(var(--min-division-width) / 2); */
-  /* border: 1px solid v-bind(debugColor); */
-}
-
 .stack,
 .substack {
+  grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
 }
 
 .substack {
-  grid-row: 1 / -1;
-  background-color: rgba(255, 0, 0, 0.1);
   min-width: 2px;
+  background-color: var(--substack-bg);
 }
 
 .indicator {
