@@ -2,9 +2,9 @@ export function createSettingsState() {
   const settings = reactive({
     barsPerLine: 3,
     subdivisions: 4, // per beat
-    collapseSubdivisions: true,
-    collapseEmpty: true,
-    collapseAll: false,
+    collapseSubdivisions: false,
+    collapseEmpty: false,
+    collapseAll: true,
   });
 
   return settings;
