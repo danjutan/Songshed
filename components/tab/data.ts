@@ -1,56 +1,64 @@
 export interface Region<D = undefined> {
-  readonly type: string
-  start: number
-  end: number
-  readonly annotationData?: AnnotationData
-  readonly data?: D
-};
+  readonly type: string;
+  start: number;
+  end: number;
+  readonly annotationData?: AnnotationData;
+  readonly data?: D;
+}
 
 export interface AnnotationData {
-  title: string
-};
+  title: string;
+}
 
 export interface GuitarTabData {
-  strings: number
-  tuning: Midi[]
-  frets: number
-  stacks: Map<number, GuitarNote[]>
-};
+  strings: number;
+  tuning: Midi[];
+  frets: number;
+  stacks: Map<number, GuitarNote[]>;
+}
 
 export interface TabData {
-  title: string
-  beatsPerBar: number
-  beatSize: number
-  guitarData?: GuitarTabData // optional because we'll add more primary views in the future
-  annotations: Region[]
-};
+  title: string;
+  beatsPerBar: number;
+  beatSize: number;
+  guitarData?: GuitarTabData; // optional because we'll add more primary views in the future
+  annotations: Region[];
+}
 
 export interface NoteData {
-  midi: Midi
-  muted?: boolean
-  slide?: boolean
-  bend?: string
-};
+  midi: Midi;
+  muted?: boolean;
+  slide?: boolean;
+  bend?: string;
+}
 
 export interface NoteSpot {
-  position: number
-  data?: NoteData
+  position: number;
+  data?: NoteData;
 }
 
 export interface GuitarNote extends NoteSpot {
-  string: number // 0-indexed
-};
+  string: number; // 0-indexed
+}
 
 export type StackMap = Map<number, NoteData>;
 
 export interface TabStore {
-  title: string
-  beatsPerBar: number
-  beatSize: number
-  createGuitarTab: (tuning?: Midi[], strings?: number, frets?: number) => GuitarStore
-  guitar?: GuitarStore
+  title: string;
+  beatsPerBar: number;
+  beatSize: number;
+  createGuitarTab: (
+    tuning?: Midi[],
+    strings?: number,
+    frets?: number,
+  ) => GuitarStore;
+  guitar?: GuitarStore;
 }
-export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize = Spacing.Quarter): TabStore {
+export function createTabStore(
+  title = "new tab",
+  beatsPerBar = 4,
+  beatSize = Spacing.Quarter,
+): TabStore {
   const data: TabData = reactive({
     title,
     beatsPerBar,
@@ -98,20 +106,22 @@ export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize = Sp
       data.beatSize = beatSize;
     },
   };
-};
+}
 
 interface AbstractNoteStore<N extends NoteSpot> {
-  getStacks: (start?: number, end?: number) => Map<number, N[]>
-  setStack: (position: number, stack: N[]) => void
-  lastPosition: () => number | undefined
-  shiftFrom: (position: number, shiftBy: number) => void
+  getStacks: (start?: number, end?: number) => Map<number, N[]>;
+  setStack: (position: number, stack: N[]) => void;
+  lastPosition: () => number | undefined;
+  shiftFrom: (position: number, shiftBy: number) => void;
 }
 
 interface NoteStore<N extends NoteSpot> extends AbstractNoteStore<N> {
-  setNote: (note: N) => void
-};
+  setNote: (note: N) => void;
+}
 
-function createAbstractNoteStore<N extends NoteSpot>(stacks: Map<number, N[]>): AbstractNoteStore<N> {
+function createAbstractNoteStore<N extends NoteSpot>(
+  stacks: Map<number, N[]>,
+): AbstractNoteStore<N> {
   const furthestPos: number[] = [];
 
   function getStacks(start = 0, end?: number) {
@@ -126,7 +136,7 @@ function createAbstractNoteStore<N extends NoteSpot>(stacks: Map<number, N[]>): 
 
   function setStack(position: number, stack: N[]) {
     if (position < 0) return;
-    if (stack.filter(s => s.data).length === 0) {
+    if (stack.filter((s) => s.data).length === 0) {
       stacks.delete(position);
       if (position === furthestPos.at(-1)) {
         furthestPos.pop();
@@ -144,10 +154,16 @@ function createAbstractNoteStore<N extends NoteSpot>(stacks: Map<number, N[]>): 
   }
 
   function shiftFrom(position: number, shiftBy: number) {
-    if (position < 0 || !furthestPos.length || position > furthestPos.at(-1)! || shiftBy <= 0) return;
+    if (
+      position < 0 ||
+      !furthestPos.length ||
+      position > furthestPos.at(-1)! ||
+      shiftBy <= 0
+    )
+      return;
 
     const keysFromBack = [...stacks.keys()]
-      .filter(pos => pos >= position)
+      .filter((pos) => pos >= position)
       .sort((a, b) => b - a);
 
     for (const pos of keysFromBack) {
@@ -179,14 +195,17 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
       }
 
       if (!stack) {
-        stack = Array.from({ length: strings }, (_, string) => ({ position, string }));
+        stack = Array.from({ length: strings }, (_, string) => ({
+          position,
+          string,
+        }));
       }
 
       stack[string].data = data;
 
       noteStore.setStack(position, stack);
     }
-  };
+  }
 
   const { stacks, strings, frets, tuning } = guitarData;
   return { ...noteStore, setNote, stacks, strings, frets, tuning };

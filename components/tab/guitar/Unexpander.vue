@@ -1,15 +1,16 @@
 <script setup lang="ts">
 const props = defineProps<{
-  startColumn: number
-  columns: number
-  row: number
+  startColumn: number;
+  columns: number;
+  row: number;
 }>();
 </script>
 
 <template>
   <div class="unexpander">
     <div class="content">
-      <span>↦</span><span>↤</span>
+      <span>↦</span>
+      <span>↤</span>
     </div>
   </div>
 </template>

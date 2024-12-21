@@ -6,24 +6,24 @@ import Overlay from "./Overlay.vue";
 import Unexpander from "./Unexpander.vue";
 
 export type GuitarStack = {
-  stack: GuitarNote[]
-  position: number
+  stack: GuitarNote[];
+  position: number;
 };
 
 const props = defineProps<{
-  stackData: GuitarStack[]
-  subdivisions: number
-  notchUnit: number
-  startColumn: number
-  collapseEmpty?: boolean
-  collapseSubdivisions?: boolean
-  tuning: Midi[]
-  frets: number
-  numStrings: number
+  stackData: GuitarStack[];
+  subdivisions: number;
+  notchUnit: number;
+  startColumn: number;
+  collapseEmpty?: boolean;
+  collapseSubdivisions?: boolean;
+  tuning: Midi[];
+  frets: number;
+  numStrings: number;
 }>();
 
 const emit = defineEmits<{
-  noteChange: [note: GuitarNote]
+  noteChange: [note: GuitarNote];
 }>();
 
 const isNotch = (position: number) => position % props.notchUnit === 0;
@@ -34,7 +34,7 @@ const expanded = reactive<Set<number>>(new Set());
 const collapsedEmpty = computed<Set<number>>(() => {
   const collapsed = new Set<number>();
   if (!props.collapseEmpty) return collapsed;
-  const emptyStack = (stack: GuitarNote[]) => stack.every(spot => !spot.data);
+  const emptyStack = (stack: GuitarNote[]) => stack.every((spot) => !spot.data);
   props.stackData.forEach((notch, i) => {
     if (!isNotch(notch.position)) return;
     const notchGroup = props.stackData.slice(i, i + props.subdivisions);
@@ -48,16 +48,15 @@ const collapsedEmpty = computed<Set<number>>(() => {
 
 const collapsed = computed<Set<number>>(() => {
   const positions = new Set<number>(
-    props.stackData.map(c => c.position).filter((position) => {
-      if (expanded.has(position))
-        return false;
-      if (props.collapseEmpty && collapsedEmpty.value.has(position))
-        return true;
-      if (isNotch(position))
-        return false;
-      if (props.collapseSubdivisions)
-        return true;
-    }),
+    props.stackData
+      .map((c) => c.position)
+      .filter((position) => {
+        if (expanded.has(position)) return false;
+        if (props.collapseEmpty && collapsedEmpty.value.has(position))
+          return true;
+        if (isNotch(position)) return false;
+        if (props.collapseSubdivisions) return true;
+      }),
   );
   return positions;
 });
@@ -83,8 +82,7 @@ function toggleSubdivisions(notchCol: GuitarStack) {
     :num-strings="numStrings"
     :start-row="1"
   />
-  <template v-for="(column, i) in stackData"
-            :key="column.position">
+  <template v-for="(column, i) in stackData" :key="column.position">
     <Stack
       :style="{
         // borderTop: isNotch(column.position) && '1px solid maroon',
@@ -104,7 +102,8 @@ function toggleSubdivisions(notchCol: GuitarStack) {
           :start-column="startColumn + i"
           :columns="props.subdivisions"
           :start-row="1"
-          :rows="numStrings">
+          :rows="numStrings"
+        >
           <div
             class="overlay-fill"
             :class="{ expanded: expanded.has(column.position) }"
@@ -117,7 +116,8 @@ function toggleSubdivisions(notchCol: GuitarStack) {
           :start-column="1 + startColumn + i"
           :columns="props.subdivisions - 1"
           :start-row="1"
-          :rows="numStrings">
+          :rows="numStrings"
+        >
           <div
             class="overlay-fill"
             :class="{ expanded: expanded.has(column.position + subUnit) }"
@@ -125,12 +125,13 @@ function toggleSubdivisions(notchCol: GuitarStack) {
           />
         </Overlay>
       </template>
-      <Unexpander v-if="expanded.has(column.position + subUnit)"
-                  class="unexpander"
-                  :start-column="startColumn + i"
-                  :columns="props.subdivisions"
-                  :row="2"
-                  @click="toggleSubdivisions(column)"
+      <Unexpander
+        v-if="expanded.has(column.position + subUnit)"
+        class="unexpander"
+        :start-column="startColumn + i"
+        :columns="props.subdivisions"
+        :row="2"
+        @click="toggleSubdivisions(column)"
       />
     </template>
   </template>

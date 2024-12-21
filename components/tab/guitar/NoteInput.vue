@@ -1,31 +1,33 @@
 <script lang="ts" setup>
 import type { NoteData } from "../data";
 
-const props = withDefaults(defineProps<{
-  data?: NoteData
-  tuning: Midi
-  frets: number
-  collapse?: boolean
-  startFocused?: boolean
-  blockingColor?: string
-}>(), {
-  data: undefined,
-  blockingColor: "white",
-});
+const props = withDefaults(
+  defineProps<{
+    data?: NoteData;
+    tuning: Midi;
+    frets: number;
+    collapse?: boolean;
+    startFocused?: boolean;
+    blockingColor?: string;
+  }>(),
+  {
+    data: undefined,
+    blockingColor: "white",
+  },
+);
 
 const emit = defineEmits<{
-  dataChange: [data: NoteData | undefined]
-  startEdit: []
-  endEdit: []
+  dataChange: [data: NoteData | undefined];
+  startEdit: [];
+  endEdit: [];
 }>();
 
 const relativeNote = computed(() => {
   if (props.data) {
-    return props.data.midi - props.tuning as Midi;
+    return (props.data.midi - props.tuning) as Midi;
   }
   return "";
-},
-);
+});
 
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
@@ -35,9 +37,9 @@ function onInput(e: Event) {
   const num = parseInt(target.value);
   if (Number.isInteger(num)) {
     if (num < 1 || num > props.frets) {
-      return target.value = `${relativeNote.value}`;
+      return (target.value = `${relativeNote.value}`);
     }
-    emit("dataChange", { ...props.data, midi: props.tuning + num as Midi });
+    emit("dataChange", { ...props.data, midi: (props.tuning + num) as Midi });
     return;
   }
   target.value = `${relativeNote.value}`;
@@ -73,7 +75,8 @@ onMounted(() => {
     class="note-input"
     :class="{ collapse: collapse && !relativeNote }"
     @mouseover="mouseOver"
-    @mouseleave="emit('endEdit')">
+    @mouseleave="emit('endEdit')"
+  >
     <span class="input-bg">{{ relativeNote }}</span>
     <input
       ref="input"
@@ -83,7 +86,8 @@ onMounted(() => {
       pattern="[0-9]{1,2}"
       @input="onInput"
       @click="onInputClick"
-      @blur="onInputBlur">
+      @blur="onInputBlur"
+    />
   </div>
 </template>
 

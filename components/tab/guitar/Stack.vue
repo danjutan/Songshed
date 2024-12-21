@@ -2,33 +2,35 @@
 import type { GuitarNote } from "../data";
 import NoteInput from "./NoteInput.vue";
 
-const props = withDefaults(defineProps<{
-  notes: GuitarNote[]
-  frets: number
-  tuning: Midi[]
-  selected?: boolean
-  collapse?: boolean
-}>(), {
-});
+const props = withDefaults(
+  defineProps<{
+    notes: GuitarNote[];
+    frets: number;
+    tuning: Midi[];
+    selected?: boolean;
+    collapse?: boolean;
+  }>(),
+  {},
+);
 
 const emit = defineEmits<{
-  noteChange: [note: GuitarNote]
+  noteChange: [note: GuitarNote];
 }>();
 
-const backgroundColor = computed(() => props.selected ? "var(--highlight-color)" : "transparent");
+const backgroundColor = computed(() =>
+  props.selected ? "var(--highlight-color)" : "transparent",
+);
 </script>
 
 <template>
-  <div class="stack"
-       :class="{ collapse }">
-    <div v-for="noteSpot in notes"
-         :key="noteSpot.string"
-         class="container">
-      <div v-if="collapse && noteSpot.data"
-           class="square"
-           :style="{
-             backgroundColor: defaultColors[getChroma(noteSpot.data.midi)],
-           }"
+  <div class="stack" :class="{ collapse }">
+    <div v-for="noteSpot in notes" :key="noteSpot.string" class="container">
+      <div
+        v-if="collapse && noteSpot.data"
+        class="square"
+        :style="{
+          backgroundColor: defaultColors[getChroma(noteSpot.data.midi)],
+        }"
       />
       <div class="input">
         <NoteInput

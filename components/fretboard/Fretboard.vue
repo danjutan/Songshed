@@ -5,21 +5,22 @@ import { defaultFrameColor } from "~/composables/colors";
 
 const props = withDefaults(
   defineProps<{
-    tuning?: Midi[]
-    frets?: number
-    colors?: NoteColors
-    stack?: NoteSpot[]
+    tuning?: Midi[];
+    frets?: number;
+    colors?: NoteColors;
+    stack?: NoteSpot[];
   }>(),
   {
     frets: 24,
     colors: () => defaultColors,
     tuning: () => defaultTuning,
-    stack: () => defaultTuning.map((midi, string) => ({ midi, string, position: 0 })),
+    stack: () =>
+      defaultTuning.map((midi, string) => ({ midi, string, position: 0 })),
   },
 );
 
 const emit = defineEmits<{
-  noteChange: [spot: NoteSpot]
+  noteChange: [spot: NoteSpot];
 }>();
 
 const cellRatio = 15 / 25; // height / width
@@ -38,7 +39,7 @@ const nextMidiClamp = (midi: number) => {
   return 127;
 };
 
-const rows: Midi[][] = props.tuning.map(startNote =>
+const rows: Midi[][] = props.tuning.map((startNote) =>
   range(startNote - 1, startNote + props.frets - 1).map(nextMidiClamp),
 );
 
@@ -50,11 +51,9 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
   let data: NoteData | undefined = props.stack[string].data;
   if (selected) {
     data = { midi };
-  }
-  else if (data?.midi === props.tuning[string]) {
+  } else if (data?.midi === props.tuning[string]) {
     data = undefined;
-  }
-  else {
+  } else {
     data = { midi: props.tuning[string] };
   }
   emit("noteChange", { ...props.stack[string], data });
@@ -82,12 +81,12 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
       :y="rowLinesY[rowLinesY.length - 1] + 25"
       :fill="defaultFrameColor"
       font-family="sans-serif"
-      font-size="8pt">
+      font-size="8pt"
+    >
       {{ label }}
     </text>
 
-    <template v-for="(row, yi) in rows"
-              :key="yi">
+    <template v-for="(row, yi) in rows" :key="yi">
       <line
         class="string"
         :stroke="defaultFrameColor"

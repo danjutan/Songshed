@@ -1,17 +1,15 @@
 <script lang="ts" setup>
 defineProps<{
-  startRow: number
-  numStrings: number
-  startColumn: number
-  columns: number
+  startRow: number;
+  numStrings: number;
+  startColumn: number;
+  columns: number;
 }>();
 </script>
 
 <template>
   <div class="strings">
-    <div v-for="i in numStrings"
-         :key="i"
-         class="string-box">
+    <div v-for="i in numStrings" :key="i" class="string-box">
       <div class="string" />
     </div>
   </div>

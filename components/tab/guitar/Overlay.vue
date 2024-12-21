@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 const props = defineProps<{
-  startColumn: number
-  columns: number
-  startRow: number
-  rows: number
+  startColumn: number;
+  columns: number;
+  startRow: number;
+  rows: number;
 }>();
 </script>
 
@@ -16,7 +16,7 @@ const props = defineProps<{
 </template>
 
 <style scoped>
-  .container {
+.container {
   container-type: size;
   z-index: 1;
   grid-column: v-bind(startColumn) / span v-bind(columns);

@@ -58,21 +58,22 @@ const collapseEmpty = ref(false);
 
 <template>
   <!-- <input type="checkbox" v-model="showDivisions"/> -->
-  Notches per beat: <input v-model="notches"
-                           type="number">
-  Subdivide notches by: <input v-model="subdivisions"
-                               type="number">
-  Collapse subdivisions: <input v-model="collapseSubdivisions"
-                                type="checkbox">
+  Notches per beat:
+  <input v-model="notches" type="number" />
+  Subdivide notches by:
+  <input v-model="subdivisions" type="number" />
+  Collapse subdivisions:
+  <input v-model="collapseSubdivisions" type="checkbox" />
 
-  Collapse empty notches: <input v-model="collapseEmpty"
-                                 type="checkbox">
+  Collapse empty notches:
+  <input v-model="collapseEmpty" type="checkbox" />
 
-  <Tab :data="tabStore"
-       :notches
-       :subdivisions
-       :collapse-subdivisions
-       :collapse-empty
+  <Tab
+    :data="tabStore"
+    :notches
+    :subdivisions
+    :collapse-subdivisions
+    :collapse-empty
   />
   <!-- <Fretboard
     width="75%"
@@ -82,7 +83,7 @@ const collapseEmpty = ref(false);
 </template>
 
 <style scoped>
-  input[type="number"] {
+input[type="number"] {
   width: 50px;
 }
 </style>
