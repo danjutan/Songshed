@@ -98,6 +98,8 @@ onMounted(() => {
 <style scoped>
 .note-input {
   display: grid;
+  justify-items: center;
+  align-items: center;
 }
 
 input {
@@ -110,8 +112,9 @@ input {
 .input-bg,
 input {
   grid-area: 1 / 1;
-  font-size: var(--note-font-size);
   width: var(--note-font-size);
+  font-size: var(--note-font-size);
+  text-align: center;
 }
 
 .input-bg {
