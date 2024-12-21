@@ -31,56 +31,33 @@ const props = defineProps({
 const strings = computed(() => props.data.strings);
 const unit = computed<Spacing>(() => (props.data.end - props.data.start) / props.notches);
 
-type StacksMap = Map<number, NoteSpot[]>;
-const stacksMap = computed<StacksMap>(() => {
-  const map = new Map<number, NoteSpot[]>();
-  const emptyStack = (position: number) => props.data.tuning.map((_, string) => ({ string, position }));
-  for (let position = 0; position < props.data.end - props.data.start; position += unit.value) {
-    const stack = emptyStack(position);
-    map.set(position, stack);
-  }
-  for (const [position, stack] of props.data.getStacks()) {
-    const existing = map.get(position) || emptyStack(position);
-    for (const note of stack) {
-      existing[note.string] = note;
-    }
-    map.set(position, existing);
-  }
-  return map;
-});
-
 const divisions = computed<DivisionData[]>(() => {
-  const sorted = [...stacksMap.value].sort(([pos1], [pos2]) => pos1 - pos2);
-  const normalized: Array<[number, NoteSpot[]]> = sorted.map(
-    ([pos, stack]) => ([(pos - props.data.start) / unit.value, stack]
-    ));
+  const stackMap = props.data.getStacks();
+  for (let position = 0; position < props.data.end - props.data.start; position += unit.value) {
+    if (!stackMap.has(position)) {
+      const emptyStack = props.data.tuning.map((_, string) => ({ string, position }));
+      stackMap.set(position, emptyStack);
+    }
+  }
 
-  return normalized.reduce<DivisionData[]>(
-    (acc, [notchPosition, stack]) => {
-      if (Number.isInteger(notchPosition)) {
-        acc.push({
-          notchPosition,
-          stack,
-        });
-        return acc;
-      }
-      const prev = acc.at(-1);
-      const hasParent = prev?.notchPosition === Math.floor(notchPosition);
-      if (hasParent) {
-        const substacks = prev.substacks ?? [];
-        substacks.push({ notchPosition, stack });
-        prev.substacks = substacks;
-        return acc;
-      }
-      acc.push({
-        notchPosition: Math.floor(notchPosition),
-        stack: [],
-        substacks: [{ notchPosition, stack }],
-      });
-      return acc;
-    },
-    []);
+  const divisions: DivisionData[] = [];
+
+  for (const [position, stack] of stackMap.entries()) {
+    const notchPosition = (position - props.data.start) / unit.value;
+    if (Number.isInteger(notchPosition)) {
+      divisions.push({ notchPosition, stack });
+      continue;
+    }
+    const prev = divisions.at(-1)!;
+    const substacks = prev.substacks ?? [];
+    substacks.push({ notchPosition, stack });
+    prev.substacks = substacks;
+  }
+
+  return divisions;
 });
+
+console.log(divisions.value);
 
 const divisionPlacement = (column: number) => ({
   gridRow: `2 / span ${strings.value}`,
@@ -102,23 +79,21 @@ function noteChange(changed: NoteSpot) {
 <template>
   <div class="bar">
     <TabBarStrings />
-    <TabBarDivision
-      v-for="div in divisions"
-      :key="div.notchPosition"
-      debug
-      :subdivisions
-      :data="div"
-      :div
-      :unit
-      :tuning="data.tuning"
-      :frets="data.frets"
-      :style="divisionPlacement(div.notchPosition + 1)"
-      @note-change="noteChange"
+    <TabBarDivision v-for="div in divisions"
+                    :key="div.notchPosition"
+                    debug
+                    :subdivisions
+                    :data="div"
+                    :div
+                    :unit
+                    :tuning="data.tuning"
+                    :frets="data.frets"
+                    :style="divisionPlacement(div.notchPosition + 1)"
+                    @note-change="noteChange"
     />
-    <TabBarToolbar
-      :divisions
-      :tuning="data.tuning"
-      :subdivisions
+    <TabBarToolbar :divisions
+                   :tuning="data.tuning"
+                   :subdivisions
     />
     <!-- <TabBarSpacer
       v-for="data in emptyDivisions"

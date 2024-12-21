@@ -23,9 +23,7 @@ export type NoteSpot = {
   data?: NoteData
 };
 
-export type StacksData = Array<[position: number, NoteSpot[]]>;
-
-type StackMap = Map<number, NoteData>;
+export type StackMap = Map<number, NoteData>;
 export type TabData = Map<number, StackMap>;
 
 export type TabStore = {
@@ -43,7 +41,7 @@ export type TabStore = {
   deleteNote: (position: number, string: number) => void
   // ordered by ascending string #
   getStack: (position: number) => NoteSpot[] | undefined
-  getStacks: () => StacksData
+  getStacks: () => Map<number, NoteSpot[]>
   lastPosition: () => number | undefined
   getBar: (start: number, end: number) => BarStore
 };
@@ -70,29 +68,28 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
 
   function getStack(position: number): NoteSpot[] | undefined {
     if (tabData.has(position)) {
+      const stack: NoteSpot[] = [];
       const stackMap = tabData.get(position)!;
-      const sorted = [...stackMap.entries()].sort((a, b) => a[0] - b[0]);
-      return sorted.map(([string, data]) => ({
-        position,
-        string,
-        data,
-      }));
+      for (let string = 0; string < strings; string++) {
+        stack[string] = { position, string, data: stackMap.get(string) };
+      }
+      return stack;
     }
   }
 
   function getStacks(start = 0, end?: number) {
-    const stacks: StacksData = [];
-    for (const position of tabData.keys()) {
+    const stacks = new Map<number, NoteSpot[]>();
+    for (const position of [...tabData.keys()].sort((a, b) => a - b)) {
       if (start > 0 && position < start) continue;
       if (end && position >= end) continue;
-      stacks.push([position, getStack(position)!]);
+      stacks.set(position, getStack(position)!);
     }
     return stacks;
   }
 
   function getNotes(start = 0, end?: number) {
     const stacks = getStacks(start, end);
-    return stacks.map(([_, notes]) => notes).flat();
+    return [...stacks.values()].map(([_, notes]) => notes).flat();
   }
 
   function getNote(position: number, string: number) {
