@@ -4,6 +4,7 @@ import type { NoteSpot, BarStore } from "../data";
 import { Spacing } from "../data";
 import { ExpansionStateKey } from "../providers/expansion-state";
 import { SelectionStateKey } from "../providers/selection-state";
+import Grid from "./Grid.vue";
 import Stack from "./Stack.vue";
 import Drape, { type DrapeData } from "./overlays/Drape.vue";
 import ExpanderOverlay from "./overlays/ExpanderOverlay.vue";
@@ -146,21 +147,13 @@ function isSelected(column: ColumnData) {
   return selectionState.isSelected(column.position);
 }
 
-const gridTemplateColumns = computed<string>(() => {
-  const columns: string[] = columnData.value.map((col, i) => {
-    if (isExpanded(i + 1) || (isNotch(col))) {
-      return "var(--note-font-size)";
-    }
-    return "1fr";
+const expandedSet = computed<Set<number>>(() => {
+  const set = new Set<number>();
+  columnData.value.forEach((col, i) => {
+    if (isExpanded(i + 1) || isNotch(col))
+      set.add(i + 1);
   });
-  /* for (const column of divisions.value.map(({ notchPosition }) => notchPosition)) {
-    if (isExpanded(column)) {
-      columns.push(`minmax(${expandsTo.value[column]}, auto)`);
-      continue;
-    }
-    columns.push("auto");
-  } */
-  return columns.join(" ");
+  return set;
 });
 
 function noteChange(changed: NoteSpot) {
@@ -178,7 +171,10 @@ function noteChange(changed: NoteSpot) {
 </script>
 
 <template>
-  <div class="bar">
+  <Grid
+    :rows="8"
+    :columns="columnData.length"
+    :expanded="expandedSet">
     <TabBarStrings class="strings" />
     <Stack v-for="(col, i) in columnData"
            :key="col.position"
@@ -240,19 +236,10 @@ function noteChange(changed: NoteSpot) {
         <ExpanderOverlay />
       </template>
     </Drape>
-  </div>
+  </Grid>
 </template>
 
 <style>
-.strings {
-}
-
-.bar {
-  display: grid;
-  grid-template-columns: v-bind(gridTemplateColumns);
-  grid-template-rows: var(--cell-height) repeat(v-bind(strings), var(--cell-height)) var(--cell-height)
-}
-
 .stack {
   grid-row: 2 / span v-bind(strings);
 }
