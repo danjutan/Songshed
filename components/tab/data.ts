@@ -1,8 +1,8 @@
-export interface Region<D = undefined> {
+export interface Annotation<D = unknown> {
   readonly type: string;
   start: number;
   end: number;
-  readonly annotationData?: AnnotationData;
+  title: string;
   readonly data?: D;
 }
 
@@ -22,7 +22,7 @@ export interface TabData {
   beatsPerBar: number;
   beatSize: number;
   guitarData?: GuitarTabData; // optional because we'll add more primary views in the future
-  annotations: Region[];
+  annotations: Map<string, Annotation[]>; // annotation type -> annotations of that type
 }
 
 export interface NoteData {
@@ -53,6 +53,7 @@ export interface TabStore {
     frets?: number,
   ) => GuitarStore;
   guitar?: GuitarStore;
+  annotations?: AnnotationStore;
 }
 export function createTabStore(
   title = "new tab",
@@ -63,10 +64,11 @@ export function createTabStore(
     title,
     beatsPerBar,
     beatSize,
-    annotations: [],
+    annotations: new Map(),
   });
 
   const guitarStore = ref<undefined | GuitarStore>();
+  const annotationStore = createAnnotationStore(data.annotations);
 
   function createGuitarTab(tuning = defaultTuning, strings = 6, frets = 24) {
     const stacks: Map<number, GuitarNote[]> = new Map();
@@ -86,6 +88,7 @@ export function createTabStore(
     get guitar() {
       return guitarStore.value;
     },
+    annotations: annotationStore,
     // TODO: validation?
     get title() {
       return data.title;
@@ -106,6 +109,53 @@ export function createTabStore(
       data.beatSize = beatSize;
     },
   };
+}
+
+interface AnnotationStore {
+  createAnnotation: (data: Annotation) => Annotation | false;
+  deleteAnnotation: (data: Annotation) => void;
+  getAnnotations: (type: string) => Annotation[];
+  getTypes: () => string[];
+}
+
+function createAnnotationStore(
+  annotations: Map<string, Annotation[]>,
+): AnnotationStore {
+  function createAnnotation(data: Annotation) {
+    const ofType = annotations.get(data.type);
+    if (!ofType) {
+      annotations.set(data.type, [data]);
+      return annotations.get(data.type)![0]; // goal is to return a reactive object; if irrelevant or broken, just return data
+    }
+    const overlaps = ofType.some(
+      (a: Annotation) =>
+        (a.start < data.start && a.end > data.start) ||
+        (a.start > data.start && a.end < data.start),
+    );
+    if (overlaps) return false;
+    ofType.push(data);
+    return ofType.at(-1)!; // see last comment
+  }
+
+  function deleteAnnotation(data: Annotation) {
+    const ofType = annotations.get(data.type);
+    if (ofType) {
+      const toDelete = ofType.findIndex(
+        (a) => a.start === data.start && a.end === data.end,
+      );
+      ofType.splice(toDelete, 1);
+    }
+  }
+
+  function getAnnotations(type: string) {
+    return annotations.get(type) || [];
+  }
+
+  function getTypes() {
+    return [...annotations.keys()];
+  }
+
+  return { createAnnotation, deleteAnnotation, getAnnotations, getTypes };
 }
 
 interface AbstractNoteStore<N extends NoteSpot> {

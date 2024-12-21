@@ -68,7 +68,7 @@ const gridTemplateColumns = computed<string>(() => {
     { length: props.barsPerLine },
     () => barTemplateColumns,
   ).join(" min-content ");
-  return `min-content ${bars} var(--note-font-size)`;
+  return `var(--note-font-size) ${bars} var(--note-font-size)`;
 });
 
 const notesRow = computed(() => 2);
@@ -120,7 +120,7 @@ const posToCol = (pos: number) => {
 </script>
 
 <template>
-  <div class="tab">
+  <div class="tab" @mouseup="annotationEnd">
     <div v-for="(tabLine, tabLineIndex) in tabLines" class="tab-line">
       <template v-for="(bar, i) in tabLine" :key="bar[0].position">
         <div
@@ -147,7 +147,6 @@ const posToCol = (pos: number) => {
             gridRow: 1,
           }"
           @mousedown="annotationStart(bar[0].position)"
-          @mouseup="annotationEnd"
         />
         <div
           v-for="(stack, s) in bar"
@@ -158,12 +157,11 @@ const posToCol = (pos: number) => {
           }"
           @mousedown="annotationStart(stack.position)"
           @mouseover="annotationDragThrough(stack.position)"
-          @mouseup="annotationEnd"
         />
       </template>
       <div
         v-if="
-          newAnnotation.start &&
+          newAnnotation.start !== undefined &&
           posToCol(newAnnotation.start!).tabline === tabLineIndex
         "
         :style="{
@@ -171,10 +169,12 @@ const posToCol = (pos: number) => {
           gridColumn: posToCol(newAnnotation.start!).column,
           gridRow: 1,
         }"
+        @mouseover="annotationDragThrough(newAnnotation.start)"
       />
       <div
         v-if="
-          newAnnotation.end &&
+          newAnnotation.end !== undefined &&
+          newAnnotation.end != newAnnotation.start &&
           posToCol(newAnnotation.end!).tabline === tabLineIndex
         "
         :style="{
@@ -213,6 +213,7 @@ const posToCol = (pos: number) => {
 }
 
 .divider {
+  justify-self: end;
   grid-row: v-bind(notesRow);
   width: calc(var(--cell-height) / 3);
   padding: 0px 1px;
