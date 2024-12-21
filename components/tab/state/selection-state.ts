@@ -37,7 +37,7 @@ export function createSelectionState(
   }
 
   function drag(position: number, end?: number) {
-    if (!dragging.value || !startPosition.value) return;
+    if (!dragging.value || startPosition.value === undefined) return;
     const [first, last] = [position, end ?? position].sort((a, b) => a - b);
     if (position <= startPosition.value) {
       startPosition.value = first;

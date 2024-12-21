@@ -4,7 +4,7 @@ import {
   SelectionInjectionKey,
   type SelectionState,
 } from "../state/selection-state";
-import { TieAddInjectionKey, type TieAddState } from "../state/tie-add-state";
+import { TieAddInjectionKey, type TieAddState } from "./state/tie-add-state";
 import { EditingInjectionKey, type EditingState } from "../state/editing-state";
 import {
   CellHoverInjectionKey,

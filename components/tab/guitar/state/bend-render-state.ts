@@ -1,15 +1,14 @@
 import type { Bend, TieStore } from "~/model/stores";
-import type { OverlayPosition } from "../overlay-objects";
-import type { TablineColumn } from "../Tab.vue";
-import type { BendRenderProps } from "../guitar/bends/BendRender.vue";
-import type { BendWithString } from "./tie-add-state";
+import type { OverlayPosition } from "../../overlay-objects";
+import type { TablineColumn } from "../../Tab.vue";
+import type { BendRenderProps } from "../bends/BendRender.vue";
 
 export function createBendRenderState(
   store: TieStore,
   startRow: ComputedRef<number>,
   tablineColumns: ComputedRef<number>,
   posToCol: (pos: number) => TablineColumn,
-  newBend: ComputedRef<BendWithString | undefined>,
+  newBend: ComputedRef<Bend | undefined>,
 ) {
   return computed(() => {
     const bendRenders: Map<
@@ -27,13 +26,13 @@ export function createBendRenderState(
       bendRenders.set(tablineIndex, atTabline);
     }
 
-    function pushBend(string: number, bend: Bend) {
+    function pushBend(bend: Bend) {
       const start = posToCol(bend.from);
       const end = posToCol(bend.to);
       const through = bend.through?.[0]
         ? posToCol(bend.from + bend.through[0])
         : undefined;
-      const row = startRow.value + string;
+      const row = startRow.value + bend.string;
       if (start.tabline !== end.tabline) {
         if (!through) {
           const fullUpswingColumns =
@@ -108,14 +107,10 @@ export function createBendRenderState(
       });
     }
 
-    store.getBends().forEach((bends, string) => {
-      for (const bend of bends) {
-        pushBend(string, bend);
-      }
-    });
+    store.getBends().forEach(pushBend);
 
     if (newBend.value) {
-      pushBend(newBend.value.string, newBend.value);
+      pushBend(newBend.value);
     }
 
     return bendRenders;

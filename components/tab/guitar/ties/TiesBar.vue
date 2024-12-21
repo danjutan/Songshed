@@ -1,11 +1,7 @@
 <script lang="ts" setup>
 import TieRender, { type TieRenderProps } from "./TieRender.vue";
-import type { Tie, TieMap, TieStore } from "~/model/stores";
-import {
-  TieAddInjectionKey,
-  type TieAddState,
-  type TieWithString,
-} from "../../state/tie-add-state";
+import type { Tie, TieStore } from "~/model/stores";
+import { TieAddInjectionKey, type TieAddState } from "../state/tie-add-state";
 import {
   EditingInjectionKey,
   type EditingState,
@@ -19,21 +15,21 @@ const props = defineProps<{
   startPosition: number;
   endPosition: number;
   subUnit: number;
-  newTie: TieWithString | undefined;
+  newTie?: Tie;
 }>();
 
 const editingState = inject(EditingInjectionKey) as EditingState;
 // Assumes ties can stretch over one divider, but not two
 
-function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
+function tieToRender(tie: Tie): TieRenderProps | undefined {
   const direction = (tie.midiFrom ?? 0) < (tie.midiTo ?? 0) ? "up" : "down";
-  const lastString = string === props.numStrings - 1;
+  const lastString = tie.string === props.numStrings - 1;
   if (tie.from >= props.startPosition && tie.from < props.endPosition) {
     const startColumn =
       props.startColumn + (tie.from - props.startPosition) / props.subUnit;
     if (tie.to < props.endPosition) {
       return {
-        row: props.startRow + string,
+        row: props.startRow + tie.string,
         startColumn,
         endColumn:
           props.startColumn + (tie.to - props.startPosition) / props.subUnit,
@@ -45,7 +41,7 @@ function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
       };
     }
     return {
-      row: props.startRow + string,
+      row: props.startRow + tie.string,
       startColumn,
       endColumn:
         props.startColumn +
@@ -62,7 +58,7 @@ function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
   }
   if (tie.to >= props.startPosition && tie.to <= props.endPosition) {
     return {
-      row: props.startRow + string,
+      row: props.startRow + tie.string,
       startColumn: props.startColumn,
       endColumn:
         props.startColumn + (tie.to - props.startPosition) / props.subUnit,
@@ -75,38 +71,20 @@ function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
       direction,
     };
   }
+  // if you get here, the tie is fully part of a different bar
 }
 
 const tieRenders = computed<TieRenderProps[]>(() => {
-  const ties: TieRenderProps[] = [];
-  for (let i = 0; i < props.numStrings; i++) {
-    const stringTies = [];
-    const fromData = props.ties.getTies().get(i);
-    if (
-      props.newTie &&
-      props.newTie.string === i &&
-      props.newTie.to !== props.newTie.from
-    ) {
-      stringTies.push(props.newTie);
-    }
-    if (fromData) {
-      if (stringTies.length) {
-        stringTies.push(
-          ...fromData.filter(
-            (tie) => !props.newTie || tie.from !== props.newTie.from,
-          ),
-        );
-      } else {
-        stringTies.push(...fromData);
-      }
-    }
-    for (const tie of stringTies) {
-      const render = tieToRender(i, tie);
-      if (render) ties.push(render);
-    }
+  const ties = [...props.ties.getTies()];
+  if (props.newTie && props.newTie.to !== props.newTie.from) {
+    ties.push(props.newTie);
   }
-
-  return ties;
+  const tieRenders: TieRenderProps[] = [];
+  for (const tie of ties) {
+    const render = tieToRender(tie);
+    if (render) tieRenders.push(render);
+  }
+  return tieRenders;
 });
 
 const isEditing = (data: TieRenderProps) => {

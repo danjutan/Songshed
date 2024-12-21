@@ -2,14 +2,9 @@
 import type { Bend } from "~/model/stores";
 import type { OverlayPosition } from "../../overlay-objects";
 import {
-  CellHoverInjectionKey,
-  type CellHoverEvents,
-  type HoveredRow,
-} from "../../state/cell-hover-events";
-import {
-  TieAddInjectionKey,
-  type TieAddState,
-} from "../../state/tie-add-state";
+  BendEditInjectionKey,
+  type BendEditState,
+} from "../state/bend-edit-state";
 
 export type BendRenderProps = OverlayPosition & {
   bend: Bend;
@@ -17,22 +12,11 @@ export type BendRenderProps = OverlayPosition & {
   half?: "left" | "right";
   fullUpswingColumns?: number;
   fullRestColumns?: number;
-  /* This is not an event because we need the function to work even if this
-   * component stops being rendered, as it will when we drag from
-   * a lower tabline back up, eliminating the half we started editing.
-   * An alternative solution would be to create a
-   * "bend-edit-state" provider that works across BendRenders.
-   */
-  updateBend: (bend: Bend) => void;
 };
-const props = defineProps<BendRenderProps & { bendRow: number }>();
-const emit = defineEmits<{
-  updateBend: [bend: Bend];
-  delete: [];
-}>();
 
-const cellHoverEvents = inject(CellHoverInjectionKey) as CellHoverEvents;
-const tieAddState = inject(TieAddInjectionKey) as TieAddState;
+const props = defineProps<BendRenderProps & { bendRow: number }>();
+
+const bendEditState = inject(BendEditInjectionKey) as BendEditState;
 
 const noUpswing = computed(
   () => props.half === "right" && props.fullRestColumns,
@@ -102,60 +86,14 @@ const bendLabels: { [bend: number]: string } = {
 function onSelectInput(e: Event) {
   const value = (e.target as HTMLSelectElement).value;
   if (value === "delete") {
-    emit("delete");
+    bendEditState.deleteBend(props.bend);
     return;
   }
-  props.updateBend({ ...props.bend, bend: +value });
+  bendEditState.updateBendBy(props.bend, +value);
 }
+
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
-
-const dragging = ref<"upswing" | "release" | undefined>();
-
-function updateOnDrag(type: HoveredRow, position: number) {
-  const bend = { ...props.bend };
-  if (dragging.value === "upswing" && position >= bend.from) {
-    if (props.throughColumn) {
-      bend.through = [position - bend.from];
-      return bend;
-    }
-    bend.to = position;
-    return bend;
-  }
-  if (
-    dragging.value === "release" &&
-    position > bend.from + (bend.through?.[0] || 0)
-  ) {
-    if (!props.throughColumn) {
-      bend.through = [bend.to - bend.from];
-    }
-    bend.to = position;
-    bend.releaseType = typeof type === "number" ? "connect" : "hold";
-    return bend;
-  }
-  return bend;
-}
-
-cellHoverEvents.addHoverListener((type, position) => {
-  if (dragging.value && !tieAddState.dragging) {
-    const updated = updateOnDrag(type, position);
-    props.updateBend(updated);
-    // emit("updateBend", updated);
-  }
-});
-
-cellHoverEvents.addMouseUpListener(() => {
-  dragging.value = undefined;
-});
-
-function onLabelHover() {
-  if (dragging.value === "release") {
-    const bend = { ...props.bend };
-    bend.to = bend.through![0] + bend.from;
-    bend.through = undefined;
-    props.updateBend(bend);
-  }
-}
 </script>
 
 <template>
@@ -241,7 +179,7 @@ function onLabelHover() {
           ? 'downswing-arrow-hover'
           : 'hold-arrow-hover'
       "
-      @mousedown="dragging = 'release'"
+      @mousedown="bendEditState.start('release', props.bend)"
       @mouseover="releaseArrowHover = true"
       @mouseleave="releaseArrowHover = false"
     />
@@ -249,8 +187,8 @@ function onLabelHover() {
   <div
     v-if="showLabel"
     class="label"
-    :class="{ dragging }"
-    @mouseover="onLabelHover"
+    :class="{ dragging: bendEditState.dragging }"
+    @mouseover="bendEditState.onLabelHover"
   >
     <span v-html="bendLabels[props.bend.bend] || props.bend.bend" />
     <select @input="onSelectInput">
@@ -267,15 +205,15 @@ function onLabelHover() {
     <!-- <div v-if="!restColumns" class="grabber right" /> -->
   </div>
   <div
-    v-if="!restColumns && !dragging"
+    v-if="!restColumns && !bendEditState.dragging"
     class="grabber-hover"
-    @mousedown="dragging = 'release'"
+    @mousedown="bendEditState.start('release', props.bend)"
   >
     <div class="grabber" />
   </div>
   <div
     class="upswing-arrow-hover"
-    @mousedown="dragging = 'upswing'"
+    @mousedown="bendEditState.start('upswing', props.bend)"
     @mouseover="upswingArrowHover = true"
     @mouseleave="upswingArrowHover = false"
   />

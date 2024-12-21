@@ -5,12 +5,8 @@ import GuitarBar from "./GuitarBar.vue";
 import TiesBar from "./ties/TiesBar.vue";
 import BendRender from "./bends/BendRender.vue";
 import BendDragBar from "./bends/BendDragBar.vue";
-import { createBendRenderState } from "../state/bend-render-state";
-import { createTieAddState, TieAddInjectionKey } from "../state/tie-add-state";
-import {
-  CellHoverInjectionKey,
-  type CellHoverEvents,
-} from "../state/cell-hover-events";
+import { createBendRenderState } from "./state/bend-render-state";
+import { TieAddInjectionKey, type TieAddState } from "./state/tie-add-state";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -28,15 +24,7 @@ const props = defineProps<{
 
 const subUnit = computed(() => props.notchUnit / props.subdivisions);
 
-const cellHoverEvents = inject(CellHoverInjectionKey) as CellHoverEvents;
-
-const tieAddState = createTieAddState(
-  cellHoverEvents,
-  computed(() => props.guitarStore),
-  computed(() => subUnit.value),
-);
-
-provide(TieAddInjectionKey, tieAddState);
+const tieAddState = inject(TieAddInjectionKey) as TieAddState;
 
 const bendRenders = computed(() => {
   return createBendRenderState(
@@ -88,7 +76,7 @@ const notesRow = computed(() =>
       :start-row="notesRow"
       :start-column="i * (columnsPerBar + 1) + 2"
       :start-position="bar.start"
-      :end-position="bar.stacks.size * subUnit"
+      :end-position="bar.start + bar.stacks.size * subUnit"
       :sub-unit="subUnit"
     />
   </template>
@@ -99,12 +87,6 @@ const notesRow = computed(() =>
       :key="render.startColumn"
       v-bind="render"
       :bend-row
-      :update-bend="
-        (bend) => guitarStore.ties.updateTie(render.row - notesRow, bend)
-      "
-      @delete="
-        guitarStore.ties.deleteTie(render.row - notesRow, render.bend.from)
-      "
     />
   </template>
 </template>

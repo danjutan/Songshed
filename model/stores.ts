@@ -262,21 +262,20 @@ function createStackStore<N extends NoteData>(
 }
 
 export type Tie = TieData & {
+  string: number;
   from: number;
   midiFrom?: Midi;
   midiTo?: Midi;
 };
-export type Bend = BendData & { from: number };
-export type TieMap = Map<number, Tie[]>;
-export type BendMap = Map<number, Bend[]>;
+export type Bend = BendData & { string: number; from: number };
 
 export interface TieStore {
   setTie: (string: number, from: number, tie: TieData | BendData) => void;
-  updateTie: (string: number, bend: Bend) => void;
+  updateBend: (bend: Bend) => void;
   deleteTie: (string: number, from: number) => void;
   deleteAt: (string: number, position: number) => void;
-  getTies: () => TieMap;
-  getBends: () => BendMap;
+  getTies: () => Tie[];
+  getBends: () => Bend[];
   shiftFrom: (position: number, shiftBy: number) => void;
 }
 
@@ -290,9 +289,9 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
     stringTies.set(from, tie);
   }
 
-  function updateTie(string: number, bend: Bend) {
-    const { from, ...bendData } = bend;
-    setTie(string, bend.from, bendData);
+  function updateBend(bend: Bend) {
+    const { string, from, ...bendData } = bend;
+    setTie(string, from, bendData);
   }
 
   function deleteTie(string: number, from: number) {
@@ -315,39 +314,36 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
     }
   }
 
-  function getTies(): TieMap {
-    const map: TieMap = new Map();
+  function getTies(): Tie[] {
+    const ties: Tie[] = [];
     for (const [string, stringTies] of guitarData.ties) {
-      const addTies: Tie[] = [];
       for (const [from, tie] of stringTies) {
         if (tie.type === "bend") continue;
         const fromNote = guitarData.stacks.get(from)?.get(string);
         const toNote = guitarData.stacks.get(tie.to)?.get(string);
-        addTies.push({
+        ties.push({
           ...tie,
+          string,
           from,
-          // if the ties were added correctly by the GUI, these will always be defined Midi
+          // if the ties were added correctly by the GUI, these will always be defined as Midi
           midiFrom: fromNote?.note === "muted" ? undefined : fromNote?.note,
           midiTo: toNote?.note === "muted" ? undefined : toNote?.note,
         });
       }
-      map.set(string, addTies);
     }
-    return map;
+    return ties;
   }
 
-  function getBends(): BendMap {
-    const map: BendMap = new Map();
+  function getBends(): Bend[] {
+    const bends: Bend[] = [];
     for (const [string, stringTies] of guitarData.ties) {
-      const addBends: Bend[] = [];
       for (const [from, tie] of stringTies) {
         if (tie.type === "bend") {
-          addBends.push({ ...tie, from });
+          bends.push({ ...tie, string, from });
         }
       }
-      map.set(string, addBends);
     }
-    return map;
+    return bends;
   }
 
   function shiftFrom(position: number, shiftBy: number) {
@@ -370,7 +366,7 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
 
   return {
     setTie,
-    updateTie,
+    updateBend,
     deleteTie,
     deleteAt,
     getTies,

@@ -5,7 +5,10 @@ import {
   SelectionInjectionKey,
   type SelectionState,
 } from "../state/selection-state";
-import { TieAddInjectionKey, type TieAddState } from "../state/tie-add-state";
+import {
+  TieAddInjectionKey,
+  type TieAddState,
+} from "../guitar/state/tie-add-state";
 import { EditingInjectionKey, type EditingState } from "../state/editing-state";
 
 const props = withDefaults(
@@ -64,13 +67,15 @@ const tieable = (
   note: GuitarNote | undefined,
   string: number,
 ): note is { note: Midi } =>
-  note?.note !== "muted" &&
+  note !== undefined &&
+  note.note !== "muted" &&
   editing.editingNote?.string === string &&
   editing.editingNote.position === props.position;
 
 function onSpotMouseDown(
   e: MouseEvent,
   string: number,
+
   note: GuitarNote | undefined,
 ) {
   if (tieable(note, string)) {
@@ -103,7 +108,10 @@ function onSpotMouseDown(
         v-if="collapse && note"
         class="square"
         :style="{
-          backgroundColor: defaultColors[getChroma(note.note)],
+          backgroundColor:
+            note.note === 'muted'
+              ? 'gray'
+              : defaultColors[getChroma(note.note)],
         }"
       />
       <div class="input">

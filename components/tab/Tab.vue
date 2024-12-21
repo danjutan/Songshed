@@ -8,7 +8,6 @@ import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 import {
   createSelectionState,
   SelectionInjectionKey,
-  type SelectionState,
 } from "./state/selection-state";
 
 import { createAnnotationAddState } from "./state/annotation-add-state";
@@ -18,6 +17,14 @@ import {
   CellHoverInjectionKey,
   createCellHoverEvents,
 } from "./state/cell-hover-events";
+import {
+  createTieAddState,
+  TieAddInjectionKey,
+} from "./guitar/state/tie-add-state";
+import {
+  BendEditInjectionKey,
+  createBendEditState,
+} from "./guitar/state/bend-edit-state";
 
 const props = withDefaults(
   defineProps<{
@@ -44,12 +51,28 @@ const newBarStart = ref(0);
 
 const numStrings = computed(() => props.data.guitar?.strings);
 
-const cellHoverState = createCellHoverEvents();
-provide(CellHoverInjectionKey, cellHoverState);
-const selectionState = createSelectionState(cellHoverState);
+const cellHoverEvents = createCellHoverEvents();
+provide(CellHoverInjectionKey, cellHoverEvents);
+const selectionState = createSelectionState(cellHoverEvents);
 provide(SelectionInjectionKey, selectionState);
 const editingState = createEditingState();
 provide(EditingInjectionKey, editingState);
+
+const tieAddState = createTieAddState(
+  cellHoverEvents,
+  computed(() => props.data.guitar),
+  computed(() => subUnit.value),
+);
+
+provide(TieAddInjectionKey, tieAddState);
+
+const bendEditState = createBendEditState(
+  cellHoverEvents,
+  tieAddState,
+  computed(() => props.data.guitar?.ties),
+);
+
+provide(BendEditInjectionKey, bendEditState);
 
 export type Bar = {
   start: number;
@@ -113,7 +136,7 @@ const posToCol = (pos: number): TablineColumn => {
 const annotationAddState = createAnnotationAddState(
   props.data.annotations,
   subUnit,
-  cellHoverState,
+  cellHoverEvents,
 );
 
 const annotationRenders = createAnnotationRenderState(
@@ -128,8 +151,7 @@ const annotationRows = computed(() =>
 );
 
 const notesRow = computed(() => {
-  const bendStrings = props.data.guitar?.ties.getBends().values();
-  const hasBend = bendStrings && [...bendStrings].flat().length > 0;
+  const hasBend = props.data.guitar?.ties.getBends().length;
   return annotationRows.value + (hasBend ? 2 : 1);
 });
 
@@ -141,12 +163,12 @@ function newAnnotationRow() {
 }
 
 function onMouseUp() {
-  cellHoverState.mouseup();
+  cellHoverEvents.mouseup();
   editingState.blurEditing();
 }
 
 function onLeaveTab() {
-  cellHoverState.leaveTab();
+  cellHoverEvents.leaveTab();
   editingState.blurEditing();
 }
 

@@ -1,21 +1,13 @@
 import type { InjectionKey } from "vue";
 import type { Bend, GuitarStore, Tie, TieStore } from "~/model/stores";
-import type { CellHoverEvents, HoveredRow } from "./cell-hover-events";
+import type {
+  CellHoverEvents,
+  HoveredRow,
+} from "../../state/cell-hover-events";
 import type { TieType } from "~/model/data";
 
-// export interface NewTie extends Partial<Tie> {
-//   string?: number;
-// }
-
-export type TieWithString = { string: number } & Tie;
-export type BendWithString = { string: number } & Bend;
-// export type NewTie =
-//   | ({ to: number } & TieWithString)
-//   | ({ to?: undefined } & Partial<TieWithString>);
-// type NewTie = TieWithString | undefined;
-
 export function createTieAddState(
-  cellHoverState: CellHoverEvents,
+  cellHoverEvents: CellHoverEvents,
   store: ComputedRef<GuitarStore | undefined>,
   subUnit: ComputedRef<number>,
 ) {
@@ -41,8 +33,8 @@ export function createTieAddState(
     return "right";
   });
 
-  cellHoverState.addHoverListener((row, position) => drag(row, position));
-  cellHoverState.addMouseUpListener(end);
+  cellHoverEvents.addHoverListener((row, position) => drag(row, position));
+  cellHoverEvents.addMouseUpListener(end);
 
   function start(string: number, position: number, midi: Midi) {
     dragFrom.value = position;
@@ -118,18 +110,6 @@ export function createTieAddState(
     dragFrom.value = undefined;
   }
 
-  function hasLeft(string: number, position: number) {
-    const stringTies = store.value?.ties.getTies().get(string);
-    if (!stringTies) return false;
-    return stringTies.some((tie) => tie.to === position);
-  }
-
-  function hasRight(string: number, position: number) {
-    const stringTies = store.value?.ties.getTies().get(string);
-    if (!stringTies) return false;
-    return stringTies.some((tie) => tie.from === position);
-  }
-
   return reactive({
     get dragging() {
       return dragFrom.value !== undefined;
@@ -137,7 +117,7 @@ export function createTieAddState(
     get dragDirection() {
       return dragDirection.value;
     },
-    get newTie(): TieWithString | undefined {
+    get newTie(): Tie | undefined {
       if (dragFrom.value !== undefined && !bend.value) {
         return {
           string: dragFromString.value,
@@ -149,7 +129,7 @@ export function createTieAddState(
         };
       }
     },
-    get newBend(): BendWithString | undefined {
+    get newBend(): Bend | undefined {
       if (dragFrom.value !== undefined && bend.value) {
         return {
           string: dragFromString.value,
@@ -164,8 +144,6 @@ export function createTieAddState(
     start,
     drag,
     end,
-    hasLeft,
-    hasRight,
   });
 }
 
