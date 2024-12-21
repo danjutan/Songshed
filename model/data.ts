@@ -12,13 +12,12 @@ export interface NoteData {
 export type TieType = "h" | "p" | "slide";
 export interface Tie {
   type: TieType;
-  to: number; //position
+  // from: number; //position
+  to: number;
 }
 export interface GuitarNote extends NoteData {
-  tie?: Tie;
   /*
   muted?: boolean;
-  slide?: boolean;
   bend?: string; */
 }
 
@@ -35,6 +34,7 @@ export interface GuitarTabData {
   tuning: Midi[];
   frets: number;
   stacks: StackMap<GuitarNote>;
+  ties: Map<number, Map<number, Tie>>;
 }
 
 export interface ChordsData {

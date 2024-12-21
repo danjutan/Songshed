@@ -9,6 +9,7 @@ import type {
   NoteStack,
   ChordsData,
   Chord,
+  Tie,
 } from "./data";
 
 export interface TabStore {
@@ -62,6 +63,7 @@ export function createTabStore(
   function createGuitarTab(tuning = defaultTuning, strings = 6, frets = 24) {
     const stacks: StackMap<GuitarNote> = new Map();
     data.guitarData = {
+      ties: new Map(),
       strings,
       tuning,
       frets,
@@ -281,6 +283,7 @@ interface GuitarStore
     end: number,
     subunit: number,
   ) => StackMap<GuitarNote>;
+  setTie: (string: number, from: number, tie: Tie) => void;
 }
 
 function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
@@ -302,9 +305,20 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
 
   function deleteNote(position: number, string: number) {
     const stack = guitarData.stacks.get(position);
-    if (stack) {
+    if (stack && stack.has(string)) {
       stack.delete(string);
       noteStore.setStack(position, stack);
+
+      const ties = guitarData.ties.get(string);
+      if (ties) {
+        ties.delete(position);
+        const tiedTo = [...ties.entries()].find(
+          ([_, tie]) => tie.to === position,
+        );
+        if (tiedTo) {
+          ties.delete(tiedTo[0]);
+        }
+      }
     }
   }
 
@@ -326,15 +340,21 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     );
   }
 
-  const { stacks, strings, frets, tuning } = guitarData;
+  function setTie(string: number, from: number, tie: Tie) {
+    const ties = guitarData.ties.get(string);
+    if (!ties) {
+      guitarData.ties.set(string, new Map([[from, tie]]));
+      return;
+    }
+    ties.set(from, tie);
+  }
+
   return {
     ...noteStore,
     getStacks,
     setNote,
     deleteNote,
-    stacks,
-    strings,
-    frets,
-    tuning,
+    setTie,
+    ...guitarData,
   };
 }

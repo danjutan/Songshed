@@ -10,7 +10,8 @@ import {
   SelectionInjectionKey,
   type SelectionState,
 } from "./guitar/providers/selection";
-import { createAnnotationRenderState } from "./annotations/render-state";
+import { createAnnotationAddState } from "./annotations/annotation-add-state";
+import { createAnnotationRenderState } from "./annotations/annotation-render-state";
 
 const props = withDefaults(
   defineProps<{
@@ -41,7 +42,7 @@ const newBarStart = ref(0);
 
 const numStrings = computed(() => props.data.guitar?.strings);
 
-type Bar = {
+export type Bar = {
   start: number;
   stacks: StackMap<GuitarNote>;
 };
@@ -97,18 +98,30 @@ const posToCol = (pos: number): TablineColumn => {
   };
 };
 
+const annotationAdd = createAnnotationAddState(props.data.annotations, subUnit);
+
 const annotationRenders = createAnnotationRenderState(
   props.data.annotations,
   subUnit,
   posToCol,
+  annotationAdd.newAnnotation,
 );
 
-const annotationRows = computed(() => annotationRenders.rows);
+const annotationRows = computed(() =>
+  Math.max(props.data.annotations.getRows().length, 1),
+);
+
+function newRow() {
+  if (props.data.annotations.getRows().length === annotationRows.value - 1) {
+    props.data.annotations.createNextRow();
+  }
+  props.data.annotations.createNextRow();
+}
 
 const notesRow = computed(() => annotationRows.value + 1);
 
 function cancelSelection() {
-  annotationRenders.newEnd();
+  annotationAdd.addEnd();
   selectionState.end();
 }
 
@@ -119,9 +132,7 @@ function newBarClick(lastBarStart?: number) {
 
 function onKeyUp(e: KeyboardEvent) {
   if (e.key === "Escape" || e.key === "Backspace") {
-    console.log("here");
     if (props.data.guitar && selectionState.selectedRange) {
-      console.log(selectionState.selectedRange);
       props.data.guitar?.deleteStacks(
         selectionState.selectedRange.start,
         selectionState.selectedRange.end,
@@ -164,13 +175,12 @@ onBeforeUnmount(() => {
           @note-delete="data.guitar!.deleteNote"
         />
         <!--fix prevstack to incorporate prev line -->
-        <TiesBar
+        <!-- <TiesBar
           :stack-data="bar.stacks"
-          :prev-stack="data.guitar!.stacks.get(bar.start - subUnit)"
           :start-row="notesRow"
           :start-column="i * (columnsPerBar + 1) + 2"
           :sub-unit="subUnit"
-        />
+        /> -->
 
         <template v-for="(_, rowIndex) in annotationRows">
           <div
@@ -179,7 +189,7 @@ onBeforeUnmount(() => {
               gridColumn: i * (columnsPerBar + 1) + 1,
               gridRow: annotationRows - rowIndex,
             }"
-            @mousedown="annotationRenders.newStart(rowIndex, bar.start)"
+            @mousedown="annotationAdd.addStart(rowIndex, bar.start)"
           />
           <div
             v-for="([position], s) in bar.stacks"
@@ -188,12 +198,12 @@ onBeforeUnmount(() => {
               gridColumn: i * (columnsPerBar + 1) + 2 + s,
               gridRow: annotationRows - rowIndex,
             }"
-            @mousedown="annotationRenders.newStart(rowIndex, position)"
-            @mouseover="annotationRenders.newDrag(position)"
+            @mousedown="annotationAdd.addStart(rowIndex, position)"
+            @mouseover="annotationAdd.addDrag(position)"
           />
         </template>
 
-        <div class="new-row-box" @click="annotationRenders.newRow">
+        <div class="new-row-box" @click="newRow">
           <span>+</span>
         </div>
       </template>
@@ -211,7 +221,7 @@ onBeforeUnmount(() => {
           startColumn,
           endColumn,
           annotation,
-        } in annotationRenders.renders.get(tabLineIndex)"
+        } in annotationRenders.get(tabLineIndex)"
         :key="startColumn"
         :row
         :start-column="

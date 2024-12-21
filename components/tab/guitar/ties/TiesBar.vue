@@ -10,7 +10,6 @@ import FullTie from "./FullTie.vue";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
-  prevStack?: NoteStack<GuitarNote>;
   startRow: number;
   startColumn: number;
   subUnit: number;
