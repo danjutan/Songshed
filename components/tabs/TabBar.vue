@@ -198,11 +198,13 @@ function emptySpotHover (string: number, notch: number) {
 <style>
 .bar {
   --min-division-width: 48px;
+  /* --z-index-notes: 10; */
   /* border: 1px solid black; */
   margin: 10px;
   display: grid;
   grid-template-columns: repeat(v-bind(notches), 1fr);
   grid-template-rows: repeat(v-bind(strings), calc(var(--min-division-width) / 2))
+  /* height: calc(var(--min-division-width) / 2 * v-bind(strings)); */
   /* grid-template-rows:  */
   /* align-items: center; */
   /* grid-auto-flow: column; */

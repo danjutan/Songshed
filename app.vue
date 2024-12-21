@@ -19,7 +19,7 @@ const notes = ref<FilledSpot[]>([
 <template>
   <!-- <input type="checkbox" v-model="showDivisions"/> -->
   <div class="flex">
-    <TabsTabBar v-model="notes" :notches="32"/>
+    <TabsTabBar v-model="notes" :notches="8"/>
     <TabsTabBar v-model="notes"/>
   </div>
   <Fretboard width="50%"/>

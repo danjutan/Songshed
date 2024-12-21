@@ -74,8 +74,7 @@ onMounted(() => {
     class="note-input" 
     :class="collapse ? 'collapse' : ''"
     @mouseover="mouseOver" @mouseleave="emit('endEdit')">
-    <span class="hover-bg">{{  relativeNote }}</span>
-    <span class="input-bg">{{ relativeNote }}</span>
+    <span class="input-bg">{{ relativeNote}}</span>
     <input 
       ref="input"
       :size="2" :value="relativeNote" type="text" inputmode="numeric"
@@ -100,6 +99,7 @@ onMounted(() => {
 
 input {
   all: unset;
+  /* z-index: var(--z-index-notes); */
 }
 
 
@@ -119,20 +119,13 @@ input {
   /* aspect-ratio: 1 / 1; */
 }
 
-.hover-bg {
-  aspect-ratio: 1;
-}
-
-.note-input:hover > .hover-bg {
-  background-color: #ACCEF7;
-}
-
 .note-input:hover > .input-bg {
-  display: none;
+  width: calc(var(--min-division-width) / 2);
+  background-color: #ACCEF7
 }
 
 @container collapser (aspect-ratio < 0.5) {
-  input, .hover-bg, .input-bg {
+  input,  .input-bg {
     display: none;
   }
 }

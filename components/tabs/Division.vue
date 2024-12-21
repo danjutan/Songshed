@@ -47,7 +47,7 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
             class="substack"
             :style="{ gridColumn: colPositions[i]}">
           <TabsNoteInput 
-            v-for="(noteSpot) in substack.stack" 
+            v-for="(noteSpot) in substack.stack"
             :key="noteSpot.string"
             :data="noteSpot.data" 
             :tuning="props.tuning[noteSpot.string]" :frets="props.frets"
@@ -61,7 +61,9 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
 <style scoped>
 
 .division {
-  min-width: calc(var(--min-division-width) * 0.75);
+  /* min-width: calc(var(--min-division-width) * 0.75); */
+  /* For scrollbar height */
+  height: calc(var(--min-division-width) / 2 * v-bind(numStrings) + 20px);
   grid-row: 1 / span v-bind(numStrings);
   grid-column: v-bind(column) / span 1;
   /* border-top: 2px solid v-bind(debugColor); */
@@ -83,8 +85,9 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
 }
 .substack-grid {
   display: grid;
-  height: calc(var(--min-division-width) / 2 * v-bind(columns));
+  height: calc(var(--min-division-width) / 2 * v-bind(numStrings));
   grid-template-columns: repeat(v-bind(columns), calc(var(--min-division-width) / 2));
   grid-template-rows: 1fr;
+  color: red;
 }
 </style>
