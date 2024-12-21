@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { NoteData } from "./data";
+import type { NoteData } from "../data";
 
 const props = withDefaults(defineProps<{
   data?: NoteData

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { type NoteSpot } from "./data";
+import { type NoteSpot } from "../data";
 import type { DivisionData } from "./TabBar.vue";
 import Drape from "./toolbar/Drape.vue";
 
@@ -72,7 +72,7 @@ const substackMinWidth = computed(() =>
     class="division"
     @click="debug && console.log({ subunit, subdivisions, colPositions })">
     <div class="stack">
-      <TabsNoteInput
+      <TabBarNoteInput
         v-for="noteSpot in props.data.stack"
         :key="noteSpot.string"
         :collapse="numFilledSubstacks == 0"
@@ -88,7 +88,7 @@ const substackMinWidth = computed(() =>
          class="substack"
          :style="{ gridColumn: i + 1 }">
     >
-    <TabsNoteInput
+    <TabBarNoteInput
       v-for="string in tuning"
 
   </div> -->
@@ -110,7 +110,7 @@ const substackMinWidth = computed(() =>
           }"
         />
         <div class="input">
-          <TabsNoteInput
+          <TabBarNoteInput
             :data="noteSpot.data"
             :tuning="props.tuning[noteSpot.string]"
             :frets="props.frets"

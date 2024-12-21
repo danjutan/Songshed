@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Spacing, type FilledSpot, createNote } from "./components/tabs/data";
+import { Spacing, type FilledSpot, createNote } from "./components/tab/data";
+import TabBar from "./components/tab/bar/TabBar.vue";
 
 const notes = ref<FilledSpot[]>([
   createNote(0, 0, "B4"),
@@ -21,15 +22,15 @@ const notes = ref<FilledSpot[]>([
 <template>
   <!-- <input type="checkbox" v-model="showDivisions"/> -->
   <div class="flex">
-    <TabsTabBar v-model="notes"
-                :notches="8"
+    <TabBar v-model="notes"
+            :notches="8"
     />
-    <TabsTabBar v-model="notes" />
-    <TabsTabBar v-model="notes"
-                :notches="32"
+    <TabBar v-model="notes" />
+    <TabBar v-model="notes"
+            :notches="32"
     />
-    <TabsTabBar v-model="notes"
-                :notches="64"
+    <TabBar v-model="notes"
+            :notches="64"
     />
   </div>
   <Fretboard width="50%" />

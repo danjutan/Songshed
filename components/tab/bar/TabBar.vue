@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { PropType } from "vue";
-import type { NoteSpot, FilledSpot } from "./data";
-import { Spacing, smallestSpacing } from "./data";
+import type { NoteSpot, FilledSpot } from "../data";
+import { Spacing, smallestSpacing } from "../data";
 
 type StackData = NoteSpot[];
 
@@ -143,8 +143,8 @@ const subdivisions = computed(() => (Spacing.Whole / smallestSpacing) / props.no
 
 <template>
   <div class="bar">
-    <TabsStrings />
-    <TabsDivision
+    <TabBarStrings />
+    <TabBarDivision
       v-for="data in divisions"
       :key="data.notchPosition"
       debug
@@ -155,12 +155,12 @@ const subdivisions = computed(() => (Spacing.Whole / smallestSpacing) / props.no
       :style="divisionPlacement(data.notchPosition + 1)"
       @note-change="updateNote"
     />
-    <TabsToolbar
+    <TabBarToolbar
       :divisions
       :tuning
       :subdivisions
     />
-    <!-- <TabsSpacer
+    <!-- <TabBarSpacer
       v-for="data in emptyDivisions"
       :key="data.notchStart"
       :data="data"
