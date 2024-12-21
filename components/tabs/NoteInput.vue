@@ -2,21 +2,21 @@
 import type { NoteData } from "./data";
 
 const props = withDefaults(defineProps<{
-  data?: NoteData;
-  tuning: Midi;
-  frets: number;
-  backgroundColor?: string;
-  collapse?: boolean;
-  startFocused?: boolean;
+  data?: NoteData
+  tuning: Midi
+  frets: number
+  backgroundColor?: string
+  collapse?: boolean
+  startFocused?: boolean
 }>(), {
   data: undefined,
   backgroundColor: "white",
 });
 
 const emit = defineEmits<{
-  dataChange: [data: NoteData | undefined];
-  startEdit: [];
-  endEdit: [];
+  dataChange: [data: NoteData | undefined]
+  startEdit: []
+  endEdit: []
 }>();
 
 const relativeNote = computed(() => {
@@ -92,11 +92,9 @@ onMounted(() => {
 
 <style scoped>
 .note-input {
-  /* min-width: calc(var(--min-division-width) / 2); */
   display: grid;
   height: calc(var(--min-division-width) / 2);
-  /* height: calc(var(--min-division-width) / 2); */
-  /* border: 1px red dashed; */
+  width: calc(var(--min-division-width) / 2);
 }
 
 .collapse {
