@@ -13,7 +13,7 @@
 
 <style scoped>
 .strings {
-  grid-row: 1 / -1;
+  grid-row: 2 / -1;
   grid-column: 1 / -1;
   width: 100%;
   overflow-y: hidden;
