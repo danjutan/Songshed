@@ -10,6 +10,7 @@
 <style>
 .overlay {
   display: grid;
+  grid: subgrid / subgrid;
 }
 .overlay > * {
   grid-area: 1 / 1;

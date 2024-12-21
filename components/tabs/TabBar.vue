@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { Division } from './types';
 //Let's see what things look like without composing
-const divisions = defineModel<Division[]>({required: true}); 
+const divisions = defineModel<Division[]>({ required: true });
 const props = withDefaults(defineProps<{
   strings?: number,
   showDivisions?: boolean
@@ -17,43 +17,43 @@ const smallest = computed(() => Math.min(...lengths.value));
 
 const templateColumns = computed<string>(() => lengths.value.map(length => length + "fr").join(" "));
 
-function split (index: number) {
+function split(index: number) {
   const halfTime = lengths.value[index] / 2;
   divisions.value.splice(index, 1, [halfTime, divisions.value[index][1]], [halfTime]);
 }
 
+//try overlay + subgrid. then try equal spaced columns
 </script>
 
 <template>
   <Overlay>
     <div class="string-background">
-      <div v-for="string in props.strings" class="string"/>
+      <div v-for="string in props.strings" class="string" />
     </div>
     <div class="bar">
       <div v-for="([length, notes], i) in divisions" class="division"
-        :style="`min-width: calc(${length / smallest} * var(--min-division-width))`">
-        <!-- <Overlay> -->
-          <div class="notes">
-            <div v-for="string in props.strings" class="row">
-              <div class="spot">
-              </div>
+        :style="`min-width: calc(${length / smallest} * var(--min-division-width));`">
+        <div class="notes">
+          <div v-for="string in props.strings" class="row">
+            <div class="spot">
             </div>
           </div>
-          <div class="half-bar" @click="split(i)"></div>
-          <div class="divider" :class="{'with-border': showDivisions}"></div>
-          <!-- </Overlay> -->
         </div>
+        <div class="half-bar" @click="split(i)"></div>
+        <div class="divider" :class="{ 'with-border': showDivisions }"></div>
+      </div>
+      <!-- <div class="dragger"></div> -->
     </div>
   </Overlay>
 </template>
 
 <style>
-
 .string-background {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
 }
+
 .string {
   height: 1px;
   width: 100%;
@@ -66,6 +66,17 @@ function split (index: number) {
   grid-template-columns: v-bind(templateColumns);
 }
 
+.subgrid {
+  display: grid;
+  grid: subgrid / subgrid;
+}
+
+.dragger {
+  background-color: red;
+  opacity: 0.3;
+  grid-column: 2 / span 1;
+  grid-row: 1 / span 1;
+}
 
 .division {
   display: flex;
@@ -73,10 +84,11 @@ function split (index: number) {
 }
 
 .divider {
-  height: 100%; 
-  width: 1px;
+  height: 100%;
+  width: 2px;
   background-color: lightgray;
-  border: 1px solid lightgray;
+  border: 2px solid white;
+
   &:hover {
     background-color: lightcoral;
     border-color: lightcoral;
