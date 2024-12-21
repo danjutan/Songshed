@@ -47,19 +47,11 @@ export interface TabStore {
   title: string;
   beatsPerBar: number;
   beatSize: number;
-  createGuitarTab: (
-    tuning?: Midi[],
-    strings?: number,
-    frets?: number,
-  ) => GuitarStore;
+  createGuitarTab: (tuning?: Midi[], strings?: number, frets?: number) => GuitarStore;
   guitar?: GuitarStore;
-  annotations?: AnnotationStore;
+  annotations: AnnotationStore;
 }
-export function createTabStore(
-  title = "new tab",
-  beatsPerBar = 4,
-  beatSize = Spacing.Quarter,
-): TabStore {
+export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize = Spacing.Quarter): TabStore {
   const data: TabData = reactive({
     title,
     beatsPerBar,
@@ -118,19 +110,17 @@ interface AnnotationStore {
   getTypes: () => string[];
 }
 
-function createAnnotationStore(
-  annotations: Map<string, Annotation[]>,
-): AnnotationStore {
+function createAnnotationStore(annotations: Map<string, Annotation[]>): AnnotationStore {
   function createAnnotation(data: Annotation) {
     const ofType = annotations.get(data.type);
     if (!ofType) {
       annotations.set(data.type, [data]);
       return annotations.get(data.type)![0]; // goal is to return a reactive object; if irrelevant or broken, just return data
     }
+
+    // Revist: <= vs <; do we need this check at all?
     const overlaps = ofType.some(
-      (a: Annotation) =>
-        (a.start < data.start && a.end > data.start) ||
-        (a.start > data.start && a.end < data.start),
+      (a: Annotation) => (a.start < data.start && a.end > data.start) || (a.start > data.start && a.end < data.start),
     );
     if (overlaps) return false;
     ofType.push(data);
@@ -140,9 +130,7 @@ function createAnnotationStore(
   function deleteAnnotation(data: Annotation) {
     const ofType = annotations.get(data.type);
     if (ofType) {
-      const toDelete = ofType.findIndex(
-        (a) => a.start === data.start && a.end === data.end,
-      );
+      const toDelete = ofType.findIndex((a) => a.start === data.start && a.end === data.end);
       ofType.splice(toDelete, 1);
     }
   }
@@ -169,9 +157,7 @@ interface NoteStore<N extends NoteSpot> extends AbstractNoteStore<N> {
   setNote: (note: N) => void;
 }
 
-function createAbstractNoteStore<N extends NoteSpot>(
-  stacks: Map<number, N[]>,
-): AbstractNoteStore<N> {
+function createAbstractNoteStore<N extends NoteSpot>(stacks: Map<number, N[]>): AbstractNoteStore<N> {
   const furthestPos: number[] = [];
 
   function getStacks(start = 0, end?: number) {
@@ -204,17 +190,9 @@ function createAbstractNoteStore<N extends NoteSpot>(
   }
 
   function shiftFrom(position: number, shiftBy: number) {
-    if (
-      position < 0 ||
-      !furthestPos.length ||
-      position > furthestPos.at(-1)! ||
-      shiftBy <= 0
-    )
-      return;
+    if (position < 0 || !furthestPos.length || position > furthestPos.at(-1)! || shiftBy <= 0) return;
 
-    const keysFromBack = [...stacks.keys()]
-      .filter((pos) => pos >= position)
-      .sort((a, b) => b - a);
+    const keysFromBack = [...stacks.keys()].filter((pos) => pos >= position).sort((a, b) => b - a);
 
     for (const pos of keysFromBack) {
       const stack = stacks.get(pos);

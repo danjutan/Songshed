@@ -33,6 +33,13 @@ guitarNotes.forEach(([position, string, midiString]) => {
   guitar.setNote(noteSpot);
 });
 
+tabStore.annotations?.createAnnotation({
+  start: 1,
+  end: 2,
+  title: "test",
+  type: "note",
+});
+
 /*
 const activeStack = computed(() => {
   if (selectionState.start) {
@@ -68,13 +75,7 @@ const collapseEmpty = ref(true);
   Collapse empty notches:
   <input v-model="collapseEmpty" type="checkbox" />
 
-  <Tab
-    :data="tabStore"
-    :notches
-    :subdivisions
-    :collapse-subdivisions
-    :collapse-empty
-  />
+  <Tab :data="tabStore" :notches :subdivisions :collapse-subdivisions :collapse-empty />
   <!-- <Fretboard
     width="75%"
     :stack="activeStack"
