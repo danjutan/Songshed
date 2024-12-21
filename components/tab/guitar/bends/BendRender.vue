@@ -132,7 +132,7 @@ const releaseArrowHover = ref(false);
       :d="
         prebend
           ? `M ${vbu / 2} ${vbu * rowSpan - vbu}` + `V ${vbu * 1.1}`
-          : `M ${upswingFrom} ${vbu * rowSpan - vbu * 0.75}` +
+          : `M ${upswingFrom} ${vbu * rowSpan - vbu * 0.6}` +
             `Q ${upswingTo} ${vbu * rowSpan - vbu * 0.75} ${upswingTo} ${vbu * 1.1}`
       "
       :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"

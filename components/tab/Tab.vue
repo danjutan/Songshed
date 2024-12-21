@@ -389,6 +389,7 @@ const overlayedBarStart = ref<number | undefined>();
   background: black;
   color: white;
   font-size: var(--cell-height);
+  justify-self: end;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -427,10 +428,6 @@ const overlayedBarStart = ref<number | undefined>();
       content: "+";
     } */
   }
-}
-
-.divider:first-of-type {
-  justify-self: end;
 }
 
 /* We don't want this last divider to take up extra space in the grid and throw it off */

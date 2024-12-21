@@ -48,17 +48,15 @@ const bendEditState = createBendEditState(
 );
 provide(BendEditInjectionKey, bendEditState);
 
-const bendRenders = computed(() => {
-  return createBendRenderState(
-    props.guitarStore.ties,
-    computed(() => props.startRow + 1),
-    props.posToCol,
-    computed(() => tieAddState.newBend),
-  ).value;
-});
+const bendRenders = createBendRenderState(
+  props.guitarStore.ties,
+  computed(() => props.startRow + 1),
+  props.posToCol,
+  computed(() => tieAddState.newBend),
+);
 
 const bendRow = computed(() =>
-  bendRenders.value && bendRenders.value.size ? props.startRow : undefined,
+  bendRenders.value.has(props.tabLineIndex) ? props.startRow : undefined,
 );
 
 const notesRow = computed(() =>
