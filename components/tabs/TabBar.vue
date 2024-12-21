@@ -15,6 +15,8 @@ then your minwidth is proportional to the smallest.
 const lengths = computed(() => divisions.value.map(d => d[0]));
 const smallest = computed(() => Math.min(...lengths.value));
 
+const templateColumns = computed<string>(() => lengths.value.map(length => length + "fr").join(" "));
+
 function split (index: number) {
   const halfTime = lengths.value[index] / 2;
   divisions.value.splice(index, 1, [halfTime, divisions.value[index][1]], [halfTime]);
@@ -29,7 +31,7 @@ function split (index: number) {
     </div>
     <div class="bar">
       <div v-for="([length, notes], i) in divisions" class="division"
-        :style="`flex-grow: ${length}; min-width: calc(${length / smallest} * var(--min-division-width))`">
+        :style="`min-width: calc(${length / smallest} * var(--min-division-width))`">
         <!-- <Overlay> -->
           <div class="notes">
             <div v-for="string in props.strings" class="row">
@@ -60,15 +62,8 @@ function split (index: number) {
 
 .bar {
   --min-division-width: 32px;
-  display: flex;
-
-  /* & .division:not(:last-of-type) {
-    border-right: 1px dashed transparent;
-    
-    &.with-border {
-      border-right: 1px dashed lightgray;
-    }
-  } */
+  display: grid;
+  grid-template-columns: v-bind(templateColumns);
 }
 
 
@@ -85,7 +80,6 @@ function split (index: number) {
   &:hover {
     background-color: lightcoral;
     border-color: lightcoral;
-    /* border: 2px solid rgb(210, 237, 246); */
   }
 }
 
@@ -96,12 +90,9 @@ function split (index: number) {
 .row {
   display: flex;
   align-items: center;
-  /* border-bottom: 2px solid black; */
 }
 
 .half-bar {
-  /* position: relative;
-  left: 50%; */
   height: 100%;
   width: calc(50% - 1px);
   border-left: 1px dashed transparent;
@@ -113,8 +104,6 @@ function split (index: number) {
 }
 
 .row .spot {
-  /* display: flex;
-  align-items:center; */
   width: calc(var(--min-division-width) / 2);
   aspect-ratio: 1;
 }
