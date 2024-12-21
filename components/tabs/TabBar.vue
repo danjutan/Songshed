@@ -142,8 +142,9 @@ const divisionPlacement = (column: number) => ({
 <template>
   <div class="bar">
     <TabsStrings />
-    <TabsToolbar :divisions
-                 :tuning
+    <TabsToolbar
+      :divisions
+      :tuning
     />
     <TabsDivision
       v-for="data in divisions"
@@ -167,7 +168,7 @@ const divisionPlacement = (column: number) => ({
 
 <style>
 .bar {
-  --min-division-width: 48px;
+  --min-division-width: 46px;
   --note-font-size: calc(var(--min-division-width) * 0.4);
   --substack-bg: rgba(255, 0, 0, 0.1);
   /* --z-index-notes: 10; */

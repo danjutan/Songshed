@@ -1,5 +1,5 @@
-import pluginVue from "eslint-plugin-vue"
-import withNuxt from "./.nuxt/eslint.config.mjs"
+import pluginVue from "eslint-plugin-vue";
+import withNuxt from "./.nuxt/eslint.config.mjs";
 
 export default withNuxt(
   // your custom flat configs go here, for example:
@@ -22,6 +22,7 @@ export default withNuxt(
   {
     files: ["**/*.vue"],
     rules: {
+      "vue/multi-word-component-names": ["off"],
       "vue/html-closing-bracket-newline": [
         "error",
         {
@@ -36,4 +37,4 @@ export default withNuxt(
       "vue/first-attribute-linebreak": "off",
     },
   },
-)
+);
