@@ -36,6 +36,7 @@ const props = defineProps<{
 }>();
 
 const settings = inject(SettingsInjectionKey) as Settings;
+const cellHeight = computed(() => settings.cellHeight);
 const barSize = computed(
   () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
 );
@@ -348,7 +349,7 @@ const overlayedBarStart = ref<number | undefined>();
 
 <style scoped>
 .tab {
-  --cell-height: 24px;
+  --cell-height: v-bind(cellHeight);
   --note-font-size: calc(var(--cell-height) * 0.8);
   --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);

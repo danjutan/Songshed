@@ -112,7 +112,9 @@ const numStrings = computed(() => props.guitarStore.strings);
       :bend-row
     /> -->
   </template>
-  <OverlaySVG class="overlay"></OverlaySVG>
+  <ClientOnly>
+    <OverlaySVG class="overlay" />
+  </ClientOnly>
 </template>
 
 <style scoped>
@@ -130,7 +132,7 @@ const numStrings = computed(() => props.guitarStore.strings);
 }
 
 .overlay {
-  grid-column: 1 / -1;
+  grid-column: 2 / -1;
   grid-row: v-bind(bendRow) / span calc(v-bind(numStrings) + 1);
 }
 </style>
