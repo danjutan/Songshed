@@ -38,7 +38,7 @@ const noteRadius = cellWidth / 3;
 const frets = computed(() =>
   Object.values(fingering.value)
     .map(({ fret }) => fret)
-    .toSorted(),
+    .sort(),
 );
 
 const lastFret = computed(() => frets.value.at(-1) ?? 0);
@@ -223,7 +223,7 @@ function onInputClick(e: Event) {
           :x="gridStartX + (strings - +string - 1) * cellWidth"
           :y="gridStartY - cellHeight / 2"
         >
-          🗙
+          &Cross;
         </text>
         <circle
           class="open"
