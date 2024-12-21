@@ -14,6 +14,7 @@ export type TieRenderProps = OverlayPosition & {
 const emit = defineEmits<{
   updateType: [type: TieType];
   delete: [];
+  blockClicked: [];
 }>();
 const props = defineProps<TieRenderProps>();
 
@@ -36,15 +37,17 @@ function onSelectInput(e: Event) {
   <div
     class="container"
     :class="{
-      full: !props.half,
-      left: props.half === 'left',
-      right: props.half === 'right',
-      up: props.direction === 'up',
-      down: props.direction === 'down',
-      slide: props.type === 'slide',
-      hammer: props.type === 'hammer',
+      full: !half,
+      left: half === 'left',
+      right: half === 'right',
+      up: direction === 'up',
+      down: direction === 'down',
+      slide: type === 'slide',
+      hammer: type === 'hammer',
     }"
   >
+    <div v-if="endColumn - startColumn >= (half ? 1 : 2)" class="block-notes" />
+
     <div v-if="props.type === 'slide'" class="slide-box" />
     <div v-else class="tie-box">
       <div class="arc-rect" />
@@ -68,7 +71,6 @@ function onSelectInput(e: Event) {
   --column-span: calc(v-bind(endColumn) - v-bind(startColumn) + 1);
   --label-font-size: calc(var(--cell-height) * 0.6);
   pointer-events: none;
-  /* border: 1px solid red; */
   grid-row: v-bind(row);
   grid-column: v-bind(startColumn) / calc(v-bind(endColumn) + 1);
   /* height: calc(
@@ -107,9 +109,28 @@ function onSelectInput(e: Event) {
   }
 }
 
+.block-notes {
+  pointer-events: auto;
+  grid-row: v-bind(row);
+  height: var(--cell-height);
+  grid-area: 1 / 1;
+  width: calc(100% - 100% / (var(--column-span)));
+}
+
+.full .block-notes {
+  width: calc(100% - 200% / (var(--column-span)));
+}
+
+.left .block-notes {
+  justify-self: end;
+}
+
+.right .block-notes {
+  justify-self: start;
+}
+
 .slide-box {
-  grid-row: 1 / 1;
-  grid-column: 1 / 1;
+  grid-area: 1 / 1;
   width: calc(100% - 100% / var(--column-span) - var(--cell-height));
   height: calc(var(--cell-height) / 2);
   margin-top: calc(var(--cell-height) / 4);
@@ -272,20 +293,19 @@ function onSelectInput(e: Event) {
       color: darkred;
     }
   }
-
-  &.editing,
-  &:hover {
-    margin-right: calc(var(--label-font-size) * -1.6);
-    & .label {
-      display: none;
-    }
-    & select,
-    .delete {
-      display: block;
-    }
-  }
 }
 
+.indicator.editing,
+.indicator:hover {
+  margin-right: calc(var(--label-font-size) * -1.6);
+  & .label {
+    display: none;
+  }
+  & select,
+  .delete {
+    display: block;
+  }
+}
 .slide .indicator {
   transform: translateY(-38%);
 }
