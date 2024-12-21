@@ -62,17 +62,18 @@ const bars = computed<BarStore[]>(() => {
 }
 
 .new-button {
-  margin-top: calc(var(--cell-height) * 1.5);
-  margin-bottom: calc(var(--cell-height) / 2);
   padding: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(150, 150, 150, 0.1);
+}
+
+.new-button:hover {
+  background-color: rgba(240, 240, 240);
 }
 
 .new-button span {
-  color: gray;
+  color: rgba(100, 100, 100);
   font-size: 16px;
 }
 </style>

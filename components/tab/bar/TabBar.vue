@@ -87,7 +87,7 @@ const gridTemplateColumns = computed<string>(() => {
       columns.push(expandsTo.value[column]);
       continue;
     }
-    columns.push("1fr");
+    columns.push("auto");
   }
   return columns.join(" ");
 });
