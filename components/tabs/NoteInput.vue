@@ -22,23 +22,26 @@ const relativeNote = computed(() =>
   },
 );
 
-function onInputKeypress(e: KeyboardEvent) {
-  const key = parseInt(e.key);
-  const nextValue = (e.target as HTMLInputElement).value + e.key;
-  if (!Number.isInteger || key < 1 || parseInt(nextValue) > props.frets)
-    e.preventDefault();
 
-}
 function onInput(e: Event) {
-  const num = parseInt((e.target as HTMLInputElement).value);
+  const target = e.target as HTMLInputElement;
+  if (target.value.trim() == "") {
+    console.log("empty");
+    emit('dataChange', {...props.data, note: false})
+  }
+  const num = parseInt(target.value);
   if (Number.isInteger(num)) {
+    if (num < 1 || num > props.frets) {
+      return target.value = `${relativeNote.value}`;
+    }
     emit('dataChange', {...props.data, note: props.tuning + num as Midi})
     return;
   }
-  emit('dataChange', {...props.data, note: false})
+  target.value = `${relativeNote.value}`;
 }
 
-function onInputClick() {
+function onInputClick(e: Event) {
+  e.target && (e.target as HTMLInputElement).select();
   // console.log(relativeNote.value, props.data.note)
 }
 
@@ -51,7 +54,7 @@ function onInputBlur() {
 <template>
   <div @mouseover="emit('startEdit')" @mouseleave="emit('endEdit')">
     <span class="input-bg">{{ relativeNote }}</span>
-    <input size="2" :value="relativeNote" @input="onInput" @keypress="onInputKeypress" @click="onInputClick"
+    <input size="2" :value="relativeNote" @input="onInput" @click="onInputClick"
       @blur="onInputBlur" type="text" inputmode="numeric" pattern="[0-9]{1,2}" />
   </div>
 </template>
@@ -76,4 +79,4 @@ input {
 /* input::selection {
   background-color: blue;
 } */
-</style>./data
+</style>
