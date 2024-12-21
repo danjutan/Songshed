@@ -184,7 +184,7 @@ async function save() {
   <ChordGroup v-if="tabStore" :data="tabStore.chords" />
   <Tab
     v-if="tabStore"
-    :data="tabStore"
+    :tabStore="tabStore"
     :bars-per-line
     :notches
     :subdivisions

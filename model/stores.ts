@@ -17,6 +17,7 @@ export interface TabStore {
   title: string;
   beatsPerBar: number;
   beatSize: number;
+  lineBreaks: Set<number>;
   createGuitarTab: (
     tuning?: Midi[],
     strings?: number,
@@ -28,10 +29,7 @@ export interface TabStore {
   serialize: () => string;
 }
 
-const defaults: Pick<
-  TabData,
-  "title" | "beatsPerBar" | "beatSize" | "chordsData"
-> = {
+const defaults: Omit<TabData, "guitarData" | "annotations"> = {
   title: "new tab",
   beatsPerBar: 4,
   beatSize: Spacing.Quarter,
@@ -39,6 +37,7 @@ const defaults: Pick<
     tuning: defaultTuning,
     chords: [{ title: "", notes: new Map() }],
   },
+  lineBreaks: new Set(),
 };
 
 export function createTabStore(tabData: TabData): TabStore;
@@ -105,6 +104,9 @@ export function createTabStore(
     },
     set beatSize(beatSize: number) {
       data.beatSize = beatSize;
+    },
+    get lineBreaks() {
+      return data.lineBreaks;
     },
   };
 }

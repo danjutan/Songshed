@@ -38,3 +38,8 @@ const cellHoverState = inject(CellHoverInjectionKey) as CellHoverEvents;
     />
   </template>
 </template>
+<style scoped>
+div {
+  border-bottom: 1px solid lightgray;
+}
+</style>

@@ -28,7 +28,7 @@ import {
 
 const props = withDefaults(
   defineProps<{
-    data: TabStore;
+    tabStore: TabStore;
     barsPerLine?: number;
     notches?: number; // per bar
     subdivisions?: number; // per notch
@@ -42,14 +42,16 @@ const props = withDefaults(
   },
 );
 
-const barSize = computed(() => props.data.beatsPerBar * props.data.beatSize);
+const barSize = computed(
+  () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
+);
 const notchUnit = computed(() => barSize.value / props.notches);
 const subUnit = computed(() => notchUnit.value / props.subdivisions);
 
 const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
 const newBarStart = ref(0);
 
-const numStrings = computed(() => props.data.guitar?.strings);
+const numStrings = computed(() => props.tabStore.guitar?.strings);
 
 const cellHoverEvents = createCellHoverEvents();
 provide(CellHoverInjectionKey, cellHoverEvents);
@@ -60,7 +62,7 @@ provide(EditingInjectionKey, editingState);
 
 const tieAddState = createTieAddState(
   cellHoverEvents,
-  computed(() => props.data.guitar),
+  computed(() => props.tabStore.guitar),
   computed(() => subUnit.value),
 );
 
@@ -69,7 +71,7 @@ provide(TieAddInjectionKey, tieAddState);
 const bendEditState = createBendEditState(
   cellHoverEvents,
   tieAddState,
-  computed(() => props.data.guitar?.ties),
+  computed(() => props.tabStore.guitar?.ties),
 );
 
 provide(BendEditInjectionKey, bendEditState);
@@ -81,25 +83,40 @@ export type Bar = {
 
 // TODO: swap out the view that's determining the bars / use the longest view
 const bars = computed<Bar[]>(() => {
-  if (!props.data.guitar) return [];
+  if (!props.tabStore.guitar) return [];
   const bars: Bar[] = [];
   for (
     let i = 0;
-    i <= Math.max(newBarStart.value, props.data.guitar.getLastPosition());
+    i <= Math.max(newBarStart.value, props.tabStore.guitar.getLastPosition());
     i += barSize.value
   ) {
     bars.push({
       start: i,
-      stacks: props.data.guitar.getStacks(i, i + barSize.value, subUnit.value),
+      stacks: props.tabStore.guitar.getStacks(
+        i,
+        i + barSize.value,
+        subUnit.value,
+      ),
     });
   }
   return bars;
 });
 
 const tabLines = computed<Array<Bar[]>>(() => {
-  const tabLineBars = [];
-  for (let i = 0; i < bars.value.length; i += props.barsPerLine) {
-    tabLineBars.push(bars.value.slice(i, i + props.barsPerLine));
+  const tabLineBars: Array<Bar[]> = [];
+  let currTabLine: Bar[] = [];
+  bars.value.forEach((bar, i) => {
+    currTabLine.push(bar);
+    if (
+      currTabLine.length === props.barsPerLine ||
+      props.tabStore.lineBreaks.has((i + 1) * barSize.value)
+    ) {
+      tabLineBars.push(currTabLine);
+      currTabLine = [];
+    }
+  });
+  if (currTabLine.length) {
+    tabLineBars.push(currTabLine);
   }
   return tabLineBars;
 });
@@ -116,50 +133,69 @@ const gridTemplateColumns = computed<string>(() => {
 export type TablineColumn = {
   tabline: number;
   column: number;
+  tablineColumns: number; // total columns in tabline
 };
 
 const posToCol = (pos: number): TablineColumn => {
-  const cols = pos / subUnit.value;
-  const tabline = Math.floor(cols / (props.barsPerLine * columnsPerBar.value));
-  const colsInLine = cols - tabline * props.barsPerLine * columnsPerBar.value;
-  // TODO: document how this works
-  let column = colsInLine + Math.ceil(colsInLine / columnsPerBar.value) + 1;
+  let tabLineIndex = 0;
+  let tabLineLength = -1;
+  for (const tabLine of tabLines.value) {
+    const tabLength = tabLine.length * barSize.value;
+    tabLineLength = tabLength;
+    if (pos - tabLength < 0) break;
+    pos -= tabLength;
+    tabLineIndex++;
+  }
+  const colsIntoLine = pos / subUnit.value;
+  const tablineCols = tabLineLength / subUnit.value;
+  // const cols = pos / subUnit.value; // convert position to columns
+  // // const tabline = Math.floor(cols / (props.barsPerLine * columnsPerBar.value)); // figure out which tabline these columns reach
+  // const tabline = Math.floor(pos / (props.barsPerLine * barSize.value));
+  // const colsInLine = cols - tabline * props.barsPerLine * columnsPerBar.value;
+
+  // TODO: document how these lines work and figure out why we need to add 1
+  let column = colsIntoLine + Math.ceil(colsIntoLine / columnsPerBar.value) + 1;
   if (column % (columnsPerBar.value + 1) === 1) {
     column += 1;
   }
+  const tablineColumns = tablineCols + tablineCols / columnsPerBar.value + 1;
   return {
-    tabline,
+    tabline: tabLineIndex,
     column,
+    tablineColumns,
   };
 };
 
 const annotationAddState = createAnnotationAddState(
-  props.data.annotations,
+  props.tabStore.annotations,
   subUnit,
   cellHoverEvents,
 );
 
 const annotationRenders = createAnnotationRenderState(
-  props.data.annotations,
+  props.tabStore.annotations,
   subUnit,
   posToCol,
   annotationAddState.newAnnotation,
 );
 
 const annotationRows = computed(() =>
-  Math.max(props.data.annotations.getRows().length, 1),
+  Math.max(props.tabStore.annotations.getRows().length, 1),
 );
 
 const notesRow = computed(() => {
-  const hasBend = props.data.guitar?.ties.getBends().length;
+  const hasBend = props.tabStore.guitar?.ties.getBends().length;
   return annotationRows.value + (hasBend ? 2 : 1);
 });
 
 function newAnnotationRow() {
-  if (props.data.annotations.getRows().length === annotationRows.value - 1) {
-    props.data.annotations.createNextRow();
+  if (
+    props.tabStore.annotations.getRows().length ===
+    annotationRows.value - 1
+  ) {
+    props.tabStore.annotations.createNextRow();
   }
-  props.data.annotations.createNextRow();
+  props.tabStore.annotations.createNextRow();
 }
 
 function onMouseUp() {
@@ -177,26 +213,34 @@ function newBarClick() {
   newBarStart.value = lastBarStart + notchUnit.value * props.notches;
 }
 
-function insertBar(start: number) {
-  props.data.guitar!.shiftFrom(start, barSize.value);
-  if (start > props.data.guitar!.getLastPosition()) {
-    newBarStart.value += barSize.value;
-  }
-}
-
 function deleteBar(start: number) {
-  props.data.guitar!.deleteStacks(start, start + barSize.value);
-  props.data.guitar!.shiftFrom(start, -barSize.value);
+  props.tabStore.guitar!.deleteStacks(start, start + barSize.value);
+  props.tabStore.guitar!.shiftFrom(start, -barSize.value);
   overlayedBarStart.value = undefined;
-  if (start > props.data.guitar!.getLastPosition()) {
+  if (start > props.tabStore.guitar!.getLastPosition()) {
     newBarStart.value -= barSize.value;
   }
 }
 
+function insertBar(start: number) {
+  props.tabStore.guitar!.shiftFrom(start, barSize.value);
+  if (start > props.tabStore.guitar!.getLastPosition()) {
+    newBarStart.value += barSize.value;
+  }
+}
+
+function insertBreak(start: number) {
+  props.tabStore.lineBreaks.add(start);
+}
+
+function joinBreak(start: number) {
+  props.tabStore.lineBreaks.delete(start);
+}
+
 function onKeyUp(e: KeyboardEvent) {
   if (e.key === "Backspace") {
-    if (props.data.guitar && selectionState.selectedRange) {
-      props.data.guitar?.deleteStacks(
+    if (props.tabStore.guitar && selectionState.selectedRange) {
+      props.tabStore.guitar?.deleteStacks(
         selectionState.selectedRange.start,
         selectionState.selectedRange.end,
       );
@@ -227,6 +271,7 @@ const overlayedBarStart = ref<number | undefined>();
         >
           <div class="buttons">
             <div class="dummy">+</div>
+            <div class="dummy">+</div>
             <div class="insert" @click="insertBar(bar.start)">+</div>
             <div
               class="delete"
@@ -234,7 +279,20 @@ const overlayedBarStart = ref<number | undefined>();
               @mouseleave="overlayedBarStart = undefined"
               @click="deleteBar(bar.start)"
             >
-              &Cross;
+              &#x2326;
+            </div>
+            <template v-if="i === 0">
+              <div
+                v-if="tabStore.lineBreaks.has(bar.start)"
+                class="join"
+                @click="joinBreak(bar.start)"
+              >
+                &#x2B11;
+              </div>
+              <div v-else class="dummy">+</div>
+            </template>
+            <div v-else class="break" @click="insertBreak(bar.start)">
+              &#x21B5;
             </div>
           </div>
         </div>
@@ -266,7 +324,7 @@ const overlayedBarStart = ref<number | undefined>();
         v-bind="render"
         @update-title="(title) => (render.annotation!.title = title)"
         @delete="
-          data.annotations.deleteAnnotation(
+          tabStore.annotations.deleteAnnotation(
             annotationRows - render.row,
             render.annotation!,
           )
@@ -274,9 +332,9 @@ const overlayedBarStart = ref<number | undefined>();
       />
 
       <GuitarTabLine
-        v-if="data.guitar"
+        v-if="tabStore.guitar"
         :tab-line-index
-        :guitar-store="data.guitar"
+        :guitar-store="tabStore.guitar"
         :bars="tabLine"
         :start-row="annotationRows + 1"
         :bars-per-line
@@ -376,8 +434,7 @@ const overlayedBarStart = ref<number | undefined>();
     }
 
     & > .delete {
-      color: rgb(248, 85, 85);
-      font-size: calc(var(--note-font-size));
+      font-size: calc(var(--divider-width) * 1.75);
     }
 
     & > .dummy {

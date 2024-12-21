@@ -1,12 +1,10 @@
 import type { Bend, TieStore } from "~/model/stores";
-import type { OverlayPosition } from "../../overlay-objects";
 import type { TablineColumn } from "../../Tab.vue";
 import type { BendRenderProps } from "../bends/BendRender.vue";
 
 export function createBendRenderState(
   store: TieStore,
   startRow: ComputedRef<number>,
-  tablineColumns: ComputedRef<number>,
   posToCol: (pos: number) => TablineColumn,
   newBend: ComputedRef<Bend | undefined>,
 ) {
@@ -36,10 +34,10 @@ export function createBendRenderState(
       if (start.tabline !== end.tabline) {
         if (!through) {
           const fullUpswingColumns =
-            tablineColumns.value - start.column + end.column;
+            start.tablineColumns - start.column + end.column;
           pushRenderProps(start.tabline, {
             startColumn: start.column,
-            endColumn: tablineColumns.value,
+            endColumn: start.tablineColumns,
             half: "left",
             fullUpswingColumns,
             row,
@@ -57,10 +55,10 @@ export function createBendRenderState(
         }
         if (through.tabline === end.tabline) {
           const fullUpswingColumns =
-            tablineColumns.value - start.column + through.column;
+            start.tablineColumns - start.column + through.column;
           pushRenderProps(start.tabline, {
             startColumn: start.column,
-            endColumn: tablineColumns.value,
+            endColumn: start.tablineColumns,
             half: "left",
             fullUpswingColumns,
             row,
@@ -78,11 +76,11 @@ export function createBendRenderState(
           return;
         }
         const fullRestColumns =
-          tablineColumns.value - through.column + end.column;
+          start.tablineColumns - through.column + end.column;
         pushRenderProps(start.tabline, {
           startColumn: start.column,
           throughColumn: through.column,
-          endColumn: tablineColumns.value,
+          endColumn: start.tablineColumns,
           half: "left",
           fullRestColumns,
           row,

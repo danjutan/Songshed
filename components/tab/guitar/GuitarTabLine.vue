@@ -30,7 +30,6 @@ const bendRenders = computed(() => {
   return createBendRenderState(
     props.guitarStore.ties,
     computed(() => props.startRow + 1),
-    computed(() => props.barsPerLine * (props.columnsPerBar + 1)),
     props.posToCol,
     computed(() => tieAddState.newBend),
   ).value;
