@@ -1,7 +1,5 @@
 <script lang="ts" setup>
-import { BaseTransitionPropsValidators } from 'vue';
-import { Spacing, type NoteData, type NoteSpot, type FilledSpot } from './data';
-import NoteInput from "./NoteInput.vue";
+import { Spacing, type NoteSpot, type FilledSpot } from './data';
 import type { PropType } from 'vue';
 
 
@@ -143,10 +141,13 @@ console.log(stackMap.value, divisions.value);
 
 <template>
   <div class="bar">
-    <div v-for="i in strings" :style="`grid-row: ${i} / span 1`" class="string" />
-    <TabsDivision v-for="data in divisions" :data :tuning :frets
-      @note-change="updateNote"
-      :style="`grid-column: ${data.notchPosition + 1} / span 1`" />
+    <div v-for="i in strings" :key="i" :style="`grid-row: ${i} / span 1`" class="string" />
+    <TabsDivision
+      v-for="data in divisions"
+      :key="data.notchPosition"
+      :data :tuning :frets
+      :style="`grid-column: ${data.notchPosition + 1} / span 1`"
+      @note-change="updateNote" />
   </div>
 </template>
 

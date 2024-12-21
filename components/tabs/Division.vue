@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type {  NoteSpot } from './data';
+import type { NoteSpot } from './data';
 import type { DivisionData } from './TabBar.vue';
 
 const props = withDefaults(defineProps<{
@@ -22,10 +22,12 @@ const emit = defineEmits<{
 <template>
   <div class="division">
     <div class="stack">
-      <TabsNoteInput v-for="(noteSpot, i) in props.data.stack" 
-        :data="noteSpot.data" :tuning="props.tuning[i]"
-        :frets="props.frets" 
-        @dataChange="emit('noteChange', {...noteSpot, data: $event})" />
+      <TabsNoteInput
+        v-for="(noteSpot) in props.data.stack" 
+        :key="noteSpot.string"
+        :data="noteSpot.data" 
+        :tuning="props.tuning[noteSpot.string]" :frets="props.frets"
+        @data-change="emit('noteChange', { ...noteSpot, data: $event })" />
     </div>
   </div>
 </template>

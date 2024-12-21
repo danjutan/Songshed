@@ -54,8 +54,9 @@ function onInputBlur() {
 <template>
   <div @mouseover="emit('startEdit')" @mouseleave="emit('endEdit')">
     <span class="input-bg">{{ relativeNote }}</span>
-    <input size="2" :value="relativeNote" @input="onInput" @click="onInputClick"
-      @blur="onInputBlur" type="text" inputmode="numeric" pattern="[0-9]{1,2}" />
+    <input 
+      :size="2" :value="relativeNote" type="text" inputmode="numeric"
+      pattern="[0-9]{1,2}" @input="onInput" @click="onInputClick" @blur="onInputBlur">
   </div>
 </template>
 
