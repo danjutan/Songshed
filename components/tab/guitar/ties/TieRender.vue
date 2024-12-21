@@ -49,6 +49,15 @@ function onSelectInput(e: Event) {
     <div v-if="endColumn - startColumn >= (half ? 1 : 2)" class="block-notes" />
 
     <div v-if="props.type === 'slide'" class="slide-box" />
+    <!-- <svg
+      v-if="props.type === 'slide'"
+      class="slide-svg"
+      viewBox="0 0 50 50"
+      preserveAspectRatio="none"
+    >
+      <line x1="0" y1="50" x2="50" y2="0" />
+    </svg> -->
+
     <div v-else class="tie-box">
       <div class="arc-rect" />
     </div>
@@ -129,9 +138,22 @@ function onSelectInput(e: Event) {
   justify-self: start;
 }
 
+/* .slide-svg {
+  grid-area: 1 / 1;
+  width: calc(100% - 100% / var(--column-span) - var(--cell-height));
+  height: calc(var(--cell-height) / 2);
+  margin-top: calc(var(--cell-height) / 4);
+
+  & line {
+    stroke: black;
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+} */
+
 .slide-box {
   grid-area: 1 / 1;
-  width: calc(100% - 100% / var(--column-span) - var(--cell-height) / 2);
+  width: calc(100% - 100% / var(--column-span) - var(--cell-height));
   height: calc(var(--cell-height) / 2);
   margin-top: calc(var(--cell-height) / 4);
   background-color: black;

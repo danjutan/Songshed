@@ -235,7 +235,7 @@ function onInputClick(e: Event) {
         >
           &Cross;
         </text>
-        /> -->
+        />
         <rect
           :x="gridStartX + (strings - string - 1.5) * cellWidth"
           :y="gridStartY - cellHeight"

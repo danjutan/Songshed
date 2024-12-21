@@ -147,6 +147,7 @@ function onSideMouseDown(e: MouseEvent) {
 
 <style scoped>
 .note-input {
+  /* Font size set by parent, Stack */
   display: grid;
   justify-items: center;
   align-items: center; /*comment this if you want other centering*/
@@ -158,7 +159,6 @@ function onSideMouseDown(e: MouseEvent) {
   cursor: crosshair;
   grid-row: 1;
   /* width: calc(var(--note-font-size) / 2); */
-  font-size: calc(var(--note-font-size));
   height: 100%;
   display: flex;
   align-items: end;
@@ -192,7 +192,7 @@ input {
 .input-bg,
 input {
   grid-area: 1 / 2;
-  font-size: var(--note-font-size);
+  /* font-size: var(--note-font-size); */
   text-align: center; /*comment this if you want other centering*/
 }
 

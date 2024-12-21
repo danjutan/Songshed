@@ -260,7 +260,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .tab {
-  --cell-height: 32px;
+  --cell-height: 24px;
   --note-font-size: calc(var(--cell-height) * 0.8);
   --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);

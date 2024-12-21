@@ -138,14 +138,24 @@ const inputRefs = ref<InputRef[]>([]);
 }
 
 .square {
-  width: 95%;
+  width: 80%;
   max-width: calc(var(--cell-height) / 2);
   aspect-ratio: 1;
   background-color: blue;
   display: none;
 }
 
+.input {
+  font-size: var(--note-font-size);
+}
+
 @container (aspect-ratio < 0.8) {
+  .input {
+    font-size: 100cqi;
+  }
+}
+
+@container (aspect-ratio < 0.45) {
   .square {
     display: block;
   }
@@ -154,11 +164,11 @@ const inputRefs = ref<InputRef[]>([]);
   }
 }
 
-@container (aspect-ratio < 0.2) {
+/* @container (aspect-ratio < 0.2) {
   .square {
     width: 100%;
   }
-}
+} */
 
 @container (aspect-ratio < 0.1) {
   .square {
