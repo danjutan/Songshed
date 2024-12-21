@@ -157,6 +157,7 @@ function onSpotMouseDown(
 
 .container:not(.collapse) {
   width: var(--cell-height);
+  justify-self: center;
 }
 
 .square {
