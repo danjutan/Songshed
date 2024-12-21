@@ -90,6 +90,7 @@ onMounted(() => {
 <style scoped>
 .note-input {
   display: grid;
+  width: var(--note-font-size);
 }
 
 .collapse {

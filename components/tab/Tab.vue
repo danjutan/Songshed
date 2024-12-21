@@ -2,6 +2,7 @@
 import Stack from "./bar/Stack.vue";
 import { type GuitarNote, type NoteSpot, type TabStore } from "./data";
 import { ExpansionStateKey, createExpansionState } from "./providers/expansion-state";
+import Strings from "./bar/Strings.vue";
 import Overlay from "./bar/Overlay.vue";
 import Unexpander from "./bar/Unexpander.vue";
 
@@ -115,7 +116,14 @@ function toggleSubdivisions(notchCol: ColumnData) {
     <div v-for="(barGroup, t) in tabLines"
          class="tab-line">
       <div class="divider" />
-      <template v-for="columns in barGroup">
+      <template v-for="columns in barGroup"
+                :key="columns[0].position">
+        <Strings
+          :start-column="columnPos(columns[0])"
+          :columns="columns.length"
+          :num-strings="numStrings"
+          :start-row="1"
+        />
         <template v-for="(column, i) in columns"
                   :key="column.position">
           <Stack
@@ -137,10 +145,12 @@ function toggleSubdivisions(notchCol: ColumnData) {
               :rows="numStrings">
               <div
                 class="overlay"
+                :class="{ expanded: expanded.has(column.position + subUnit) }"
                 @click="toggleSubdivisions(column)"
               />
             </Overlay>
             <Unexpander v-if="expanded.has(column.position + subUnit)"
+                        class="unexpander"
                         :start-column="1 + columnPos(column)"
                         :columns="props.subdivisions - 1"
                         :row="2"
@@ -156,7 +166,7 @@ function toggleSubdivisions(notchCol: ColumnData) {
 
 <style scoped>
   .tab {
-  --cell-height: 23px;
+  --cell-height: 24px;
   --note-font-size: calc(var(--cell-height) * 0.8);
   --substack-bg: rgba(255, 0, 0, 0.1);
   --string-width: 1px;
@@ -174,17 +184,24 @@ function toggleSubdivisions(notchCol: ColumnData) {
   .divider {
   width: calc(var(--cell-height) / 4);
   height: 100%;
-  background: black;
+  background: midnightblue;
   }
 
   .overlay {
     z-index: 1;
-    height: 100%;
+    height: calc(100% - var(--cell-height) / 8);
     border-bottom: calc(var(--cell-height) / 8) solid var(--substack-bg);
     &:hover {
       border-bottom: none;
-      height: calc(100% + 2px);
+      height: 100%;
       background: var(--substack-bg);
     }
+    /* &.expanded { */
+    /*   border-bottom: none; */
+    /* } */
+  }
+
+  .unexpander {
+    margin-top: calc(-1 * var(--cell-height) / 8);
   }
 </style>

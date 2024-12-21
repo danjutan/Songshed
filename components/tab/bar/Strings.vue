@@ -1,9 +1,15 @@
 <script lang="ts" setup>
+defineProps<{
+  startRow: number
+  numStrings: number
+  startColumn: number
+  columns: number
+}>();
 </script>
 
 <template>
   <div class="strings">
-    <div v-for="i in 10"
+    <div v-for="i in numStrings"
          :key="i"
          class="string-box">
       <div class="string" />
@@ -13,10 +19,8 @@
 
 <style scoped>
 .strings {
-  grid-row: 2 / -2;
-  grid-column: 1 / -1;
-  width: 100%;
-  overflow-y: hidden;
+  grid-row: v-bind(startRow) / span v-bind(numStrings);
+  grid-column: v-bind(startColumn) / span v-bind(columns);
 }
 
 .string-box {

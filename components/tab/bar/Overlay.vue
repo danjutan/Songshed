@@ -31,7 +31,7 @@ const props = defineProps<{
     height: calc(v-bind(rows) * var(--cell-height));
   }
 
-  @container (aspect-ratio < 0.1) or (aspect-ratio > 1) {
+  @container (aspect-ratio < 0.1) or (aspect-ratio >= 1) {
     .content {
       display: none;
     }
