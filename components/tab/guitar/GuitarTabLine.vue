@@ -6,8 +6,20 @@ import TiesBar from "./ties/TiesBar.vue";
 import BendRender from "./bends/BendRender.vue";
 import BendDragBar from "./bends/BendDragBar.vue";
 import { createBendRenderState } from "./state/bend-render-state";
-import { TieAddInjectionKey, type TieAddState } from "./state/tie-add-state";
+import {
+  createTieAddState,
+  TieAddInjectionKey,
+  type TieAddState,
+} from "./state/tie-add-state";
 import { SettingsInjectionKey, type Settings } from "../state/settings-state";
+import {
+  CellHoverInjectionKey,
+  type CellHoverEvents,
+} from "../state/cell-hover-events";
+import {
+  BendEditInjectionKey,
+  createBendEditState,
+} from "./state/bend-edit-state";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -20,7 +32,21 @@ const props = defineProps<{
   subUnit: number;
 }>();
 
-const tieAddState = inject(TieAddInjectionKey) as TieAddState;
+const cellHoverEvents = inject(CellHoverInjectionKey) as CellHoverEvents;
+
+const tieAddState = createTieAddState(
+  cellHoverEvents,
+  computed(() => props.guitarStore),
+  computed(() => props.subUnit),
+);
+provide(TieAddInjectionKey, tieAddState);
+
+const bendEditState = createBendEditState(
+  cellHoverEvents,
+  tieAddState,
+  computed(() => props.guitarStore.ties),
+);
+provide(BendEditInjectionKey, bendEditState);
 
 const bendRenders = computed(() => {
   return createBendRenderState(
@@ -42,6 +68,7 @@ const notesRow = computed(() =>
 
 <template>
   <template v-for="(bar, i) in bars" :key="bar.start">
+    <slot :notes-row :num-strings="guitarStore.strings" :bar :bar-index="i" />
     <BendDragBar
       v-if="bendRow"
       :bend-row

@@ -41,30 +41,12 @@ const subUnit = computed(() => props.tabStore.beatSize / settings.subdivisions);
 const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
 const newBarStart = ref(0);
 
-const numStrings = computed(() => props.tabStore.guitar?.strings);
-
 const cellHoverEvents = createCellHoverEvents();
 provide(CellHoverInjectionKey, cellHoverEvents);
 const selectionState = createSelectionState(cellHoverEvents);
 provide(SelectionInjectionKey, selectionState);
 const editingState = createEditingState();
 provide(EditingInjectionKey, editingState);
-
-const tieAddState = createTieAddState(
-  cellHoverEvents,
-  computed(() => props.tabStore.guitar),
-  computed(() => subUnit.value),
-);
-
-provide(TieAddInjectionKey, tieAddState);
-
-const bendEditState = createBendEditState(
-  cellHoverEvents,
-  tieAddState,
-  computed(() => props.tabStore.guitar?.ties),
-);
-
-provide(BendEditInjectionKey, bendEditState);
 
 export type Bar = {
   start: number;
@@ -174,12 +156,6 @@ const annotationRows = computed(() =>
   Math.max(props.tabStore.annotations.getRows().length, 1),
 );
 
-const notesRow = computed(() => {
-  const hasBend =
-    tieAddState.newBend || props.tabStore.guitar?.ties.getBends().length;
-  return annotationRows.value + (hasBend ? 2 : 1);
-});
-
 function newAnnotationRow() {
   if (
     props.tabStore.annotations.getRows().length ===
@@ -255,49 +231,6 @@ const overlayedBarStart = ref<number | undefined>();
   <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
     <div v-for="(tabLine, tabLineIndex) in tabLines" class="tab-line">
       <template v-for="(bar, i) in tabLine" :key="bar.start">
-        <div
-          class="divider hoverable"
-          :style="{
-            gridColumn: i * (columnsPerBar + 1) + 1,
-          }"
-        >
-          <div class="buttons">
-            <div class="dummy">+</div>
-            <div class="dummy">+</div>
-            <div class="insert" @click="insertBar(bar.start)">+</div>
-            <div
-              class="delete"
-              @mouseover="overlayedBarStart = bar.start"
-              @mouseleave="overlayedBarStart = undefined"
-              @click="deleteBar(bar.start)"
-            >
-              &#x2326;
-            </div>
-            <template v-if="i === 0">
-              <div
-                v-if="tabStore.lineBreaks.has(bar.start)"
-                class="join"
-                @click="joinBreak(bar.start)"
-              >
-                &#x2B11;
-              </div>
-              <div v-else class="dummy">+</div>
-            </template>
-            <div v-else class="break" @click="insertBreak(bar.start)">
-              &#x21B5;
-            </div>
-          </div>
-        </div>
-
-        <div
-          v-if="overlayedBarStart === bar.start"
-          class="bar-overlay"
-          :style="{
-            gridColumnStart: i * (columnsPerBar + 1) + 2,
-            gridColumnEnd: (i + 1) * (columnsPerBar + 1) + 2,
-          }"
-        />
-
         <AnnotationDragBar
           :start-column="i * (columnsPerBar + 1) + 1"
           :bar-positions="[...bar.stacks.keys()]"
@@ -325,6 +258,7 @@ const overlayedBarStart = ref<number | undefined>();
 
       <GuitarTabLine
         v-if="tabStore.guitar"
+        v-slot="{ bar, barIndex, notesRow, numStrings }"
         :tab-line-index
         :guitar-store="tabStore.guitar"
         :bars="tabLine"
@@ -333,16 +267,67 @@ const overlayedBarStart = ref<number | undefined>();
         :beat-size="tabStore.beatSize"
         :sub-unit
         :columns-per-bar
-      />
-
-      <div
-        v-if="tabLineIndex === tabLines.length - 1"
-        class="divider"
-        :style="{ gridColumn: tabLine.length * (columnsPerBar + 1) + 1 }"
-        @click="newBarClick()"
       >
-        <div class="new-button">+</div>
-      </div>
+        <div
+          class="divider hoverable"
+          :style="{
+            gridColumn: barIndex * (columnsPerBar + 1) + 1,
+            gridRow: `${notesRow} / span ${numStrings}`,
+          }"
+        >
+          <div class="buttons">
+            <div class="dummy">+</div>
+            <div class="dummy">+</div>
+            <div class="insert" @click="insertBar(bar.start)">+</div>
+            <div
+              class="delete"
+              @mouseover="overlayedBarStart = bar.start"
+              @mouseleave="overlayedBarStart = undefined"
+              @click="deleteBar(bar.start)"
+            >
+              &#x2326;
+            </div>
+            <template v-if="barIndex === 0">
+              <div
+                v-if="tabStore.lineBreaks.has(bar.start)"
+                class="join"
+                @click="joinBreak(bar.start)"
+              >
+                &#x2B11;
+              </div>
+              <div v-else class="dummy">+</div>
+            </template>
+            <div v-else class="break" @click="insertBreak(bar.start)">
+              &#x21B5;
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="overlayedBarStart === bar.start"
+          class="bar-overlay"
+          :style="{
+            gridColumnStart: barIndex * (columnsPerBar + 1) + 2,
+            gridColumnEnd: (barIndex + 1) * (columnsPerBar + 1) + 2,
+            gridRow: `${notesRow} / span ${numStrings}`,
+          }"
+        />
+
+        <div
+          v-if="
+            tabLineIndex === tabLines.length - 1 &&
+            barIndex === tabLine.length - 1
+          "
+          class="divider"
+          :style="{
+            gridColumn: tabLine.length * (columnsPerBar + 1) + 1,
+            gridRow: `${notesRow} / span ${numStrings}`,
+          }"
+          @click="newBarClick()"
+        >
+          <div class="new-button">+</div>
+        </div>
+      </GuitarTabLine>
     </div>
   </div>
 </template>
@@ -371,9 +356,9 @@ const overlayedBarStart = ref<number | undefined>();
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
   grid-auto-rows: var(--cell-height);
-  grid-template-rows:
+  /* grid-template-rows:
     repeat(calc(v-bind(notesRow) - 1 + v-bind(numStrings)), var(--cell-height))
-    calc(var(--cell-height) * 0.8);
+    calc(var(--cell-height) * 0.8); */
 }
 
 .new-row-box {
@@ -398,7 +383,6 @@ const overlayedBarStart = ref<number | undefined>();
 }
 
 .divider {
-  grid-row: v-bind(notesRow) / span v-bind(numStrings);
   width: var(--divider-width);
   padding: 0px 1px;
   height: 100%;
@@ -467,8 +451,6 @@ const overlayedBarStart = ref<number | undefined>();
 
 .bar-overlay {
   z-index: 1;
-  /* grid-row: v-bind(notesRow) / span v-bind(numStrings); */
-  grid-row: 1 / -1;
   background-color: var(--delete-overlay-bg);
 }
 </style>
