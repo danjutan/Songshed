@@ -1,126 +1,152 @@
 <script lang="ts" setup>
-import { type Division, type NoteData, type NoteStack, timeUnits } from './data';
+import { BaseTransitionPropsValidators } from 'vue';
+import { Spacing, type NoteData, type NoteSpot, type FilledSpot } from './data';
 import NoteInput from "./NoteInput.vue";
 import type { PropType } from 'vue';
 
+
+type StackData = NoteSpot[];
+
+// don't make this type recursive; the divisions should control their own notches/units
+export type DivisionData = {
+  notchPosition: number,
+  stack: StackData,
+  substacks?: Array<{ notchPosition: number, stack: NoteSpot[] }> // relative to root's notches
+} 
+
 const props = defineProps(
- {
-  tuning: {
-    type: Array as PropType<Midi[]>,
-    default: () => defaultTuning,
-    validator: (tuning: Midi[], props) => {
-      const divisions = props.modelValue as Division[];
-      const stringsLength = divisions.every(d => d.stacks.every(stack => stack.length <= tuning.length));
-      return stringsLength;
-    }
-  }, 
-  frets: {
-    type: Number,
-    default: 12,
-  },
-  notches: {
-    type: Number,
-    default: 16 
-  }
-
-});
-
-const divisions = defineModel<Division[]>({
-  required: true,
-  validator: (divisions: Division[]) => {
-    const sorted = divisions.sort((a, b) => a.start - b.start);
-    const validStart = sorted[0].start >= 0;
-    const hasStacks = divisions.every(d => d.stacks.length > 0);
-    const positiveDuration = divisions.every(d => d.duration > 0);
-    const noOverlap = sorted.every((d, i) => {
-      if (i === 0) return true;
-      const prev = sorted[i - 1];
-      return d.start >= prev.start + prev.duration
-    });
-    return validStart && hasStacks && positiveDuration && noOverlap;
-  }
-});
-
-// sort the divisions by start
-const sortedDivisions = computed(() => divisions.value.sort((a, b) => a.start - b.start));
-
-type DivisionRender = {
-  colStart: number,
-  span: number,
-  stacks: NoteStack[],
-}
-
-const divisionRenders = computed(() => {
-  const renderData = divisions.value.map((division, i) => {
-    // 4 notches means each notch is 1 quarter note, 8 notches means each not is 1/2 a quarter note..
-    const unit = 4 / props.notches; // e.g., 4 / 16 = 1/4
-    // TODO: probably change to ceil/floor rather than floor/ceil so we never overlap
-    const colStart = Math.floor(division.start / unit); // e.g. .125 / 0.25 = 0.5 -> 0
-    const span = Math.ceil(division.duration / unit); // e.g. 3.0625 / 0.25 = 12.25 -> 13
-    const remainder = Math.min(division.start % unit, division.duration % unit)
-    const subunit = division.duration / division.stacks.length;
-    // const subunit = timeUnits.find(unit => remainder % unit == 0);
-    if (!subunit) throw new Error("note spacing is off");
-    const startPadding = ((division.start % unit) / subunit); 
-
-    const substacks: NoteStack[] = new Array(startPadding).fill([]);
-    for (let i = 0; i < division.stacks.length; i++) {
-      debugger;
-      const stack = division.stacks[i];
-      substacks.push(stack);
-      substacks.push(...new Array(subunit / unit - 1).fill([]));
-    }
-
-    return {
-      colStart,
-      span,
-      stacks: substacks,
-    }
-    // do we need end padding?
-    // generate the stacks. just put a given note in one stack (assume a note lasts for subunit)
+  {
+    tuning: {
+      type: Array as PropType<Midi[]>,
+      default: () => defaultTuning,
+      validator: (tuning: Midi[], props) => {
+        const notes = props.modelValue as FilledSpot[];
+        return notes.every(note => note.string >= 0 && note.string < tuning.length);
+      }
+    },
+    frets: {
+      type: Number,
+      default: 12,
+    },
+    beats: {
+      type: Number,
+      default: 4
+    },
+    notches: {
+      type: Number,
+      default: 16,
+      validator: (notches: number, props) => {
+        const beats = props.beats as number;
+        return beats / notches in Spacing;
+      }
+    },
   });
-  // TODO: combine contiguous divisions that have the same number of (stacks / span)
 
-  return renderData;
+const unit = computed<Spacing>(() => props.beats / props.notches);
+
+const notes = defineModel<FilledSpot[]>({
+  required: true,
+  validator: (notes: FilledSpot[]) => {
+    const noConflict = notes.length === (new Set(notes.map(note => `${note.string},${note.position}`))).size
+    // TODO
+    return noConflict;
+  }
 });
+
+const stackMap = computed(() => {
+  const stackMap = new Map<number, StackData>();
+  for (const note of notes.value) {
+    const position = note.position;
+    if (!stackMap.has(position)) {
+      stackMap.set(position, props.tuning.map((_, string) => ({ string, position })));
+    }
+    stackMap.get(note.position)![note.string] = Object.assign({}, note);
+  }
+  return stackMap;
+})
+
+type StackMap = typeof stackMap.value;
+
+const divisions = computed<DivisionData[]>(() => {
+  const sorted = [...stackMap.value].sort(([pos1], [pos2]) => pos2 - pos1);
+  console.log("sorted", sorted);
+  const normalized: Array<[number, NoteSpot[]]> = sorted.map( 
+    ([pos, stack]) => ([pos / unit.value, stack]
+  ));
+  console.log(normalized);
+
+  return normalized.reduce<DivisionData[]>(
+    (acc, [notchPosition, stack]) => {
+      if (Number.isInteger(notchPosition)) {
+        acc.push({
+          notchPosition,
+          stack
+        })
+        return acc;
+      }
+      const prev = acc.at(-1);
+      const hasParent = prev?.notchPosition === Math.floor(notchPosition);
+      if (hasParent) {
+        const substacks = prev.substacks ?? [];
+        substacks.push({ notchPosition, stack})
+        prev.substacks = substacks;
+        return acc;
+      }
+      acc.push({
+        notchPosition: Math.floor(notchPosition),
+        stack: [],
+        substacks: [{ notchPosition, stack}]
+      })
+      return acc;
+    }, 
+  [])
+
+})
 
 const strings = computed(() => props.tuning.length);
 
-function modifyDivisions( transform: (division: Division[]) => Division[]) {
-  const clone = structuredClone(toRaw(divisions.value));
-  const transformed = transform(clone);
-  divisions.value = transformed;
+function modifyNotes(transform: (map: StackMap) => StackMap) {
+  const transformed = transform(stackMap.value);
+  const stacks = transformed.values(); 
+  const newNotes: FilledSpot[] = [];
+  for (const note of Array.from(stacks).flat()) {
+    if (note.data) {
+      newNotes.push(note as FilledSpot);
+    }
+  }
+  notes.value = newNotes;
 }
 
-// function updateNoteData(col: number, string: number, noteData: NoteData) {
-//   modifyDivisions((divisions) => {
-//     divisions[col].notes[string] = noteData;
-//     return divisions;
-//   });
+// function deleteNote(note: NoteSpot) {
+//   modifyNotes(stackMap => {
+//     const stack = stackMap.get(note.position);
+//     if (stack) {
+//       stack[note.string].data = undefined;
+//     }
+//     return stackMap;
+//   })
 // }
 
-// function split(index: number) {
-//   modifyDivisions((divisions) => {
-//     const curr = divisions[index];
-//     const halfTime = curr.duration / 2;
-//     divisions.splice(index, 1, {duration: halfTime, notes: curr.notes}, createEmptyDivision(halfTime, strings.value));
-//     return divisions;
-//   });
-// }
+function updateNote(note: NoteSpot) {
+  modifyNotes(stackMap => {
+    if (stackMap.has(note.position)) {
+      stackMap.get(note.position)![note.string] = note;
+    } else {
+      stackMap.set(note.position, [note]);
+    }
+    return stackMap;
+  })
+}
 
-// const lengths = computed(() => divisions.value.map(d => d.duration));
-// const smallest = computed(() => Math.min(...lengths.value));
-
-const dragging = ref(0);
-
+console.log(stackMap.value, divisions.value);
 </script>
 
 <template>
   <div class="bar">
-    <div v-for="i in strings" :style="`grid-row: ${i} / span 1`" class="string"/>
-    <TabsDivision v-for="{colStart, span, stacks} in divisionRenders"
-      :stacks :tuning :frets
-      :style="`grid-column: ${colStart} / span ${span}`" />
+    <div v-for="i in strings" :style="`grid-row: ${i} / span 1`" class="string" />
+    <TabsDivision v-for="data in divisions" :data :tuning :frets
+      @note-change="updateNote"
+      :style="`grid-column: ${data.notchPosition + 1} / span 1`" />
   </div>
 </template>
 
@@ -133,12 +159,10 @@ const dragging = ref(0);
 }
 
 .bar {
-  --min-division-width: 32px;
+  --min-division-width: 64px;
   display: grid;
   grid-template-columns: repeat(v-bind(notches), 1fr);
   /* align-items: center; */
   /* grid-auto-flow: column; */
 }
-
-
 </style>

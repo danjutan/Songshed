@@ -1,29 +1,31 @@
 <script lang="ts" setup>
-import { mergeProps } from 'vue';
-import type { NoteData, NoteStack } from './data';
+import type {  NoteSpot } from './data';
+import type { DivisionData } from './TabBar.vue';
 
 const props = withDefaults(defineProps<{
-  stacks: NoteStack[],
+  data: DivisionData,
   frets: number,
   tuning: Midi[],
 }>(), {
 });
 
-console.log(props.stacks);
-
-const numString = computed(() => props.tuning.length);
+const numStrings = computed(() => props.tuning.length);
+const column = computed((() => props.data.notchPosition + 1));
 
 const emit = defineEmits<{
-  noteChange: [stackIndex: number, stringIndex: number, note: NoteData],
+  noteChange: [note: NoteSpot],
 }>()
+
 
 </script>
 
 <template>
   <div class="division">
-    <div v-for="(stack, stackIndex) in props.stacks" class="stack">
-      <TabsNoteInput v-for="(tuning, i) in props.tuning" :data="stack[i]" :tuning
-        :frets="props.frets" @dataChange="emit('noteChange', stackIndex, i, $event)" />
+    <div class="stack">
+      <TabsNoteInput v-for="(noteSpot, i) in props.data.stack" 
+        :data="noteSpot.data" :tuning="props.tuning[i]"
+        :frets="props.frets" 
+        @dataChange="emit('noteChange', {...noteSpot, data: $event})" />
     </div>
   </div>
 </template>
@@ -32,13 +34,13 @@ const emit = defineEmits<{
 .division {
   border: 1px dashed black;
   display: flex;
-  grid-row: 1 / span v-bind(numString);
+  grid-row: 1 / span v-bind(numStrings);
+  grid-column: v-bind(column) / 1;
   overflow: hidden;
 }
 
 .stack {
   border-right: 1px solid red;
-  flex-grow: 1;
   display: flex;
   flex-direction: column;
 }

@@ -2,7 +2,7 @@
 import type { NoteData } from './data';
 
 const props = defineProps<{
-  data?: NoteData,
+  data: NoteData | undefined,
   tuning: Midi, 
   frets: number 
 }>()
@@ -16,7 +16,7 @@ const emit = defineEmits<{
 const relativeNote = computed(() =>
   {
     if (props.data) {
-      return props.data.note - props.tuning as Midi;
+      return props.data.midi - props.tuning as Midi;
     }
     return "";
   },
@@ -34,7 +34,7 @@ function onInput(e: Event) {
     if (num < 1 || num > props.frets) {
       return target.value = `${relativeNote.value}`;
     }
-    emit('dataChange', {...props.data, note: props.tuning + num as Midi})
+    emit('dataChange', {...props.data, midi: props.tuning + num as Midi})
     return;
   }
   target.value = `${relativeNote.value}`;

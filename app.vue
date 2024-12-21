@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { createDivision, type Division } from './components/tabs/data';
+import { Spacing, type FilledSpot, type NoteData, type NoteSpot } from './components/tabs/data';
 
-
-const divnum = ref([createDivision(1, 1,[], [], [{note: 66}, { note: 60 }, {note: 60}], [], [], [,,,{ note: 55}], [], []), createDivision(3,1, [,,{note: 56}])]);
-
+const note1 = { string: 0, position: 0, data: {midi: toMidi("E4")} }
+const note2 = { string: 1, position: Spacing.Quarter, data: {midi: toMidi("B3")} }
+const notes = ref<FilledSpot[]>([note1, note2]);
 // const showDivisions = ref(false);
 </script>
 <template>
   <!-- <input type="checkbox" v-model="showDivisions"/> -->
-  <input type="number" min="2" max="4"/>
-  <TabsTabBar v-model="divnum"></TabsTabBar>
+  <TabsTabBar v-model="notes"></TabsTabBar>
   <!-- <TabsTabBar v-model="another"></TabsTabBar> -->
   <Fretboard width="50%"/>
 </template>
@@ -17,4 +16,4 @@ const divnum = ref([createDivision(1, 1,[], [], [{note: 66}, { note: 60 }, {note
 /* div {
   width: 50%;
 } */
-</style>./components/tabs/data
+</style>
