@@ -51,6 +51,7 @@ const stackExpanderStarts = computed<number[]>(
     <Drape
       v-for="{ start, columns } in spacers"
       :key="start"
+      class="spacer"
       collapsed="show"
       default="hide"
       up="reverse"
@@ -112,6 +113,10 @@ const stackExpanderStarts = computed<number[]>(
   grid-template-rows: var(--cell-height);
 }
 
+.spacer {
+  min-width: calc(var(--cell-height) * 2);
+}
+
 .notch {
   grid-row: 1 / span 1;
   container-name: notch;
@@ -128,14 +133,6 @@ const stackExpanderStarts = computed<number[]>(
   border-bottom: 2px solid rgba(0, 0, 0, 0.3);
   margin-top: -2px;
 }
-
-/* .spacer-indicator:first-child {
-  margin-left: -1cqw;
-}
-
-.spacer-indicator:last-child {
-  margin-right: -1cqw;
-} */
 
 .selectable {
   width: 100%;

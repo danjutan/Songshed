@@ -91,7 +91,6 @@ onMounted(() => {
 .note-input {
   display: grid;
   width: var(--cell-height);
-  min-width: calc(var(--cell-height) / 4);
 }
 
 .collapse {
