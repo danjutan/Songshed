@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { Spacing, type NoteSpot, type FilledSpot, SpacingsDescending } from './data';
+import type { NoteData, NoteSpot, FilledSpot } from './data';
+import { SpacingsDescending, Spacing } from './data';
 import type { PropType } from 'vue';
 
 
@@ -50,6 +51,7 @@ const props = defineProps(
   });
 
 const unit = computed<Spacing>(() => props.beats / props.notches);
+const strings = computed(() => props.tuning.length);
 
 const notes = defineModel<FilledSpot[]>({
   required: true,
@@ -127,29 +129,9 @@ const emptyDivisions = computed<SpacerData[]>(() => {
       spacers.push({ notchStart: filledPositions[i] + 1, notches: slot });
     }
   })
-  // const filledPositions = new Set(divisions.value.map(note => note.notchPosition));
-  // console.log(filledPositions);
-  // let currentSpacer: SpacerData | undefined;
-  // for (let i = 0; i < props.notches; i++) {
-  //   if (filledPositions.has(i)) {
-  //     if (currentSpacer) {
-  //       spacers.push(currentSpacer);
-  //       currentSpacer = undefined;
-  //       continue;
-  //     }
-  //   }
-  //   if (currentSpacer) {
-  //     currentSpacer.notches++;
-  //     continue;
-  //   }
-  //   currentSpacer = { notchStart: i, notches: 1 };
-  // }
   return spacers;
 })
 
-console.log(emptyDivisions.value);
-
-const strings = computed(() => props.tuning.length);
 
 function modifyNotes(transform: (map: StackMap) => StackMap) {
   const transformed = transform(stackMap.value);
@@ -163,16 +145,6 @@ function modifyNotes(transform: (map: StackMap) => StackMap) {
   notes.value = newNotes;
 }
 
-// function deleteNote(note: NoteSpot) {
-//   modifyNotes(stackMap => {
-//     const stack = stackMap.get(note.position);
-//     if (stack) {
-//       stack[note.string].data = undefined;
-//     }
-//     return stackMap;
-//   })
-// }
-
 function updateNote(note: NoteSpot) {
   modifyNotes(stackMap => {
     if (stackMap.has(note.position)) {
@@ -184,6 +156,17 @@ function updateNote(note: NoteSpot) {
   })
 }
 
+const newNoteCol = ref(0);
+const newNoteRow = ref(0);
+const showNewNote = ref(false);
+const newNoteData = ref<NoteData>()
+
+
+function emptySpotHover (string: number, notch: number) {
+  showNewNote.value = true;
+  newNoteCol.value = notch;
+  newNoteRow.value = string;
+}
 </script>
 
 <template>
@@ -197,11 +180,33 @@ function updateNote(note: NoteSpot) {
     <TabsSpacer
       v-for="data in emptyDivisions"
       :key="data.notchStart"
-      :data="data"  :strings="strings" />
+      :data="data"  :strings="strings" 
+      @hover="emptySpotHover"
+      />
+    <TabsNoteInput 
+      v-if="showNewNote"
+      start-focused 
+      collapse
+      class="new-note"
+      :data="newNoteData" 
+      :tuning="tuning[newNoteRow - 1]"
+      :frets="frets" 
+      @mouseleave="() => showNewNote = false"/>
   </div>
 </template>
 
 <style>
+.bar {
+  --min-division-width: 48px;
+  max-width: calc(var(--min-division-width) * 24);
+  display: grid;
+  grid-template-columns: repeat(v-bind(notches), 1fr);
+  grid-template-rows: repeat(v-bind(strings), 1fr);
+  /* grid-template-rows:  */
+  /* align-items: center; */
+  /* grid-auto-flow: column; */
+}
+
 .string {
   grid-column: 1 / -1;
   align-self: center;
@@ -209,12 +214,10 @@ function updateNote(note: NoteSpot) {
   background-color: gray;
 }
 
-.bar {
-  --min-division-width: 48px;
-  max-width: calc(var(--min-division-width) * 24);
-  display: grid;
-  grid-template-columns: repeat(v-bind(notches), 1fr);
-  /* align-items: center; */
-  /* grid-auto-flow: column; */
+.new-note {
+  grid-row: v-bind(newNoteRow) / span 1;
+  grid-column: v-bind(newNoteCol) / span 1;
+  /* max-width: 100%; */
+  /* border: 1px dashed red; */
 }
 </style>

@@ -4,7 +4,9 @@ import type { NoteData } from './data';
 const props = defineProps<{
   data: NoteData | undefined,
   tuning: Midi, 
-  frets: number 
+  frets: number,
+  collapse?: boolean,
+  startFocused?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -40,6 +42,7 @@ function onInput(e: Event) {
 }
 
 function onInputClick(e: Event) {
+  console.log("click", input.value?.getBoundingClientRect().width);
   e.target && (e.target as HTMLInputElement).select();
 }
 
@@ -47,12 +50,29 @@ function onInputBlur() {
 
 }
 
+function mouseOver () {
+  emit('startEdit');
+  // input.value?.focus();
+}
+
+const input = ref<HTMLInputElement>()
+onMounted(() => {
+  if (props.startFocused) {
+    input.value?.focus();
+  }
+});
+
 </script>
 
 <template>
-  <div @mouseover="emit('startEdit')" @mouseleave="emit('endEdit')">
+  <div
+    class="note-input" 
+    :class="collapse ? 'collapse' : ''"
+    @mouseover="mouseOver" @mouseleave="emit('endEdit')">
+    <span class="hover-bg">{{  relativeNote }}</span>
     <span class="input-bg">{{ relativeNote }}</span>
     <input 
+      ref="input"
       :size="2" :value="relativeNote" type="text" inputmode="numeric"
       pattern="[0-9]{1,2}" @input="onInput" @click="onInputClick" @blur="onInputBlur">
   </div>
@@ -60,30 +80,65 @@ function onInputBlur() {
 
 <style scoped>
 
-div {
-  /* width: calc(var(--min-division-width) / 2); */
+.note-input {
+  /* min-width: calc(var(--min-division-width) / 2); */
   display: grid;
+  height: calc(var(--min-division-width) / 2);
+  /* height: calc(var(--min-division-width) / 2); */
   /* border: 1px red dashed; */
+}
+
+.collapse {
+  container-type: size;
 }
 
 input {
   all: unset;
 }
 
-.input-bg, input {
+
+.input-bg, input, .hover-bg {
   /* border: 1px dashed blue; */
   grid-area: 1 / 1;
   font-size: calc(var(--min-division-width) / 2);
   width: min-content;
-  /* min-width: var(--min-division-width); */
+  /* min-width: calc(var(--min-division-width) / 2); */
 }
 
 .input-bg {
   pointer-events: none;
   color: green;
   background-color: white;
+  /* aspect-ratio: 1 / 1; */
 }
 
+.hover-bg {
+  aspect-ratio: 1;
+}
+
+.note-input:hover > .hover-bg {
+  background-color: #ACCEF7;
+}
+
+.note-input:hover > .input-bg {
+  display: none;
+}
+
+@container (aspect-ratio < 0.5) {
+  input, .hover-bg, .input-bg {
+    display: none;
+  }
+}
+
+/* .note-input:has(input) {
+  .hover-bg {
+    display: none;
+  }
+
+  .input-bg {
+    display: inline;
+  }
+} */
 
 
 /* input::selection {

@@ -6,6 +6,10 @@ const props = defineProps<{
   strings: number
 }>();
 
+const emit = defineEmits<{
+  hover: [string: number, notch: number]
+}>();
+
 const notchStart = computed(() => props.data.notchStart + 1);
 const notches = computed(() => props.data.notches);
 
@@ -18,8 +22,14 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
 <template>
   <div class="spacer"> 
     <div class="header"><span class="title">↔</span></div>
-    <template v-for="n in notches" :key="n">
-      <div v-for="s in strings" :key="s" class="spot" :style="{ gridColumn: n, gridRow: s}" />
+    <template v-for="(n, ni) in notches" :key="n">
+      <div 
+       v-for="(s) in strings"
+       :key="s" 
+       class="spot" 
+       :style="{ gridColumn: n, gridRow: s}" 
+       @mouseover="emit('hover', s, notchStart + ni)"
+       />
     </template>
   </div>
 </template>
@@ -36,7 +46,6 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
 }
 
 .spot {
-  border: 1px solid white;
   width: 100%;
   height: 100%;
 }
@@ -46,7 +55,7 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
   grid-column: v-bind(headerPos) / span v-bind(headerSpan);
   text-align: center;
   container-type: size;
-  margin: 0px v-bind(headerMargin);
+  margin: 0% v-bind(headerMargin);
   /* width: min(100%, calc(var(--min-division-width) / 2 * v-bind(notches))); */
   /* display: none; */
 }
@@ -62,7 +71,7 @@ const headerMargin = computed(() => props.data.notches % 2 === 0 ? "0%" : "-50%"
   }
 }
 
-@container (aspect-ratio < 0.9) {
+ @container (aspect-ratio < 0.9) {
   .title {
     opacity: 0.2;
   }

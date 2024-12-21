@@ -54,8 +54,6 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
   min-width: calc(var(--min-division-width) * 0.75);
   grid-row: 1 / span v-bind(numStrings);
   grid-column: v-bind(column) / span 1;
-  overflow: auto;
-  overflow-y: hidden;
   display: grid;
   grid-template-columns: repeat(v-bind(columns), 1fr);
   border-top: 2px solid v-bind(debugColor);
@@ -63,6 +61,7 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
 
 .stack {
   grid-column: 1 / 1;
+  /* border: 1px solid green; */
 }
 
 .substack {
