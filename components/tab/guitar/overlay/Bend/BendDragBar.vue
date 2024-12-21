@@ -2,7 +2,7 @@
 import {
   CellHoverInjectionKey,
   type CellHoverEvents,
-} from "../../state/cell-hover-events";
+} from "../../../state/cell-hover-events";
 
 const props = defineProps<{
   // startRow: number;

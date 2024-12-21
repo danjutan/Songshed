@@ -8,6 +8,7 @@ import {
   type Settings,
 } from "../../state/settings-state";
 import BendRender from "./Bend/BendRender.vue";
+import TieRender from "./Tie/TieRender.vue";
 import type { Bend } from "~/model/stores";
 
 const props = defineProps<{
@@ -30,6 +31,7 @@ const props = defineProps<{
       :tabline-start
       :tabline-last
     />
+    <TieRender />
   </svg>
 </template>
 
