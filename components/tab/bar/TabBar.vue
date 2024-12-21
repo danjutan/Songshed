@@ -63,8 +63,6 @@ const columnData = computed<ColumnData[]>(() => {
     columns.push({ stack, position });
   }
 
-  console.log(columns);
-
   return columns;
 });
 
@@ -102,6 +100,7 @@ const spacers = computed<DrapeData[]>(() => {
     if (firstNotchIndex !== undefined) {
       const columns = isNotch(col) ? i - firstNotchIndex : lastNotchIndex! - firstNotchIndex;
       drapeData.push({ start: firstNotchIndex + 1, columns });
+      console.log(firstNotchIndex, lastNotchIndex);
     }
     firstNotchIndex = undefined;
     lastNotchIndex = undefined;
@@ -149,7 +148,7 @@ function isSelected(column: ColumnData) {
 
 const gridTemplateColumns = computed<string>(() => {
   const columns: string[] = columnData.value.map((col, i) => {
-    if (isExpanded(i + 1) || (isNotch(col) /* && (!isEmpty(col) || hasSubstacks(i)) */)) {
+    if (isExpanded(i + 1) || (isNotch(col) && (!isEmpty(col) || hasSubstacks(i)))) {
       return "var(--cell-height)";
     }
     return "1fr";
@@ -180,7 +179,7 @@ function noteChange(changed: NoteSpot) {
 
 <template>
   <div class="bar">
-    <TabBarStrings />
+    <TabBarStrings class="strings" />
     <Stack v-for="(col, i) in columnData"
            :key="col.position"
            :style="{ gridColumn: i + 1 }"
@@ -207,6 +206,7 @@ function noteChange(changed: NoteSpot) {
       :columns
       :num-strings="strings"
       :row-start="2"
+      color="var(--substack-bg)"
       @click="toggleExpanded(start, columns)">
       <template #up>
         <UnexpanderOverlay v-if="isExpanded(start)" />
@@ -241,6 +241,9 @@ function noteChange(changed: NoteSpot) {
 </template>
 
 <style>
+.strings {
+}
+
 .bar {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);

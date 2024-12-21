@@ -59,6 +59,8 @@ function newBarClick() {
 <style scoped>
 .tab {
   display: flex;
+  flex-flow: row wrap;
+  gap: 5px;
   width: 100%;
   --cell-height: 23px;
   --note-font-size: calc(var(--cell-height) * 0.8);
@@ -71,8 +73,7 @@ function newBarClick() {
 }
 
 .tab > .bar {
-  border-right: 1px solid black;
-  flex-grow: 1
+  min-width: calc(var(--cell-height) * 8);
 }
 
 .new-button {

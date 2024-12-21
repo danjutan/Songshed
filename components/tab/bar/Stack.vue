@@ -63,6 +63,7 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
 
 .square {
   width: 95%;
+  min-width: 5px;
   max-width: calc(var(--cell-height) / 2);
   aspect-ratio: 1;
   background-color: blue;
