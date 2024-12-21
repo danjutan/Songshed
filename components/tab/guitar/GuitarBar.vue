@@ -15,6 +15,7 @@ const props = defineProps<{
   subdivisions: number;
   notchUnit: number;
   startColumn: number;
+  startRow: number;
   collapseEmpty?: boolean;
   collapseSubdivisions?: boolean;
   tuning: Midi[];
@@ -78,9 +79,9 @@ function toggleSubdivisions(notchCol: GuitarStack) {
 <template>
   <Strings
     :start-column
+    :start-row
     :columns="stackData.length"
     :num-strings="numStrings"
-    :start-row="1"
   />
   <template v-for="(column, i) in stackData" :key="column.position">
     <Stack
@@ -88,7 +89,7 @@ function toggleSubdivisions(notchCol: GuitarStack) {
         // borderTop: isNotch(column.position) && '1px solid maroon',
         borderRight: i < stackData.length && '1px solid lightgray',
         gridColumn: startColumn + i,
-        gridRow: 1,
+        gridRow: startRow,
       }"
       :notes="column.stack"
       :collapse="collapsed.has(column.position)"
@@ -101,7 +102,7 @@ function toggleSubdivisions(notchCol: GuitarStack) {
         <Overlay
           :start-column="startColumn + i"
           :columns="props.subdivisions"
-          :start-row="1"
+          :start-row
           :rows="numStrings"
         >
           <div
@@ -115,7 +116,7 @@ function toggleSubdivisions(notchCol: GuitarStack) {
         <Overlay
           :start-column="1 + startColumn + i"
           :columns="props.subdivisions - 1"
-          :start-row="1"
+          :start-row
           :rows="numStrings"
         >
           <div
@@ -130,7 +131,7 @@ function toggleSubdivisions(notchCol: GuitarStack) {
         class="unexpander"
         :start-column="startColumn + i"
         :columns="props.subdivisions"
-        :row="2"
+        :row="startRow + 1"
         @click="toggleSubdivisions(column)"
       />
     </template>

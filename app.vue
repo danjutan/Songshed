@@ -68,13 +68,7 @@ const collapseEmpty = ref(true);
   Collapse empty notches:
   <input v-model="collapseEmpty" type="checkbox" />
 
-  <Tab
-    :data="tabStore"
-    :notches
-    :subdivisions
-    :collapse-subdivisions
-    :collapse-empty
-  />
+  <Tab :data="tabStore" :notches :subdivisions :collapse-subdivisions :collapse-empty />
   <!-- <Fretboard
     width="75%"
     :stack="activeStack"
