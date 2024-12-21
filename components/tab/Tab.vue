@@ -54,6 +54,10 @@ const bars = computed<BarStore[]>(() => {
   --highlight-color: rgba(172, 206, 247, 0.6);
 }
 
+.tab > .bar {
+  border-right: 1px solid black;
+}
+
 .new-button {
   margin-top: calc(var(--cell-height) * 1.5);
   margin-bottom: calc(var(--cell-height) / 2);

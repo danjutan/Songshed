@@ -7,7 +7,7 @@ const isEmptyDivision = (division: DivisionData) => {
 };
 
 export const emptyDivisions = (divisions: DivisionData[]) => {
-  const emptyPositions = divisions.filter(isEmptyDivision).map(d => d.notchPosition + 1);
+  const emptyPositions = divisions.filter(isEmptyDivision).map(d => d.notchPosition);
   return emptyPositions.reduce<DrapeData[]>((arr, pos) => {
     const last = arr.at(-1);
     if (last && last.start + last.columns == pos) {

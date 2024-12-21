@@ -2,8 +2,8 @@
 import type { PropType } from "vue";
 import type { NoteSpot, BarStore } from "../data";
 import { Spacing, smallestSpacing } from "../data";
+import { VisualizationStateKey } from "../providers";
 
-// don't make this type recursive; the divisions should control their own notches/units
 export type DivisionData = {
   notchPosition: number
   stack: NoteSpot[]
@@ -11,7 +11,6 @@ export type DivisionData = {
 };
 
 const props = defineProps({
-
   notches: {
     type: Number,
     default: 16,
@@ -33,7 +32,7 @@ const unit = computed<Spacing>(() => (props.data.end - props.data.start) / props
 
 const divisions = computed<DivisionData[]>(() => {
   const stackMap = props.data.getStacks();
-  for (let position = 0; position < props.data.end - props.data.start; position += unit.value) {
+  for (let position = props.data.start; position < props.data.end; position += unit.value) {
     if (!stackMap.has(position)) {
       const emptyStack = props.data.tuning.map((_, string) => ({ string, position }));
       stackMap.set(position, emptyStack);
@@ -43,7 +42,7 @@ const divisions = computed<DivisionData[]>(() => {
   const divisions: DivisionData[] = [];
 
   for (const [position, stack] of stackMap.entries()) {
-    const notchPosition = (position - props.data.start) / unit.value;
+    const notchPosition = 1 + (position - props.data.start) / unit.value;
     if (Number.isInteger(notchPosition)) {
       divisions.push({ notchPosition, stack });
       continue;
@@ -54,15 +53,49 @@ const divisions = computed<DivisionData[]>(() => {
     prev.substacks = substacks;
   }
 
+  divisions.sort((a, b) => a.notchPosition - b.notchPosition);
+
   return divisions;
+});
+
+const subdivisions = computed(() => (Spacing.Whole / smallestSpacing) / props.notches);
+
+const visualizationState = inject(VisualizationStateKey)!;
+
+const isExpanded = (column: number) =>
+  visualizationState.isExpanded(props.data.start, props.notches, column);
+
+const expanded = computed<Set<number>>(() =>
+  new Set(divisions.value
+    .map(({ notchPosition }) => notchPosition)
+    .filter(col => isExpanded(col))));
+
+const toggleExpanded = (column: number, num?: number) =>
+  visualizationState.toggleExpanded(props.data.start, props.notches, column, num);
+
+const expandsTo = computed<{ [column: number]: string }>(
+  () => Object.fromEntries(
+    divisions.value.map(div => [
+      div.notchPosition,
+      div.substacks ? `calc(${subdivisions.value} * var(--cell-height))` : "var(--cell-height)",
+    ])));
+
+const gridTemplateColumns = computed<string>(() => {
+  const columns: string[] = [];
+  for (const column of divisions.value.map(({ notchPosition }) => notchPosition)) {
+    if (isExpanded(column)) {
+      columns.push(expandsTo.value[column]);
+      continue;
+    }
+    columns.push("1fr");
+  }
+  return columns.join(" ");
 });
 
 const divisionPlacement = (column: number) => ({
   gridRow: `2 / span ${strings.value}`,
   gridColumn: `${column} / span 1`,
 });
-
-const subdivisions = computed(() => (Spacing.Whole / smallestSpacing) / props.notches);
 
 function noteChange(changed: NoteSpot) {
   const { position, string, data } = changed;
@@ -79,19 +112,20 @@ function noteChange(changed: NoteSpot) {
     <TabBarStrings />
     <TabBarDivision v-for="div in divisions"
                     :key="div.notchPosition"
-                    debug
                     :subdivisions
                     :data="div"
                     :div
                     :unit
                     :tuning="data.tuning"
                     :frets="data.frets"
-                    :style="divisionPlacement(div.notchPosition + 1)"
+                    :style="divisionPlacement(div.notchPosition)"
                     @note-change="noteChange"
     />
     <TabBarToolbar :divisions
                    :tuning="data.tuning"
                    :subdivisions
+                   :expanded
+                   @toggle-expanded="toggleExpanded"
     />
     <!-- <TabBarSpacer
       v-for="data in emptyDivisions"
@@ -106,7 +140,7 @@ function noteChange(changed: NoteSpot) {
 <style>
 .bar {
   display: grid;
-  grid-template-columns: repeat(v-bind(notches), 1fr);
+  grid-template-columns: v-bind(gridTemplateColumns);
   grid-template-rows: var(--cell-height) repeat(v-bind(strings), var(--cell-height))
 }
 </style>

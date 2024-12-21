@@ -3,22 +3,28 @@ import type { InjectionKey } from "vue";
 export const VisualizationStateKey = Symbol() as InjectionKey<VisualizationState>;
 
 type VisualizationState = {
-  expanded: Set<number>
-  toggleExpanded(start: number, num?: number): void
+  isExpanded(tabStart: number, notches: number, column: number): boolean
+  toggleExpanded(tabStart: number, notches: number, start: number, num?: number): void
 };
 
 export function createVisualizationState(): VisualizationState {
-  const expanded = reactive<Set<number>>(new Set());
+  const expanded = reactive<Set<string>>(new Set());
+  const key = (tabStart: number, notches: number, column: number) => `${tabStart},${notches},${column}`;
 
-  function toggleExpanded(start: number, num = 1) {
+  function isExpanded(tabStart: number, notches: number, column: number) {
+    return expanded.has(key(tabStart, notches, column));
+  }
+
+  function toggleExpanded(tabStart: number, notches: number, start: number, num = 1) {
     for (let i = start; i < start + num; i++) {
-      if (expanded.has(i)) {
-        expanded.delete(i);
+      const k = key(tabStart, notches, i);
+      if (expanded.has(k)) {
+        expanded.delete(k);
         continue;
       }
-      expanded.add(i);
+      expanded.add(k);
     }
   }
 
-  return { expanded, toggleExpanded };
+  return { isExpanded, toggleExpanded };
 }

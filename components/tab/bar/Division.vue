@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { type NoteSpot } from "../data";
 import type { DivisionData } from "./TabBar.vue";
-import Drape from "./toolbar/Drape.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -78,10 +77,10 @@ const emptySubstacks = computed(() => {
     @click="debug && console.log({ notchPosition: data.notchPosition, substacks: data.substacks, subunit, subdivisions, colPositions })">
     <div class="stack">
       <TabBarNoteInput
-        v-for="({ string, position, data }) in props.data.stack"
+        v-for="({ string, position, data: noteData }) in props.data.stack"
         :key="string"
         :collapse="numFilledSubstacks == 0"
-        :data="data"
+        :data="noteData"
         :tuning="props.tuning[string]"
         :frets="props.frets"
         @data-change="emit('noteChange', { string, position, data: $event })"
@@ -95,6 +94,7 @@ const emptySubstacks = computed(() => {
            :style="{ gridColumn: column }">
         <TabBarNoteInput
           v-for="(string, s) in tuning"
+          :key="s"
           :tuning="string"
           :frets="props.frets"
           @data-change="emit('noteChange', { position, string: s, data: $event })"
