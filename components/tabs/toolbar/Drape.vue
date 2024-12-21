@@ -19,6 +19,11 @@ const props = withDefaults(defineProps<DrapeData & {
   heightUnit: "var(--min-division-width) / 2",
 });
 
+defineSlots<{
+  down: () => never
+  up: () => never
+}>();
+
 const defaultDisplay = computed(() => props.default === "show" ? "block" : "none");
 const collapsedDisplay = computed(() => props.collapsed === "show" ? "block" : "none");
 // const columnEnd = computed(() => props.columns ? `span ${props.columns}` : "-1");
@@ -26,7 +31,12 @@ const collapsedDisplay = computed(() => props.collapsed === "show" ? "block" : "
 
 <template>
   <div class="drape collapse">
-    <div class="drape-down" />
+    <div class="drape-down">
+      <div class="drape-up">
+        <slot name="up" />
+      </div>
+      <slot name="down" />
+    </div>
   </div>
 </template>
 
@@ -39,7 +49,7 @@ const collapsedDisplay = computed(() => props.collapsed === "show" ? "block" : "
   .drape {
     grid-column: v-bind(start) / span v-bind(columns);
     grid-row: v-bind(rowStart) / -1;
-    /* grid-row: 2; */
+    /* rid-row: 2; */
     height: calc(v-bind(heightUnit) * v-bind(columns));
     pointer-events: none;
   }
@@ -47,8 +57,14 @@ const collapsedDisplay = computed(() => props.collapsed === "show" ? "block" : "
   .drape-down {
     background-color: v-bind(color);
     height: calc(v-bind(numStrings) * var(--min-division-width) / 2);
-    pointer-events: none;
     display: v-bind(defaultDisplay);
+  }
+
+  .drape-up {
+    width: 100%;
+    pointer-events: auto;
+    position: absolute;
+    top: calc(-1 * v-bind(heightUnit));
   }
 
   @container drape (aspect-ratio < 0.5) {

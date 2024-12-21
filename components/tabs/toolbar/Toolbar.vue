@@ -19,16 +19,6 @@ const spacers = computed(() => emptyDivisions(props.divisions));
 
 <template>
   <div class="toolbar">
-    <Drape v-for="{ start, columns } in spacers"
-           :key="start"
-           collapsed="show"
-           default="hide"
-           :start
-           :columns
-           :num-strings
-           :row-start="2"
-           color="var(--substack-bg)"
-    />
     <div v-for="i in numNotches"
          :key="i"
          :style="{ gridColumn: `${i} / span 1` }"
@@ -38,6 +28,27 @@ const spacers = computed(() => emptyDivisions(props.divisions));
            @mouseleave="hovering = 0"
       />
     </div>
+    <Drape v-for="{ start, columns } in spacers"
+           :key="start"
+           collapsed="show"
+           default="hide"
+           :start
+           :columns
+           :num-strings
+           :row-start="2"
+           color="var(--substack-bg)">
+      <template #up>
+        <div :style="{ backgroundColor: 'lightblue', width: '100%', pointerEvents: 'auto' }">
+          up
+        </div>
+      </template>
+      <template #down>
+        <div :style="{ backgroundColor: 'transparent' }">
+          down
+        </div>
+      </template>
+    </Drape>
+
     <Drape v-if="hovering"
            :start="hovering"
            :columns="1"
