@@ -13,15 +13,16 @@ const props = defineProps<TieRenderProps>();
 </script>
 
 <template>
-  <div class="container">
-    <div
-      class="tie-box"
-      :class="{
-        full: !props.half,
-        left: props.half === 'left',
-        right: props.half === 'right',
-      }"
-    >
+  <div
+    class="container"
+    :class="{
+      full: !props.half,
+      left: props.half === 'left',
+      right: props.half === 'right',
+    }"
+  >
+    <div class="slide" />
+    <div class="tie-box">
       <div class="arc-rect" />
       <div v-if="props.half !== 'left'" class="indicator" :class="{ editing }">
         <select>
@@ -37,6 +38,8 @@ const props = defineProps<TieRenderProps>();
 
 <style scoped>
 .container {
+  --column-span: calc(v-bind(endColumn) - v-bind(startColumn) + 1);
+  --label-font-size: calc(var(--cell-height) * 0.6);
   pointer-events: none;
   /* border: 1px solid red; */
   grid-row: v-bind(row);
@@ -45,46 +48,108 @@ const props = defineProps<TieRenderProps>();
     var(--cell-height) * (v-bind(endColumn) + 1 - v-bind(startColumn))
   ); */
   height: var(--cell-height);
-  display: flex;
+  display: grid;
   align-items: start;
+  justify-items: center;
   container-type: size;
 }
 
 @container (aspect-ratio < 1.5) {
-  .tie-box.full {
+  .full .tie-box {
+    opacity: 0;
+  }
+}
+
+@container (aspect-ratio < 2) {
+  .full .slide {
     opacity: 0;
   }
 }
 
 @container (aspect-ratio < 0.79) {
-  .tie-box.left,
-  .tie-box.right {
+  .left .tie-box,
+  .right .tie-box {
     opacity: 0;
   }
 }
+
+.slide {
+  grid-row: 1 / 1;
+  grid-column: 1 / 1;
+  width: calc(100% - 170% / var(--column-span));
+  height: calc(var(--cell-height) / 2);
+  margin-top: calc(var(--cell-height) / 4);
+  background-color: black;
+  clip-path: polygon(
+    -1px calc(100% - 1px),
+    100% 0%,
+    calc(100% + 1px) 1px,
+    0% 100%
+  );
+}
+
+.left .slide {
+  justify-self: end;
+  width: calc(100% - 85% / var(--column-span));
+  /*TODO: make this look better across dividers*/
+  clip-path: polygon(
+    -1px calc(100% - 1px),
+    calc(100%) calc(50%),
+    calc(100% + 1px) calc(50% + 1px),
+    0px 100%
+  );
+  /* clip-path: polygon(
+    0% calc(100% - 1px),
+    calc(100% + var(--divider-width) / 2 + 1px) 50%,
+    calc(100% + var(--divider-width) / 2) calc(50% + 1px),
+    1px 100%
+  ); */
+}
+
+.right .slide {
+  justify-self: start;
+  width: calc(100% - 85% / var(--column-span));
+  clip-path: polygon(
+    -1px calc(50% - 1px),
+    100% 0%,
+    calc(100% + 1px) 1px,
+    0px 50%
+  );
+
+  /* clip-path: polygon(
+    calc(-1 * var(--divider-width) / 2 - 1px) calc(50% - 1px),
+    calc(100% - 1px) 0%,
+    100% 1px,
+    calc(-1 * var(--divider-width) / 2) 50%
+  ); */
+}
+
 .tie-box {
-  --column-span: calc(v-bind(endColumn) - v-bind(startColumn) + 1);
-  --label-font-size: calc(var(--cell-height) * 0.6);
+  grid-row: 1 / 1;
+  grid-column: 1 / 1;
   width: 100%;
   /* border: 1px solid black; */
   z-index: 1;
   /* align-self: center; */
   /* margin-bottom: calc(var(--cell-height) * -2); */
-  margin-top: calc(var(--cell-height) * 0.75);
+  margin-top: calc(var(--cell-height) * 0.85);
   height: calc(var(--cell-height) * 0.5);
   /* height: 50%; */
   display: flex;
-  justify-content: center;
   align-items: end;
   overflow: hidden;
+}
 
-  &.right {
-    justify-content: start;
-  }
+.full .tie-box {
+  justify-content: center;
+}
 
-  &.left {
-    justify-content: end;
-  }
+.left .tie-box {
+  justify-content: end;
+}
+
+.right .tie-box {
+  justify-content: start;
 }
 
 .arc-rect {
@@ -95,8 +160,7 @@ const props = defineProps<TieRenderProps>();
   /* width: 100%; */
   aspect-ratio: 1;
 }
-
-.tie-box.full .arc-rect {
+.full .tie-box .arc-rect {
   clip-path: polygon(
     0% 0%,
     0% 100%,

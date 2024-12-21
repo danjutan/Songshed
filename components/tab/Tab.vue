@@ -245,6 +245,7 @@ onBeforeUnmount(() => {
 .tab {
   --cell-height: 24px;
   --note-font-size: calc(var(--cell-height) * 0.8);
+  --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);
   --string-width: 1px;
   --string-color: gray;
@@ -291,7 +292,7 @@ onBeforeUnmount(() => {
 
 .divider {
   grid-row: v-bind(notesRow) / span v-bind(numStrings);
-  width: calc(var(--cell-height) / 3);
+  width: var(--divider-width);
   padding: 0px 1px;
   height: 100%;
   background: black;
