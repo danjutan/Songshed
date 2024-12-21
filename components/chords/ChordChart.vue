@@ -64,11 +64,15 @@ const windowEnd = computed(() => windowStart.value + numFrets.value - 1);
 // const fretLabelWidth = computed(() => (windowStart.value === 0 ? 0 : cellWidth));
 const gridStartX = computed(() => cellWidth);
 const gridStartY = computed(() => cellHeight);
-const gridEndX = computed(() => gridStartX.value + (props.strings - 1) * cellWidth);
+const gridEndX = computed(
+  () => gridStartX.value + (props.strings - 1) * cellWidth,
+);
 const gridEndY = computed(() => gridStartY.value + numFrets.value * cellHeight);
 
 const totalWidth = computed(() => gridEndX.value + cellWidth / 2);
-const totalHeight = computed(() => cellHeight * (numFrets.value + 0.5) + gridStartY.value);
+const totalHeight = computed(
+  () => cellHeight * (numFrets.value + 0.5) + gridStartY.value,
+);
 
 const viewBox = computed(() => `0 0 ${totalWidth.value} ${totalHeight.value}`);
 
@@ -79,7 +83,10 @@ function setFret(string: number, fret: number | false) {
     emit("muteString", string);
     return;
   }
-  emit("updateString", string, { ...note, midi: (props.tuning[string] + fret) as Midi });
+  emit("updateString", string, {
+    ...note,
+    midi: (props.tuning[string] + fret) as Midi,
+  });
 }
 
 function onInput(e: Event) {
@@ -162,7 +169,11 @@ function onInputClick(e: Event) {
 
     <template v-for="(_, string) in strings">
       <template v-if="fingering[string]">
-        <g v-if="fingering[string].fret === 0" class="open-group" @click="setFret(string, false)">
+        <g
+          v-if="fingering[string].fret === 0"
+          class="open-group"
+          @click="setFret(string, false)"
+        >
           <circle
             class="open"
             :cx="gridStartX + (strings - string - 1) * cellWidth"
@@ -171,14 +182,6 @@ function onInputClick(e: Event) {
             fill="transparent"
             stroke="black"
           />
-          <text
-            class="muted"
-            text-anchor="middle"
-            :x="gridStartX + (strings - string - 1) * cellWidth"
-            :y="gridStartY - cellHeight / 2"
-          >
-            &Cross;
-          </text>
           <rect
             :x="gridStartX + (strings - string - 1.5) * cellWidth"
             :y="gridStartY - cellHeight"
@@ -188,13 +191,20 @@ function onInputClick(e: Event) {
           />
         </g>
         <template
-          v-else-if="fingering[string].fret >= windowStart && fingering[string].fret <= windowEnd"
+          v-else-if="
+            fingering[string].fret >= windowStart &&
+            fingering[string].fret <= windowEnd
+          "
         >
           <!--TODO: replace with NoteView-->
           <circle
             class="selected"
             :cx="gridStartX + (strings - string - 1) * cellWidth"
-            :cy="gridStartY + (fingering[string].fret - windowStart) * cellHeight + cellHeight / 2"
+            :cy="
+              gridStartY +
+              (fingering[string].fret - windowStart) * cellHeight +
+              cellHeight / 2
+            "
             :r="noteRadius"
             @click="setFret(string, false)"
           />
@@ -225,14 +235,7 @@ function onInputClick(e: Event) {
         >
           &Cross;
         </text>
-        <circle
-          class="open"
-          :cx="gridStartX + (strings - +string - 1) * cellWidth"
-          :cy="gridStartY - cellHeight * 0.65"
-          :r="noteRadius"
-          fill="transparent"
-          stroke="gray"
-        />
+        /> -->
         <rect
           :x="gridStartX + (strings - string - 1.5) * cellWidth"
           :y="gridStartY - cellHeight"
@@ -348,31 +351,13 @@ input {
   text-align: center;
 }
 
-.open-group .muted {
-  fill: transparent;
-}
-
 .open-group:hover {
-  & .open {
-    stroke: transparent;
-  }
-
-  & .muted {
-    fill: rgb(80, 80, 80);
-  }
-}
-
-.muted-group .open {
-  stroke: transparent;
+  opacity: 0.5;
 }
 
 .muted-group:hover {
-  & .open {
-    stroke: rgb(80, 80, 80);
-  }
-
-  & .muted {
-    fill: transparent;
+  .muted {
+    opacity: 0.5;
   }
 }
 
