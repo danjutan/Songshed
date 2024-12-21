@@ -176,7 +176,7 @@ onBeforeUnmount(() => {
         />
 
         <TiesBar
-          :ties="data.guitar!.getTies()"
+          :ties="data.guitar!.ties"
           :start-row="notesRow"
           :start-column="i * (columnsPerBar + 1) + 2"
           :start-position="bar.start"

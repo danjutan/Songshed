@@ -2,10 +2,10 @@
 import type { TieData } from "~/model/data";
 import TieRender, { type TieRenderProps } from "./TieRender.vue";
 import type { OverlayPosition } from "~/components/tab/overlay-objects";
-import type { TieMap } from "~/model/stores";
+import type { TieMap, TieStore } from "~/model/stores";
 
 const props = defineProps<{
-  ties: TieMap;
+  ties: TieStore;
   startRow: number;
   startColumn: number;
   startPosition: number;
@@ -17,7 +17,7 @@ const props = defineProps<{
 
 const ties = computed<TieRenderProps[]>(() => {
   const ties: TieRenderProps[] = [];
-  for (const [string, stringTies] of props.ties) {
+  for (const [string, stringTies] of props.ties.getTies()) {
     for (const tie of stringTies) {
       const direction = (tie.midiFrom ?? 0) < (tie.midiTo ?? 0) ? "up" : "down";
       if (tie.from >= props.startPosition && tie.from < props.endPosition) {

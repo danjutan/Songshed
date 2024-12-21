@@ -282,8 +282,45 @@ export interface Tie extends TieData {
 
 export type TieMap = Map<number, Tie[]>;
 
+export interface TieStore {
+  setTie: (string: number, from: number, tie: TieData) => void;
+  getTies: () => TieMap;
+}
+
+function createTieStore(guitarData: GuitarTabData): TieStore {
+  function setTie(string: number, from: number, tie: TieData) {
+    const stringTies = guitarData.ties.get(string);
+    if (!stringTies) {
+      guitarData.ties.set(string, new Map([[from, tie]]));
+      return;
+    }
+    stringTies.set(from, tie);
+  }
+
+  function getTies(): TieMap {
+    const map: TieMap = new Map();
+    for (const [string, stringTies] of guitarData.ties) {
+      const addTies: Tie[] = [];
+      for (const [from, tie] of stringTies) {
+        const fromNote = guitarData.stacks.get(from)?.get(string);
+        const toNote = guitarData.stacks.get(tie.to)?.get(string);
+        addTies.push({
+          ...tie,
+          from,
+          midiFrom: fromNote?.midi,
+          midiTo: toNote?.midi,
+        });
+      }
+      map.set(string, addTies);
+    }
+    return map;
+  }
+
+  return { setTie, getTies };
+}
+
 interface GuitarStore
-  extends Omit<StackStore<GuitarNote> & GuitarTabData, "getStacks"> {
+  extends Omit<StackStore<GuitarNote> & GuitarTabData, "getStacks" | "ties"> {
   setNote: (position: number, string: number, data: GuitarNote) => void;
   deleteNote: (position: number, string: number) => void;
   getStacks: (
@@ -291,8 +328,7 @@ interface GuitarStore
     end: number,
     subunit: number,
   ) => StackMap<GuitarNote>;
-  setTie: (string: number, from: number, tie: TieData) => void;
-  getTies: () => TieMap;
+  ties: TieStore;
 }
 
 function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
@@ -349,35 +385,6 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     );
   }
 
-  function setTie(string: number, from: number, tie: TieData) {
-    const ties = guitarData.ties.get(string);
-    if (!ties) {
-      guitarData.ties.set(string, new Map([[from, tie]]));
-      return;
-    }
-    ties.set(from, tie);
-  }
-
-  // TODO? Instead of returning all ties, take a range and return just the ties are from or to that range
-  function getTies(): TieMap {
-    const map: TieMap = new Map();
-    for (const [string, ties] of guitarData.ties) {
-      const stringTies: Tie[] = [];
-      for (const [from, tie] of ties) {
-        const fromNote = guitarData.stacks.get(from)?.get(string);
-        const toNote = guitarData.stacks.get(tie.to)?.get(string);
-        stringTies.push({
-          ...tie,
-          from,
-          midiFrom: fromNote?.midi,
-          midiTo: toNote?.midi,
-        });
-      }
-      map.set(string, stringTies);
-    }
-    return map;
-  }
-
   function shiftFrom(position: number, shiftBy: number) {
     noteStore.shiftFrom(position, shiftBy);
     for (const [string, ties] of guitarData.ties) {
@@ -393,9 +400,8 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     getStacks,
     setNote,
     deleteNote,
-    setTie,
-    getTies,
     shiftFrom,
     ...guitarData,
+    ties: createTieStore(guitarData),
   };
 }

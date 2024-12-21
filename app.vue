@@ -59,32 +59,34 @@ if (id) {
     guitar.setNote(position, string, data);
   });
 
-  guitar.setTie(2, Spacing.Quarter * 2, {
+  const ties = guitar.ties;
+
+  ties.setTie(2, Spacing.Quarter * 2, {
     to: Spacing.Quarter * 2 + Spacing.Sixteenth,
     type: "hammer",
   });
 
-  guitar.setTie(1, Spacing.Quarter * 3 + Spacing.Sixteenth, {
+  ties.setTie(1, Spacing.Quarter * 3 + Spacing.Sixteenth, {
     to: Spacing.Whole + Spacing.Sixteenth,
     type: "slide",
   });
 
-  guitar.setTie(2, Spacing.Whole * 2 - Spacing.Sixteenth, {
+  ties.setTie(2, Spacing.Whole * 2 - Spacing.Sixteenth, {
     to: Spacing.Whole * 2,
     type: "hammer",
   });
 
-  guitar.setTie(2, Spacing.Whole * 3 - Spacing.Eighth, {
+  ties.setTie(2, Spacing.Whole * 3 - Spacing.Eighth, {
     to: Spacing.Whole * 3,
     type: "slide",
   });
 
-  guitar.setTie(0, Spacing.Quarter * 9 - Spacing.Sixteenth, {
+  ties.setTie(0, Spacing.Quarter * 9 - Spacing.Sixteenth, {
     to: Spacing.Quarter * 10 - Spacing.Sixteenth,
     type: "slide",
   });
 
-  guitar.setTie(2, Spacing.Quarter * 9 - Spacing.Sixteenth, {
+  ties.setTie(2, Spacing.Quarter * 9 - Spacing.Sixteenth, {
     to: Spacing.Quarter * 10 + Spacing.Sixteenth,
     type: "hammer",
   });
