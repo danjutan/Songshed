@@ -21,10 +21,12 @@ const emit = defineEmits<{
 const props = defineProps<TieRenderProps>();
 
 const hammerText = computed(() => (props.direction === "up" ? "H" : "P"));
-const slideText = computed(() => (props.direction === "up" ? "/" : "\\"));
+const slideText = computed(() =>
+  props.direction === "up" ? "&#x27CB;" : "&#x27CD;",
+);
 
 const labelText = computed(() => {
-  if (props.type === "hammer") {
+  if (props.type.hammer) {
     return hammerText.value;
   }
   return slideText.value;
@@ -36,7 +38,18 @@ function onSelectInput(e: Event) {
     emit("delete");
     return;
   }
-  emit("updateType", value as TieType);
+  if (value === "hammer") {
+    emit("updateType", { hammer: true });
+    return;
+  }
+  if (value === "slide") {
+    emit("updateType", { slide: true });
+    return;
+  }
+  if (value === "hammer-slide") {
+    emit("updateType", { slide: true, hammer: true });
+    return;
+  }
 }
 </script>
 
@@ -49,14 +62,14 @@ function onSelectInput(e: Event) {
       right: half === 'right',
       up: direction === 'up',
       down: direction === 'down',
-      slide: type === 'slide',
-      hammer: type === 'hammer',
+      slide: type.slide,
+      hammer: type.hammer,
       bottom: lastString,
     }"
   >
     <div v-if="endColumn - startColumn >= (half ? 1 : 2)" class="block-notes" />
 
-    <div v-if="props.type === 'slide'" class="slide-box" />
+    <div v-if="props.type.slide" class="slide-box" />
     <!-- <svg
       v-if="props.type === 'slide'"
       class="slide-svg"
@@ -66,21 +79,30 @@ function onSelectInput(e: Event) {
       <line x1="0" y1="50" x2="50" y2="0" />
     </svg> -->
 
-    <div v-else class="tie-box">
+    <div v-if="props.type.hammer" class="tie-box">
       <div class="arc-rect" />
     </div>
 
     <div v-if="props.half !== 'left'" class="indicator" :class="{ editing }">
       <select @input="onSelectInput">
-        <option value="hammer" :selected="type === 'hammer'">
-          {{ hammerText }}
-        </option>
-        <option value="slide" :selected="type === 'slide'">
-          {{ slideText }}
-        </option>
+        <option
+          value="hammer"
+          :selected="type.hammer && !type.slide"
+          v-html="hammerText"
+        />
+        <option
+          value="slide"
+          :selected="type.slide && !type.hammer"
+          v-html="slideText"
+        />
+        <option
+          value="hammer-slide"
+          :selected="type.slide && type.hammer"
+          v-html="hammerText + slideText"
+        />
         <option value="delete">&Cross;</option>
       </select>
-      <div v-if="type === 'hammer'" class="label">{{ labelText }}</div>
+      <div v-if="type.hammer" class="label">{{ labelText }}</div>
       <!-- <div class="delete" @click="emit('delete')">&Cross;</div> -->
     </div>
   </div>
@@ -315,9 +337,9 @@ function onSelectInput(e: Event) {
 
   & select {
     display: none;
-    text-align: center;
+    /* text-align: center; */
     /* margin-left: -10px; */
-    transform: translateX(-25%) translateY(-10%);
+    transform: translateY(-10%);
     & [value="delete"] {
       color: darkred;
     }

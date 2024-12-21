@@ -10,7 +10,15 @@ export interface NoteData {
 }
 
 // "hammer" means hammer-on if going up, pull-off if going down
-export type TieType = "hammer" | "slide";
+export type TieType =
+  | {
+      hammer: true;
+      slide?: true;
+    }
+  | {
+      slide: true;
+      hammer?: true;
+    };
 
 export type TieData = {
   type: TieType;

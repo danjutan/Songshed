@@ -93,32 +93,32 @@ if (id) {
 
   ties.setTie(2, Spacing.Quarter * 2, {
     to: Spacing.Quarter * 2 + Spacing.Sixteenth,
-    type: "hammer",
+    type: { hammer: true },
   });
 
   ties.setTie(1, Spacing.Quarter * 3 + Spacing.Sixteenth, {
     to: Spacing.Whole + Spacing.Sixteenth,
-    type: "slide",
+    type: { slide: true, hammer: true },
   });
 
   ties.setTie(2, Spacing.Whole * 2 - Spacing.Sixteenth, {
     to: Spacing.Whole * 2,
-    type: "hammer",
+    type: { hammer: true },
   });
 
   ties.setTie(2, Spacing.Whole * 3 - Spacing.Eighth, {
     to: Spacing.Whole * 3,
-    type: "slide",
+    type: { slide: true },
   });
 
   ties.setTie(0, Spacing.Quarter * 9, {
     to: Spacing.Quarter * 10 - Spacing.Sixteenth,
-    type: "slide",
+    type: { slide: true },
   });
 
   ties.setTie(2, Spacing.Quarter * 9 - Spacing.Sixteenth, {
     to: Spacing.Quarter * 10 + Spacing.Sixteenth,
-    type: "hammer",
+    type: { hammer: true },
   });
   tabStore.value = store;
 }

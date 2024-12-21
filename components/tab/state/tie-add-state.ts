@@ -27,7 +27,7 @@ export function createTieAddState(
   const to = ref<number>(0);
   const midiFrom = ref<Midi>();
   const midiTo = ref<Midi>();
-  const tieType: TieType = "hammer";
+  const tieType: TieType = { hammer: true };
   // const hitNote = ref<number | undefined>();
 
   const dragDirection = computed<"right" | "left" | undefined>(() => {
