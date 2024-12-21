@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import type { GuitarNote } from "~/model/data";
+import type { GuitarNote, NoteStack } from "~/model/data";
 import NoteInput from "./NoteInput.vue";
 
 const props = withDefaults(
   defineProps<{
-    notes: Array<GuitarNote>;
+    notes: NoteStack<GuitarNote>;
     frets: number;
     tuning: Midi[];
     selected?: boolean;
@@ -15,13 +15,13 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   noteDelete: [string: number];
-  noteChange: [note: GuitarNote];
+  noteChange: [string: number, note: GuitarNote];
 }>();
 
 const noteSpots = computed(() => {
   const noteSpots = new Array(props.tuning.length);
-  for (const note of props.notes) {
-    noteSpots[note.string] = note;
+  for (const [string, note] of props.notes.entries()) {
+    noteSpots[string] = note;
   }
 
   return noteSpots;
@@ -60,7 +60,7 @@ const inputRefs = ref<InputRef[]>([]);
           :blocking-color="selected ? 'transparent' : undefined"
           :hovering="hovering === string"
           @note-delete="emit('noteDelete', string)"
-          @note-change="(updated) => emit('noteChange', { ...note, string, ...updated })"
+          @note-change="(updated) => emit('noteChange', string, { ...note, ...updated })"
         />
       </div>
     </div>

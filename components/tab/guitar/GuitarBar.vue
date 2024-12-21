@@ -1,17 +1,12 @@
 <script setup lang="ts">
-import type { GuitarNote } from "~/model/data";
+import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
 import Strings from "./Strings.vue";
 import Stack from "./Stack.vue";
 import Overlay from "./Overlay.vue";
 import Unexpander from "./Unexpander.vue";
 
-export type GuitarStack = {
-  stack: Array<GuitarNote>;
-  position: number;
-};
-
 const props = defineProps<{
-  stackData: GuitarStack[];
+  stackData: StackMap<GuitarNote>;
   subdivisions: number;
   notchUnit: number;
   startColumn: number;
@@ -25,7 +20,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   noteDelete: [position: number, string: number];
-  noteChange: [position: number, note: GuitarNote];
+  noteChange: [position: number, string: number, note: GuitarNote];
 }>();
 
 const isNotch = (position: number) => position % props.notchUnit === 0;
@@ -36,23 +31,25 @@ const expanded = reactive<Set<number>>(new Set());
 const collapsedEmpty = computed<Set<number>>(() => {
   const collapsed = new Set<number>();
   if (!props.collapseEmpty) return collapsed;
-  const emptyStack = (stack: Array<GuitarNote>) =>
-    stack.length === 0; /*  stack.every((spot) => !spot.data); */
-  props.stackData.forEach((notch, i) => {
-    if (!isNotch(notch.position)) return;
-    const notchGroup = props.stackData.slice(i, i + props.subdivisions);
-    const emptyNotchGroup = notchGroup.every(({ stack }) => emptyStack(stack));
-    if (emptyNotchGroup) {
-      notchGroup.forEach(({ position }) => collapsed.add(position));
+  const emptyStack = (stack: NoteStack<GuitarNote>) =>
+    stack.size === 0; /*  stack.every((spot) => !spot.data); */
+  props.stackData.forEach((_, position) => {
+    if (!isNotch(position)) return;
+    const notchGroup: number[] = [];
+    for (let i = position; i < position + props.subdivisions; i++) {
+      const stack = props.stackData.get(i);
+      if (!stack || !emptyStack(stack)) return;
+      notchGroup.push(position);
     }
+    notchGroup.forEach((position) => collapsed.add(position));
   });
   return collapsed;
 });
 
 const collapsed = computed<Set<number>>(() => {
   const positions = new Set<number>(
-    props.stackData
-      .map((c) => c.position)
+    [...props.stackData]
+      .map(([position, _]) => position)
       .filter((position) => {
         if (expanded.has(position)) return false;
         if (props.collapseEmpty && collapsedEmpty.value.has(position)) return true;
@@ -63,11 +60,10 @@ const collapsed = computed<Set<number>>(() => {
   return positions;
 });
 
-function toggleSubdivisions(notchCol: GuitarStack) {
-  const firstPos = notchCol.position; /* notchCol.position + subUnit.value; */
-  const collapse = expanded.has(firstPos);
+function toggleSubdivisions(notchPosition: number) {
+  const collapse = expanded.has(notchPosition);
   for (let i = 0; i < props.subdivisions; i++) {
-    const pos = firstPos + i * subUnit.value;
+    const pos = notchPosition + i * subUnit.value;
     if (collapse) {
       expanded.delete(pos);
       continue;
@@ -78,24 +74,26 @@ function toggleSubdivisions(notchCol: GuitarStack) {
 </script>
 
 <template>
-  <Strings :start-column :start-row :columns="stackData.length" :num-strings="numStrings" />
-  <template v-for="(column, i) in stackData" :key="column.position">
+  <Strings :start-column :start-row :columns="stackData.size" :num-strings="numStrings" />
+  <template v-for="([position, stack], i) in stackData.entries()" :key="position">
     <Stack
       :style="{
         // borderTop: isNotch(column.position) && '1px solid maroon',
-        borderRight: i < stackData.length && '1px solid lightgray',
+        borderRight: i < stackData.size && '1px solid lightgray',
         gridColumn: startColumn + i,
         gridRow: startRow,
       }"
-      :notes="column.stack"
-      :collapse="collapsed.has(column.position)"
+      :notes="stack"
+      :collapse="collapsed.has(position)"
       :tuning
       :frets
-      @note-change="(note: GuitarNote) => emit('noteChange', column.position, note)"
-      @note-delete="(string: number) => emit('noteDelete', column.position, string)"
+      @note-change="
+        (string: number, note: GuitarNote) => emit('noteChange', position, string, note)
+      "
+      @note-delete="(string: number) => emit('noteDelete', position, string)"
     />
-    <template v-if="isNotch(column.position)">
-      <template v-if="collapsedEmpty.has(column.position)">
+    <template v-if="isNotch(position)">
+      <template v-if="collapsedEmpty.has(position)">
         <Overlay
           :start-column="startColumn + i"
           :columns="props.subdivisions"
@@ -104,8 +102,8 @@ function toggleSubdivisions(notchCol: GuitarStack) {
         >
           <div
             class="overlay-fill"
-            :class="{ expanded: expanded.has(column.position) }"
-            @click="toggleSubdivisions(column)"
+            :class="{ expanded: expanded.has(position) }"
+            @click="toggleSubdivisions(position)"
           />
         </Overlay>
       </template>
@@ -118,18 +116,18 @@ function toggleSubdivisions(notchCol: GuitarStack) {
         >
           <div
             class="overlay-fill"
-            :class="{ expanded: expanded.has(column.position + subUnit) }"
-            @click="toggleSubdivisions(column)"
+            :class="{ expanded: expanded.has(position + subUnit) }"
+            @click="toggleSubdivisions(position)"
           />
         </Overlay>
       </template>
       <Unexpander
-        v-if="expanded.has(column.position + subUnit)"
+        v-if="expanded.has(position + subUnit)"
         class="unexpander"
         :start-column="startColumn + i"
         :columns="props.subdivisions"
         :row="startRow + 1"
-        @click="toggleSubdivisions(column)"
+        @click="toggleSubdivisions(position)"
       />
     </template>
   </template>

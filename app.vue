@@ -46,10 +46,9 @@ if (id) {
 
   guitarNotes.forEach(([position, string, midiString]) => {
     const data: GuitarNote = {
-      string,
       midi: toMidi(midiString),
     };
-    guitar.setNote(position, data);
+    guitar.setNote(position, string, data);
   });
 
   tabStore.value = store;

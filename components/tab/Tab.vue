@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type { Annotation, GuitarNote, NoteStack } from "~/model/data";
+import type { Annotation, GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
-import type { GuitarStack } from "./guitar/GuitarBar.vue";
 import GuitarBar from "./guitar/GuitarBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 
@@ -27,37 +26,31 @@ const subUnit = computed(() => notchUnit.value / props.subdivisions);
 
 const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
 
-type Bar = Array<GuitarStack[]>;
-
 const newBarStart = ref(0);
 
+type Bar = {
+  start: number;
+  stacks: StackMap<GuitarNote>;
+};
+
 // TODO: swap out the view that's determining the bars / use the longest view
-const bars = computed<Bar>(() => {
+const bars = computed<Bar[]>(() => {
   if (!props.data.guitar) return [];
-  const bars: Array<GuitarStack[]> = [];
+  const bars: Bar[] = [];
   for (
     let i = 0;
     i <= Math.max(newBarStart.value, props.data.guitar.lastPosition() ?? 0);
     i += barSize.value
   ) {
-    const toArray = (stack: NoteStack<GuitarNote>): GuitarNote[] => {
-      const arr = [];
-      for (const note of stack.values()) {
-        arr.push(note);
-      }
-      return arr;
-    };
-
-    const columns: GuitarStack[] = [
-      ...props.data.guitar.getStacks(i, i + barSize.value, subUnit.value).entries(),
-    ].map(([position, stack]) => ({ position, stack: toArray(stack) }));
-
-    bars.push(columns);
+    bars.push({
+      start: i,
+      stacks: props.data.guitar.getStacks(i, i + barSize.value, subUnit.value),
+    });
   }
   return bars;
 });
 
-const tabLines = computed<Bar[]>(() => {
+const tabLines = computed<Array<Bar[]>>(() => {
   const tabLineBars = [];
   for (let i = 0; i < bars.value.length; i += props.barsPerLine) {
     tabLineBars.push(bars.value.slice(i, i + props.barsPerLine));
@@ -76,8 +69,9 @@ const gridTemplateColumns = computed<string>(() => {
 const annotationRows = computed(() => Math.max(props.data.annotations.getRows().length, 1));
 const notesRow = computed(() => annotationRows.value + 1);
 
-function newBarClick(lastColumn?: GuitarStack) {
-  if (lastColumn) newBarStart.value = lastColumn.position + subUnit.value;
+function newBarClick(lastBarStart?: number) {
+  if (lastBarStart !== undefined)
+    newBarStart.value = lastBarStart + notchUnit.value * props.notches;
 }
 
 const newAnnotation = reactive<{
@@ -189,10 +183,10 @@ const annotationRenders = computed(() => {
 <template>
   <div class="tab" @mouseup="annotationEnd">
     <div v-for="(tabLine, tabLineIndex) in tabLines" class="tab-line">
-      <template v-for="(bar, i) in tabLine" :key="bar[0].position">
-        <div class="divider hoverable" @click="data.guitar?.shiftFrom(bar[0].position, barSize)" />
+      <template v-for="(bar, i) in tabLine" :key="bar.start">
+        <div class="divider hoverable" @click="data.guitar?.shiftFrom(bar.start, barSize)" />
         <GuitarBar
-          :stack-data="bar"
+          :stack-data="bar.stacks"
           :subdivisions
           :notch-unit
           :start-column="i * (columnsPerBar + 1) + 2"
@@ -212,24 +206,24 @@ const annotationRenders = computed(() => {
               gridColumn: i * (columnsPerBar + 1) + 1,
               gridRow: annotationRows - rowIndex,
             }"
-            @mousedown="annotationStart(rowIndex, bar[0].position)"
+            @mousedown="annotationStart(rowIndex, bar.start)"
           />
           <div
-            v-for="(stack, s) in bar"
+            v-for="([position], s) in bar.stacks"
             class="drag-start"
             :style="{
               gridColumn: i * (columnsPerBar + 1) + 2 + s,
               gridRow: annotationRows - rowIndex,
             }"
-            @mousedown="annotationStart(rowIndex, stack.position)"
-            @mouseover="annotationDragThrough(stack.position)"
+            @mousedown="annotationStart(rowIndex, position)"
+            @mouseover="annotationDragThrough(position)"
           />
         </template>
       </template>
       <div
         v-if="tabLineIndex === tabLines.length - 1"
         class="divider"
-        @click="newBarClick(tabLine.at(-1)?.at(-1))"
+        @click="newBarClick(tabLine.at(-1)?.start)"
       >
         <div class="new-button">+</div>
       </div>

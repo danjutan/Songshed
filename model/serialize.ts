@@ -17,7 +17,7 @@ function reviver(key: string, value: any) {
   return value;
 }
 
-type SerializeableStackMap<N extends NoteData> = Array<[number, Array<[number, N]>]>;
+/* type SerializeableStackMap<N extends NoteData> = Array<[number, Array<[number, N]>]>;
 
 export interface SerializeableGuitar extends Omit<GuitarTabData, "stacks"> {
   stacks: SerializeableStackMap<Omit<GuitarNote, "string">>;
@@ -25,58 +25,13 @@ export interface SerializeableGuitar extends Omit<GuitarTabData, "stacks"> {
 
 export interface SerializeableTabData extends Omit<TabData, "guitarData"> {
   guitarData?: SerializeableGuitar;
-}
+} */
+
 export function serializeTabData(data: TabData): string {
-  const withoutString = (guitarNote: GuitarNote) => {
-    const { string, ...rest } = guitarNote;
-    return rest;
-  };
-
-  const guitarData: SerializeableGuitar | undefined = data.guitarData && {
-    ...data.guitarData,
-    stacks: [...data.guitarData!.stacks.entries()].map(([position, stack]) => [
-      position,
-      [...stack.entries()].map(([key, value]) => [key, withoutString(value)]),
-    ]),
-  };
-
-  const { title, beatsPerBar, beatSize } = data;
-  const serializeable: SerializeableTabData = {
-    title,
-    beatSize,
-    beatsPerBar,
-    annotations: data.annotations,
-    chordsData: data.chordsData,
-    ...(data.guitarData && { guitarData }),
-  };
-
-  return JSON.stringify(serializeable, replacer);
+  return JSON.stringify(data, replacer);
 }
 
 export function deserializeTabData(data: string): TabData {
-  const parsed: SerializeableTabData = JSON.parse(data, reviver);
-  console.log(parsed);
-  let guitarData: GuitarTabData | undefined;
-  if (parsed.guitarData) {
-    const stacks: StackMap<GuitarNote> = new Map();
-    for (const [position, stack] of parsed.guitarData.stacks) {
-      const withString = stack.map(
-        ([key, value]) => [key, { string: key, ...value }] as [number, GuitarNote],
-      );
-      stacks.set(position, new Map(withString));
-    }
-    guitarData = {
-      ...parsed.guitarData,
-      stacks: stacks,
-    };
-  }
-  const { title, beatsPerBar, beatSize, annotations, chordsData } = parsed;
-  return {
-    title,
-    beatsPerBar,
-    beatSize,
-    annotations,
-    chordsData,
-    ...(guitarData && { guitarData }),
-  };
+  const parsed = JSON.parse(data, reviver);
+  return parsed;
 }

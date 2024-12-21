@@ -1,3 +1,4 @@
+// TOD: remove
 export function range(count: number): number[];
 export function range(start: number, end: number): number[];
 export function range(countOrStart: number, end?: number) {

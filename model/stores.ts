@@ -222,7 +222,7 @@ function createStackStore<N extends NoteData>(stacks: StackMap<N>): StackStore<N
 }
 
 interface GuitarStore extends Omit<StackStore<GuitarNote> & GuitarTabData, "getStacks"> {
-  setNote: (position: number, data: GuitarNote) => void;
+  setNote: (position: number, string: number, data: GuitarNote) => void;
   deleteNote: (position: number, string: number) => void;
   getStacks: (start: number, end: number, subunit: number) => StackMap<GuitarNote>;
 }
@@ -230,8 +230,7 @@ interface GuitarStore extends Omit<StackStore<GuitarNote> & GuitarTabData, "getS
 function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
   const noteStore = createStackStore(guitarData.stacks);
 
-  function setNote(position: number, data: GuitarNote): void {
-    const string = data.string;
+  function setNote(position: number, string: number, data: GuitarNote): void {
     if (position >= 0 && string >= 0 && string < guitarData.strings) {
       let stack = guitarData.stacks.get(position);
 

@@ -74,7 +74,6 @@ const viewBox = computed(() => `0 0 ${totalWidth.value} ${totalHeight.value}`);
 
 // const fingerLabels = computed(() => new Array({length: numFrets}, i =>
 function setFret(string: number, fret: number | false) {
-  console.log(string, fret);
   const note = props.notes.get(string);
   if (fret === false) {
     emit("muteString", string);

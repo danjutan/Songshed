@@ -10,8 +10,6 @@ export interface NoteData {
 }
 
 export interface GuitarNote extends NoteData {
-  //TODO: probably: remove string property (cleans up serialization). pass around NoteStacks like we do with chords
-  string: number;
   /*
   muted?: boolean;
   slide?: boolean;
