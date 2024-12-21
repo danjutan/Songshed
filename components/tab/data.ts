@@ -58,7 +58,7 @@ export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize = Sp
     annotations: [],
   });
 
-  let guitarStore: undefined | GuitarStore;
+  const guitarStore = ref<undefined | GuitarStore>();
 
   function createGuitarTab(tuning = defaultTuning, strings = 6, frets = 24) {
     const stacks: Map<number, GuitarNote[]> = new Map();
@@ -69,13 +69,15 @@ export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize = Sp
       stacks,
     };
 
-    guitarStore = createGuitarStore(data.guitarData);
-    return guitarStore;
+    guitarStore.value = createGuitarStore(data.guitarData);
+    return guitarStore.value;
   }
 
   return {
-    guitar: guitarStore,
     createGuitarTab,
+    get guitar() {
+      return guitarStore.value;
+    },
     // TODO: validation?
     get title() {
       return data.title;
@@ -139,7 +141,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     const subset = new Map<number, GuitarNote[]>();
     for (const position of [...guitarData.stacks.keys()].sort((a, b) => a - b)) {
       if (start > 0 && position < start) continue;
-      if (end && position >= end) continue;
+      if (end && position >= end) break;
       subset.set(position, guitarData.stacks.get(position)!);
     }
     return subset;

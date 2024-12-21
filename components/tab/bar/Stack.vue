@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import type { NoteSpot } from "../data";
+import type { GuitarNote } from "../data";
 
 const props = withDefaults(defineProps<{
-  stack: NoteSpot[]
+  stack: GuitarNote[]
   frets: number
   tuning: Midi[]
   selected?: boolean
@@ -11,7 +11,7 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-  noteChange: [note: NoteSpot]
+  noteChange: [note: GuitarNote]
 }>();
 
 const backgroundColor = computed(() => props.selected ? "var(--highlight-color)" : "transparent");
@@ -44,7 +44,6 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
 
 <style>
 .stack {
-  grid-row: 2 / -1;
   display: flex;
   flex-direction: column;
   background-color: v-bind(backgroundColor);

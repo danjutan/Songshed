@@ -51,6 +51,7 @@ export default withNuxt(
         },
       ],
       "vue/first-attribute-linebreak": "off",
+      "vue/require-v-for-key": "off",
     },
   },
 );

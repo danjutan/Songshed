@@ -25,6 +25,7 @@ const guitarNotes: Array<[number, number, string]> = [
   [Spacing.Quarter * 8, 5, "F3"],
   [Spacing.Quarter * 9, 0, "F4"],
   [Spacing.Quarter * 9 + Spacing.ThirtySecond, 0, "F4"],
+  [Spacing.Quarter * 12 + Spacing.ThirtySecond, 0, "F4"],
 ];
 
 guitarNotes.forEach(([position, string, midiString]) => {
