@@ -12,7 +12,6 @@ const props = withDefaults(defineProps<{
 });
 
 const numStrings = computed(() => props.tuning.length);
-const column = computed((() => props.data.notchPosition + 1));
 
 const emit = defineEmits<{
   noteChange: [note: NoteSpot]
@@ -71,20 +70,11 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
 
 <style scoped>
 .division {
-  /* min-width: calc(var(--min-division-width) * 0.75); */
-  /* For scrollbar height */
-  /* height: calc(var(--min-division-width) / 2 * v-bind(numStrings) + 20px); */
-  grid-row: 1 / span v-bind(numStrings);
-  grid-column: v-bind(column) / span 1;
 
   display: grid;
 
-  /* grid-template-columns: calc(var(--min-division-width) / 2) repeat(calc(v-bind(subdivisions) - 1), 1fr); */
   grid-template-columns: v-bind(firstColWidth) repeat(v-bind(numSubstacks), 1fr);
   grid-template-rows: repeat(v-bind(numStrings), calc(var(--min-division-width) / 2));
-  /* grid-template-columns: repeat(v-bind(numColumns), min(calc(var(--min-division-width / 2)), 1fr)); */
-  /* grid-template-columns: repeat(v-bind(numColumns), calc(var(--min-division-width) / 2 / v-bind(numColumns))) 1fr; */
-  /* border-top: 2px solid v-bind(debugColor); */
 }
 
 .stack,
@@ -138,6 +128,5 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
   display: grid;
   flex-grow: 1;
   /* height: calc(var(--min-division-width) / 2 * v-bind(numStrings)); */
-
 }
 </style>

@@ -132,11 +132,17 @@ function updateNote(note: NoteSpot) {
     return stackMap;
   });
 }
+
+const divisionPlacement = (column: number) => ({
+  gridRow: `2 / span ${strings.value}`,
+  gridColumn: `${column} / span 1`,
+});
 </script>
 
 <template>
   <div class="bar">
     <TabsStrings />
+    <TabsToolbar divisions />
     <TabsDivision
       v-for="data in divisions"
       :key="data.notchPosition"
@@ -144,6 +150,7 @@ function updateNote(note: NoteSpot) {
       :data
       :tuning
       :frets
+      :style="divisionPlacement(data.notchPosition)"
       @note-change="updateNote"
     />
     <!-- <TabsSpacer
@@ -166,7 +173,7 @@ function updateNote(note: NoteSpot) {
   margin: 10px;
   display: grid;
   grid-template-columns: repeat(v-bind(notches), 1fr);
-  grid-template-rows: repeat(v-bind(strings), calc(var(--min-division-width) / 2))
+  grid-template-rows: calc(var(--min-division-width) / 2) repeat(v-bind(strings), calc(var(--min-division-width) / 2))
   /* height: calc(var(--min-division-width) / 2 * v-bind(strings)); */
   /* grid-template-rows:  */
   /* align-items: center; */
