@@ -89,7 +89,7 @@ function onSelectInput(e: Event) {
   }
 }
 
-@container (aspect-ratio < 2.5) {
+@container (aspect-ratio < 1.6) {
   .full.slide * {
     display: none;
   }
@@ -131,7 +131,7 @@ function onSelectInput(e: Event) {
 
 .slide-box {
   grid-area: 1 / 1;
-  width: calc(100% - 100% / var(--column-span) - var(--cell-height));
+  width: calc(100% - 100% / var(--column-span) - var(--cell-height) / 2);
   height: calc(var(--cell-height) / 2);
   margin-top: calc(var(--cell-height) / 4);
   background-color: black;
@@ -295,6 +295,7 @@ function onSelectInput(e: Event) {
   }
 }
 
+.container:has(.block-notes:hover) .indicator,
 .indicator.editing,
 .indicator:hover {
   margin-right: calc(var(--label-font-size) * -1.6);
