@@ -93,7 +93,7 @@ export function createTabStore(init?: TabData | Partial<typeof defaults>): TabSt
 function createChordStore({ tuning, chords }: ChordsData) {
   // TODO: edit tuning, swap chords, etc
   return {
-    // the entire map is reactive, so you can set notes directly
+    // the array is deeply reactive, so you can set notes directly
     chords,
     tuning,
     // TODO: delete if unused
@@ -107,6 +107,9 @@ function createChordStore({ tuning, chords }: ChordsData) {
       };
       chords.push(chord);
     },
+    deleteChord(index: number) {
+      chords.splice(index);
+    },
   };
 }
 
@@ -117,7 +120,7 @@ interface AnnotationStore {
   deleteAnnotation: (row: number, data: Annotation) => void;
   getAnnotations: (row: number) => Annotation[];
   getRows: () => number[];
-  nextRow: () => number;
+  createNextRow: () => void;
 }
 
 function createAnnotationStore(annotations: Map<number, Annotation[]>): AnnotationStore {
@@ -154,11 +157,11 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
     return [...annotations.keys()];
   }
 
-  function nextRow() {
-    return getRows().length;
+  function createNextRow() {
+    return annotations.set(getRows().length, []);
   }
 
-  return { createAnnotation, deleteAnnotation, getAnnotations, getRows, nextRow };
+  return { createAnnotation, deleteAnnotation, getAnnotations, getRows, createNextRow };
 }
 interface StackStore<N extends NoteData> {
   getStacks: (start?: number, end?: number) => StackMap<N>;

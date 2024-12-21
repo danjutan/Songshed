@@ -13,7 +13,7 @@ const [_, id] = route.path.split("/");
 const tabStore = ref<TabStore>();
 
 if (id) {
-  // TODO: use pages and create a dedicated route for this
+  // TODO: make an App component, then use pages and create a dedicated route for this
   const url = `/api/tab-data/${id}`;
   const { data, pending, error, refresh } = await useFetch(url, {
     method: "GET",

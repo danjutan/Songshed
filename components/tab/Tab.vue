@@ -185,6 +185,7 @@ const annotationRenders = computed(() => {
     <div v-for="(tabLine, tabLineIndex) in tabLines" class="tab-line">
       <template v-for="(bar, i) in tabLine" :key="bar.start">
         <div class="divider hoverable" @click="data.guitar?.shiftFrom(bar.start, barSize)" />
+
         <GuitarBar
           :stack-data="bar.stacks"
           :subdivisions
@@ -219,6 +220,8 @@ const annotationRenders = computed(() => {
             @mouseover="annotationDragThrough(position)"
           />
         </template>
+
+        <div class="new-row-box" @click="data.annotations.createNextRow()"><span>+</span></div>
       </template>
       <div
         v-if="tabLineIndex === tabLines.length - 1"
@@ -260,6 +263,22 @@ const annotationRenders = computed(() => {
   grid-template-rows: repeat(v-bind(annotationRows), var(--cell-height)) auto calc(
       var(--cell-height) * 0.8
     );
+}
+
+.new-row-box {
+  grid-row: 1;
+  grid-column: 1;
+  font-size: var(--cell-height);
+  border-right: none;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  cursor: pointer;
+
+  &:hover {
+    font-weight: bold;
+    background-color: lightcoral;
+  }
 }
 
 .divider {

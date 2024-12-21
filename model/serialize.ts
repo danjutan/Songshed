@@ -1,4 +1,4 @@
-import type { TabData, Annotation, GuitarNote, NoteData, GuitarTabData, StackMap } from "./data";
+import type { TabData } from "./data";
 
 function replacer(key: string, value: object) {
   if (value instanceof Map) {

@@ -58,6 +58,12 @@ watch(
   grid-row: v-bind(row);
   background-color: lightblue;
   pointer-events: v-bind(pointerEvents);
+
+  &:hover {
+    .delete {
+      visibility: visible;
+    }
+  }
 }
 
 .title {
@@ -72,6 +78,7 @@ watch(
   color: maroon;
   cursor: pointer;
   padding: 0px 1px;
+  visibility: hidden;
   &:hover {
     font-weight: bold;
     color: darkred;
