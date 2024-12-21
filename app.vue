@@ -50,7 +50,7 @@ function fretboardNoteChange(note: GuitarNote) {
   notes.deleteNote(position, string);
 } */
 
-const notches = ref(8);
+const notches = ref(4);
 const subdivisions = ref(4);
 const collapseSubdivisions = ref(true);
 const collapseEmpty = ref(true);
@@ -58,7 +58,7 @@ const collapseEmpty = ref(true);
 
 <template>
   <!-- <input type="checkbox" v-model="showDivisions"/> -->
-  Notches per beat:
+  Notches per bar:
   <input v-model="notches" type="number" />
   Subdivide notches by:
   <input v-model="subdivisions" type="number" />

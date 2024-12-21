@@ -59,7 +59,6 @@ const tabLines = computed<Bar[]>(() => {
   for (let i = 0; i < bars.value.length; i += props.barsPerLine) {
     tabLineBars.push(bars.value.slice(i, i + props.barsPerLine));
   }
-  console.log("tablines", tabLineBars);
   return tabLineBars;
 });
 
@@ -145,10 +144,6 @@ function newBarClick(lastColumn?: GuitarStack) {
     }
     &:hover::before {
       content: "+";
-    }
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.9);
     }
   }
 }
