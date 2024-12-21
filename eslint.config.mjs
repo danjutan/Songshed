@@ -16,6 +16,22 @@ export default withNuxt(
     rules: {
       "@stylistic/quotes": ["error", "double"],
       "@stylistic/semi": ["error", "always"],
+      "@typescript-eslint/no-explicit-any": ["off"],
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+      "@typescript-eslint/unified-signatures": [
+        "warn",
+        {
+          ignoreDifferentlyNamedParameters: true,
+        },
+      ],
     },
   },
   ...pluginVue.configs["flat/strongly-recommended"],

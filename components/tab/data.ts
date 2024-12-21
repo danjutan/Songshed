@@ -1,7 +1,7 @@
 /* export function createNote(position: number, string: number, midi: Midi | string) {
   return {
     position,
-    string,
+  string,
     data: {
       midi: typeof midi === "string" ? toMidi(midi) : midi,
     },
@@ -103,7 +103,6 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
   };
 
   function setNote(position: number, string: number, data: NoteData | Midi | string): void {
-    console.log("setNote called", arguments);
     if (position >= 0 && string >= 0 && string < strings) {
       const stackMap = tabData.get(position) || new Map<number, NoteData>();
       const noteData = typeof data === "object"
@@ -112,7 +111,6 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
             midi: typeof data === "string" ? toMidi(data) : data,
           };
       stackMap.set(string, noteData);
-      console.log("setting");
       tabData.set(position, stackMap);
       if (position > (furthestPos.at(-1) ?? 0)) {
         furthestPos.push(position);
@@ -149,9 +147,18 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
     getBar(start: number, end: number) {
       // const subset = computed(() => mapToNotes(tabData, start, end));
       const validPos = (pos: number) => start <= pos && pos < end;
-      function ifInBounds(func: (position: number, ...args: any[]) => any, position: number, ...otherArgs: any[]) {
-        if (validPos(position))
-          return func(position, ...otherArgs);
+      // function ifInBounds(func: (position: number, ...args: any[]) => any, position: number, ...otherArgs: []) {
+      //   if (validPos(position))
+      //     return func(position, ...otherArgs);
+      // }
+      // TODO: use generics
+      type PositionFunction = (position: number, ...args: any[]) => any;
+      function ifInBounds<F extends PositionFunction>(func: F) {
+        return (position: number, ...args: any[]) => {
+          if (validPos(position)) {
+            return func(position, ...args);
+          }
+        };
       }
       return {
         start,
@@ -159,11 +166,11 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
         strings,
         frets,
         tuning,
-        getStack: position => ifInBounds(getStack, position),
+        getStack: ifInBounds(getStack),
         getStacks: () => getStacks(start, end),
         getNotes: () => getNotes(start, end),
-        getNote: (position, ...args) => ifInBounds(getNote, position, ...args),
-        setNote: (position, ...args) => ifInBounds(setNote, position, ...args),
+        getNote: ifInBounds(getNote),
+        setNote: ifInBounds(setNote),
         deleteNote,
       };
     },

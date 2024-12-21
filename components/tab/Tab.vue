@@ -29,6 +29,7 @@ const bars = computed<BarStore[]>(() => {
 <template>
   <div class="tab">
     <TabBar v-for="barStore in bars"
+            :key="barStore.start"
             :data="barStore"
             :beats="barSize"
             :notches="resolution * beatsPerBar"

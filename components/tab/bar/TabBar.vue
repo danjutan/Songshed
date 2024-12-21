@@ -12,20 +12,12 @@ export type DivisionData = {
 
 const props = defineProps({
 
-  beats: {
-    type: Number,
-    default: 4 * Spacing.Quarter,
-    validator: (beats: number, props) => {
-      // return notes.every(note => note.position >= 0 && note.position < beats);
-      return true; // TODO
-    },
-  },
-
   notches: {
     type: Number,
     default: 16,
     validator: (notches: number, props) => {
-      const beats = props.beats as number;
+      const data = props.data as BarStore;
+      const beats = data.end - data.start;
       return beats / notches in Spacing;
     },
   },
@@ -36,20 +28,16 @@ const props = defineProps({
   },
 });
 
-const unit = computed<Spacing>(() => props.beats / props.notches);
 const strings = computed(() => props.data.strings);
+const unit = computed<Spacing>(() => (props.data.end - props.data.start) / props.notches);
 
 type StacksMap = Map<number, NoteSpot[]>;
 const stacksMap = computed<StacksMap>(() => {
   const map = new Map<number, NoteSpot[]>();
   const emptyStack = (position: number) => props.data.tuning.map((_, string) => ({ string, position }));
-  for (let position = 0; position < props.beats; position += unit.value) {
+  for (let position = 0; position < props.data.end - props.data.start; position += unit.value) {
     const stack = emptyStack(position);
     map.set(position, stack);
-    /* for (const note of props.data.getStack(position) ?? []) {
-      stack[note.string] = note;
-    }
-    map.set(position, stack); */
   }
   for (const [position, stack] of props.data.getStacks()) {
     const existing = map.get(position) || emptyStack(position);
@@ -58,7 +46,6 @@ const stacksMap = computed<StacksMap>(() => {
     }
     map.set(position, existing);
   }
-  console.log(map);
   return map;
 });
 
@@ -94,30 +81,6 @@ const divisions = computed<DivisionData[]>(() => {
     },
     []);
 });
-
-/* function modifyNotes(transform: (map: StacksMap) => StacksMap) {
-  const transformed = transform(stacksMap.value);
-  const stacks = transformed.values();
-  const newNotes: NoteSpot[] = [];
-  for (const note of Array.from(stacks).flat()) {
-    if (note.data) {
-      newNotes.push(note as NoteSpot);
-    }
-  }
-  notes.value = newNotes;
-}
-
-function updateNote(note: NoteSpot) {
-  modifyNotes((stackMap) => {
-    if (stackMap.has(note.position)) {
-      stackMap.get(note.position)![note.string] = note;
-    }
-    else {
-      stackMap.set(note.position, [note]);
-    }
-    return stackMap;
-  });
-} */
 
 const divisionPlacement = (column: number) => ({
   gridRow: `2 / span ${strings.value}`,

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Spacing, createTabStore } from "./components/tab/data";
-import TabBar from "./components/tab/bar/TabBar.vue";
 import Tab from "./components/tab/Tab.vue";
 
 const notes = createTabStore();
@@ -23,7 +22,6 @@ notes.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 4, "C4");
 notes.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 5, "F3");
 
 notes.setNote(Spacing.Quarter * 2 + Spacing.Sixteenth, 5, "F2");
-console.log(notes.getNotes());
 </script>
 
 <template>
