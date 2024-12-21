@@ -20,35 +20,80 @@ export type NoteData = {
 export type NoteSpot = {
   position: number // 0-indexed
   string: number // 0-indexed
-  data: NoteData
+  data?: NoteData
 };
+
+export type StacksData = Array<[position: number, NoteSpot[]]>;
 
 type StackMap = Map<number, NoteData>;
 export type TabData = Map<number, StackMap>;
 
 export type TabStore = {
-  readonly notes: ReturnType<typeof computed<NoteSpot[]>>
-  addNote: (position: number, string: number, data: NoteData) => void
+  // readonly notes: ReturnType<typeof computed<NoteSpot[]>>
+  readonly strings: number
+  readonly tuning: Midi[]
+  readonly frets: number
+  setNote: {
+    (position: number, string: number, data: NoteData): void
+    (position: number, string: number, midiString: string): void
+    (position: number, string: number, midi: Midi): void
+  }
   getNote: (position: number, string: number) => NoteData | undefined
   // updateNote: (position: number, string: number, properties: Partial<NoteData>) => void
   deleteNote: (position: number, string: number) => void
-  getBar: (start: number, end: number) => Omit<TabStore, "getBar">
+  // ordered by ascending string #
+  getStack: (position: number) => NoteSpot[] | undefined
+  getStacks: () => StacksData
+  lastPosition: () => number | undefined
+  getBar: (start: number, end: number) => BarStore
 };
 
-function mapToNotes(tabData: TabData, start = 0, end?: number): NoteSpot[] {
-  const notes: NoteSpot[] = [];
-  for (const [position, stackMap] of tabData.entries()) {
-    if (start > 0 && position < start) continue;
-    if (end && position >= end) continue;
-    for (const [string, data] of stackMap.entries()) {
-      notes.push({ position, string, data });
+export type BarStore = { readonly start: number, readonly end: number } &
+  Omit<TabStore, "getBar" | "lastPosition">;
+
+export function createTabStore(strings: number = 6, frets: number = 24, tuning: Midi[] = defaultTuning): TabStore {
+  const tabData = reactive<TabData>(new Map());
+
+  const furthestPos: number[] = []; // Stack
+  /* function mapToNotes(start = 0, end?: number): NoteSpot[] {
+    const notes: NoteSpot[] = [];
+    for (const [position, stackMap] of tabData.entries()) {
+      if (start > 0 && position < start) continue;
+      if (end && position > end) continue;
+      const sorted = [...stackMap.entries()].sort((a, b) => a[0] - b[0]);
+      for (const [string, data] of sorted) {
+        notes.push({ position, string, data });
+      }
+    }
+    return notes;
+  } */
+
+  function getStack(position: number): NoteSpot[] | undefined {
+    if (tabData.has(position)) {
+      const stackMap = tabData.get(position)!;
+      const sorted = [...stackMap.entries()].sort((a, b) => a[0] - b[0]);
+      return sorted.map(([string, data]) => ({
+        position,
+        string,
+        data,
+      }));
     }
   }
-  return notes;
-}
 
-export function createTabStore(strings: number): TabStore {
-  const tabData = reactive<TabData>(new Map());
+  function getStacks(start = 0, end?: number) {
+    const stacks: StacksData = [];
+    for (const position of tabData.keys()) {
+      if (start > 0 && position < start) continue;
+      if (end && position > end) continue;
+      stacks.push([position, getStack(position)!]);
+    }
+    return stacks;
+  }
+
+  function getNotes(start = 0, end?: number) {
+    const stacks = getStacks(start, end);
+    return stacks.map(([_, notes]) => notes).flat();
+  }
 
   function getNote(position: number, string: number) {
     const stackMap = tabData.get(position);
@@ -57,10 +102,20 @@ export function createTabStore(strings: number): TabStore {
     }
   };
 
-  function addNote(position, string, data) {
-    const stackMap = tabData.get(position) || new Map<number, NoteData>();
-    stackMap.set(string, data);
-    tabData.set(position, stackMap);
+  function setNote(position: number, string: number, data: NoteData | Midi | string): void {
+    if (position >= 0 && string >= 0 && string < strings) {
+      const stackMap = tabData.get(position) || new Map<number, NoteData>();
+      const noteData = typeof data === "object"
+        ? data
+        : {
+            midi: typeof data === "string" ? toMidi(data) : data,
+          };
+      stackMap.set(string, noteData);
+      tabData.set(position, stackMap);
+      if (position > (furthestPos.at(-1) ?? 0)) {
+        furthestPos.push(position);
+      }
+    }
   };
 
   function deleteNote(position: number, string: number) {
@@ -69,29 +124,44 @@ export function createTabStore(strings: number): TabStore {
       stackMap.delete(string);
       if (stackMap.size === 0) {
         tabData.delete(position);
+        if (position === furthestPos.at(-1)) {
+          furthestPos.pop();
+        }
       }
     }
   };
 
   return {
-    notes: computed(() => mapToNotes(tabData)),
+    getNotes,
+    strings,
+    frets,
+    tuning,
     getNote,
-    addNote,
+    getStack,
+    getStacks,
     deleteNote,
+    setNote,
+    lastPosition() {
+      return furthestPos.at(-1);
+    },
     getBar(start: number, end: number) {
-      const subset = computed(() => mapToNotes(tabData, start, end));
+      // const subset = computed(() => mapToNotes(tabData, start, end));
       const validPos = (pos: number) => start <= pos && pos < end;
+      function ifInBounds(func: (position: number, ...args: any[]) => any, position: number, ...otherArgs: any[]) {
+        if (validPos(position))
+          return func(position, ...otherArgs);
+      }
       return {
-        notes: subset,
-        getNote(position, string) {
-          if (validPos(position))
-            getNote(position, string);
-        },
-        addNote(position, string, data) {
-          if (validPos(position)) {
-            addNote(position, string, data);
-          }
-        },
+        // notes: subset,
+        start,
+        end,
+        strings,
+        frets,
+        tuning,
+        getStack: position => ifInBounds(getStack, position),
+        getStacks: () => getStacks(start, end),
+        getNote: (position, ...args) => ifInBounds(getNote, position, ...args),
+        setNote: (position, ...args) => ifInBounds(setNote, position, ...args),
         deleteNote,
       };
     },

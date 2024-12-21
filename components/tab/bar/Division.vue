@@ -78,13 +78,13 @@ const emptySubstacks = computed(() => {
     @click="debug && console.log({ notchPosition: data.notchPosition, substacks: data.substacks, subunit, subdivisions, colPositions })">
     <div class="stack">
       <TabBarNoteInput
-        v-for="noteSpot in props.data.stack"
-        :key="noteSpot.string"
+        v-for="({ string, position, data }) in props.data.stack"
+        :key="string"
         :collapse="numFilledSubstacks == 0"
-        :data="noteSpot.data"
-        :tuning="props.tuning[noteSpot.string]"
+        :data="data"
+        :tuning="props.tuning[string]"
         :frets="props.frets"
-        @data-change="emit('noteChange', { ...noteSpot, data: $event })"
+        @data-change="emit('noteChange', { string, position, data: $event })"
       />
     </div>
 

@@ -1,35 +1,23 @@
 <script lang="ts" setup>
 import type { PropType } from "vue";
-import type { NoteSpot, FilledSpot } from "../data";
+import type { NoteSpot, BarStore } from "../data";
 import { Spacing, smallestSpacing } from "../data";
-
-type StackData = NoteSpot[];
 
 // don't make this type recursive; the divisions should control their own notches/units
 export type DivisionData = {
   notchPosition: number
-  stack: StackData
+  stack: NoteSpot[]
   substacks?: Array<{ notchPosition: number, stack: NoteSpot[] }> // relative to root's notches
 };
 
 const props = defineProps({
 
-  tuning: {
-    type: Array as PropType<Midi[]>,
-    default: () => defaultTuning,
-  },
-
-  frets: {
-    type: Number,
-    default: 24,
-  },
-
   beats: {
     type: Number,
     default: 4 * Spacing.Quarter,
     validator: (beats: number, props) => {
-      const notes = props.modelValue as FilledSpot[];
-      return notes.every(note => note.position >= 0 && note.position < beats);
+      // return notes.every(note => note.position >= 0 && note.position < beats);
+      return true; // TODO
     },
   },
 
@@ -42,43 +30,42 @@ const props = defineProps({
     },
   },
 
-  // Where in the noteData does this start?
-  notePosition: {
-    type: Number,
-    default: 0,
+  data: {
+    type: Object as PropType<BarStore>,
+    required: true,
   },
 });
 
 const unit = computed<Spacing>(() => props.beats / props.notches);
-const strings = computed(() => props.tuning.length);
+const strings = computed(() => props.data.strings);
 
-const notes = defineModel<FilledSpot[]>({
-  required: true,
-});
-
-const stackMap = computed(() => {
-  const stackMap = new Map<number, StackData>();
-  const emptyStack = (position: number) => props.tuning.map((_, string) => ({ string, position }));
+type StacksMap = Map<number, NoteSpot[]>;
+const stacksMap = computed<StacksMap>(() => {
+  const map = new Map<number, NoteSpot[]>();
+  const emptyStack = (position: number) => props.data.tuning.map((_, string) => ({ string, position }));
   for (let position = 0; position < props.beats; position += unit.value) {
-    stackMap.set(position, emptyStack(position));
-  }
-  for (const note of notes.value) {
-    const position = note.position;
-    if (!stackMap.has(position)) {
-      // These are the substacks, which don't fit on the grid lines in the last loop
-      stackMap.set(position, emptyStack(position));
+    const stack = emptyStack(position);
+    map.set(position, stack);
+    /* for (const note of props.data.getStack(position) ?? []) {
+      stack[note.string] = note;
     }
-    stackMap.get(note.position)![note.string] = Object.assign({}, note);
+    map.set(position, stack); */
   }
-  return stackMap;
+  for (const [position, stack] of props.data.getStacks()) {
+    const existing = map.get(position) || emptyStack(position);
+    for (const note of stack) {
+      existing[note.string] = note;
+    }
+    map.set(position, existing);
+  }
+  console.log(map);
+  return map;
 });
-
-type StackMap = typeof stackMap.value;
 
 const divisions = computed<DivisionData[]>(() => {
-  const sorted = [...stackMap.value].sort(([pos1], [pos2]) => pos1 - pos2);
+  const sorted = [...stacksMap.value].sort(([pos1], [pos2]) => pos1 - pos2);
   const normalized: Array<[number, NoteSpot[]]> = sorted.map(
-    ([pos, stack]) => ([(pos - props.notePosition) / unit.value, stack]
+    ([pos, stack]) => ([(pos - props.data.start) / unit.value, stack]
     ));
 
   return normalized.reduce<DivisionData[]>(
@@ -108,13 +95,13 @@ const divisions = computed<DivisionData[]>(() => {
     []);
 });
 
-function modifyNotes(transform: (map: StackMap) => StackMap) {
-  const transformed = transform(stackMap.value);
+/* function modifyNotes(transform: (map: StacksMap) => StacksMap) {
+  const transformed = transform(stacksMap.value);
   const stacks = transformed.values();
-  const newNotes: FilledSpot[] = [];
+  const newNotes: NoteSpot[] = [];
   for (const note of Array.from(stacks).flat()) {
     if (note.data) {
-      newNotes.push(note as FilledSpot);
+      newNotes.push(note as NoteSpot);
     }
   }
   notes.value = newNotes;
@@ -130,7 +117,7 @@ function updateNote(note: NoteSpot) {
     }
     return stackMap;
   });
-}
+} */
 
 const divisionPlacement = (column: number) => ({
   gridRow: `2 / span ${strings.value}`,
@@ -144,20 +131,21 @@ const subdivisions = computed(() => (Spacing.Whole / smallestSpacing) / props.no
   <div class="bar">
     <TabBarStrings />
     <TabBarDivision
-      v-for="data in divisions"
-      :key="data.notchPosition"
+      v-for="div in divisions"
+      :key="div.notchPosition"
       debug
       :subdivisions
-      :data
+      :data="div"
+      :div
       :unit
-      :tuning
-      :frets
-      :style="divisionPlacement(data.notchPosition + 1)"
-      @note-change="updateNote"
+      :tuning="data.tuning"
+      :frets="data.frets"
+      :style="divisionPlacement(div.notchPosition + 1)"
+      @note-change="data.setNote"
     />
     <TabBarToolbar
       :divisions
-      :tuning
+      :tuning="data.tuning"
       :subdivisions
     />
     <!-- <TabBarSpacer
@@ -178,7 +166,6 @@ const subdivisions = computed(() => (Spacing.Whole / smallestSpacing) / props.no
   --string-width: 1px;
   --string-color: gray;
   --highlight-color: rgba(172, 206, 247, 0.6);
-  margin: 10px;
   display: grid;
   grid-template-columns: repeat(v-bind(notches), 1fr);
   grid-template-rows: var(--cell-height) repeat(v-bind(strings), var(--cell-height))
