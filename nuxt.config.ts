@@ -12,11 +12,11 @@ export default defineNuxtConfig({
     kv: true,
   },
 
-  $development: {
-    hub: {
-      remote: true,
-    },
-  },
+  // $development: {
+  //   hub: {
+  //     remote: true,
+  //   },
+  // },
 
   compatibilityDate: "2024-12-12",
 });
