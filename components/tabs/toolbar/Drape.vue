@@ -14,7 +14,7 @@ const props = defineProps<DrapeData & {
 <template>
   <div class="drape"
        :class="{ collapse: onlyCollapsed }">
-    <div class="drape-child" />
+    <div class="drape-down" />
   </div>
 </template>
 
@@ -26,18 +26,18 @@ const props = defineProps<DrapeData & {
 
   .drape {
     grid-column: v-bind(start) / span v-bind(columns);
+    grid-row: 2;
     height: calc(var(--min-division-width) / 2 * v-bind(columns));
     pointer-events: none;
   }
 
-  .drape-child {
+  .drape-down {
     background-color: v-bind(color);
-    margin-top: calc(var(--min-division-width) / 2);
     height: calc(v-bind(numStrings) * var(--min-division-width) / 2);
   }
 
   @container drape (aspect-ratio > 1) {
-    .drape-child {
+    .drape-down {
       display: none
     }
   }

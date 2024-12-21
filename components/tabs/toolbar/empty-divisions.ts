@@ -3,7 +3,6 @@ import type { DrapeData } from "./Drape.vue";
 
 const isEmptyDivision = (division: DivisionData) => {
   const stackEmpty = division.stack.every(s => !s.data);
-  console.log(division.substacks);
   return stackEmpty && !division.substacks;
 };
 

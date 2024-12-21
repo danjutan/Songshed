@@ -18,7 +18,8 @@ const emit = defineEmits<{
 }>();
 
 const sortedSubstacks = computed(() => props.data.substacks?.toSorted((a, b) => a.notchPosition - b.notchPosition) || []);
-const numSubstacks = computed(() => sortedSubstacks.value.length);
+const numFilledSubstacks = computed(() => sortedSubstacks.value.length);
+const numSubstacks = computed(() => numFilledSubstacks.value && props.subdivisions - 1);
 const relativePositions = computed(() => sortedSubstacks.value.map(substack => substack.notchPosition - props.data.notchPosition));
 // const subunit = computed(() => SpacingsDescending.find(spacing => relativePositions.value?.every(relative => relative % spacing === 0)) || 1);
 const subunit = computed(() => 1 / props.subdivisions);
@@ -35,7 +36,7 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
     <div class="stack">
       <TabsNoteInput v-for="(noteSpot) in props.data.stack"
                      :key="noteSpot.string"
-                     :collapse="numSubstacks == 0"
+                     :collapse="numFilledSubstacks == 0"
                      :data="noteSpot.data"
                      :tuning="props.tuning[noteSpot.string]"
                      :frets="props.frets"
@@ -73,7 +74,7 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
 
   display: grid;
 
-  grid-template-columns: v-bind(firstColWidth) repeat(v-bind(numSubstacks), 1fr);
+  grid-template-columns: v-bind(firstColWidth) repeat(v-bind(numSubstacks), minmax(10px, 1fr));
   grid-template-rows: repeat(v-bind(numStrings), calc(var(--min-division-width) / 2));
 }
 
@@ -85,7 +86,6 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
 }
 
 .substack {
-  min-width: 2px;
   background-color: var(--substack-bg);
 }
 

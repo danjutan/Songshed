@@ -142,10 +142,7 @@ const divisionPlacement = (column: number) => ({
 <template>
   <div class="bar">
     <TabsStrings />
-    <TabsToolbar
-      :divisions
-      :tuning
-    />
+
     <TabsDivision
       v-for="data in divisions"
       :key="data.notchPosition"
@@ -155,6 +152,10 @@ const divisionPlacement = (column: number) => ({
       :frets
       :style="divisionPlacement(data.notchPosition + 1)"
       @note-change="updateNote"
+    />
+    <TabsToolbar
+      :divisions
+      :tuning
     />
     <!-- <TabsSpacer
       v-for="data in emptyDivisions"
@@ -171,6 +172,8 @@ const divisionPlacement = (column: number) => ({
   --min-division-width: 46px;
   --note-font-size: calc(var(--min-division-width) * 0.4);
   --substack-bg: rgba(255, 0, 0, 0.1);
+  --string-width: 1px;
+  --string-color: gray;
   /* --z-index-notes: 10; */
   /* border: 1px solid black; */
   margin: 10px;

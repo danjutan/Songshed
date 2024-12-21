@@ -28,7 +28,7 @@
 }
 
 .string {
-  height: 1px;
-  background-color: gray;
+  height: var(--string-width);
+  background-color: var(--string-color)
 }
 </style>
