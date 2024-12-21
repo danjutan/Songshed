@@ -22,19 +22,21 @@ const props = withDefaults(defineProps<{
 });
 const barSize = computed(() => props.beatsPerBar * props.beatSize);
 
+const barsUntil = ref(props.data.lastPosition() ?? 0);
+
 const bars = computed<BarStore[]>(() => {
   const barStores: BarStore[] = [];
-  const lastPosition = props.data.lastPosition();
-  for (let i = 0; i <= (lastPosition ?? 0); i += barSize.value) {
+  for (let i = 0; i <= barsUntil.value; i += barSize.value) {
     barStores.push(props.data.getBar(i, i + barSize.value));
   }
+  /* for (i; i <= newBarUntil; i += barSize.value) {
+    barStores.push(props
+  } */
   return barStores;
 });
 
-const newBarUntil = ref(0);
-
 function newBarClick() {
-  newBarUntil.value = Math.max((props.data.lastPosition() || 0), newBarUntil.value + barSize.value);
+  barsUntil.value = Math.max((props.data.lastPosition() || 0), barsUntil.value + barSize.value);
 }
 </script>
 
