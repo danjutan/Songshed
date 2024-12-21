@@ -70,7 +70,7 @@ const annotationRows = computed(() => Math.max(props.data.annotations.getRows().
 const notesRow = computed(() => annotationRows.value + 1);
 
 function newAnnotationRowClick() {
-  if (props.data.annotations.getRows().length < annotationRows.value) {
+  if (props.data.annotations.getRows().length === annotationRows.value - 1) {
     props.data.annotations.createNextRow();
   }
   props.data.annotations.createNextRow();
@@ -279,7 +279,7 @@ const annotationRenders = computed(() => {
   border-right: none;
   display: flex;
   justify-content: center;
-  align-items: flex-end;
+  align-items: center;
   cursor: pointer;
 
   &:hover {

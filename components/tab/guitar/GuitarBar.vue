@@ -36,10 +36,11 @@ const collapsedEmpty = computed<Set<number>>(() => {
   props.stackData.forEach((_, position) => {
     if (!isNotch(position)) return;
     const notchGroup: number[] = [];
-    for (let i = position; i < position + props.subdivisions; i++) {
-      const stack = props.stackData.get(i);
-      if (!stack || !emptyStack(stack)) return;
-      notchGroup.push(position);
+    for (let i = 0; i < props.subdivisions; i++) {
+      const subPos = position + i * subUnit.value;
+      const stack = props.stackData.get(subPos);
+      if (stack && !emptyStack(stack)) return;
+      notchGroup.push(subPos);
     }
     notchGroup.forEach((position) => collapsed.add(position));
   });
