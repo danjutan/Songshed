@@ -6,8 +6,12 @@ import type { Division } from './components/tabs/types';
 // const div2: Division[] = [[2,1], [2,1], [4,4]]
 // const div3: Division[] = [[1,0.5], [1, 0.5], [2,1], [4,4]]
 const d = (...nums: number[]) => [...nums.map(n => ({length: n, notes: []}))];
-const divnum = ref(d(1/2,1/6,1/6,1/6,1/2,1/4,1/4,2));
-const another = ref(d(1,1,1,1));
+const divnum = reactive(d(1/2,1/6,1/6,1/6,1/2,1/4,1/4,2));
+const another = reactive(d(1,1,1,1));
+
+watchEffect(() => {
+  console.log(another)
+})
 
 // const showDivisions = ref(false);
 </script>

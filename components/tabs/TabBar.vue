@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import type { Division } from './types';
 //Let's see what things look like without composing
-const divisions = defineModel<Division[]>({ required: true });
+const divisions = defineModel<Division[]>({ required: true, set() {
+  console.log("setting model");
+} });
 const props = withDefaults(defineProps<{
   strings?: number,
   frets?: number
@@ -33,19 +35,23 @@ const filled = (col: number, string: number) => {
   return divisions.value[col].notes[string];
 }
 
-// const inputs = reactive([]); 
-
-function onInputClick(payload: MouseEvent) {
-  console.log(payload.target);
-  if (payload.target) {
-    (payload.target as HTMLInputElement).select();
+function onInputClick(event: MouseEvent) {
+  if (event.target) {
+    (event.target as HTMLInputElement).select();
   }
 }
 
-function onInputBlur(payload: FocusEvent) {
-  const clamped = Math.max(1, Math.min(props.frets, parseInt((payload.target as HTMLInputElement).value)));
+function onInputBlur(event: FocusEvent) {
+  const clamped = Math.max(1, Math.min(props.frets, parseInt((event.target as HTMLInputElement).value)));
   // correct this and the v-model below
   // divisions.value[editing.value.col][1][editing.value.string] = clamped;
+}
+
+function onInputKeypress (event: KeyboardEvent) {
+  const key = parseInt(event.key);
+  const nextValue = (event.target as HTMLInputElement).value + event.key;
+  if (!isFinite(key) || key < 1 || parseInt(nextValue) > props.frets)
+    event.preventDefault();
 }
 
 </script>
@@ -59,11 +65,13 @@ function onInputBlur(payload: FocusEvent) {
         <div v-for="(_, string) in props.strings" class="row">
           <div class="spot" @mouseover="editing = {col, string}" @mouseleave="editing = undefined">
               <span class="input-bg">{{ divisions[col].notes[string]}}</span>
-              <input v-model="divisions[col].notes[string]" 
+              <input 
                 size="2"
+                @keypress="onInputKeypress",
+                @input=""
                 @click="onInputClick"
                 @blur="onInputBlur"
-                type="text" inputmode="numeric" pattern="[0-9]*"/>
+                type="text" inputmode="numeric" pattern="[0-9]{1,2}"/>
           </div>
         </div>
       </div>
