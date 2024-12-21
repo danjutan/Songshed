@@ -25,6 +25,7 @@ const guitarNotes: Array<[number, number, string]> = [
   [Spacing.Quarter * 8, 5, "F3"],
   [Spacing.Quarter * 9, 0, "F4"],
   [Spacing.Quarter * 9 + Spacing.ThirtySecond, 0, "F4"],
+  [Spacing.Quarter * 12, 0, "F4"],
   [Spacing.Quarter * 12 + Spacing.ThirtySecond, 0, "F4"],
 ];
 
@@ -53,8 +54,9 @@ function fretboardNoteChange(note: GuitarNote) {
   notes.deleteNote(position, string);
 } */
 
-const notches = ref(4);
+const notches = ref(8);
 const subdivisions = ref(4);
+const collapse = ref(true);
 </script>
 
 <template>
@@ -63,9 +65,12 @@ const subdivisions = ref(4);
                            type="number">
   Subdivide notches by: <input v-model="subdivisions"
                                type="number">
+  Collapse subdivisions: <input v-model="collapse"
+                                type="checkbox">
   <Tab :data="tabStore"
        :notches
        :subdivisions
+       :collapse-subdivisions="collapse"
   />
   <!-- <Fretboard
     width="75%"
@@ -75,7 +80,7 @@ const subdivisions = ref(4);
 </template>
 
 <style scoped>
-  input {
+  input[type=number] {
     width: 50px;
   }
 </style>

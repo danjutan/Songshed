@@ -181,8 +181,8 @@ function noteChange(changed: NoteSpot) {
            :style="{ gridColumn: i + 1 }"
            :frets="data.frets"
            :tuning="data.tuning"
-           :stack="col.stack"
-           :substack="!isNotch(col)"
+           :notes="col.stack"
+           :collapse="!isNotch(col)"
            :selected="isSelected(col)"
            :class="{
              even: i % 2 === 0,

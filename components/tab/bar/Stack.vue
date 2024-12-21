@@ -2,11 +2,11 @@
 import type { GuitarNote } from "../data";
 
 const props = withDefaults(defineProps<{
-  stack: GuitarNote[]
+  notes: GuitarNote[]
   frets: number
   tuning: Midi[]
   selected?: boolean
-  substack?: boolean
+  collapse?: boolean
 }>(), {
 });
 
@@ -19,11 +19,11 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
 
 <template>
   <div class="stack"
-       :class="{ substack }">
-    <div v-for="noteSpot in stack"
+       :class="{ collapse }">
+    <div v-for="noteSpot in notes"
          :key="noteSpot.string"
          class="container">
-      <div v-if="substack && noteSpot.data"
+      <div v-if="collapse && noteSpot.data"
            class="square"
            :style="{
              backgroundColor: defaultColors[getChroma(noteSpot.data.midi)],
@@ -42,7 +42,7 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
   </div>
 </template>
 
-<style>
+<style scoped>
 .stack {
   display: flex;
   flex-direction: column;
@@ -57,7 +57,7 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
   align-items: center;
 }
 
-.substack .container {
+.collapse .container {
   container-type: size;
 }
 
