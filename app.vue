@@ -42,7 +42,7 @@ if (id) {
     [Spacing.Quarter * 8, 5, "F3"],
     [Spacing.Quarter * 9 - Spacing.Sixteenth, 0, "G4"],
     [Spacing.Quarter * 9, 0, "F4"],
-    [Spacing.Quarter * 9 + Spacing.Eighth, 0, "F4"],
+    [Spacing.Quarter * 9 + Spacing.Eighth + Spacing.Sixteenth, 0, "F4"],
     [Spacing.Quarter * 10 + Spacing.Sixteenth, 2, "F4"],
     [Spacing.Quarter * 12, 0, "F4"],
     [Spacing.Quarter * 12 + Spacing.Sixteenth, 0, "F4"],

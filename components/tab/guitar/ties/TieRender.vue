@@ -13,33 +13,65 @@ const props = defineProps<TieRenderProps>();
 </script>
 
 <template>
-  <div
-    class="tie-box"
-    :class="{ left: props.half === 'left', right: props.half === 'right' }"
-  >
-    <div class="arc-rect" />
-    <div v-if="props.half !== 'left'" class="indicator" :class="{ editing }">
-      <select>
-        <option value="H">H</option>
-        <option value="P">P</option>
-        <option value="S">S</option>
-      </select>
-      <div class="label">{{ props.type }}</div>
+  <div class="container">
+    <div
+      class="tie-box"
+      :class="{
+        full: !props.half,
+        left: props.half === 'left',
+        right: props.half === 'right',
+      }"
+    >
+      <div class="arc-rect" />
+      <div v-if="props.half !== 'left'" class="indicator" :class="{ editing }">
+        <select>
+          <option value="H">H</option>
+          <option value="P">P</option>
+          <option value="S">S</option>
+        </select>
+        <div class="label">{{ props.type }}</div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.tie-box {
-  --column-span: calc(v-bind(endColumn) - v-bind(startColumn) + 1);
-  /* border: 1px solid black; */
+.container {
+  pointer-events: none;
+  /* border: 1px solid red; */
   grid-row: v-bind(row);
   grid-column: v-bind(startColumn) / calc(v-bind(endColumn) + 1);
+  /* height: calc(
+    var(--cell-height) * (v-bind(endColumn) + 1 - v-bind(startColumn))
+  ); */
+  height: var(--cell-height);
+  display: flex;
+  align-items: start;
+  container-type: size;
+}
+
+@container (aspect-ratio < 1.5) {
+  .tie-box.full {
+    opacity: 0;
+  }
+}
+
+@container (aspect-ratio < 0.79) {
+  .tie-box.left,
+  .tie-box.right {
+    opacity: 0;
+  }
+}
+.tie-box {
+  --column-span: calc(v-bind(endColumn) - v-bind(startColumn) + 1);
+  width: 100%;
+  /* border: 1px solid black; */
   z-index: 1;
-  align-self: center;
-  pointer-events: none;
-  margin-bottom: calc(var(--cell-height) * -1.2);
-  height: 50%;
+  /* align-self: center; */
+  /* margin-bottom: calc(var(--cell-height) * -2); */
+  margin-top: calc(var(--cell-height) * 0.75);
+  height: calc(var(--cell-height) * 0.5);
+  /* height: 50%; */
   display: flex;
   justify-content: center;
   align-items: end;
@@ -52,7 +84,7 @@ const props = defineProps<TieRenderProps>();
 
 .arc-rect {
   /* margin-bottom: calc(var(--cell-height) * 0.25); */
-  border-bottom: 1.5px solid black;
+  border: 1.5px solid black;
   border-radius: calc(var(--cell-height));
   width: calc(100% - 100% / var(--column-span));
   /* width: 100%; */
@@ -62,7 +94,7 @@ const props = defineProps<TieRenderProps>();
   align-items: end;
 }
 
-.tie-box:not(.left):not(.right) .arc-rect {
+.tie-box.full .arc-rect {
   clip-path: polygon(
     0% 0%,
     0% 100%,
