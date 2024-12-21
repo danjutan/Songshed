@@ -50,13 +50,6 @@ const props = defineProps<TieRenderProps>();
   }
 }
 
-.tie-box.left {
-  /* border: 1px solid blue; */
-}
-
-.tie-box.right {
-  /* border: 1px solid red; */
-}
 .arc-rect {
   /* margin-bottom: calc(var(--cell-height) * 0.25); */
   border-bottom: 1.5px solid black;

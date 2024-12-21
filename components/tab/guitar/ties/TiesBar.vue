@@ -1,12 +1,5 @@
 <script lang="ts" setup>
-import type {
-  GuitarNote,
-  NoteStack,
-  StackMap,
-  Tie,
-  Ties,
-  TieType,
-} from "~/model/data";
+import type { Ties } from "~/model/data";
 import TieRender, { type TieRenderProps } from "./TieRender.vue";
 import type { OverlayPosition } from "~/components/tab/overlay-objects";
 
