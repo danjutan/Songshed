@@ -21,7 +21,7 @@ if (id) {
 
   watchEffect(() => {
     if (data.value) {
-      const tabData: TabData = deserializeTabData(data.value as SerializeableTabData);
+      const tabData: TabData = deserializeTabData(data.value as string);
       tabStore.value = createTabStore(tabData);
     }
   });

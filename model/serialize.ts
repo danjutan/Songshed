@@ -1,13 +1,30 @@
 import type { TabData, Annotation, GuitarNote, NoteData, GuitarTabData, StackMap } from "./data";
 
+function replacer(key: string, value: object) {
+  if (value instanceof Map) {
+    return {
+      _entries: [...value],
+    };
+  }
+  return value;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function reviver(key: string, value: any) {
+  if (typeof value === "object" && value._entries) {
+    return new Map(value._entries as Array<[unknown, unknown]>);
+  }
+  return value;
+}
+
 type SerializeableStackMap<N extends NoteData> = Array<[number, Array<[number, N]>]>;
 
 export interface SerializeableGuitar extends Omit<GuitarTabData, "stacks"> {
   stacks: SerializeableStackMap<Omit<GuitarNote, "string">>;
 }
-export interface SerializeableTabData extends Omit<TabData, "guitarData" | "annotations"> {
+
+export interface SerializeableTabData extends Omit<TabData, "guitarData"> {
   guitarData?: SerializeableGuitar;
-  annotations: Array<[number, Annotation[]]>;
 }
 export function serializeTabData(data: TabData): string {
   const withoutString = (guitarNote: GuitarNote) => {
@@ -28,15 +45,17 @@ export function serializeTabData(data: TabData): string {
     title,
     beatSize,
     beatsPerBar,
-    annotations: [...data.annotations.entries()],
+    annotations: data.annotations,
+    chordsData: data.chordsData,
     ...(data.guitarData && { guitarData }),
   };
 
-  return JSON.stringify(serializeable);
+  return JSON.stringify(serializeable, replacer);
 }
 
-export function deserializeTabData(data: string | SerializeableTabData): TabData {
-  const parsed: SerializeableTabData = typeof data === "string" ? JSON.parse(data) : data;
+export function deserializeTabData(data: string): TabData {
+  const parsed: SerializeableTabData = JSON.parse(data, reviver);
+  console.log(parsed);
   let guitarData: GuitarTabData | undefined;
   if (parsed.guitarData) {
     const stacks: StackMap<GuitarNote> = new Map();
@@ -51,12 +70,13 @@ export function deserializeTabData(data: string | SerializeableTabData): TabData
       stacks: stacks,
     };
   }
-  const { title, beatsPerBar, beatSize } = parsed;
+  const { title, beatsPerBar, beatSize, annotations, chordsData } = parsed;
   return {
     title,
     beatsPerBar,
     beatSize,
-    annotations: new Map(parsed.annotations),
+    annotations,
+    chordsData,
     ...(guitarData && { guitarData }),
   };
 }

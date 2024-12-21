@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     };
   }
   if (event.method === "GET") {
-    const tabData = await hubKV().get(id);
+    const tabData = await hubKV().getItemRaw(id);
     return tabData;
   }
 });

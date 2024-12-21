@@ -100,7 +100,11 @@ function createChordStore({ tuning, chords }: ChordsData) {
     setChord(index: number, chord: Chord) {
       chords[index] = chord;
     },
-    addChord(chord: Chord) {
+    addChord() {
+      const chord: Chord = {
+        title: "",
+        notes: new Map(),
+      };
       chords.push(chord);
     },
   };
