@@ -117,17 +117,7 @@ function onClick(e: MouseEvent) {
     @mouseover="hover(string, position)"
   >
     <span class="input-bg">{{ noteText }}</span>
-    <!-- <div
-      v-if="editing && relativeNote"
-      class="side left"
-      :class="{
-        hidden:
-          tieAdd.dragDirection === 'left' || tieAdd.hasLeft(string, position),
-      }"
-      @mousedown="onSideMouseDown"
-    >
-      <span>&ldca;</span>
-    </div> -->
+    <!-- <div class="input-hover" /> -->
     <input
       ref="input"
       :value="noteText"
@@ -139,17 +129,6 @@ function onClick(e: MouseEvent) {
       @click="onClick"
       @keyup="(e) => e.stopPropagation()"
     />
-    <!-- <div
-      v-if="editing && hasNote"
-      class="side right"
-      :class="{
-        hidden:
-          tieAdd.dragDirection === 'right' || tieAdd.hasRight(string, position),
-      }"
-      @mousedown="onSideMouseDown"
-    >
-      <span>&rdca;</span>
-    </div> -->
   </div>
 </template>
 
@@ -167,7 +146,8 @@ input {
 }
 
 .input-bg,
-input {
+input,
+.input-hover {
   grid-area: 1 / 1;
   /* grid-area: 1 / 2; */
   /* font-size: var(--note-font-size); */
@@ -175,12 +155,13 @@ input {
 }
 
 input {
-  width: var(--cell-height);
+  /* width: var(--cell-height); */
+  width: 100%;
+  max-width: var(--cell-height);
 }
 
-/* I think this does nothing*/
-/* .has-note.focused input {
-  width: var(--note-font-size);
+/* .editing input {
+  width: var(--cell-height);
 } */
 
 .input-bg {

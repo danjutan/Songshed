@@ -57,10 +57,6 @@ function onStackMouseMove() {
   if (selecting.dragging) (document.activeElement as HTMLElement).blur();
 }
 
-function onSpotMouseEnter(string: number) {
-  hovering.value = string;
-}
-
 type InputRef = InstanceType<typeof NoteInput> | null;
 const inputRefs = ref<InputRef[]>([]);
 
@@ -98,11 +94,11 @@ function onSpotMouseDown(
       class="container"
       :class="{
         crosshair: tieable(note, string),
-        collapse: editing.editingNote?.position !== position && collapse,
+        collapse,
       }"
-      @mouseenter="onSpotMouseEnter(string)"
       @click="inputRefs[string]?.focus()"
       @mousedown="(e) => onSpotMouseDown(e, string, note)"
+      @mouseenter="hovering = string"
       @mouseleave="hovering = undefined"
     >
       <div
@@ -157,6 +153,10 @@ function onSpotMouseDown(
 
 .container.collapse {
   container-type: size;
+}
+
+.container:not(.collapse) {
+  width: var(--cell-height);
 }
 
 .square {

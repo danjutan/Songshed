@@ -3,6 +3,7 @@ import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
 import Strings from "./Strings.vue";
 import Stack from "./Stack.vue";
 import { SettingsInjectionKey, type Settings } from "../state/settings-state";
+import { EditingInjectionKey, type EditingState } from "../state/editing-state";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
@@ -21,6 +22,7 @@ const emit = defineEmits<{
 }>();
 
 const settings = inject(SettingsInjectionKey) as Settings;
+const editing = inject(EditingInjectionKey) as EditingState;
 
 const isSubdivision = (position: number) => position % props.beatSize !== 0;
 
@@ -31,6 +33,7 @@ const collapsed = computed<Set<number>>(() => {
     [...props.stackData]
       .filter(([position, stack]) => {
         // if (expanded.has(position)) return false;
+        if (editing.editingNote?.position === position) return false;
         if (settings.collapseAll) return true;
         if (settings.collapseEmpty && stack.size === 0) return true;
         if (settings.collapseSubdivisions && isSubdivision(position))
