@@ -238,13 +238,13 @@ function createStackStore<N extends NoteData>(stacks: StackMap<N>): StackStore<N
   const furthestPos: number[] = [];
 
   // TODO: Figure out why we need toRaw (setNote breaks otherwise)
-  for (const key of [...toRaw(stacks).keys()].sort((a, b) => a - b)) {
+  for (const key of [...toRaw(stacks).keys()].toSorted((a, b) => a - b)) {
     furthestPos.push(key);
   }
 
   function getStacks(start = 0, end?: number) {
     const subset: StackMap<N> = new Map();
-    for (const position of [...stacks.keys()].sort((a, b) => a - b)) {
+    for (const position of [...stacks.keys()].toSorted((a, b) => a - b)) {
       if (start > 0 && position < start) continue;
       if (end && position >= end) break;
       subset.set(position, stacks.get(position)!);

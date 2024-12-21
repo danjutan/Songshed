@@ -1,5 +1,5 @@
-<script lang="ts" setup>
-import type { NoteData, NoteSpot } from "../tab/data";
+<script setup lang="ts">
+import type { NoteData } from "../tab/data";
 import NoteView from "./NoteView.vue";
 import { defaultFrameColor } from "~/composables/colors";
 
@@ -8,19 +8,18 @@ const props = withDefaults(
     tuning?: Midi[];
     frets?: number;
     colors?: NoteColors;
-    stack?: NoteSpot[];
+    // stack?: NoteSpot[];
   }>(),
   {
     frets: 24,
     colors: () => defaultColors,
     tuning: () => defaultTuning,
-    stack: () =>
-      defaultTuning.map((midi, string) => ({ midi, string, position: 0 })),
+    stack: () => defaultTuning.map((midi, string) => ({ midi, string, position: 0 })),
   },
 );
 
 const emit = defineEmits<{
-  noteChange: [spot: NoteSpot];
+  // noteChange: [spot: NoteSpot];
 }>();
 
 const cellRatio = 15 / 25; // height / width
@@ -47,8 +46,9 @@ const rowLinesY = rows.map((_, y) => cellHeight / 2 + y * cellHeight);
 
 const fretLabels = ["Open", ...range(props.frets)];
 
-const noteToggle = (selected: boolean, string: number, midi: Midi) => {
-  let data: NoteData | undefined = props.stack[string].data;
+function noteToggle(selected: boolean, string: number, midi: Midi) {}
+
+/* let data: NoteData | undefined = props.stack[string].data;
   if (selected) {
     data = { midi };
   } else if (data?.midi === props.tuning[string]) {
@@ -56,8 +56,7 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
   } else {
     data = { midi: props.tuning[string] };
   }
-  emit("noteChange", { ...props.stack[string], data });
-};
+  emit("noteChange", { ...props.stack[string], data }); */
 </script>
 
 <template>
@@ -100,7 +99,7 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
         v-for="(midi, xi) in row"
         :key="xi"
         :color="defaultColors[getChroma(midi)]"
-        :selected="stack[yi].data?.midi === midi"
+        :selected="/*stack[yi].data?.midi === midi*/ false"
         :frame-color="defaultFrameColor"
         :midi
         :note-radius

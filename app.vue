@@ -2,6 +2,7 @@
 import type { GuitarNote, SerializeableTabData, TabData, TabStore } from "./components/tab/data";
 import { Spacing, createTabStore, deserializeTabData } from "./components/tab/data";
 import Tab from "./components/tab/Tab.vue";
+import ChordChart from "./components/chords/ChordChart.vue";
 
 const route = useRoute();
 const [_, id] = route.path.split("/");
@@ -115,6 +116,20 @@ async function save() {
     :collapse-subdivisions
     :collapse-empty
   />
+
+  <ChordChart
+    :notes="{
+      0: { fret: 1, finger: 1 },
+      1: { fret: 1, finger: 1 },
+      2: { fret: 1, finger: 1 },
+      3: { fret: 1, finger: 1 },
+      4: { fret: 6, finger: 1 },
+      5: { fret: 6, finger: 1 },
+    }"
+    width="300px"
+  />
+  <ChordChart :notes="{ 2: { fret: 4, finger: 2 }, 3: { fret: 5, finger: 2 } }" width="300px" />
+  <ChordChart :notes="{ 1: { fret: 0, finger: 1 } }" width="300px" />
   <!-- <Fretboard
     width="75%"
     :stack="activeStack"
