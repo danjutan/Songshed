@@ -20,7 +20,7 @@ const spacers = computed(() => emptyDivisions(props.divisions));
     <div v-for="i in numNotches"
          :key="i"
          :style="{ gridColumn: `${i} / span 1` }"
-         :class="{ 'border-even': i % 2 === 0, 'border-odd': i % 2 === 1 }"
+         :class="{ border: i != hovering, even: i % 2 === 0, odd: i % 2 === 1 }"
          class="notch">
       <div class="selectable"
            @mouseover="hovering = i"
@@ -78,12 +78,12 @@ const spacers = computed(() => emptyDivisions(props.divisions));
   container-type: size;
 }
 
-.notch.border-odd {
+.notch.border.odd {
   border-bottom: 2px solid rgba(0, 0, 0, 0.1);
   margin-top: -2px;
 }
 
-.notch.border-even {
+.notch.border.even {
   /* border-bottom: 2px solid rgba(0, 100, 255, 0.5); */
   border-bottom: 2px solid rgba(0, 0, 0, 0.3);
   margin-top: -2px;

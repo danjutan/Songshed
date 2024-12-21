@@ -175,7 +175,7 @@ const divisionPlacement = (column: number) => ({
   --substack-bg: rgba(255, 0, 0, 0.1);
   --string-width: 1px;
   --string-color: gray;
-  --highlight-color: #ACCEF7;
+  --highlight-color: rgba(172, 206, 247, 0.6);
   margin: 10px;
   display: grid;
   grid-template-columns: repeat(v-bind(notches), 1fr);
