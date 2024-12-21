@@ -21,44 +21,35 @@ const emit = defineEmits<{
 const sortedSubstacks = computed(() => props.data.substacks?.toSorted((a, b) => a.notchPosition - b.notchPosition) || []);
 const relativePositions = computed(() => sortedSubstacks.value.map(substack => substack.notchPosition - props.data.notchPosition));
 const subunit = computed(() => SpacingsDescending.find(spacing => relativePositions.value?.every(relative => relative % spacing === 0)) || 1);
-const columns = computed(() => (1 - subunit.value) / subunit.value);
-console.log(columns.value);
+const numColumns = computed(() => (1 - subunit.value) / subunit.value);
+console.log(numColumns.value);
 const colPositions = relativePositions.value.map(pos => pos / subunit.value);
 
 const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150 ${(props.data.notchPosition + 1) % 2 * 255})`);
 </script>
 
 <template>
-  <div class="division"
-       @click="console.log(data)">
+  <div class="division" @click="console.log(data)">
     <div class="stack">
-      <TabsNoteInput v-for="(noteSpot) in props.data.stack"
-                     :key="noteSpot.string"
-                     :data="noteSpot.data"
-                     :tuning="props.tuning[noteSpot.string]"
-                     :frets="props.frets"
-                     @data-change="emit('noteChange', { ...noteSpot, data: $event })"
-      />
+      <TabsNoteInput v-for="(noteSpot) in props.data.stack" :key="noteSpot.string" :data="noteSpot.data"
+        :tuning="props.tuning[noteSpot.string]" :frets="props.frets"
+        @data-change="emit('noteChange', { ...noteSpot, data: $event })" />
     </div>
-    <Expander v-if="sortedSubstacks.length"
-              v-slot="{ expanded }">
-      <div class="substack-grid"
-           :class="{ squish: !expanded }">
+    <Expander v-if="sortedSubstacks.length" v-slot="{ expanded }">
+      <div class="substack-grid" :class="{ squish: !expanded }">
         <TabsStrings />
-        <div v-for="(substack, i) in sortedSubstacks"
-             :key="substack.notchPosition"
-             class="substack"
-             :style="{ gridColumn: colPositions[i] }">
+        <div v-for="(substack, i) in sortedSubstacks" :key="substack.notchPosition" class="substack"
+          :style="{ gridColumn: colPositions[i] }">
           <template v-if="expanded">
-            <TabsNoteInput
-              v-for="(noteSpot) in substack.stack"
-              :key="noteSpot.string"
-              :data="noteSpot.data"
-              :background-color="expanded ? 'white' : 'transparent'"
-              :tuning="props.tuning[noteSpot.string]"
-              :frets="props.frets"
-              @data-change="emit('noteChange', { ...noteSpot, data: $event })"
-            />
+            <TabsNoteInput v-for="noteSpot in substack.stack" :key="noteSpot.string" :data="noteSpot.data"
+              :background-color="expanded ? 'white' : 'transparent'" :tuning="props.tuning[noteSpot.string]"
+              :frets="props.frets" @data-change="emit('noteChange', { ...noteSpot, data: $event })" />
+          </template>
+          <template v-else>
+            <div class="indicator" v-for="notespot in substack.stack">
+              <div v-if="notespot.data" class="square"
+                :style="{ backgroundColor: defaultColors[getChroma(notespot.data.midi)] }" />
+            </div>
           </template>
         </div>
       </div>
@@ -70,7 +61,7 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
 .division {
   /* min-width: calc(var(--min-division-width) * 0.75); */
   /* For scrollbar height */
-  height: calc(var(--min-division-width) / 2 * v-bind(numStrings) + 20px);
+  /* height: calc(var(--min-division-width) / 2 * v-bind(numStrings) + 20px); */
   grid-row: 1 / span v-bind(numStrings);
   grid-column: v-bind(column) / span 1;
   /* border-top: 2px solid v-bind(debugColor); */
@@ -89,15 +80,36 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
 }
 
 .substack {
-  grid-row: 1 / 1;
+  grid-row: 1 / -1;
+}
+
+.indicator {
+  display: flex;
+  height: calc(var(--min-division-width) / 2);
+  /* border: 1px solid red; */
+  justify-content: flex-start;
+  align-items: center;
+  container-type: size;
+}
+
+.square {
+  width: 60%;
+  max-width: calc(var(--min-division-width) / 4);
+  aspect-ratio: 1;
+  background-color: blue;
+}
+
+@container (aspect-ratio < 0.3) {
+  .square {
+    display: none;
+  }
 }
 
 .substack-grid {
   display: grid;
-  height: calc(var(--min-division-width) / 2 * v-bind(numStrings));
-  grid-template-columns: repeat(v-bind(columns), calc(var(--min-division-width) / 2 / v-bind(columns))) 1fr;
-  /* grid-template-columns: repeat(v-bind(columns), calc(var(--min-division-width) / 2)); */
-  grid-template-rows: 1fr;
-  color: red;
+  /* height: calc(var(--min-division-width) / 2 * v-bind(numStrings)); */
+  /* grid-template-columns: repeat(v-bind(numColumns), calc(var(--min-division-width) / 2 / v-bind(numColumns))) 1fr; */
+  grid-template-columns: repeat(v-bind(numColumns), 1fr);
+  grid-template-rows: repeat(v-bind(numStrings), calc(var(--min-division-width) / 2));
 }
 </style>

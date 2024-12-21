@@ -1,5 +1,5 @@
-import pluginVue from "eslint-plugin-vue";
-import withNuxt from "./.nuxt/eslint.config.mjs";
+import pluginVue from "eslint-plugin-vue"
+import withNuxt from "./.nuxt/eslint.config.mjs"
 
 export default withNuxt(
   // your custom flat configs go here, for example:
@@ -15,6 +15,7 @@ export default withNuxt(
   {
     rules: {
       "@stylistic/quotes": ["error", "double"],
+      "@stylistic/semi": ["error", "always"],
     },
   },
   ...pluginVue.configs["flat/strongly-recommended"],
@@ -35,4 +36,4 @@ export default withNuxt(
       "vue/first-attribute-linebreak": "off",
     },
   },
-);
+)
