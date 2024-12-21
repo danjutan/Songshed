@@ -20,6 +20,7 @@ import {
   createEditingState,
   EditingInjectionKey,
 } from "./guitar/providers/editing-state";
+import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -112,13 +113,16 @@ const posToCol = (pos: number): TablineColumn => {
   };
 };
 
-const annotationAdd = createAnnotationAddState(props.data.annotations, subUnit);
+const annotationAddState = createAnnotationAddState(
+  props.data.annotations,
+  subUnit,
+);
 
 const annotationRenders = createAnnotationRenderState(
   props.data.annotations,
   subUnit,
   posToCol,
-  annotationAdd.newAnnotation,
+  annotationAddState.newAnnotation,
 );
 
 const annotationRows = computed(() =>
@@ -135,7 +139,7 @@ function newAnnotationRow() {
 const notesRow = computed(() => annotationRows.value + 1);
 
 function cancelSelection() {
-  annotationAdd.end();
+  annotationAddState.end();
   selectionState.end();
   editingState.blurEditing();
 }
@@ -200,26 +204,12 @@ onBeforeUnmount(() => {
           :sub-unit="subUnit"
         />
 
-        <template v-for="(_, rowIndex) in annotationRows">
-          <div
-            class="drag-start between"
-            :style="{
-              gridColumn: i * (columnsPerBar + 1) + 1,
-              gridRow: annotationRows - rowIndex,
-            }"
-            @mousedown="annotationAdd.start(rowIndex, bar.start)"
-          />
-          <div
-            v-for="([position], s) in bar.stacks"
-            class="drag-start"
-            :style="{
-              gridColumn: i * (columnsPerBar + 1) + 2 + s,
-              gridRow: annotationRows - rowIndex,
-            }"
-            @mousedown="annotationAdd.start(rowIndex, position)"
-            @mouseover="annotationAdd.drag(position)"
-          />
-        </template>
+        <AnnotationDragBar
+          :start-column="i * (columnsPerBar + 1) + 1"
+          :bar-positions="[...bar.stacks.keys()]"
+          :annotation-rows="annotationRows"
+          :add-state="annotationAddState"
+        />
 
         <div class="new-row-box" @click="newAnnotationRow">
           <span>+</span>
