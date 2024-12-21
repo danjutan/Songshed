@@ -15,6 +15,10 @@ import {
   type BendEditState,
 } from "../../state/bend-edit-state";
 import { useBendCoords } from "./use-bend-coords";
+import {
+  CellHoverInjectionKey,
+  type CellHoverEvents,
+} from "~/components/tab/state/cell-hover-events";
 
 export interface BendRenderProps {
   bend: Bend;
@@ -93,7 +97,7 @@ function onSelectInput(e: Event) {
     bendEditState.deleteBend(props.bend);
     return;
   }
-  bendEditState.updateBendBy(props.bend, +value);
+  bendEditState.setBendValue(props.bend, +value);
 }
 
 const selectHeight = "18px";
@@ -108,6 +112,15 @@ document.addEventListener("click", (event) => {
 
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
+
+watch(
+  () => coords.upswingTo.center,
+  (c, l) => console.log(l, c),
+);
+watch(upswingPath, (c, l) => {
+  console.log(l);
+  console.log(c);
+});
 </script>
 
 <template>
@@ -150,33 +163,6 @@ const releaseArrowHover = ref(false);
       @mouseover="upswingArrowHover = true"
       @mouseleave="upswingArrowHover = false"
     />
-    <g v-if="coords.through">
-      <path
-        v-if="bend.releaseType === 'connect'"
-        class="downswing-curve"
-        :d="releasePath"
-        :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
-      />
-      <line
-        v-else
-        class="hold-line"
-        :x1="coords.through.right"
-        :x2="coords.to.center"
-        :y1="cellHeight * 0.35"
-        :y2="cellHeight * 0.35"
-        :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : undefined"
-      />
-      <rect
-        :x="coords.to.left"
-        :y="bend.releaseType === 'connect' ? startY - cellHeight * 1.5 : 0"
-        :width="coords.to.right - coords.to.left"
-        :height="cellHeight"
-        opacity="0"
-        @mousedown="bendEditState.start('release', props.bend)"
-        @mouseover="releaseArrowHover = true"
-        @mouseleave="releaseArrowHover = false"
-      />
-    </g>
     <foreignObject
       v-if="showLabel"
       :x="
@@ -185,7 +171,8 @@ const releaseArrowHover = ref(false);
       "
       :y="0"
       :width="3 * (coords.upswingTo.right - coords.upswingTo.left)"
-      :height="cellHeight"
+      :height="selectHeight"
+      @mouseover="bendEditState.onLabelHover"
     >
       <div :class="{ dragging: bendEditState.dragging }" class="bend-label">
         <select
@@ -206,6 +193,53 @@ const releaseArrowHover = ref(false);
         <span v-html="bendLabel" />
       </div>
     </foreignObject>
+    <g v-if="coords.through">
+      <path
+        v-if="bend.releaseType === 'connect'"
+        class="downswing-curve"
+        :d="releasePath"
+        :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
+      />
+      <line
+        v-else
+        class="hold-line"
+        :x1="coords.through.right"
+        :x2="coords.to.center"
+        :y1="cellHeight * 0.35"
+        :y2="cellHeight * 0.35"
+        :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : undefined"
+      />
+    </g>
+    <rect
+      class="release-grabber"
+      :x="coords.through ? coords.to.left : coords.to.right"
+      :y="
+        coords.through && bend.releaseType === 'connect'
+          ? startY - cellHeight * 1.5
+          : 0
+      "
+      :width="coords.to.right - coords.to.left"
+      :height="cellHeight"
+      opacity="0"
+      @mousedown="bendEditState.start('release', props.bend)"
+      @click="
+        bendEditState.onReleaseGrabberClick(
+          resizeObserver.getNextStackPos(props.bend.to)!,
+        )
+      "
+      @mouseover="releaseArrowHover = true"
+      @mouseleave="releaseArrowHover = false"
+    />
+    <line
+      v-if="!coords.through"
+      :x1="coords.to.right"
+      :y1="cellHeight * 0.35"
+      :x2="coords.to.right + (coords.to.right - coords.to.left) * 0.6"
+      :y2="cellHeight * 0.35"
+      stroke="black"
+      opacity="0.4"
+      :marker-end="'url(#arrow)'"
+    />
   </g>
 </template>
 
@@ -220,7 +254,6 @@ const releaseArrowHover = ref(false);
 }
 
 .bend-label {
-  height: 100%;
   font-size: calc(var(--note-font-size) * 0.75);
   display: flex;
   flex-direction: column;
@@ -267,5 +300,12 @@ const releaseArrowHover = ref(false);
 rect {
   pointer-events: all;
   cursor: move;
+}
+
+.release-grabber + line {
+  display: none;
+}
+.release-grabber:hover + line {
+  display: block;
 }
 </style>

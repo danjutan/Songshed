@@ -88,7 +88,7 @@ function onSelectInput(e: Event) {
     bendEditState.deleteBend(props.bend);
     return;
   }
-  bendEditState.updateBendBy(props.bend, +value);
+  bendEditState.setBendValue(props.bend, +value);
 }
 
 const upswingArrowHover = ref(false);
