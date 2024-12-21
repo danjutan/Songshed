@@ -65,6 +65,7 @@ const divisionRenders = computed(() => {
 
     const substacks: NoteStack[] = new Array(startPadding).fill([]);
     for (let i = 0; i < division.stacks.length; i++) {
+      debugger;
       const stack = division.stacks[i];
       substacks.push(stack);
       substacks.push(...new Array(subunit / unit - 1).fill([]));

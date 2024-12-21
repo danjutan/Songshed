@@ -2,7 +2,7 @@
 import { createDivision, type Division } from './components/tabs/data';
 
 
-const divnum = ref([createDivision(1, 1, [{note: 66}, { note: 60 }, {note: 60}], [,,,{ note: 55}]), createDivision(3,1, [,,{note: 56}])]);
+const divnum = ref([createDivision(1, 1,[], [], [{note: 66}, { note: 60 }, {note: 60}], [], [], [,,,{ note: 55}], [], []), createDivision(3,1, [,,{note: 56}])]);
 
 // const showDivisions = ref(false);
 </script>
