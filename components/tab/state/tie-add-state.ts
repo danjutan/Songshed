@@ -1,6 +1,6 @@
 import type { InjectionKey } from "vue";
 import type { GuitarStore, Tie, TieStore } from "~/model/stores";
-import type { CellHoverState } from "./cell-hover-state";
+import type { CellHoverEvents } from "./cell-hover-events";
 
 // export interface NewTie extends Partial<Tie> {
 //   string?: number;
@@ -12,7 +12,7 @@ export type NewTie =
   | ({ to?: undefined } & Partial<TieWithString>);
 
 export function createTieAddState(
-  cellHoverState: CellHoverState,
+  cellHoverState: CellHoverEvents,
   store: ComputedRef<GuitarStore | undefined>,
   subUnit: ComputedRef<number>,
 ) {

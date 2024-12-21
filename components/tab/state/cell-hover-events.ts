@@ -1,4 +1,7 @@
-export function createCellHoverState() {
+export type HoveredRow = number | "bend" | "annotation";
+type HoverListener = (row: HoveredRow, position: number) => void;
+type ReleaseListener = () => void;
+export function createCellHoverEvents() {
   // const hoveredCell = ref<
   //   | {
   //       string: number | "bend";
@@ -7,15 +10,15 @@ export function createCellHoverState() {
   //   | undefined
   // >();
 
-  type HoverListener = (string: number | "bend", position: number) => void;
-  type ReleaseListener = () => void;
   const hoverListeners = new Set<HoverListener>();
   const mouseupListeners = new Set<ReleaseListener>();
+
+  // probably remove once we make the tab extend vertically to the viewport when mousedown
   const leaveTabListeners = new Set<ReleaseListener>();
 
-  function hover(string: number | "bend", position: number) {
+  function hover(row: HoveredRow, position: number) {
     // hoveredCell.value = { string, position };
-    hoverListeners.forEach((listener) => listener(string, position));
+    hoverListeners.forEach((listener) => listener(row, position));
   }
 
   function mouseup() {
@@ -49,6 +52,6 @@ export function createCellHoverState() {
   };
 }
 
-export type CellHoverState = ReturnType<typeof createCellHoverState>;
+export type CellHoverEvents = ReturnType<typeof createCellHoverEvents>;
 
-export const CellHoverInjectionKey = Symbol() as InjectionKey<CellHoverState>;
+export const CellHoverInjectionKey = Symbol() as InjectionKey<CellHoverEvents>;

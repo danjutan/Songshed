@@ -1,5 +1,9 @@
 <script lang="ts" setup>
-import type { AnnotationAddState } from "./annotation-add-state";
+import type { AnnotationAddState } from "../state/annotation-add-state";
+import {
+  CellHoverInjectionKey,
+  type CellHoverEvents,
+} from "../state/cell-hover-events";
 
 const props = defineProps<{
   // startRow: number;
@@ -8,6 +12,8 @@ const props = defineProps<{
   annotationRows: number;
   addState: AnnotationAddState;
 }>();
+
+const cellHoverState = inject(CellHoverInjectionKey) as CellHoverEvents;
 </script>
 
 <template>
@@ -28,7 +34,7 @@ const props = defineProps<{
         gridRow: annotationRows - rowIndex,
       }"
       @mousedown="addState.start(rowIndex, position)"
-      @mouseover="addState.drag(position)"
+      @mouseover="cellHoverState.hover('annotation', position)"
     />
   </template>
 </template>

@@ -1,6 +1,11 @@
 <script lang="ts" setup>
 import type { Bend } from "~/model/stores";
 import type { OverlayPosition } from "../../overlay-objects";
+import {
+  CellHoverInjectionKey,
+  type CellHoverEvents,
+  type HoveredRow,
+} from "../../state/cell-hover-events";
 
 export type BendRenderProps = OverlayPosition & {
   bend: Bend;
@@ -10,6 +15,10 @@ export type BendRenderProps = OverlayPosition & {
   fullRestColumns?: number;
 };
 const props = defineProps<BendRenderProps & { bendRow: number }>();
+const emit = defineEmits<{
+  updateBend: [bend: Bend];
+}>();
+const cellHoverEvents = inject(CellHoverInjectionKey) as CellHoverEvents;
 
 const noUpswing = computed(
   () => props.half === "right" && props.fullRestColumns,
@@ -73,7 +82,50 @@ const bendLabels: { [bend: number]: string } = {
 };
 
 const upswingArrowHover = ref(false);
-const endArrowHover = ref(false);
+const releaseArrowHover = ref(false);
+
+const dragging = ref<"upswing" | "release" | undefined>();
+
+function updateOnDrag(type: HoveredRow, position: number) {
+  const bend = { ...props.bend };
+  if (dragging.value === "upswing" && position > bend.from) {
+    if (props.throughColumn) {
+      bend.through = [position - bend.from];
+      return bend;
+    }
+    bend.to = position;
+    return bend;
+  }
+  if (
+    dragging.value === "release" &&
+    position > bend.from + (bend.through?.[0] || 0)
+  ) {
+    if (!props.throughColumn) {
+      bend.through = [bend.to - bend.from];
+    }
+    bend.to = position;
+    bend.releaseType = typeof type === "number" ? "connect" : "hold";
+    return bend;
+  }
+  return bend;
+}
+
+cellHoverEvents.addHoverListener((type, position) => {
+  emit("updateBend", updateOnDrag(type, position));
+});
+
+cellHoverEvents.addMouseUpListener(() => {
+  dragging.value = undefined;
+});
+
+function onLabelHover() {
+  if (dragging.value === "release") {
+    const bend = { ...props.bend };
+    bend.to = bend.through![0] + bend.from;
+    bend.through = undefined;
+    emit("updateBend", bend);
+  }
+}
 </script>
 
 <template>
@@ -129,7 +181,7 @@ const endArrowHover = ref(false);
           `M ${downswingFrom} ${vbu * 0.6}` +
           `Q ${downswingTo} ${vbu * 0.6} ${downswingTo} ${vbu * rowSpan - vbu * 0.85}`
         "
-        :marker-end="endArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
+        :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
     </svg>
     <svg
@@ -148,7 +200,7 @@ const endArrowHover = ref(false);
         "
         :y1="vbu * 0.6"
         :y2="vbu * 0.6"
-        :marker-end="endArrowHover ? 'url(#hover-arrow)' : undefined"
+        :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : undefined"
       />
     </svg>
     <div
@@ -157,18 +209,27 @@ const endArrowHover = ref(false);
           ? 'downswing-arrow-hover'
           : 'hold-arrow-hover'
       "
-      @mouseover="endArrowHover = true"
-      @mouseleave="endArrowHover = false"
+      @mousedown="dragging = 'release'"
+      @mouseover="releaseArrowHover = true"
+      @mouseleave="releaseArrowHover = false"
     />
   </template>
-  <div v-if="showLabel" class="label">
+  <div v-if="showLabel" class="label" @mouseover="onLabelHover">
     <div class="row">
       <span>{{ bendLabels[props.bend.bend] || props.bend.bend }}</span>
-      <div v-if="!restColumns" class="grabber right" />
+      <!-- <div v-if="!restColumns" class="grabber right" /> -->
     </div>
   </div>
   <div
+    v-if="!restColumns && !dragging"
+    class="grabber-hover"
+    @mousedown="dragging = 'release'"
+  >
+    <div class="grabber" />
+  </div>
+  <div
     class="upswing-arrow-hover"
+    @mousedown="dragging = 'upswing'"
     @mouseover="upswingArrowHover = true"
     @mouseleave="upswingArrowHover = false"
   />
@@ -235,10 +296,6 @@ const endArrowHover = ref(false);
     display: flex;
     align-items: center;
   }
-
-  &:hover .grabber {
-    visibility: visible;
-  }
 }
 
 .upswing-arrow-hover,
@@ -268,16 +325,26 @@ const endArrowHover = ref(false);
   grid-column: v-bind(endColumn);
 }
 
+.grabber-hover {
+  grid-row: v-bind(bendRow);
+  grid-column: calc(v-bind(upswingEndColumn) + 1);
+  width: 50%;
+  display: flex;
+  align-items: center;
+  cursor: move;
+}
 .grabber {
   width: calc(var(--note-font-size) * 0.4);
   height: calc(var(--note-font-size) * 0.4);
   background-color: black;
   border-radius: 50%;
+  margin-bottom: calc(var(--note-font-size) * -0.4);
+  margin-left: calc(var(--note-font-size) * 0.1);
   visibility: hidden;
-
-  &.right {
-    margin-right: calc(var(--note-font-size) * -0.5);
-    margin-left: calc(var(--note-font-size) * 0.1);
-  }
+}
+/* maybe always have the grabber visible */
+.grabber-hover:hover .grabber,
+.label:hover + .grabber-hover .grabber {
+  visibility: visible;
 }
 </style>

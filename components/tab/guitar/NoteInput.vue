@@ -8,8 +8,8 @@ import { TieAddInjectionKey, type TieAddState } from "../state/tie-add-state";
 import { EditingInjectionKey, type EditingState } from "../state/editing-state";
 import {
   CellHoverInjectionKey,
-  type CellHoverState,
-} from "../state/cell-hover-state";
+  type CellHoverEvents,
+} from "../state/cell-hover-events";
 
 const props = withDefaults(
   defineProps<{
@@ -37,7 +37,7 @@ const emit = defineEmits<{
 }>();
 
 const { editingNote, setEditing } = inject(EditingInjectionKey) as EditingState;
-const { hover } = inject(CellHoverInjectionKey) as CellHoverState;
+const { hover } = inject(CellHoverInjectionKey) as CellHoverEvents;
 
 const tieAdd = inject(TieAddInjectionKey) as TieAddState;
 

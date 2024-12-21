@@ -4,23 +4,25 @@ import type { TabStore } from "~/model/stores";
 import GuitarBar from "./guitar/GuitarBar.vue";
 import TiesBar from "./guitar/ties/TiesBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
+import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
+import BendRender from "./guitar/bends/BendRender.vue";
+import BendDragBar from "./guitar/bends/BendDragBar.vue";
 
 import {
   createSelectionState,
   SelectionInjectionKey,
   type SelectionState,
 } from "./state/selection-state";
+
 import { createAnnotationAddState } from "./state/annotation-add-state";
 import { createAnnotationRenderState } from "./state/annotation-render-state";
 import { createTieAddState, TieAddInjectionKey } from "./state/tie-add-state";
 import { createEditingState, EditingInjectionKey } from "./state/editing-state";
-import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 import { createBendRenderState } from "./state/bend-render-state";
-import BendRender from "./guitar/bends/BendRender.vue";
 import {
   CellHoverInjectionKey,
-  createCellHoverState,
-} from "./state/cell-hover-state";
+  createCellHoverEvents,
+} from "./state/cell-hover-events";
 
 const props = withDefaults(
   defineProps<{
@@ -47,7 +49,7 @@ const newBarStart = ref(0);
 
 const numStrings = computed(() => props.data.guitar?.strings);
 
-const cellHoverState = createCellHoverState();
+const cellHoverState = createCellHoverEvents();
 provide(CellHoverInjectionKey, cellHoverState);
 const selectionState = createSelectionState(cellHoverState);
 provide(SelectionInjectionKey, selectionState);
@@ -122,6 +124,7 @@ const posToCol = (pos: number): TablineColumn => {
 const annotationAddState = createAnnotationAddState(
   props.data.annotations,
   subUnit,
+  cellHoverState,
 );
 
 const annotationRenders = createAnnotationRenderState(
@@ -165,20 +168,14 @@ function newAnnotationRow() {
   props.data.annotations.createNextRow();
 }
 
-function cancelSelection() {
-  annotationAddState.end();
-}
-
 function onMouseUp() {
   cellHoverState.mouseup();
   editingState.blurEditing();
-  annotationAddState.end();
 }
 
 function onLeaveTab() {
   cellHoverState.leaveTab();
   editingState.blurEditing();
-  annotationAddState.end();
 }
 
 function newBarClick(lastBarStart?: number) {
@@ -251,6 +248,12 @@ onBeforeUnmount(() => {
           :add-state="annotationAddState"
         />
 
+        <BendDragBar
+          v-if="bendRow"
+          :bend-row
+          :start-column="i * (columnsPerBar + 1) + 1"
+          :bar-positions="[...bar.stacks.keys()]"
+        />
         <div class="new-row-box" @click="newAnnotationRow">
           <span>+</span>
         </div>
@@ -285,6 +288,10 @@ onBeforeUnmount(() => {
           :key="render.startColumn"
           v-bind="render"
           :bend-row
+          @update-bend="
+            (bend) =>
+              data.guitar!.ties.setTie(render.row - notesRow, bend.from, bend)
+          "
         />
       </template>
     </div>

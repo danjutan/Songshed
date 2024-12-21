@@ -1,4 +1,4 @@
-import type { CellHoverState } from "./cell-hover-state";
+import type { CellHoverEvents } from "./cell-hover-events";
 
 export interface SelectionState {
   selectedRange?: { start: number; end: number };
@@ -11,7 +11,7 @@ export interface SelectionState {
 }
 
 export function createSelectionState(
-  cellHoverState: CellHoverState,
+  cellHoverState: CellHoverEvents,
 ): SelectionState {
   const startPosition = ref<number | undefined>();
   const endPosition = ref<number | undefined>();

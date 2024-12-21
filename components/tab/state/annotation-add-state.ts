@@ -1,4 +1,5 @@
 import type { AnnotationStore } from "~/model/stores";
+import type { CellHoverEvents } from "./cell-hover-events";
 
 export interface NewAnnotation {
   row?: number;
@@ -16,12 +17,16 @@ export interface AnnotationAddState {
 export function createAnnotationAddState(
   store: AnnotationStore,
   subUnit: ComputedRef<number>,
+  cellHoverState: CellHoverEvents,
 ): AnnotationAddState {
   const newAnnotation = reactive<NewAnnotation>({
     row: undefined,
     startPos: undefined,
     endPos: undefined,
   });
+
+  cellHoverState.addHoverListener((row, position) => drag(position));
+  cellHoverState.addMouseUpListener(end);
 
   function start(row: number, position: number) {
     newAnnotation.row = row;
