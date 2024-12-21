@@ -253,22 +253,18 @@ function createStackStore<N extends NoteData>(
     if (position < 0 || !furthestPos.length || position > furthestPos.at(-1)!)
       return;
 
-    // const entries = [...stacks.entries()]; // to avoid infinite iteration
-    // for (const [pos, stack] of entries) {
-    //   if (pos < position) continue;
-    //   setStack(pos + shiftBy, stack);
-    //   setStack(pos, new Map());
-    // }
-    const keysFromBack = [...stacks.keys()]
-      .filter((pos) => pos >= position)
-      .sort((a, b) => a - b);
+    const comparator =
+      shiftBy > 0
+        ? (a: number, b: number) => b - a
+        : (a: number, b: number) => a - b;
 
-    for (const pos of keysFromBack) {
-      const stack = stacks.get(pos);
-      if (stack) {
-        setStack(pos + shiftBy, stack);
-        stacks.delete(pos);
-      }
+    const entries = [...stacks.entries()]
+      .filter(([pos, stack]) => pos >= position)
+      .sort(([posA], [posB]) => comparator(posA, posB));
+
+    for (const [pos, stack] of entries) {
+      setStack(pos + shiftBy, stack);
+      stacks.delete(pos);
     }
   }
 
