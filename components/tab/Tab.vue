@@ -148,12 +148,9 @@ function toggleSubdivisions(notchCol: ColumnData) {
             />
           </template>
         </template>
+        <div class="divider" />
       </template>
     </div>
-
-    <div class="
-                  divider"
-    />
   </div>
 </template>
 
@@ -178,7 +175,6 @@ function toggleSubdivisions(notchCol: ColumnData) {
   width: calc(var(--cell-height) / 4);
   height: 100%;
   background: black;
-  margin-right: calc(var(--cell-height) * 0.2);
   }
 
   .overlay {

@@ -73,6 +73,9 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
   .square {
     display: block;
   }
+   .input {
+    display: none;
+  }
 }
 
 @container (aspect-ratio < 0.2) {
@@ -81,8 +84,8 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
   }
 }
 
-@container (aspect-ratio < 0.8) {
-   .input {
+@container (aspect-ratio < 0.1) {
+  .square {
     display: none;
   }
 }

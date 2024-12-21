@@ -9,9 +9,7 @@ const props = defineProps<{
 <template>
   <div class="unexpander">
     <div class="content">
-      <slot>
-        ↤
-      </slot>
+      <span>↦</span><span>↤</span>
     </div>
   </div>
 </template>
@@ -22,9 +20,6 @@ const props = defineProps<{
   grid-row: v-bind(row);
   height: 100%;
   background-color: var(--substack-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 
   &:hover {
     background-color: rgba(255, 0, 0, 0.2);
@@ -33,7 +28,11 @@ const props = defineProps<{
 
 .content {
   position: relative;
+  top: -10%;
   color: darkred;
   font-size: var(--note-font-size);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>
