@@ -8,7 +8,7 @@ const notes = ref<FilledSpot[]>([
 
   createNote(Spacing.Quarter * 2, 0, "C5"),
 
-  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth, 0, "C5"),
+  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth, 1, "C5"),
   createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 2, 4, "C5"),
   createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 5, "C5"),
 

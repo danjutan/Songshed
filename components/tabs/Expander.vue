@@ -7,7 +7,7 @@
     <div class="preview">
       <slot/>
     </div>
-  <button class="expand-button"> > </button>
+  <button class="expand-button"> <span>↦</span> </button>
   </div>
 </template>
 
@@ -15,23 +15,39 @@
 
 .expander {
   display: grid;
-  grid-template-rows: 1fr;
-  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  width: 100%;
   overflow: hidden;
+  container-type: size;
+  container-name: expander;
 }
 
 .preview {
   grid-column: 1 / -1;
+  grid-row: 1 / span 1;
+  opacity: 0.6;
+  /* width: calc(var(--min-division-width) / 2); */
+  overflow: hidden;
 }
 
 .expand-button {
-  grid-column: -1 / span 1;
+  grid-column: 1 / -1;
   grid-row: 1 / span 1;
-  width: 16px;
+  justify-self: end;
+  width: 50%;
+  min-width: 18px;
+  height: 100%;
   background-color: gray;
   opacity: 0.5;
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
+}
+
+@container expander (width < 18px) {
+  .preview, .expand-button {
+    display: none;
+  }
 }
 </style>

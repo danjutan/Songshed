@@ -91,6 +91,7 @@ onMounted(() => {
 
 .collapse {
   container-type: size;
+  container-name: collapser;
 }
 
 input {
@@ -125,7 +126,7 @@ input {
   display: none;
 }
 
-@container (aspect-ratio < 0.5) {
+@container collapser (aspect-ratio < 0.5) {
   input, .hover-bg, .input-bg {
     display: none;
   }
