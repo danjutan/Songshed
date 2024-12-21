@@ -25,6 +25,10 @@ import {
   BendEditInjectionKey,
   createBendEditState,
 } from "./guitar/state/bend-edit-state";
+import {
+  createResizeState,
+  ResizeStateInjectionKey,
+} from "./state/resize-state";
 import { SettingsInjectionKey, type Settings } from "./state/settings-state";
 
 const props = defineProps<{
@@ -60,8 +64,10 @@ const bendEditState = createBendEditState(
   tieAddState,
   computed(() => props.tabStore.guitar?.ties),
 );
-
 provide(BendEditInjectionKey, bendEditState);
+
+const resizeState = createResizeState(computed(() => subUnit.value));
+provide(ResizeStateInjectionKey, resizeState);
 
 export type Bar = {
   start: number;

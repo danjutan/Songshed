@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     port: 3001,
   },
 
-  modules: ["@nuxt/eslint", "@nuxthub/core"],
+  modules: ["@nuxt/eslint", "@nuxthub/core", "@vueuse/nuxt"],
 
   hub: {
     kv: true,
