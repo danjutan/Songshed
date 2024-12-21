@@ -46,21 +46,19 @@ const firstFret = computed(() => frets.value[0] ?? 0);
 
 const fretStart = computed(() => (lastFret.value <= 4 ? 1 : firstFret.value));
 
-const numFrets = computed(() => Math.max(4, lastFret.value - fretStart.value + 1));
+const numFrets = computed(() =>
+  fretStart.value ? Math.max(4, lastFret.value - fretStart.value + 1) : 4,
+);
 
-const windowOffset = ref(0);
-function incrementWindowOffset() {
-  windowOffset.value++;
-}
-function decrementWindowOffset() {
-  if (windowStart.value - 1 >= 1) windowOffset.value--;
+function incrementWindow() {
+  windowStart.value++;
 }
 
-watch(fretStart, () => {
-  windowOffset.value = 0;
-});
+function decrementWindow() {
+  if (windowStart.value - 1 >= 1) windowStart.value--;
+}
 
-const windowStart = computed(() => fretStart.value + windowOffset.value);
+const windowStart = ref(fretStart.value);
 const windowEnd = computed(() => windowStart.value + numFrets.value - 1);
 
 // const fretLabelWidth = computed(() => (windowStart.value === 0 ? 0 : cellWidth));
@@ -93,7 +91,7 @@ function onInput(e: Event) {
   }
   const num = parseInt(value);
   if (Number.isInteger(num) && num >= 1 && num < 99) {
-    windowOffset.value = num - fretStart.value;
+    windowStart.value = num;
     return;
   }
   target.value = `${windowStart.value}`;
@@ -270,7 +268,7 @@ function onInputClick(e: Event) {
       font-family="sans-serif"
       :font-size="cellHeight / 2"
       fill="gray"
-      @click="decrementWindowOffset"
+      @click="decrementWindow"
     >
       ⮕
     </text>
@@ -282,7 +280,7 @@ function onInputClick(e: Event) {
       :width="gridEndX - gridStartX"
       :height="cellHeight"
       fill="transparent"
-      @click="incrementWindowOffset"
+      @click="incrementWindow"
     />
 
     <text
@@ -294,7 +292,7 @@ function onInputClick(e: Event) {
       font-family="sans-serif"
       :font-size="cellHeight / 2"
       fill="gray"
-      @click="incrementWindowOffset"
+      @click="incrementWindow"
     >
       ⮕
     </text>

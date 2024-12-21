@@ -93,8 +93,10 @@ export function createTabStore(init?: TabData | Partial<typeof defaults>): TabSt
 function createChordStore({ tuning, chords }: ChordsData) {
   // TODO: edit tuning, swap chords, etc
   return {
+    // the entire map is reactive, so you can set notes directly
     chords,
     tuning,
+    // TODO: delete if unused
     setChord(index: number, chord: Chord) {
       chords[index] = chord;
     },
