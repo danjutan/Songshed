@@ -36,9 +36,9 @@ const spacers = computed(() => emptyDivisions(props.divisions));
            :num-strings
            :row-start="2"
            color="var(--substack-bg)">
-      <template #up>
+      <!-- <template #up>
         <div :style="{ width: '100%', height: 'var(--min-division-width)', pointerEvents: 'auto' }" />
-      </template>
+      </template> -->
       <template #down>
         <div class="spacer-overlay">
           <div class="indicator-container">
@@ -85,7 +85,7 @@ const spacers = computed(() => emptyDivisions(props.divisions));
 
 .notch.border-even {
   /* border-bottom: 2px solid rgba(0, 100, 255, 0.5); */
-  border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.3);
   margin-top: -2px;
 }
 
@@ -104,21 +104,25 @@ const spacers = computed(() => emptyDivisions(props.divisions));
   display: flex;
   justify-content: space-between;
   align-items: center;
+  pointer-events: none;
+  opacity: 0;
 }
-
+.spacer-overlay:hover .indicator-container {
+  opacity: 0.6;
+}
 .spacer-indicator {
   /* margin-top: -50%; */
   font-size: clamp(10px, 50cqw, var(--min-division-width));
-  color: rgba(255, 0, 0, 0.6);
+  color: rgb(255, 0, 0);
 }
 
-.spacer-indicator:first-child {
-  margin-left: -2cqw;
+/* .spacer-indicator:first-child {
+  margin-left: -1cqw;
 }
 
 .spacer-indicator:last-child {
-  margin-right: -2cqw;
-}
+  margin-right: -1cqw;
+} */
 
 @container (aspect-ratio < 0.8) {
   .spacer-indicator {
