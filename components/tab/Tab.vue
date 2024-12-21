@@ -174,8 +174,9 @@ onBeforeUnmount(() => {
           @note-change="data.guitar!.setNote"
           @note-delete="data.guitar!.deleteNote"
         />
+
         <TiesBar
-          :ties="data.guitar!.ties"
+          :ties="data.guitar!.getTies()"
           :start-row="notesRow"
           :start-column="i * (columnsPerBar + 1) + 2"
           :start-position="bar.start"

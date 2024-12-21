@@ -8,8 +8,19 @@ export type TieRenderProps = OverlayPosition & {
   from: number;
   half?: "left" | "right";
   editing?: boolean;
+  direction: "up" | "down";
 };
+
 const props = defineProps<TieRenderProps>();
+
+const hammerText = computed(() => (props.direction === "up" ? "H" : "P"));
+
+const labelText = computed(() => {
+  if (props.type === "hammer") {
+    return hammerText.value;
+  }
+  return "S";
+});
 </script>
 
 <template>
@@ -19,19 +30,23 @@ const props = defineProps<TieRenderProps>();
       full: !props.half,
       left: props.half === 'left',
       right: props.half === 'right',
+      up: props.direction === 'up',
+      down: props.direction === 'down',
+      slide: props.type === 'slide',
+      hammer: props.type === 'hammer',
     }"
   >
-    <div class="slide" />
-    <div class="tie-box">
+    <div v-if="props.type === 'slide'" class="slide-box" />
+    <div v-else class="tie-box">
       <div class="arc-rect" />
-      <div v-if="props.half !== 'left'" class="indicator" :class="{ editing }">
-        <select>
-          <option value="H">H</option>
-          <option value="P">P</option>
-          <option value="S">S</option>
-        </select>
-        <div class="label">{{ props.type }}</div>
-      </div>
+    </div>
+
+    <div v-if="props.half !== 'left'" class="indicator" :class="{ editing }">
+      <select>
+        <option value="hammer">{{ hammerText }}</option>
+        <option value="slide">S</option>
+      </select>
+      <div class="label">{{ labelText }}</div>
     </div>
   </div>
 </template>
@@ -55,25 +70,32 @@ const props = defineProps<TieRenderProps>();
 }
 
 @container (aspect-ratio < 1.5) {
-  .full .tie-box {
-    opacity: 0;
+  .full.hammer * {
+    display: none;
   }
 }
 
 @container (aspect-ratio < 2.5) {
-  .full .slide {
-    opacity: 0;
+  .full.slide * {
+    display: none;
   }
 }
 
 @container (aspect-ratio < 0.79) {
-  .left .tie-box,
-  .right .tie-box {
-    opacity: 0;
+  .left.hammer *,
+  .right.hammer * {
+    display: none;
   }
 }
 
-.slide {
+@container (aspect-ratio < 1.25) {
+  .left.slide *,
+  .right.slide * {
+    display: none;
+  }
+}
+
+.slide-box {
   grid-row: 1 / 1;
   grid-column: 1 / 1;
   width: calc(100% - 100% / var(--column-span) - var(--cell-height));
@@ -88,10 +110,14 @@ const props = defineProps<TieRenderProps>();
   );
 }
 
-.left .slide {
+.down .slide-box {
+  transform: scaleY(-1);
+}
+
+.left .slide-box {
   justify-self: end;
   width: calc(100% - 50% / var(--column-span) - var(--cell-height) / 2);
-  /*TODO: make this look better across dividers*/
+  /*TODO: make this look better across dividers, probably with an "other half (start or end point)" prop*/
   clip-path: polygon(
     -1px calc(100% - 1px),
     calc(100%) calc(50%),
@@ -106,7 +132,7 @@ const props = defineProps<TieRenderProps>();
   ); */
 }
 
-.right .slide {
+.right .slide-box {
   justify-self: start;
   width: calc(100% - 50% / var(--column-span) - var(--cell-height) / 2);
   clip-path: polygon(
@@ -178,7 +204,9 @@ const props = defineProps<TieRenderProps>();
 .right .arc-rect {
   --margin-left: calc(-100% / (2 * var(--column-span)));
   --left-path-point: calc(-1 * var(--margin-left) + 3px);
-  --right-path-point: calc(var(--left-path-point) + var(--label-font-size) / 2);
+  --right-path-point: calc(
+    var(--left-path-point) + var(--label-font-size) * 0.7
+  );
 
   border-bottom-left-radius: 0px;
   width: 100%;
@@ -206,8 +234,8 @@ const props = defineProps<TieRenderProps>();
 
 .indicator {
   pointer-events: auto;
-  position: absolute;
-  transform: translateY(40%);
+  z-index: 1;
+  transform: translateY(-48%);
 
   & select,
   .label {
@@ -228,8 +256,11 @@ const props = defineProps<TieRenderProps>();
   }
 }
 
-.right .indicator .label {
-  margin-left: 4px;
+.right .indicator {
+  justify-self: start;
+  & .label {
+    margin-left: 4px;
+  }
   /* transform: translateX(-200%) translateY(30%); */
 }
 </style>

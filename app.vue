@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GuitarNote, TabData, Tie } from "~/model/data";
+import type { GuitarNote, TabData, TieData } from "~/model/data";
 import type { TabStore } from "./model/stores";
 import type { SerializeableTabData } from "./model/serialize";
 import { createTabStore } from "./model/stores";
@@ -30,7 +30,7 @@ if (id) {
 
   const guitar = store.createGuitarTab();
 
-  const guitarNotes: Array<[number, number, string, Tie?]> = [
+  const guitarNotes: Array<[number, number, string, TieData?]> = [
     [0, 0, "B4"],
     [Spacing.Quarter * 2, 2, "B4"],
     [Spacing.Quarter * 2 + Spacing.Sixteenth, 2, "D4"],
@@ -39,12 +39,16 @@ if (id) {
     [Spacing.Quarter * 4, 5, "A3"],
     [Spacing.Quarter * 4 + Spacing.Sixteenth, 1, "A4"],
     [Spacing.Quarter * 6, 5, "G3"],
+    [Spacing.Quarter * 8 - Spacing.Sixteenth, 2, "A3"],
+    [Spacing.Quarter * 8, 2, "B3"],
     [Spacing.Quarter * 8, 5, "F3"],
     [Spacing.Quarter * 9 - Spacing.Sixteenth, 0, "G4"],
+    [Spacing.Quarter * 9 - Spacing.Sixteenth, 2, "B3"],
     [Spacing.Quarter * 9, 0, "F4"],
     [Spacing.Quarter * 9 + Spacing.Eighth + Spacing.Sixteenth, 0, "F4"],
     [Spacing.Quarter * 10 + Spacing.Sixteenth, 2, "F4"],
-    [Spacing.Quarter * 12, 0, "F4"],
+    [Spacing.Quarter * 12 - Spacing.Eighth, 2, "G4"],
+    [Spacing.Quarter * 12, 2, "F4"],
     [Spacing.Quarter * 12 + Spacing.Sixteenth, 0, "F4"],
   ];
 
@@ -57,37 +61,32 @@ if (id) {
 
   guitar.setTie(2, Spacing.Quarter * 2, {
     to: Spacing.Quarter * 2 + Spacing.Sixteenth,
-    type: "H",
+    type: "hammer",
   });
 
   guitar.setTie(1, Spacing.Quarter * 3 + Spacing.Sixteenth, {
     to: Spacing.Whole + Spacing.Sixteenth,
-    type: "P",
-  });
-
-  guitar.setTie(1, Spacing.Whole * 2, {
-    to: Spacing.Whole * 2 + Spacing.Sixteenth,
-    type: "P",
+    type: "slide",
   });
 
   guitar.setTie(2, Spacing.Whole * 2 - Spacing.Sixteenth, {
     to: Spacing.Whole * 2,
-    type: "S",
+    type: "hammer",
   });
 
   guitar.setTie(2, Spacing.Whole * 3 - Spacing.Eighth, {
     to: Spacing.Whole * 3,
-    type: "H",
+    type: "slide",
   });
 
   guitar.setTie(0, Spacing.Quarter * 9 - Spacing.Sixteenth, {
     to: Spacing.Quarter * 10 - Spacing.Sixteenth,
-    type: "P",
+    type: "slide",
   });
 
   guitar.setTie(2, Spacing.Quarter * 9 - Spacing.Sixteenth, {
     to: Spacing.Quarter * 10 + Spacing.Sixteenth,
-    type: "P",
+    type: "hammer",
   });
   tabStore.value = store;
 }

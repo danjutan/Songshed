@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import type { Ties } from "~/model/data";
+import type { TieData } from "~/model/data";
 import TieRender, { type TieRenderProps } from "./TieRender.vue";
 import type { OverlayPosition } from "~/components/tab/overlay-objects";
+import type { TieMap } from "~/model/stores";
 
 const props = defineProps<{
-  ties: Ties;
+  ties: TieMap;
   startRow: number;
   startColumn: number;
   startPosition: number;
@@ -16,12 +17,12 @@ const props = defineProps<{
 
 const ties = computed<TieRenderProps[]>(() => {
   const ties: TieRenderProps[] = [];
-  for (const [string, stack] of props.ties) {
-    for (const [position, tie] of stack) {
-      // if (position === Spacing.Whole * 2) debugger;
-      if (position >= props.startPosition && position < props.endPosition) {
+  for (const [string, stringTies] of props.ties) {
+    for (const tie of stringTies) {
+      const direction = (tie.midiFrom ?? 0) < (tie.midiTo ?? 0) ? "up" : "down";
+      if (tie.from >= props.startPosition && tie.from < props.endPosition) {
         const startColumn =
-          props.startColumn + (position - props.startPosition) / props.subUnit;
+          props.startColumn + (tie.from - props.startPosition) / props.subUnit;
         if (tie.to < props.endPosition) {
           ties.push({
             row: props.startRow + string,
@@ -30,8 +31,9 @@ const ties = computed<TieRenderProps[]>(() => {
               props.startColumn +
               (tie.to - props.startPosition) / props.subUnit,
             type: tie.type,
-            from: position,
+            from: tie.from,
             to: tie.to,
+            direction,
           });
           continue;
         }
@@ -43,9 +45,10 @@ const ties = computed<TieRenderProps[]>(() => {
             (props.endPosition - props.startPosition) / props.subUnit -
             1,
           type: tie.type,
-          from: position,
+          from: tie.from,
           to: tie.to,
           half: "left",
+          direction,
         });
         continue;
       }
@@ -56,9 +59,10 @@ const ties = computed<TieRenderProps[]>(() => {
           endColumn:
             props.startColumn + (tie.to - props.startPosition) / props.subUnit,
           type: tie.type,
-          from: position,
+          from: tie.from,
           to: tie.to,
           half: "right",
+          direction,
         });
         continue;
       }
