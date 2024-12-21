@@ -34,11 +34,16 @@ const newBarStart = ref(0);
 const bars = computed<Bar>(() => {
   if (!props.data.guitar) return [];
   const bars: Array<GuitarStack[]> = [];
-  for (let i = 0; i <= Math.max(newBarStart.value, props.data.guitar.lastPosition() ?? 0); i += barSize.value) {
+  for (
+    let i = 0;
+    i <= Math.max(newBarStart.value, props.data.guitar.lastPosition() ?? 0);
+    i += barSize.value
+  ) {
     const columns = [];
     for (let position = i; position < i + barSize.value; position += subUnit.value) {
       const stack =
-        props.data.guitar.stacks.get(position) ?? props.data.guitar.tuning.map((_, string) => ({ string, position }));
+        props.data.guitar.stacks.get(position) ??
+        props.data.guitar.tuning.map((_, string) => ({ string, position }));
       columns.push({ stack, position });
     }
     bars.push(columns);
@@ -56,7 +61,9 @@ const tabLines = computed<Bar[]>(() => {
 
 const gridTemplateColumns = computed<string>(() => {
   const barTemplateColumns = `repeat(${columnsPerBar.value}, 1fr)`;
-  const bars = Array.from({ length: props.barsPerLine }, () => barTemplateColumns).join(" min-content ");
+  const bars = Array.from({ length: props.barsPerLine }, () => barTemplateColumns).join(
+    " min-content ",
+  );
   return `var(--cell-height) ${bars} var(--note-font-size)`;
 });
 
@@ -86,7 +93,11 @@ function annotationEnd() {
   if (row !== undefined && start !== undefined && end !== undefined && start !== end) {
     const first = Math.min(start, end);
     const last = Math.max(start, end);
-    props.data.annotations.createAnnotation(row, { start: first, end: last + subUnit.value, title: "yo" });
+    props.data.annotations.createAnnotation(row, {
+      start: first,
+      end: last + subUnit.value,
+      title: "",
+    });
   }
   newAnnotation.start = newAnnotation.end = undefined;
 }
@@ -110,10 +121,21 @@ const posToCol = (pos: number): TablineColumn => {
 const annotationRenders = computed(() => {
   const annotationRenders: Map<
     number, // tabline index
-    Array<{ row: number; startColumn: number; endColumn: number; annotation: Annotation | undefined }>
+    Array<{
+      row: number;
+      startColumn: number;
+      endColumn: number;
+      annotation: Annotation | undefined;
+    }>
   > = new Map();
 
-  function push(tablineIndex: number, row: number, startColumn: number, endColumn: number, annotation?: Annotation) {
+  function push(
+    tablineIndex: number,
+    row: number,
+    startColumn: number,
+    endColumn: number,
+    annotation?: Annotation,
+  ) {
     const atTabline = annotationRenders.get(tablineIndex) || [];
     atTabline.push({ row, startColumn, endColumn, annotation });
     annotationRenders.set(tablineIndex, atTabline);
@@ -148,7 +170,6 @@ const annotationRenders = computed(() => {
     }
   }
 
-  console.log(annotationRenders);
   return annotationRenders;
 });
 </script>
@@ -192,7 +213,11 @@ const annotationRenders = computed(() => {
           />
         </template>
       </template>
-      <div v-if="tabLineIndex === tabLines.length - 1" class="divider" @click="newBarClick(tabLine.at(-1)?.at(-1))">
+      <div
+        v-if="tabLineIndex === tabLines.length - 1"
+        class="divider"
+        @click="newBarClick(tabLine.at(-1)?.at(-1))"
+      >
         <div class="new-button">+</div>
       </div>
 
@@ -203,6 +228,8 @@ const annotationRenders = computed(() => {
         :start-column
         :end-column
         :annotation
+        @update-title="(title) => (annotation!.title = title)"
+        @delete="data.annotations.deleteAnnotation(annotationRows - row, annotation!)"
       />
     </div>
   </div>
@@ -223,7 +250,9 @@ const annotationRenders = computed(() => {
 .tab-line {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
-  grid-template-rows: repeat(v-bind(annotationRows), var(--cell-height)) auto calc(var(--cell-height) * 0.8);
+  grid-template-rows: repeat(v-bind(annotationRows), var(--cell-height)) auto calc(
+      var(--cell-height) * 0.8
+    );
 }
 
 .divider {

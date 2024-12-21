@@ -50,7 +50,11 @@ export interface TabStore {
   guitar?: GuitarStore;
   annotations: AnnotationStore;
 }
-export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize = Spacing.Quarter): TabStore {
+export function createTabStore(
+  title = "new tab",
+  beatsPerBar = 4,
+  beatSize = Spacing.Quarter,
+): TabStore {
   const data: TabData = reactive({
     title,
     beatsPerBar,
@@ -120,7 +124,8 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
 
     // Revist: <= vs <; do we need this check at all?
     const overlaps = ofRow.some(
-      (a: Annotation) => (a.start < data.start && a.end > data.start) || (a.start > data.start && a.end < data.end),
+      (a: Annotation) =>
+        (a.start < data.start && a.end > data.start) || (a.start > data.start && a.end < data.end),
     );
     if (overlaps) return false;
     ofRow.push(data);
@@ -128,6 +133,7 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
   }
 
   function deleteAnnotation(row: number, data: Annotation) {
+    console.log(row);
     const ofRow = annotations.get(row);
     if (ofRow) {
       const toDelete = ofRow.findIndex((a) => a.start === data.start && a.end === data.end);
@@ -161,7 +167,9 @@ interface NoteStore<N extends NoteSpot> extends AbstractNoteStore<N> {
   setNote: (note: N) => void;
 }
 
-function createAbstractNoteStore<N extends NoteSpot>(stacks: Map<number, N[]>): AbstractNoteStore<N> {
+function createAbstractNoteStore<N extends NoteSpot>(
+  stacks: Map<number, N[]>,
+): AbstractNoteStore<N> {
   const furthestPos: number[] = [];
 
   function getStacks(start = 0, end?: number) {
@@ -194,7 +202,8 @@ function createAbstractNoteStore<N extends NoteSpot>(stacks: Map<number, N[]>): 
   }
 
   function shiftFrom(position: number, shiftBy: number) {
-    if (position < 0 || !furthestPos.length || position > furthestPos.at(-1)! || shiftBy <= 0) return;
+    if (position < 0 || !furthestPos.length || position > furthestPos.at(-1)! || shiftBy <= 0)
+      return;
 
     const keysFromBack = [...stacks.keys()].filter((pos) => pos >= position).sort((a, b) => b - a);
 
