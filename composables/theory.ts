@@ -5,6 +5,8 @@ export type Midi = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 1
 
 export type GuitarNote = Midi | "muted" | "none";
 
+export const defaultTuning = ["E4", "B3", "G3", "D3", "A2", "E2"].map(toMidi);
+
 export function validMidi(midi: number | null): midi is Midi {
   return (
     typeof midi === "number" &&

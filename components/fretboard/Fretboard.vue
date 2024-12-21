@@ -8,7 +8,7 @@ const props = withDefaults(defineProps<{
   colors?: NoteColors,
   labeledNotes?: Midi[]
 }>(), {
-  tuning: () => ["E4", "B3", "G3", "D3", "A2", "E2"].map(toMidi),
+  tuning: () => defaultTuning,
   frets: 12,
   colors: () => defaultColors
 });

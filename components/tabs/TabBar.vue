@@ -1,28 +1,81 @@
 <script lang="ts" setup>
-import type { Division } from './types';
-//Let's see what things look like without composing
-const divisions = defineModel<Division[]>({ required: true, set() {
-  console.log("setting model");
-} });
-const props = withDefaults(defineProps<{
-  strings?: number,
-  frets?: number
+import { createEmptyDivision, type Division, type NoteData } from './data';
+import NoteInput from "./NoteInput.vue";
+import type { PropType } from 'vue';
+
+const props = defineProps(
+ {
+  tuning: {
+    type: Array as PropType<Midi[]>,
+    default: () => defaultTuning,
+    validator: (tuning: Midi[], props) => {
+      const divisions = props.modelValue as Division[];
+      return divisions.every(d => d.duration > 0 && d.notes.length === tuning.length);
+    }
+  }, 
+  frets: {
+    type: Number,
+    default: 12,
+  },
+});
+
+const divisions = defineModel<Division[]>({required: true});
+
+const strings = computed(() => props.tuning.length);
+
+function modifyDivisions( transform: (division: Division[]) => Division[]) {
+  const clone = structuredClone(toRaw(divisions.value));
+  const transformed = transform(clone);
+  divisions.value = transformed;
 }
->(), { strings: 6, frets: 12 });
+
+function updateNoteData(col: number, string: number, noteData: NoteData) {
+  modifyDivisions((divisions) => {
+    divisions[col].notes[string] = noteData;
+    return divisions;
+  });
+}
+
+function split(index: number) {
+  modifyDivisions((divisions) => {
+    const curr = divisions[index];
+    const halfTime = curr.duration / 2;
+    divisions.splice(index, 1, {duration: halfTime, notes: curr.notes}, createEmptyDivision(halfTime, strings.value));
+    return divisions;
+  });
+}
+
+// const divisions = computed({
+//   get() {
+//     return props.modelValue;
+//   },
+//   set(value: Division[]) {
+//     console.log("triggered setter");
+//     emit("update:modelValue", value);
+//   }
+// });
+
+
+// const divisions = defineModel<Division[]>({ 
+//   required: true,
+//   validator: (value: Division[]) => {
+//     console.log("validating", value);
+//     return true;
+//   },
+//   set() {
+//   console.log("setting divisions model");
+// } });
 /*
 smallest should get a min-width of minWidth.
 then your minwidth is proportional to the smallest.
 */
 // const total = computed(() => divisions.value?.reduce( (prev, curr) => prev + curr, 0));
-const lengths = computed(() => divisions.value.map(d => d.length));
+const lengths = computed(() => divisions.value.map(d => d.duration));
 const smallest = computed(() => Math.min(...lengths.value));
 
 const templateColumns = computed<string>(() => lengths.value.map(length => length + "fr").join(" "));
 
-function split(index: number) {
-  const halfTime = lengths.value[index] / 2;
-  divisions.value.splice(index, 1, {length: halfTime, notes: divisions.value[index].notes}, {length: halfTime, notes: []});
-}
+
 
 const dragging = ref(0);
 
@@ -58,21 +111,17 @@ function onInputKeypress (event: KeyboardEvent) {
 
 <template>
   <div class="bar">
-    <div v-for="string in props.strings" :style="`grid-row: ${string} / span ${1}`" class="string"></div>
-    <div v-for="({length, notes}, col) in divisions" class="division"
-      :style="`min-width: calc(${length / smallest} * var(--min-division-width)); grid-column: ${col + 1} / span 1`">
+    <div v-for="i in strings" :style="`grid-row: ${i} / span 1`" class="string"></div>
+    <div v-for="({duration, notes}, col) in divisions" class="division"
+      :style="`min-width: calc(${duration / smallest} * var(--min-division-width)); grid-column: ${col + 1} / span 1`">
       <div class="notes">
-        <div v-for="(_, string) in props.strings" class="row">
-          <div class="spot" @mouseover="editing = {col, string}" @mouseleave="editing = undefined">
-              <span class="input-bg">{{ divisions[col].notes[string]}}</span>
-              <input 
-                size="2"
-                @keypress="onInputKeypress",
-                @input=""
-                @click="onInputClick"
-                @blur="onInputBlur"
-                type="text" inputmode="numeric" pattern="[0-9]{1,2}"/>
-          </div>
+        <div v-for="(stringTuning, string) in tuning" class="row">
+          <NoteInput class="spot" 
+            :data="notes[string]"
+            :frets="frets"
+            :tuning="stringTuning"
+            @dataChange="updateNoteData(col, string, $event)">
+          </NoteInput>
         </div>
       </div>
       <div v-show="!editing" class="half-bar" @click="split(col)"></div>
@@ -156,29 +205,6 @@ function onInputKeypress (event: KeyboardEvent) {
   display: grid;
   aspect-ratio: 1;
   align-items: center;
-
-  & .input-bg {
-    grid-area: 1 / 1;
-    width: min-content;
-    pointer-events: none;
-    font-size: x-small;
-    color: green;
-    background-color: white;
-  }
-
-  & input {
-    all: unset;
-    grid-area: 1 / 1;
-    font-size: x-small;
-    width: min-content;
-  }
-
-  & input::selection {
-    background-color: blue;
-  }
-
-
 }
-
 
 </style>
