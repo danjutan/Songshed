@@ -12,14 +12,14 @@ smallest should get a min-width of minWidth.
 then your minwidth is proportional to the smallest.
 */
 // const total = computed(() => divisions.value?.reduce( (prev, curr) => prev + curr, 0));
-const lengths = computed(() => divisions.value.map(d => d[0]));
+const lengths = computed(() => divisions.value.map(d => d.length));
 const smallest = computed(() => Math.min(...lengths.value));
 
 const templateColumns = computed<string>(() => lengths.value.map(length => length + "fr").join(" "));
 
 function split(index: number) {
   const halfTime = lengths.value[index] / 2;
-  divisions.value.splice(index, 1, [halfTime, divisions.value[index][1]], [halfTime, []]);
+  divisions.value.splice(index, 1, {length: halfTime, notes: divisions.value[index].notes}, {length: halfTime, notes: []});
 }
 
 const dragging = ref(0);
@@ -30,14 +30,22 @@ const isEditing = (col: number, string: number) =>
   col === editing.value?.col && string === editing?.value.string;
 
 const filled = (col: number, string: number) => {
-  return divisions.value[col][1][string];
+  return divisions.value[col].notes[string];
 }
 
 // const inputs = reactive([]); 
 
 function onInputClick(payload: MouseEvent) {
   console.log(payload.target);
-  payload.target.select();
+  if (payload.target) {
+    (payload.target as HTMLInputElement).select();
+  }
+}
+
+function onInputBlur(payload: FocusEvent) {
+  const clamped = Math.max(1, Math.min(props.frets, parseInt((payload.target as HTMLInputElement).value)));
+  // correct this and the v-model below
+  // divisions.value[editing.value.col][1][editing.value.string] = clamped;
 }
 
 </script>
@@ -45,13 +53,17 @@ function onInputClick(payload: MouseEvent) {
 <template>
   <div class="bar">
     <div v-for="string in props.strings" :style="`grid-row: ${string} / span ${1}`" class="string"></div>
-    <div v-for="([length, notes], col) in divisions" class="division"
+    <div v-for="({length, notes}, col) in divisions" class="division"
       :style="`min-width: calc(${length / smallest} * var(--min-division-width)); grid-column: ${col + 1} / span 1`">
       <div class="notes">
         <div v-for="(_, string) in props.strings" class="row">
           <div class="spot" @mouseover="editing = {col, string}" @mouseleave="editing = undefined">
-              <span class="input-bg">{{ divisions[col][1][string]}}</span>
-              <input @click="onInputClick" v-model="divisions[col][1][string]" type="number" min="1" :max="frets"/>
+              <span class="input-bg">{{ divisions[col].notes[string]}}</span>
+              <input v-model="divisions[col].notes[string]" 
+                size="2"
+                @click="onInputClick"
+                @blur="onInputBlur"
+                type="text" inputmode="numeric" pattern="[0-9]*"/>
           </div>
         </div>
       </div>
@@ -150,6 +162,7 @@ function onInputClick(payload: MouseEvent) {
     all: unset;
     grid-area: 1 / 1;
     font-size: x-small;
+    width: min-content;
   }
 
   & input::selection {
