@@ -349,12 +349,23 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     ties.set(from, tie);
   }
 
+  function shiftFrom(position: number, shiftBy: number) {
+    noteStore.shiftFrom(position, shiftBy);
+    for (const [string, ties] of guitarData.ties) {
+      const newTies = new Map<number, Tie>();
+      for (const [from, tie] of ties) {
+        newTies.set(from + shiftBy, { ...tie, to: tie.to + shiftBy });
+      }
+      guitarData.ties.set(string, newTies);
+    }
+  }
   return {
     ...noteStore,
     getStacks,
     setNote,
     deleteNote,
     setTie,
+    shiftFrom,
     ...guitarData,
   };
 }

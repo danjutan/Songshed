@@ -111,7 +111,7 @@ const annotationRows = computed(() =>
   Math.max(props.data.annotations.getRows().length, 1),
 );
 
-function newRow() {
+function newAnnotationRow() {
   if (props.data.annotations.getRows().length === annotationRows.value - 1) {
     props.data.annotations.createNextRow();
   }
@@ -174,13 +174,14 @@ onBeforeUnmount(() => {
           @note-change="data.guitar!.setNote"
           @note-delete="data.guitar!.deleteNote"
         />
-        <!--fix prevstack to incorporate prev line -->
-        <!-- <TiesBar
-          :stack-data="bar.stacks"
+        <TiesBar
+          :ties="data.guitar!.ties"
           :start-row="notesRow"
           :start-column="i * (columnsPerBar + 1) + 2"
+          :start-position="bar.start"
+          :end-position="bar.start + barSize"
           :sub-unit="subUnit"
-        /> -->
+        />
 
         <template v-for="(_, rowIndex) in annotationRows">
           <div
@@ -203,7 +204,7 @@ onBeforeUnmount(() => {
           />
         </template>
 
-        <div class="new-row-box" @click="newRow">
+        <div class="new-row-box" @click="newAnnotationRow">
           <span>+</span>
         </div>
       </template>

@@ -15,6 +15,7 @@ export interface Tie {
   // from: number; //position
   to: number;
 }
+export type Ties = Map<number, Map<number, Tie>>;
 export interface GuitarNote extends NoteData {
   /*
   muted?: boolean;
@@ -34,7 +35,7 @@ export interface GuitarTabData {
   tuning: Midi[];
   frets: number;
   stacks: StackMap<GuitarNote>;
-  ties: Map<number, Map<number, Tie>>;
+  ties: Ties;
 }
 
 export interface ChordsData {

@@ -57,7 +57,7 @@ if (id) {
   });
 
   guitar.setTie(0, Spacing.Quarter * 9, {
-    to: Spacing.Quarter * 9 + Spacing.Eighth,
+    to: Spacing.Quarter * 10,
     type: "p",
   });
 
