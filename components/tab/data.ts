@@ -100,59 +100,77 @@ export function createTabStore(title = "new tab", beatsPerBar = 4, beatSize = Sp
   };
 };
 
-interface NoteStore<N extends NoteSpot> {
-  setNote: (note: N) => void
-  // updateNote: (position: number, string: number, properties: Partial<NoteData>) => void
-  // ordered by ascending string #
+interface AbstractNoteStore<N extends NoteSpot> {
   getStacks: (start?: number, end?: number) => Map<number, N[]>
+  setStack: (position: number, stack: N[]) => void
   lastPosition: () => number | undefined
+}
+
+interface NoteStore<N extends NoteSpot> extends AbstractNoteStore<N> {
+  setNote: (note: N) => void
 };
 
-type GuitarStore = NoteStore<GuitarNote> & GuitarTabData;
-function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
+function createAbstractNoteStore<N extends NoteSpot>(stacks: Map<number, N[]>): AbstractNoteStore<N> {
   const furthestPos: number[] = [];
 
-  function setNote({ position, string, data }: GuitarNote): void {
-    if (position >= 0 && string >= 0 && string < guitarData.strings) {
-      if (!data) {
-        const stack = guitarData.stacks.get(position);
-        if (!stack) return;
-        stack[string].data = undefined;
-        if (stack.map(s => s.data).filter(Boolean).length === 0) {
-          guitarData.stacks.delete(position);
-          if (position === furthestPos.at(-1)) {
-            furthestPos.pop();
-          }
-        }
-        return;
-      }
-
-      const stack: GuitarNote[] = guitarData.stacks.get(position)
-        || Array.from({ length: strings }, (_, string) => ({ position, string }));
-      stack[string].data = data;
-      guitarData.stacks.set(position, stack);
-      if (position > (furthestPos.at(-1) ?? 0)) {
-        furthestPos.push(position);
-      }
-    }
-  };
-
   function getStacks(start = 0, end?: number) {
-    const subset = new Map<number, GuitarNote[]>();
-    for (const position of [...guitarData.stacks.keys()].sort((a, b) => a - b)) {
+    const subset = new Map<number, N[]>();
+    for (const position of [...stacks.keys()].sort((a, b) => a - b)) {
       if (start > 0 && position < start) continue;
       if (end && position > end) break;
-      subset.set(position, guitarData.stacks.get(position)!);
+      subset.set(position, stacks.get(position)!);
     }
     return subset;
+  }
+
+  function setStack(position: number, stack: N[]) {
+    if (position < 0) return;
+    if (stack.filter(s => s.data).length === 0) {
+      stacks.delete(position);
+      if (position === furthestPos.at(-1)) {
+        furthestPos.pop();
+      }
+      return;
+    }
+    stacks.set(position, stack);
+    if (position > (furthestPos.at(-1) ?? 0)) {
+      furthestPos.push(position);
+    }
   }
 
   function lastPosition() {
     return furthestPos.at(-1);
   }
 
+  return { getStacks, setStack, lastPosition };
+}
+
+type GuitarStore = NoteStore<GuitarNote> & GuitarTabData;
+
+function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
+  const noteStore = createAbstractNoteStore(guitarData.stacks);
+
+  function setNote({ position, string, data }: GuitarNote): void {
+    if (position >= 0 && string >= 0 && string < guitarData.strings) {
+      let stack = guitarData.stacks.get(position);
+
+      if (!data) {
+        if (!stack) return;
+        stack[string].data = undefined;
+        noteStore.setStack(position, stack);
+        return;
+      }
+
+      if (!stack)
+        stack = Array.from({ length: strings }, (_, string) => ({ position, string }));
+      stack[string].data = data;
+
+      noteStore.setStack(position, stack);
+    }
+  };
+
   const { stacks, strings, frets, tuning } = guitarData;
-  return { setNote, getStacks, lastPosition, stacks, strings, frets, tuning };
+  return { ...noteStore, setNote, stacks, strings, frets, tuning };
 }
 
 export enum Spacing {

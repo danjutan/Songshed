@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { GuitarNote } from "../data";
+import NoteInput from "./NoteInput.vue";
 
 const props = withDefaults(defineProps<{
   notes: GuitarNote[]
@@ -30,7 +31,7 @@ const backgroundColor = computed(() => props.selected ? "var(--highlight-color)"
            }"
       />
       <div class="input">
-        <TabBarNoteInput
+        <NoteInput
           :data="noteSpot.data"
           :tuning="props.tuning[noteSpot.string]"
           :frets="props.frets"
