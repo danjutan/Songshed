@@ -183,9 +183,20 @@ function newBarClick() {
   newBarStart.value = lastBarStart + notchUnit.value * props.notches;
 }
 
+function insertBar(start: number) {
+  props.data.guitar!.shiftFrom(start, barSize.value);
+  if (start > props.data.guitar!.getLastPosition()) {
+    newBarStart.value += barSize.value;
+  }
+}
+
 function deleteBar(start: number) {
   props.data.guitar!.deleteStacks(start, start + barSize.value);
   props.data.guitar!.shiftFrom(start, -barSize.value);
+  overlayedBarStart.value = undefined;
+  if (start > props.data.guitar!.getLastPosition()) {
+    newBarStart.value -= barSize.value;
+  }
 }
 
 function onKeyUp(e: KeyboardEvent) {
@@ -222,12 +233,7 @@ const overlayedBarStart = ref<number | undefined>();
         >
           <div class="buttons">
             <div class="dummy">+</div>
-            <div
-              class="insert"
-              @click="data.guitar?.shiftFrom(bar.start, barSize)"
-            >
-              +
-            </div>
+            <div class="insert" @click="insertBar(bar.start)">+</div>
             <div
               class="delete"
               @mouseover="overlayedBarStart = bar.start"
