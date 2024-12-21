@@ -99,6 +99,8 @@ function onInputClick(e: Event) {
       :y1="gridStartY"
       :y2="gridEndY"
       :stroke="'black'"
+      Joel
+      osteen
     />
 
     <line
@@ -112,21 +114,21 @@ function onInputClick(e: Event) {
 
     <template v-for="(_, x) in strings">
       <template v-for="(f, y) in numFrets">
-        <template v-if="notes[strings - x - 1]?.fret !== f + windowStart - 1">
-          <rect
-            :x="gridStartX + x * cellWidth - cellWidth / 2"
-            :y="gridStartY + y * cellHeight"
-            :width="cellWidth"
-            :height="cellHeight"
-            :fill="'transparent'"
-          />
+        <g v-if="notes[strings - x - 1]?.fret !== f + windowStart - 1" class="selectable-group">
           <circle
             class="selectable"
             :cx="gridStartX + x * cellWidth"
             :cy="gridStartY + y * cellHeight + cellHeight / 2"
             :r="noteRadius"
           />
-        </template>
+          <rect
+            :x="gridStartX + x * cellWidth - cellWidth / 2"
+            :y="gridStartY + y * cellHeight"
+            :width="cellWidth"
+            :height="cellHeight"
+            fill="transparent"
+          />
+        </g>
       </template>
     </template>
 
@@ -144,19 +146,43 @@ function onInputClick(e: Event) {
           <text
             class="muted"
             text-anchor="middle"
-            :x="gridStartX + (strings - +string - 1) * cellWidth"
+            :x="gridStartX + (strings - string - 1) * cellWidth"
             :y="gridStartY - cellHeight / 2"
           >
             🗙
           </text>
+          <rect
+            :x="gridStartX + (strings - string - 1.5) * cellWidth"
+            :y="gridStartY - cellHeight"
+            :width="cellWidth"
+            :height="cellHeight"
+            fill="transparent"
+          />
         </g>
-        <circle
-          v-else-if="notes[string].fret >= windowStart && notes[string].fret <= windowEnd"
-          class="selected"
-          :cx="gridStartX + (strings - +string - 1) * cellWidth"
-          :cy="gridStartY + (notes[string].fret - windowStart) * cellHeight + cellHeight / 2"
-          :r="noteRadius"
-        />
+        <template v-else-if="notes[string].fret >= windowStart && notes[string].fret <= windowEnd">
+          <circle
+            class="selected"
+            :cx="gridStartX + (strings - string - 1) * cellWidth"
+            :cy="gridStartY + (notes[string].fret - windowStart) * cellHeight + cellHeight / 2"
+            :r="noteRadius"
+          />
+          <g class="open-group">
+            <circle
+              class="open"
+              :cx="gridStartX + (strings - string - 1) * cellWidth"
+              :cy="gridStartY - cellHeight * 0.65"
+              :r="noteRadius * 0.75"
+              fill="transparent"
+            />
+            <rect
+              :x="gridStartX + (strings - string - 1.5) * cellWidth"
+              :y="gridStartY - cellHeight"
+              :width="cellWidth"
+              :height="cellHeight"
+              fill="transparent"
+            />
+          </g>
+        </template>
       </template>
       <g v-else class="muted-group">
         <text
@@ -174,6 +200,13 @@ function onInputClick(e: Event) {
           :r="noteRadius * 0.75"
           fill="transparent"
           stroke="gray"
+        />
+        <rect
+          :x="gridStartX + (strings - string - 1.5) * cellWidth"
+          :y="gridStartY - cellHeight"
+          :width="cellWidth"
+          :height="cellHeight"
+          fill="transparent"
         />
       </g>
     </template>
@@ -200,11 +233,21 @@ function onInputClick(e: Event) {
       :transform="`rotate(-90, ${cellWidth * 0.75 - 1} ${gridStartY - cellHeight / 3 - 1})`"
       font-family="sans-serif"
       :font-size="cellHeight / 2"
-      :fill="'transparent'"
+      fill="gray"
       @click="decrementWindowOffset"
     >
       ⮕
     </text>
+
+    <rect
+      class="bottom-edge"
+      :x="gridStartX - cellWidth"
+      :y="gridEndY"
+      :width="gridEndX - gridStartX"
+      :height="cellHeight"
+      fill="transparent"
+      @click="incrementWindowOffset"
+    />
 
     <text
       class="arrow"
@@ -214,7 +257,7 @@ function onInputClick(e: Event) {
       :transform="`rotate(90, ${cellWidth * 0.75 - 1} ${gridEndY + cellWidth / 2})`"
       font-family="sans-serif"
       :font-size="cellHeight / 2"
-      :fill="'transparent'"
+      fill="gray"
       @click="incrementWindowOffset"
     >
       ⮕
@@ -243,21 +286,26 @@ svg:hover input {
   display: inline-block;
 }
 
-svg:hover .arrow:not(:hover) {
-  fill: gray;
+svg:not(:hover) .arrow {
+  fill: transparent;
 }
 
-.arrow:hover {
+.arrow:hover,
+.bottom-edge:hover + .arrow {
   fill: black;
+  cursor: pointer;
+}
+
+.bottom-edge {
   cursor: pointer;
 }
 
 .selectable {
   fill: transparent;
 }
-rect:hover + .selectable,
-.selectable:hover {
-  fill: black;
+
+.selectable-group:hover .selectable {
+  fill: rgb(80, 80, 80);
 }
 
 input {
@@ -273,11 +321,11 @@ input {
 
 .open-group:hover {
   & .open {
-    stroke: lightgray;
+    stroke: transparent;
   }
 
   & .muted {
-    fill: rgb(50, 50, 50);
+    fill: rgb(80, 80, 80);
   }
 }
 
@@ -287,11 +335,30 @@ input {
 
 .muted-group:hover {
   & .open {
-    stroke: rgb(50, 50, 50);
+    stroke: rgb(80, 80, 80);
   }
 
   & .muted {
     fill: transparent;
   }
+}
+
+.open-group:hover .open {
+  stroke: rgb(80, 80, 80);
+}
+
+.selected:hover {
+  fill: gray;
+  & + .open-group .open {
+    stroke: rgb(80, 80, 80);
+  }
+}
+
+.open-group rect,
+.muted-group rect,
+.open-group rect,
+.selectable-group rect,
+.selected {
+  cursor: pointer;
 }
 </style>
