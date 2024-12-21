@@ -19,8 +19,6 @@ const props = withDefaults(
 const emit = defineEmits<{
   noteChange: [data: Partial<GuitarNote>];
   noteDelete: [];
-  startEdit: [];
-  endEdit: [];
 }>();
 
 const input = ref<HTMLInputElement>();
@@ -42,6 +40,7 @@ const relativeNote = computed(() => {
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
   if (target.value.trim() == "") {
+    emit("noteDelete");
     return;
   }
   const num = parseInt(target.value);
@@ -56,17 +55,6 @@ function onInput(e: Event) {
   target.value = `${relativeNote.value}`;
 }
 
-function onInputBlur(e: Event) {
-  const target = e.target as HTMLInputElement;
-  if (props.data && target.value.trim() == "") {
-    emit("noteDelete");
-  }
-}
-
-function mouseOver() {
-  emit("startEdit");
-}
-
 onMounted(() => {
   if (props.startFocused) {
     input.value?.focus();
@@ -75,12 +63,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    class="note-input"
-    :class="{ hovering }"
-    @mouseover="mouseOver"
-    @mouseleave="emit('endEdit')"
-  >
+  <div class="note-input" :class="{ hovering }">
     <span class="input-bg">{{ relativeNote }}</span>
     <input
       ref="input"
@@ -90,7 +73,6 @@ onMounted(() => {
       pattern="[0-9]{1,2}"
       @input="onInput"
       @click="focus"
-      @blur="onInputBlur"
     />
   </div>
 </template>

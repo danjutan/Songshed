@@ -167,7 +167,7 @@ function onInputClick(e: Event) {
             class="open"
             :cx="gridStartX + (strings - string - 1) * cellWidth"
             :cy="gridStartY - cellHeight * 0.65"
-            :r="noteRadius * 0.75"
+            :r="noteRadius"
             fill="transparent"
             stroke="black"
           />
@@ -177,7 +177,7 @@ function onInputClick(e: Event) {
             :x="gridStartX + (strings - string - 1) * cellWidth"
             :y="gridStartY - cellHeight / 2"
           >
-            🗙
+            &Cross;
           </text>
           <rect
             :x="gridStartX + (strings - string - 1.5) * cellWidth"
@@ -203,7 +203,7 @@ function onInputClick(e: Event) {
               class="open"
               :cx="gridStartX + (strings - string - 1) * cellWidth"
               :cy="gridStartY - cellHeight * 0.65"
-              :r="noteRadius * 0.75"
+              :r="noteRadius"
               fill="transparent"
             />
             <rect

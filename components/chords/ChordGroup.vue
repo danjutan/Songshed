@@ -50,15 +50,14 @@ function titleInput(e: Event, chord: Chord) {
   &:hover {
     & .delete {
       opacity: 1;
-      font-size: 24px;
     }
-    & .chart {
+    /* & .chart {
       width: 200px;
     }
     & .title {
       font-size: 24px;
       width: 96px;
-    }
+    } */
   }
 }
 
@@ -87,7 +86,7 @@ function titleInput(e: Event, chord: Chord) {
   width: 24px;
 }
 .chart {
-  width: 100px;
+  width: 120px;
   /* border: 1px solid blue;
   &:hover {
     width: 180px;
