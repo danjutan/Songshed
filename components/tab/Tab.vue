@@ -23,7 +23,7 @@ const barSize = computed(() => props.data.beatsPerBar * props.data.beatSize);
 const notchUnit = computed(() => barSize.value / props.notches);
 const subUnit = computed(() => notchUnit.value / props.subdivisions);
 
-const columnsPerBar = computed(() => barSize.value / subUnit.value);
+const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
 
 type Bar = Array<GuitarStack[]>;
 
@@ -71,9 +71,52 @@ const gridTemplateColumns = computed<string>(() => {
   return `min-content ${bars} var(--note-font-size)`;
 });
 
+const notesRow = computed(() => 2);
+
 function newBarClick(lastColumn?: GuitarStack) {
   if (lastColumn) newBarStart.value = lastColumn.position + subUnit.value;
 }
+
+const newAnnotation = reactive<{
+  start: undefined | number;
+  end: undefined | number;
+}>({ start: undefined, end: undefined });
+function annotationStart(position: number) {
+  newAnnotation.start = position;
+}
+function annotationDragThrough(position: number) {
+  if (newAnnotation.start !== undefined) {
+    newAnnotation.end = position;
+  }
+}
+function annotationEnd() {
+  newAnnotation.start = newAnnotation.end = undefined;
+}
+
+const posToCol = (pos: number) => {
+  const cols = pos / subUnit.value;
+  const tabline = Math.floor(cols / (props.barsPerLine * columnsPerBar.value));
+  const colsInLine = cols - tabline * props.barsPerLine * columnsPerBar.value;
+  const column = colsInLine + Math.floor(colsInLine / columnsPerBar.value) + 2;
+  return {
+    tabline,
+    column,
+  };
+};
+
+/* const annotationColumns = ({
+  start,
+  end,
+}: {
+  start: number | undefined;
+  end: number | undefined;
+}) => {
+  if (start === undefined || end === undefined) return undefined;
+  const columnsStart = posToCol(start);
+  const columnsEnd = posToCol(end);
+  return { start: columnsStart, end: columnsEnd };
+}; */
+// const newAnnotationColumns = computed(() => annotationColumns(newAnnotation));
 </script>
 
 <template>
@@ -89,6 +132,7 @@ function newBarClick(lastColumn?: GuitarStack) {
           :subdivisions
           :notch-unit
           :start-column="i * (columnsPerBar + 1) + 2"
+          :start-row="notesRow"
           :collapse-empty
           :collapse-subdivisions
           :tuning="data.guitar!.tuning"
@@ -96,7 +140,49 @@ function newBarClick(lastColumn?: GuitarStack) {
           :num-strings="data.guitar!.strings"
           @note-change="data.guitar!.setNote"
         />
+        <div
+          class="drag-start between"
+          :style="{
+            gridColumn: i * (columnsPerBar + 1) + 1,
+            gridRow: 1,
+          }"
+          @mousedown="annotationStart(bar[0].position)"
+          @mouseup="annotationEnd"
+        />
+        <div
+          v-for="(stack, s) in bar"
+          class="drag-start"
+          :style="{
+            gridColumn: i * (columnsPerBar + 1) + 2 + s,
+            gridRow: 1,
+          }"
+          @mousedown="annotationStart(stack.position)"
+          @mouseover="annotationDragThrough(stack.position)"
+          @mouseup="annotationEnd"
+        />
       </template>
+      <div
+        v-if="
+          newAnnotation.start &&
+          posToCol(newAnnotation.start!).tabline === tabLineIndex
+        "
+        :style="{
+          background: 'blue',
+          gridColumn: posToCol(newAnnotation.start!).column,
+          gridRow: 1,
+        }"
+      />
+      <div
+        v-if="
+          newAnnotation.end &&
+          posToCol(newAnnotation.end!).tabline === tabLineIndex
+        "
+        :style="{
+          background: 'red',
+          gridColumn: posToCol(newAnnotation.end!).column,
+          gridRow: 1,
+        }"
+      />
       <div
         v-if="tabLineIndex === tabLines.length - 1"
         class="divider"
@@ -117,15 +203,17 @@ function newBarClick(lastColumn?: GuitarStack) {
   --string-color: gray;
   --highlight-color: rgba(172, 206, 247, 0.4);
   --note-hover-color: rgba(172, 206, 247, 0.8);
+  user-select: none;
 }
 
 .tab-line {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
-  grid-template-rows: auto calc(var(--cell-height) * 0.8);
+  grid-template-rows: var(--cell-height) auto calc(var(--cell-height) * 0.8);
 }
 
 .divider {
+  grid-row: v-bind(notesRow);
   width: calc(var(--cell-height) / 3);
   padding: 0px 1px;
   height: 100%;
@@ -157,5 +245,9 @@ function newBarClick(lastColumn?: GuitarStack) {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.drag-start {
+  background-color: rgba(0, 100, 255, 0.1);
 }
 </style>
