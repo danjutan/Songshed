@@ -27,7 +27,7 @@ const relativeNote = computed(() => {
 },
 );
 
-const fontSize = "calc(var(--min-division-width) / 2)";
+const fontSize = "calc(var(--min-division-width) * 0.4)";
 
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
@@ -93,8 +93,7 @@ onMounted(() => {
 <style scoped>
 .note-input {
   display: grid;
-  height: calc(var(--min-division-width) / 2);
-  /* width: calc(var(--min-division-width) / 2); */
+  width: calc(var(--min-division-width) / 2);
 }
 
 .collapse {
@@ -106,13 +105,14 @@ onMounted(() => {
 input {
   all: unset;
   text-shadow: 1px 1px 0px lightgray;
-  max-width: calc(var(--min-division-width) / 2);
+  height: calc(var(--min-division-width) / 2);
   /* z-index: var(--z-index-notes); */
 }
 
 .input-bg, input, .hover-bg {
   grid-area: 1 / 1;
   font-size: v-bind(fontSize);
+  width: calc(v-bind(fontSize));
   /* min-height: calc(var(--min-division-width) / 2); */
   /* width: min-content; */
   /* min-width: calc(var(--min-division-width) / 2); */
@@ -128,7 +128,7 @@ input {
 }
 
 .note-input:hover > input{
-  width: calc(var(--min-division-width) / 2);
+  /* width: calc(var(--min-division-width) / 2); */
   /* height: 100%; */
   background-color: #ACCEF7
 }

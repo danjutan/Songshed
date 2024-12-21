@@ -75,6 +75,7 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
   grid-column: v-bind(column) / span 1;
 
   display: grid;
+
   /* grid-template-columns: calc(var(--min-division-width) / 2) repeat(calc(v-bind(subdivisions) - 1), 1fr); */
   grid-template-columns: 1fr repeat(v-bind(subdivisions), 1fr);
   grid-template-rows: repeat(v-bind(numStrings), calc(var(--min-division-width) / 2));

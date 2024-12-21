@@ -9,11 +9,11 @@ const notes = ref<FilledSpot[]>([
   createNote(Spacing.Quarter * 2, 0, "C5"),
 
   createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth, 1, "G5"),
-  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 2, 4, "B5"),
-  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 4, "C5"),
-  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 5, "D5"),
+  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 2, 4, "B4"),
+  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 4, "C4"),
+  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 5, "F3"),
 
-  createNote(Spacing.Quarter * 2 + Spacing.Sixteenth, 5, "B4"),
+  createNote(Spacing.Quarter * 2 + Spacing.Sixteenth, 5, "F2"),
 ]);
 // const showDivisions = ref(false);
 </script>
@@ -36,7 +36,7 @@ const notes = ref<FilledSpot[]>([
 </template>
 
 <style scoped>
-/* div {
-  width: 50%;
-} */
+div {
+  width: 75;
+}
 </style>
