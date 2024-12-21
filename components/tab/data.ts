@@ -141,7 +141,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     const subset = new Map<number, GuitarNote[]>();
     for (const position of [...guitarData.stacks.keys()].sort((a, b) => a - b)) {
       if (start > 0 && position < start) continue;
-      if (end && position >= end) break;
+      if (end && position > end) break;
       subset.set(position, guitarData.stacks.get(position)!);
     }
     return subset;

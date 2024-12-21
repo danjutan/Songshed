@@ -27,7 +27,7 @@ const props = defineProps<{
 
 .content {
   position: relative;
-  top: -10%;
+  top: -8%;
   color: darkred;
   font-size: var(--note-font-size);
   display: flex;

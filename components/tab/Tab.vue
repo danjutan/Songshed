@@ -15,6 +15,7 @@ const props = withDefaults(defineProps<{
   notches?: number // per bar
   subdivisions?: number // per notch
   collapseSubdivisions?: boolean
+  collapseEmpty?: boolean
 }>(), {
   barsPerLine: 3,
   notches: 2,
@@ -29,6 +30,9 @@ type ColumnData = {
 const barSize = computed(() => props.data.beatsPerBar * props.data.beatSize);
 const notchUnit = computed(() => barSize.value / props.notches);
 const subUnit = computed(() => notchUnit.value / props.subdivisions);
+
+const isNotch = (position: number) => position % notchUnit.value === 0;
+
 const columnsPerBar = computed(() => barSize.value / subUnit.value);
 
 const barsUntil = ref(props.data.guitar?.lastPosition() ?? 0);
@@ -78,42 +82,59 @@ function newBarClick() {
 
 const expanded = reactive<Set<number>>(new Set());
 
-watchEffect(() => {
-  console.log(expanded.has(19));
+const collapsedEmpty = computed<Set<number>>(() => {
+  const collapsed = new Set<number>();
+  if (!props.collapseEmpty || !props.data.guitar) return collapsed;
+  const emptyStack = (stack: GuitarNote[]) => stack.every(spot => !spot.data);
+  const columns = bars.value.flat();
+  // [...props.data.guitar!.getStacks(notch.position, notch.position += subUnit.value * props.subdivisions)
+  //   .values()].every(emptyStack);
+  columns.forEach((notch, i) => {
+    if (!isNotch(notch.position)) return;
+    const emptyNotchGroup = columns.slice(i, i + props.subdivisions).every(({ stack }) => emptyStack(stack));
+    if (emptyNotchGroup) {
+      for (let i = 0; i < props.subdivisions; i++) {
+        collapsed.add(notch.position + i * subUnit.value);
+      }
+    }
+  });
+  console.log(collapsed, bars.value);
+  return collapsed;
 });
+
 const collapsed = computed<Set<number>>(() => {
-  console.log("recalculating");
   const positions = new Set<number>(
     bars.value.flat().map(c => c.position).filter((position) => {
       if (expanded.has(position))
         return false;
-      const isNotch = position % notchUnit.value === 0;
-      if (isNotch)
+      if (props.collapseEmpty && collapsedEmpty.value.has(position))
+        return true;
+      if (isNotch(position))
         return false;
       if (props.collapseSubdivisions)
         return true;
     }),
   );
-  console.log(expanded);
   return positions;
 });
 
 function toggleSubdivisions(notchCol: ColumnData) {
-  const firstPos = notchCol.position + subUnit.value;
+  const firstPos = notchCol.position; /* notchCol.position + subUnit.value; */
   const collapse = expanded.has(firstPos);
-  for (let i = firstPos; i < firstPos + subUnit.value * (props.subdivisions - 1); i += subUnit.value) {
+  for (let i = 0; i < props.subdivisions; i++) {
+    const pos = firstPos + i * subUnit.value;
     if (collapse) {
-      expanded.delete(i);
+      expanded.delete(pos);
       continue;
     }
-    expanded.add(i);
+    expanded.add(pos);
   }
 }
 </script>
 
 <template>
   <div class="tab">
-    <div v-for="(barGroup, t) in tabLines"
+    <div v-for="barGroup in tabLines"
          class="tab-line">
       <div class="divider" />
       <template v-for="columns in barGroup"
@@ -127,32 +148,49 @@ function toggleSubdivisions(notchCol: ColumnData) {
         <template v-for="(column, i) in columns"
                   :key="column.position">
           <Stack
+            class="stack"
             :style="{
-              gridRow: 1,
+              // borderTop: isNotch(column.position) && '1px solid maroon',
+              borderRight: i < columns.length && '1px solid lightgray',
               gridColumn: columnPos(column),
             }"
             :notes="column.stack"
             :collapse="collapsed.has(column.position)"
             :tuning="data.guitar!.tuning"
             :frets="data.guitar!.frets"
+            @note-change="data.guitar!.setNote"
           />
-
-          <template v-if="i % props.subdivisions === 0 && props.collapseSubdivisions">
-            <Overlay
-              :start-column="1 + columnPos(column)"
-              :columns="props.subdivisions - 1"
-              :start-row="1"
-              :rows="numStrings">
-              <div
-                class="overlay"
-                :class="{ expanded: expanded.has(column.position + subUnit) }"
-                @click="toggleSubdivisions(column)"
-              />
-            </Overlay>
+          <template v-if="isNotch(column.position)">
+            <template v-if="collapsedEmpty.has(column.position)">
+              <Overlay
+                :start-column="columnPos(column)"
+                :columns="props.subdivisions"
+                :start-row="1"
+                :rows="numStrings">
+                <div
+                  class="overlay"
+                  :class="{ expanded: expanded.has(column.position) }"
+                  @click="toggleSubdivisions(column)"
+                />
+              </Overlay>
+            </template>
+            <template v-else-if="props.collapseSubdivisions">
+              <Overlay
+                :start-column="1 + columnPos(column)"
+                :columns="props.subdivisions - 1"
+                :start-row="1"
+                :rows="numStrings">
+                <div
+                  class="overlay"
+                  :class="{ expanded: expanded.has(column.position + subUnit) }"
+                  @click="toggleSubdivisions(column)"
+                />
+              </Overlay>
+            </template>
             <Unexpander v-if="expanded.has(column.position + subUnit)"
                         class="unexpander"
-                        :start-column="1 + columnPos(column)"
-                        :columns="props.subdivisions - 1"
+                        :start-column="columnPos(column)"
+                        :columns="props.subdivisions"
                         :row="2"
                         @click="toggleSubdivisions(column)"
             />
@@ -178,30 +216,31 @@ function toggleSubdivisions(notchCol: ColumnData) {
   .tab-line {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
-    grid-template-rows: auto calc(var(--cell-height) * 0.75);
+    grid-template-rows: auto calc(var(--cell-height) * 0.8);
+  }
+
+  .stack {
+    grid-row: 1;
   }
 
   .divider {
   width: calc(var(--cell-height) / 4);
   height: 100%;
-  background: midnightblue;
+  background: rgba(0, 0, 0, 0.8);
   }
 
   .overlay {
     z-index: 1;
-    height: calc(100% - var(--cell-height) / 8);
-    border-bottom: calc(var(--cell-height) / 8) solid var(--substack-bg);
+    height: 100%;
+    /* height: calc(100% - var(--cell-height) / 8); */
+    /* border-bottom: calc(var(--cell-height) / 8) solid var(--substack-bg); */
     &:hover {
-      border-bottom: none;
-      height: 100%;
+      /* border-bottom: none; */
+      /* height: 100%; */
       background: var(--substack-bg);
     }
     /* &.expanded { */
     /*   border-bottom: none; */
     /* } */
-  }
-
-  .unexpander {
-    margin-top: calc(-1 * var(--cell-height) / 8);
   }
 </style>
