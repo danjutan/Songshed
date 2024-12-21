@@ -119,17 +119,17 @@ async function save() {
 
   <ChordChart
     :notes="{
-      0: { fret: 1, finger: 1 },
-      1: { fret: 1, finger: 1 },
-      2: { fret: 1, finger: 1 },
-      3: { fret: 1, finger: 1 },
-      4: { fret: 6, finger: 1 },
-      5: { fret: 6, finger: 1 },
+      0: { fret: 1 },
+      1: { fret: 1 },
+      2: { fret: 1 },
+      3: { fret: 1 },
+      4: { fret: 6 },
+      5: { fret: 6 },
     }"
     width="300px"
   />
-  <ChordChart :notes="{ 2: { fret: 4, finger: 2 }, 3: { fret: 5, finger: 2 } }" width="300px" />
-  <ChordChart :notes="{ 1: { fret: 0, finger: 1 } }" width="300px" />
+  <ChordChart :notes="{ 2: { fret: 4 }, 3: { fret: 5 } }" width="200px" />
+  <ChordChart :notes="{ 1: { fret: 0 } }" width="300px" />
   <!-- <Fretboard
     width="75%"
     :stack="activeStack"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 type Fingering = {
-  [string: number]: { fret: number; finger: number }; //string is 0-indexed
+  [string: number]: { fret: number /*,finger?: number*/ }; //string is 0-indexed
 };
 
 const props = withDefaults(
@@ -121,6 +121,7 @@ function onInputClick(e: Event) {
             :fill="'transparent'"
           />
           <circle
+            class="selectable"
             :cx="gridStartX + x * cellWidth"
             :cy="gridStartY + y * cellHeight + cellHeight / 2"
             :r="noteRadius"
@@ -129,14 +130,52 @@ function onInputClick(e: Event) {
       </template>
     </template>
 
-    <template v-for="[string, { fret, finger }] in Object.entries(notes)">
-      <circle
-        v-if="fret >= windowStart && fret <= windowEnd"
-        class="selected"
-        :cx="gridStartX + (strings - +string - 1) * cellWidth"
-        :cy="gridStartY + (fret - windowStart) * cellHeight + cellHeight / 2"
-        :r="noteRadius"
-      />
+    <template v-for="(_, string) in strings">
+      <template v-if="notes[string]">
+        <g class="open-group" v-if="notes[string].fret === 0">
+          <circle
+            class="open"
+            :cx="gridStartX + (strings - +string - 1) * cellWidth"
+            :cy="gridStartY - cellHeight * 0.65"
+            :r="noteRadius * 0.75"
+            fill="transparent"
+            stroke="black"
+          />
+          <text
+            class="muted"
+            text-anchor="middle"
+            :x="gridStartX + (strings - +string - 1) * cellWidth"
+            :y="gridStartY - cellHeight / 2"
+          >
+            🗙
+          </text>
+        </g>
+        <circle
+          v-else-if="notes[string].fret >= windowStart && notes[string].fret <= windowEnd"
+          class="selected"
+          :cx="gridStartX + (strings - +string - 1) * cellWidth"
+          :cy="gridStartY + (notes[string].fret - windowStart) * cellHeight + cellHeight / 2"
+          :r="noteRadius"
+        />
+      </template>
+      <g v-else class="muted-group">
+        <text
+          class="muted"
+          text-anchor="middle"
+          :x="gridStartX + (strings - +string - 1) * cellWidth"
+          :y="gridStartY - cellHeight / 2"
+        >
+          🗙
+        </text>
+        <circle
+          class="open"
+          :cx="gridStartX + (strings - +string - 1) * cellWidth"
+          :cy="gridStartY - cellHeight * 0.65"
+          :r="noteRadius * 0.75"
+          fill="transparent"
+          stroke="gray"
+        />
+      </g>
     </template>
 
     <template v-if="windowStart !== 1">
@@ -158,7 +197,7 @@ function onInputClick(e: Event) {
       text-anchor="middle"
       :x="cellWidth / 2"
       :y="gridStartY - cellHeight / 3 - 1"
-      :transform="`rotate(-90, ${cellWidth * (3 / 4) - 1} ${gridStartY - cellHeight / 3 - 1})`"
+      :transform="`rotate(-90, ${cellWidth * 0.75 - 1} ${gridStartY - cellHeight / 3 - 1})`"
       font-family="sans-serif"
       :font-size="cellHeight / 2"
       :fill="'transparent'"
@@ -172,7 +211,7 @@ function onInputClick(e: Event) {
       text-anchor="middle"
       :x="cellWidth / 2"
       :y="gridEndY + cellWidth"
-      :transform="`rotate(90, ${cellWidth * (3 / 4) - 1} ${gridEndY + cellWidth / 2})`"
+      :transform="`rotate(90, ${cellWidth * 0.75 - 1} ${gridEndY + cellWidth / 2})`"
       font-family="sans-serif"
       :font-size="cellHeight / 2"
       :fill="'transparent'"
@@ -180,7 +219,8 @@ function onInputClick(e: Event) {
     >
       ⮕
     </text>
-    <foreignObject :x="0" :y="gridStartY + 6" :width="100" :height="cellHeight">
+
+    <foreignObject :x="0" :y="gridStartY + 6" :width="22" :height="cellHeight">
       <input
         type="text"
         :value="windowStart"
@@ -211,11 +251,12 @@ svg:hover .arrow:not(:hover) {
   fill: black;
   cursor: pointer;
 }
-circle:not(.selected) {
+
+.selectable {
   fill: transparent;
 }
-rect:hover + circle,
-circle:hover {
+rect:hover + .selectable,
+.selectable:hover {
   fill: black;
 }
 
@@ -224,5 +265,33 @@ input {
   width: 14px;
   font-size: 12px;
   text-align: center;
+}
+
+.open-group .muted {
+  fill: transparent;
+}
+
+.open-group:hover {
+  & .open {
+    stroke: lightgray;
+  }
+
+  & .muted {
+    fill: rgb(50, 50, 50);
+  }
+}
+
+.muted-group .open {
+  stroke: transparent;
+}
+
+.muted-group:hover {
+  & .open {
+    stroke: rgb(50, 50, 50);
+  }
+
+  & .muted {
+    fill: transparent;
+  }
 }
 </style>
