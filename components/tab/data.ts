@@ -16,6 +16,25 @@ export interface Annotation<D = unknown> {
   readonly data?: D;
 }
 
+export interface NoteData {
+  midi: Midi;
+  muted?: boolean;
+  slide?: boolean;
+  bend?: string;
+}
+
+// TODO: Do we actually need to store the position? remove
+export interface NoteSpot {
+  position: number;
+  data?: NoteData;
+}
+
+type StackMap<N extends NoteSpot> = Map<number, N[]>;
+type SerializeableStackMap<N extends NoteSpot> = Array<[number, N[]]>;
+
+export interface GuitarNote extends NoteSpot {
+  string: number; // 0-indexed
+}
 export interface GuitarTabData {
   strings: number;
   tuning: Midi[];
@@ -73,25 +92,6 @@ function deserializeTabData(data: string): TabData {
   };
 }
 
-export interface NoteData {
-  midi: Midi;
-  muted?: boolean;
-  slide?: boolean;
-  bend?: string;
-}
-
-export interface NoteSpot {
-  position: number;
-  data?: NoteData;
-}
-
-type StackMap<N extends NoteSpot> = Map<number, N[]>;
-type SerializeableStackMap<N extends NoteSpot> = Array<[number, N[]]>;
-
-export interface GuitarNote extends NoteSpot {
-  string: number; // 0-indexed
-}
-
 export interface TabStore {
   title: string;
   beatsPerBar: number;
@@ -112,8 +112,9 @@ const defaults = {
 };
 
 export function createTabStore(deserialize: string): TabStore;
-export function createTabStore(options: typeof defaults): TabStore;
-export function createTabStore(init: string | typeof defaults): TabStore {
+export function createTabStore(options?: Partial<typeof defaults>): TabStore;
+export function createTabStore(init?: string | Partial<typeof defaults>): TabStore {
+  if (init === undefined) init = {};
   const data: TabData = reactive(
     typeof init === "object"
       ? { ...defaults, ...init, annotations: new Map() }
@@ -243,7 +244,9 @@ function createAbstractNoteStore<N extends NoteSpot>(stacks: StackMap<N>): Abstr
   function setStack(position: number, stack: N[]) {
     if (position < 0) return;
     if (stack.filter((s) => s.data).length === 0) {
+      console.log(stacks);
       stacks.delete(position);
+      console.log(stacks);
       if (position === furthestPos.at(-1)) {
         furthestPos.pop();
       }
@@ -282,6 +285,7 @@ type GuitarStore = NoteStore<GuitarNote> & GuitarTabData;
 function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
   const noteStore = createAbstractNoteStore(guitarData.stacks);
 
+  // TODO: refactor to store only the data that is needed, while keeping the entire stack reactive
   function setNote({ position, string, data }: GuitarNote): void {
     if (position >= 0 && string >= 0 && string < guitarData.strings) {
       let stack = guitarData.stacks.get(position);

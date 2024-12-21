@@ -10,14 +10,10 @@ const guitar = tabStore.createGuitarTab();
 const guitarNotes: Array<[number, number, string]> = [
   [0, 0, "B4"],
   [Spacing.Quarter * 2, 0, "B4"],
-  [Spacing.Quarter * 2 + Spacing.SixtyFourth, 1, "G4"],
   [Spacing.Quarter * 2 + Spacing.ThirtySecond, 2, "D4"],
-  [Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 3, "C4"],
-  [Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 4, "C4"],
   [Spacing.Quarter * 3, 4, "B3"],
   [Spacing.Quarter * 4, 5, "A3"],
   [Spacing.Quarter * 6, 5, "G3"],
-  [Spacing.Quarter * 6 + Spacing.SixtyFourth * 3, 4, "C4"],
   [Spacing.Quarter * 8, 5, "F3"],
   [Spacing.Quarter * 9, 0, "F4"],
   [Spacing.Quarter * 9 + Spacing.ThirtySecond, 0, "F4"],
@@ -55,7 +51,9 @@ const subdivisions = ref(4);
 const collapseSubdivisions = ref(true);
 const collapseEmpty = ref(true);
 
-async function save() {}
+async function save() {
+  console.log(tabStore.serialize());
+}
 </script>
 
 <template>

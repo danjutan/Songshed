@@ -53,8 +53,7 @@ const collapsed = computed<Set<number>>(() => {
       .map((c) => c.position)
       .filter((position) => {
         if (expanded.has(position)) return false;
-        if (props.collapseEmpty && collapsedEmpty.value.has(position))
-          return true;
+        if (props.collapseEmpty && collapsedEmpty.value.has(position)) return true;
         if (isNotch(position)) return false;
         if (props.collapseSubdivisions) return true;
       }),
@@ -77,12 +76,7 @@ function toggleSubdivisions(notchCol: GuitarStack) {
 </script>
 
 <template>
-  <Strings
-    :start-column
-    :start-row
-    :columns="stackData.length"
-    :num-strings="numStrings"
-  />
+  <Strings :start-column :start-row :columns="stackData.length" :num-strings="numStrings" />
   <template v-for="(column, i) in stackData" :key="column.position">
     <Stack
       :style="{
