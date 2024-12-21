@@ -60,7 +60,7 @@ const props = defineProps<TieRenderProps>();
   }
 }
 
-@container (aspect-ratio < 2) {
+@container (aspect-ratio < 2.5) {
   .full .slide {
     opacity: 0;
   }
@@ -76,7 +76,7 @@ const props = defineProps<TieRenderProps>();
 .slide {
   grid-row: 1 / 1;
   grid-column: 1 / 1;
-  width: calc(100% - 170% / var(--column-span));
+  width: calc(100% - 100% / var(--column-span) - var(--cell-height));
   height: calc(var(--cell-height) / 2);
   margin-top: calc(var(--cell-height) / 4);
   background-color: black;
@@ -90,7 +90,7 @@ const props = defineProps<TieRenderProps>();
 
 .left .slide {
   justify-self: end;
-  width: calc(100% - 85% / var(--column-span));
+  width: calc(100% - 50% / var(--column-span) - var(--cell-height) / 2);
   /*TODO: make this look better across dividers*/
   clip-path: polygon(
     -1px calc(100% - 1px),
@@ -108,7 +108,7 @@ const props = defineProps<TieRenderProps>();
 
 .right .slide {
   justify-self: start;
-  width: calc(100% - 85% / var(--column-span));
+  width: calc(100% - 50% / var(--column-span) - var(--cell-height) / 2);
   clip-path: polygon(
     -1px calc(50% - 1px),
     100% 0%,
