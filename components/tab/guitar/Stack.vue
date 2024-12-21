@@ -28,11 +28,22 @@ const noteSpots = computed(() => {
 });
 
 const backgroundColor = computed(() => (props.selected ? "var(--highlight-color)" : "transparent"));
+
+const hovering = ref<number | undefined>();
+
+type InputRef = InstanceType<typeof NoteInput> | null;
+const inputRefs = ref<InputRef[]>([]);
 </script>
 
 <template>
   <div class="stack" :class="{ collapse }">
-    <div v-for="(note, string) in noteSpots" class="container">
+    <div
+      v-for="(note, string) in noteSpots"
+      class="container"
+      @mouseover="hovering = string"
+      @click="inputRefs[string]?.focus()"
+      @mouseleave="hovering = undefined"
+    >
       <div
         v-if="collapse && note"
         class="square"
@@ -42,10 +53,12 @@ const backgroundColor = computed(() => (props.selected ? "var(--highlight-color)
       />
       <div class="input">
         <NoteInput
+          :ref="(el) => inputRefs.push(el as InputRef)"
           :data="note"
           :tuning="props.tuning[string]"
           :frets="props.frets"
           :blocking-color="selected ? 'transparent' : undefined"
+          :hovering="hovering === string"
           @note-delete="emit('noteDelete', string)"
           @note-change="(updated) => emit('noteChange', { ...note, string, ...updated })"
         />
@@ -65,8 +78,9 @@ const backgroundColor = computed(() => (props.selected ? "var(--highlight-color)
   display: flex;
   height: var(--cell-height);
   /* border: 1px solid red; */
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
+  cursor: text;
 }
 
 .collapse .container {

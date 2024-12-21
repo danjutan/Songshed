@@ -9,6 +9,7 @@ const props = withDefaults(
     collapse?: boolean;
     startFocused?: boolean;
     blockingColor?: string;
+    hovering?: boolean;
   }>(),
   {
     data: undefined,
@@ -22,6 +23,15 @@ const emit = defineEmits<{
   startEdit: [];
   endEdit: [];
 }>();
+
+const input = ref<HTMLInputElement>();
+
+function focus() {
+  input.value!.focus();
+  input.value!.select();
+}
+
+defineExpose({ focus });
 
 const relativeNote = computed(() => {
   if (props.data) {
@@ -47,11 +57,6 @@ function onInput(e: Event) {
   target.value = `${relativeNote.value}`;
 }
 
-function onInputClick(e: Event) {
-  // console.log("click", input.value?.getBoundingClientRect().width);
-  e.target && (e.target as HTMLInputElement).select();
-}
-
 function onInputBlur(e: Event) {
   const target = e.target as HTMLInputElement;
   if (props.data && target.value.trim() == "") {
@@ -61,10 +66,8 @@ function onInputBlur(e: Event) {
 
 function mouseOver() {
   emit("startEdit");
-  // input.value?.focus();
 }
 
-const input = ref<HTMLInputElement>();
 onMounted(() => {
   if (props.startFocused) {
     input.value?.focus();
@@ -75,7 +78,7 @@ onMounted(() => {
 <template>
   <div
     class="note-input"
-    :class="{ collapse: collapse && !relativeNote }"
+    :class="{ hovering, collapse: collapse && !relativeNote }"
     @mouseover="mouseOver"
     @mouseleave="emit('endEdit')"
   >
@@ -87,7 +90,7 @@ onMounted(() => {
       inputmode="numeric"
       pattern="[0-9]{1,2}"
       @input="onInput"
-      @click="onInputClick"
+      @click="focus"
       @blur="onInputBlur"
     />
   </div>
@@ -96,7 +99,6 @@ onMounted(() => {
 <style scoped>
 .note-input {
   display: grid;
-  width: var(--note-font-size);
 }
 
 .collapse {
@@ -130,7 +132,7 @@ input {
   /* aspect-ratio: 1 / 1; */
 }
 
-.note-input:hover > input {
+.hovering > input {
   background-color: var(--note-hover-color);
 }
 
