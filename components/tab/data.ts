@@ -32,7 +32,6 @@ export type TabStore = {
   readonly strings: number
   readonly tuning: Midi[]
   readonly frets: number
-  readonly stacks: ReturnType<typeof computed<StacksData>>
   setNote: {
     (position: number, string: number, data: NoteData): void
     (position: number, string: number, midiString: string): void
@@ -142,10 +141,6 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
     getNotes,
     getStack,
     getStacks,
-    stacks: computed(() => {
-      console.log("recomputing");
-      return getStacks();
-    }),
     deleteNote,
     setNote,
     lastPosition() {
@@ -166,7 +161,6 @@ export function createTabStore(strings: number = 6, frets: number = 24, tuning: 
         tuning,
         getStack: position => ifInBounds(getStack, position),
         getStacks: () => getStacks(start, end),
-        stacks: computed(() => getStacks(start, end)),
         getNotes: () => getNotes(start, end),
         getNote: (position, ...args) => ifInBounds(getNote, position, ...args),
         setNote: (position, ...args) => ifInBounds(setNote, position, ...args),

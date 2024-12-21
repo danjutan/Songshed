@@ -51,7 +51,7 @@ const stacksMap = computed<StacksMap>(() => {
     }
     map.set(position, stack); */
   }
-  for (const [position, stack] of props.data.stacks.value) {
+  for (const [position, stack] of props.data.getStacks()) {
     const existing = map.get(position) || emptyStack(position);
     for (const note of stack) {
       existing[note.string] = note;
