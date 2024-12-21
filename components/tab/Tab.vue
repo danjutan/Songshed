@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import type { Annotation, GuitarNote, StackMap } from "~/model/data";
+import type { GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
-import GuitarBar from "./guitar/GuitarBar.vue";
-import TiesBar from "./guitar/ties/TiesBar.vue";
+import GuitarTabLine from "./guitar/GuitarTabLine.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
-import BendRender from "./guitar/bends/BendRender.vue";
-import BendDragBar from "./guitar/bends/BendDragBar.vue";
 
 import {
   createSelectionState,
@@ -16,9 +13,7 @@ import {
 
 import { createAnnotationAddState } from "./state/annotation-add-state";
 import { createAnnotationRenderState } from "./state/annotation-render-state";
-import { createTieAddState, TieAddInjectionKey } from "./state/tie-add-state";
 import { createEditingState, EditingInjectionKey } from "./state/editing-state";
-import { createBendRenderState } from "./state/bend-render-state";
 import {
   CellHoverInjectionKey,
   createCellHoverEvents,
@@ -53,16 +48,10 @@ const cellHoverState = createCellHoverEvents();
 provide(CellHoverInjectionKey, cellHoverState);
 const selectionState = createSelectionState(cellHoverState);
 provide(SelectionInjectionKey, selectionState);
-const tieAddState = createTieAddState(
-  cellHoverState,
-  computed(() => props.data.guitar),
-  subUnit,
-);
-provide(TieAddInjectionKey, tieAddState);
 const editingState = createEditingState();
 provide(EditingInjectionKey, editingState);
 
-type Bar = {
+export type Bar = {
   start: number;
   stacks: StackMap<GuitarNote>;
 };
@@ -138,28 +127,11 @@ const annotationRows = computed(() =>
   Math.max(props.data.annotations.getRows().length, 1),
 );
 
-const bendRenders = computed(() => {
-  if (props.data.guitar) {
-    return createBendRenderState(
-      props.data.guitar!.ties,
-      computed(() => annotationRows.value + 2),
-      computed(() => props.barsPerLine * (columnsPerBar.value + 1)),
-      posToCol,
-      computed(() => tieAddState.newBend),
-    ).value;
-  }
-  return undefined;
+const notesRow = computed(() => {
+  const bendStrings = props.data.guitar?.ties.getBends().values();
+  const hasBend = bendStrings && [...bendStrings].flat().length > 0;
+  return annotationRows.value + (hasBend ? 2 : 1);
 });
-
-const bendRow = computed(() =>
-  bendRenders.value && bendRenders.value.size
-    ? annotationRows.value + 1
-    : undefined,
-);
-
-const notesRow = computed(() =>
-  bendRow.value ? bendRow.value + 1 : annotationRows.value + 1,
-);
 
 function newAnnotationRow() {
   if (props.data.annotations.getRows().length === annotationRows.value - 1) {
@@ -245,31 +217,13 @@ const overlayedBarStart = ref<number | undefined>();
           </div>
         </div>
 
-        <!--provider instead?-->
-        <GuitarBar
-          :stack-data="bar.stacks"
-          :subdivisions
-          :notch-unit
-          :start-column="i * (columnsPerBar + 1) + 2"
-          :start-row="notesRow"
-          :collapse-empty
-          :collapse-subdivisions
-          :tuning="data.guitar!.tuning"
-          :frets="data.guitar!.frets"
-          :num-strings="numStrings!"
-          @note-change="data.guitar!.setNote"
-          @note-delete="data.guitar!.deleteNote"
-        />
-
-        <TiesBar
-          :ties="data.guitar!.ties"
-          :new-tie="tieAddState.newTie"
-          :num-strings="numStrings!"
-          :start-row="notesRow"
-          :start-column="i * (columnsPerBar + 1) + 2"
-          :start-position="bar.start"
-          :end-position="bar.start + barSize"
-          :sub-unit="subUnit"
+        <div
+          v-if="overlayedBarStart === bar.start"
+          class="bar-overlay"
+          :style="{
+            gridColumnStart: i * (columnsPerBar + 1) + 2,
+            gridColumnEnd: (i + 1) * (columnsPerBar + 1) + 2,
+          }"
         />
 
         <AnnotationDragBar
@@ -279,33 +233,10 @@ const overlayedBarStart = ref<number | undefined>();
           :add-state="annotationAddState"
         />
 
-        <BendDragBar
-          v-if="bendRow"
-          :bend-row
-          :start-column="i * (columnsPerBar + 1) + 1"
-          :bar-positions="[...bar.stacks.keys()]"
-        />
-
-        <div
-          v-if="overlayedBarStart === bar.start"
-          class="bar-overlay"
-          :style="{
-            gridColumnStart: i * (columnsPerBar + 1) + 2,
-            gridColumnEnd: (i + 1) * (columnsPerBar + 1) + 2,
-          }"
-        />
         <div class="new-row-box" @click="newAnnotationRow">
           <span>+</span>
         </div>
       </template>
-      <div
-        v-if="tabLineIndex === tabLines.length - 1"
-        class="divider"
-        :style="{ gridColumn: tabLine.length * (columnsPerBar + 1) + 1 }"
-        @click="newBarClick()"
-      >
-        <div class="new-button">+</div>
-      </div>
 
       <AnnotationRender
         v-for="render in annotationRenders.get(tabLineIndex)"
@@ -320,22 +251,29 @@ const overlayedBarStart = ref<number | undefined>();
         "
       />
 
-      <template v-if="bendRow">
-        <!--TODO: only show this while dragging new bends/interacting with bends-->
-        <div class="bend-row-label">bend</div>
-        <BendRender
-          v-for="render in bendRenders!.get(tabLineIndex)"
-          :key="render.startColumn"
-          v-bind="render"
-          :bend-row
-          :update-bend="
-            (bend) => data.guitar!.ties.updateTie(render.row - notesRow, bend)
-          "
-          @delete="
-            data.guitar!.ties.deleteTie(render.row - notesRow, render.bend.from)
-          "
-        />
-      </template>
+      <GuitarTabLine
+        v-if="data.guitar"
+        :tab-line-index
+        :guitar-store="data.guitar"
+        :bars="tabLine"
+        :start-row="annotationRows + 1"
+        :bars-per-line
+        :pos-to-col
+        :notch-unit
+        :subdivisions
+        :columns-per-bar
+        :collapse-empty
+        :collapse-subdivisions
+      />
+
+      <div
+        v-if="tabLineIndex === tabLines.length - 1"
+        class="divider"
+        :style="{ gridColumn: tabLine.length * (columnsPerBar + 1) + 1 }"
+        @click="newBarClick()"
+      >
+        <div class="new-button">+</div>
+      </div>
     </div>
   </div>
 </template>
@@ -363,6 +301,7 @@ const overlayedBarStart = ref<number | undefined>();
 .tab-line {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
+  grid-auto-rows: var(--cell-height);
   grid-template-rows:
     repeat(calc(v-bind(notesRow) - 1 + v-bind(numStrings)), var(--cell-height))
     calc(var(--cell-height) * 0.8);
@@ -463,14 +402,5 @@ const overlayedBarStart = ref<number | undefined>();
   /* grid-row: v-bind(notesRow) / span v-bind(numStrings); */
   grid-row: 1 / -1;
   background-color: var(--delete-overlay-bg);
-}
-
-.bend-row-label {
-  grid-row: v-bind(bendRow);
-  grid-column: 1;
-  font-size: calc(var(--note-font-size) * 0.75);
-  align-self: center;
-  /* writing-mode: vertical-rl;
-  text-orientation: upright; */
 }
 </style>
