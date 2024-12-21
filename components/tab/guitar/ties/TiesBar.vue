@@ -54,6 +54,7 @@ function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
       from: tie.from,
       to: tie.to,
       half: "left",
+      otherHalfColumns: (tie.to - props.endPosition) / props.subUnit + 1,
       direction,
     };
   }
@@ -67,6 +68,7 @@ function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
       from: tie.from,
       to: tie.to,
       half: "right",
+      otherHalfColumns: (props.startPosition - tie.from) / props.subUnit,
       direction,
     };
   }

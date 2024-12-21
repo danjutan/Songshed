@@ -7,6 +7,7 @@ export type TieRenderProps = OverlayPosition & {
   to: number;
   from: number;
   half?: "left" | "right";
+  otherHalfColumns?: number;
   editing?: boolean;
   direction: "up" | "down";
 };
@@ -17,6 +18,10 @@ const emit = defineEmits<{
   blockClicked: [];
 }>();
 const props = defineProps<TieRenderProps>();
+
+// if (props.half) {
+//   console.log(props.type, props.half, props.otherHalfColumns);
+// }
 
 const hammerText = computed(() => (props.direction === "up" ? "H" : "P"));
 
@@ -153,7 +158,7 @@ function onSelectInput(e: Event) {
 
 .slide-box {
   grid-area: 1 / 1;
-  width: calc(100% - 100% / var(--column-span) - var(--cell-height));
+  width: calc(100% - 100% / var(--column-span) - var(--note-font-size));
   height: calc(var(--cell-height) / 2);
   margin-top: calc(var(--cell-height) / 4);
   background-color: black;
@@ -169,40 +174,36 @@ function onSelectInput(e: Event) {
   transform: scaleY(-1);
 }
 
+.left .slide-box,
+.right .slide-box {
+  --margin: calc(50% / var(--column-span) + var(--note-font-size) / 2);
+  --end: calc(
+    100% * (v-bind(otherHalfColumns)) / var(--column-span) +
+      var(--divider-width) - var(--margin)
+  );
+  width: 100%;
+}
+
 .left .slide-box {
   justify-self: end;
-  width: calc(100% - 50% / var(--column-span) - var(--cell-height) / 4);
-  /*TODO: make this look better across dividers, probably with an "other half (start or end point)" prop*/
+  clip-path: none;
   clip-path: polygon(
-    -1px calc(100% - 1px),
-    calc(100%) calc(50%),
-    calc(100% + 1px) calc(50% + 1px),
-    0px 100%
+    var(--margin) calc(100% - 1px),
+    calc(100% + var(--end)) 0%,
+    calc(100% + var(--end)) 1px,
+    calc(var(--margin) + 1px) 100%
   );
-  /* clip-path: polygon(
-    0% calc(100% - 1px),
-    calc(100% + var(--divider-width) / 2 + 1px) 50%,
-    calc(100% + var(--divider-width) / 2) calc(50% + 1px),
-    1px 100%
-  ); */
 }
 
 .right .slide-box {
   justify-self: start;
-  width: calc(100% - 50% / var(--column-span) - var(--cell-height) / 4);
+  clip-path: none;
   clip-path: polygon(
-    -1px calc(50% - 1px),
-    100% 0%,
-    calc(100% + 1px) 1px,
-    0px 50%
+    calc(-1 * var(--end)) calc(100% - 1px),
+    calc(100% - 1px - var(--margin)) 0%,
+    calc(100% - var(--margin)) 1px,
+    calc(-1 * var(--end)) 100%
   );
-
-  /* clip-path: polygon(
-    calc(-1 * var(--divider-width) / 2 - 1px) calc(50% - 1px),
-    calc(100% - 1px) 0%,
-    100% 1px,
-    calc(-1 * var(--divider-width) / 2) 50%
-  ); */
 }
 
 .tie-box {
