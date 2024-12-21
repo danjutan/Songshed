@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Spacing, type NoteSpot, type FilledSpot } from './data';
+import { Spacing, type NoteSpot, type FilledSpot, SpacingsDescending } from './data';
 import type { PropType } from 'vue';
 
 
@@ -11,6 +11,11 @@ export type DivisionData = {
   stack: StackData,
   substacks?: Array<{ notchPosition: number, stack: NoteSpot[] }> // relative to root's notches
 } 
+
+export type SpacerData = {
+  notchStart: number,
+  notches: number;
+}
 
 const props = defineProps(
   {
@@ -50,8 +55,9 @@ const notes = defineModel<FilledSpot[]>({
   required: true,
   validator: (notes: FilledSpot[]) => {
     const noConflict = notes.length === (new Set(notes.map(note => `${note.string},${note.position}`))).size
+    const inGrid = notes.every(note => note.position % SpacingsDescending.at(-1)! == 0);
     // TODO
-    return noConflict;
+    return noConflict && inGrid;
   }
 });
 
@@ -104,6 +110,45 @@ const divisions = computed<DivisionData[]>(() => {
 
 })
 
+/*
+  e.g: 0, 8, 9, 12, 15 
+  gaps: 8, 1, 3, 3
+  slots: 7, 0, 2, 2
+  (position + 1) span (slots): (0 + 1) span 7, (8 + 1) span 0, (9 + 1) span 2, (12 + 1) span 2
+  filtered: 1 span 7, 10 span 2, 13 span 2
+*/
+const emptyDivisions = computed<SpacerData[]>(() => {
+  const spacers: SpacerData[] = [];
+  const filledPositions = divisions.value.map(note => note.notchPosition);
+  const gaps = filledPositions.slice(1).map((n, i) => n - filledPositions[i]);
+  const slots = gaps.map(gap => gap - 1);
+  slots.forEach((slot, i) => {
+    if (slot) {
+      spacers.push({ notchStart: filledPositions[i] + 1, notches: slot });
+    }
+  })
+  // const filledPositions = new Set(divisions.value.map(note => note.notchPosition));
+  // console.log(filledPositions);
+  // let currentSpacer: SpacerData | undefined;
+  // for (let i = 0; i < props.notches; i++) {
+  //   if (filledPositions.has(i)) {
+  //     if (currentSpacer) {
+  //       spacers.push(currentSpacer);
+  //       currentSpacer = undefined;
+  //       continue;
+  //     }
+  //   }
+  //   if (currentSpacer) {
+  //     currentSpacer.notches++;
+  //     continue;
+  //   }
+  //   currentSpacer = { notchStart: i, notches: 1 };
+  // }
+  return spacers;
+})
+
+console.log(emptyDivisions.value);
+
 const strings = computed(() => props.tuning.length);
 
 function modifyNotes(transform: (map: StackMap) => StackMap) {
@@ -148,8 +193,11 @@ function updateNote(note: NoteSpot) {
       v-for="data in divisions"
       :key="data.notchPosition"
       :data :tuning :frets
-      :style="`grid-column: ${data.notchPosition + 1} / span 1`"
       @note-change="updateNote" />
+    <TabsSpacer
+      v-for="data in emptyDivisions"
+      :key="data.notchStart"
+      :data="data"  :strings="strings" />
   </div>
 </template>
 

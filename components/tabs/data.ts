@@ -33,3 +33,5 @@ export enum Spacing {
   ThirtySecond = 1 / 8,
   SixtyFourth = 1 / 16
 }
+
+export const SpacingsDescending = (Object.values(Spacing).filter(Number) as number[]).sort((a, b) => b - a);

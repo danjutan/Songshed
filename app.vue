@@ -4,13 +4,15 @@ import { Spacing, type FilledSpot, createNote } from './components/tabs/data';
 const notes = ref<FilledSpot[]>([
   createNote(0,0,"B4"), 
   createNote(Spacing.Quarter * 3, 0, "B4"),
-  // createNote(4, Spacing.Quarter * 4, "B4"), //out of scope
-  createNote(Spacing.Quarter, 0, "B4"), 
-  createNote(Spacing.Quarter + Spacing.Sixteenth, 3, "B4"),
-  createNote(Spacing.Quarter + Spacing.Eighth, 2, "B4"),
-  createNote(Spacing.Quarter + Spacing.Eighth + Spacing.Sixteenth, 3, "B4"),
-  createNote(Spacing.Quarter * 2, 0, "B4"),
-  createNote(Spacing.Quarter * 2 + Spacing.ThirtySecond, 0, "B4"),
+  createNote(Spacing.Quarter * 4 - Spacing.Sixteenth, 0, "B4"), 
+
+  createNote(Spacing.Quarter * 2, 0, "C5"),
+
+  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth, 0, "C5"),
+  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 2, 4, "C5"),
+  createNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 5, "C5"),
+
+  createNote(Spacing.Quarter * 2 + Spacing.Sixteenth, 5, "B4"),
 ]);
 // const showDivisions = ref(false);
 </script>
