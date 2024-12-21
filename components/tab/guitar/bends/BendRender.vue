@@ -6,6 +6,10 @@ import {
   type CellHoverEvents,
   type HoveredRow,
 } from "../../state/cell-hover-events";
+import {
+  TieAddInjectionKey,
+  type TieAddState,
+} from "../../state/tie-add-state";
 
 export type BendRenderProps = OverlayPosition & {
   bend: Bend;
@@ -18,7 +22,9 @@ const props = defineProps<BendRenderProps & { bendRow: number }>();
 const emit = defineEmits<{
   updateBend: [bend: Bend];
 }>();
+
 const cellHoverEvents = inject(CellHoverInjectionKey) as CellHoverEvents;
+const tieAddState = inject(TieAddInjectionKey) as TieAddState;
 
 const noUpswing = computed(
   () => props.half === "right" && props.fullRestColumns,
@@ -30,6 +36,8 @@ const upswingEndColumn = computed(() => {
   }
   return props.throughColumn || props.endColumn;
 });
+
+const prebend = computed(() => props.startColumn === upswingEndColumn.value);
 
 const upswingColumns = computed(
   () => upswingEndColumn.value - props.startColumn + 1,
@@ -88,7 +96,7 @@ const dragging = ref<"upswing" | "release" | undefined>();
 
 function updateOnDrag(type: HoveredRow, position: number) {
   const bend = { ...props.bend };
-  if (dragging.value === "upswing" && position > bend.from) {
+  if (dragging.value === "upswing" && position >= bend.from) {
     if (props.throughColumn) {
       bend.through = [position - bend.from];
       return bend;
@@ -111,7 +119,9 @@ function updateOnDrag(type: HoveredRow, position: number) {
 }
 
 cellHoverEvents.addHoverListener((type, position) => {
-  emit("updateBend", updateOnDrag(type, position));
+  if (!tieAddState.dragging) {
+    emit("updateBend", updateOnDrag(type, position));
+  }
 });
 
 cellHoverEvents.addMouseUpListener(() => {
@@ -162,8 +172,10 @@ function onLabelHover() {
     <path
       class="upswing-curve"
       :d="
-        `M ${upswingFrom} ${vbu * rowSpan - vbu * 0.75}` +
-        `Q ${upswingTo} ${vbu * rowSpan - vbu * 0.75} ${upswingTo} ${vbu * 1.1}`
+        prebend
+          ? `M ${vbu / 2} ${vbu * rowSpan - vbu}` + `V ${vbu * 1.1}`
+          : `M ${upswingFrom} ${vbu * rowSpan - vbu * 0.75}` +
+            `Q ${upswingTo} ${vbu * rowSpan - vbu * 0.75} ${upswingTo} ${vbu * 1.1}`
       "
       :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
     />

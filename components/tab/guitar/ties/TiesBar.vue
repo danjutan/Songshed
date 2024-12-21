@@ -4,6 +4,7 @@ import type { Tie, TieMap, TieStore } from "~/model/stores";
 import {
   TieAddInjectionKey,
   type TieAddState,
+  type TieWithString,
 } from "../../state/tie-add-state";
 import {
   EditingInjectionKey,
@@ -18,9 +19,9 @@ const props = defineProps<{
   startPosition: number;
   endPosition: number;
   subUnit: number;
+  newTie: TieWithString | undefined;
 }>();
 
-const addState = inject(TieAddInjectionKey) as TieAddState;
 const editingState = inject(EditingInjectionKey) as EditingState;
 // Assumes ties can stretch over one divider, but not two
 
@@ -82,16 +83,18 @@ const tieRenders = computed<TieRenderProps[]>(() => {
     const stringTies = [];
     const fromData = props.ties.getTies().get(i);
     if (
-      addState.newTie.to &&
-      addState.newTie.string === i &&
-      addState.newTie.to !== addState.newTie.from
+      props.newTie &&
+      props.newTie.string === i &&
+      props.newTie.to !== props.newTie.from
     ) {
-      stringTies.push(addState.newTie);
+      stringTies.push(props.newTie);
     }
     if (fromData) {
       if (stringTies.length) {
         stringTies.push(
-          ...fromData.filter((tie) => tie.from !== addState.newTie.from),
+          ...fromData.filter(
+            (tie) => !props.newTie || tie.from !== props.newTie.from,
+          ),
         );
       } else {
         stringTies.push(...fromData);

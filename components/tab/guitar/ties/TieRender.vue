@@ -21,12 +21,13 @@ const emit = defineEmits<{
 const props = defineProps<TieRenderProps>();
 
 const hammerText = computed(() => (props.direction === "up" ? "H" : "P"));
+const slideText = computed(() => (props.direction === "up" ? "/" : "\\"));
 
 const labelText = computed(() => {
   if (props.type === "hammer") {
     return hammerText.value;
   }
-  return "S";
+  return slideText.value;
 });
 
 function onSelectInput(e: Event) {
@@ -70,7 +71,9 @@ function onSelectInput(e: Event) {
         <option value="hammer" :selected="type === 'hammer'">
           {{ hammerText }}
         </option>
-        <option value="slide" :selected="type === 'slide'">S</option>
+        <option value="slide" :selected="type === 'slide'">
+          {{ slideText }}
+        </option>
       </select>
       <div v-if="type === 'hammer'" class="label">{{ labelText }}</div>
       <div class="delete" @click="emit('delete')">&Cross;</div>

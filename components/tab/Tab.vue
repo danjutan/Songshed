@@ -146,6 +146,7 @@ const bendRenders = computed(() => {
       computed(() => annotationRows.value + 2),
       computed(() => props.barsPerLine * (columnsPerBar.value + 1)),
       posToCol,
+      computed(() => tieAddState.newBend),
     ).value;
   }
   return undefined;
@@ -233,6 +234,7 @@ onBeforeUnmount(() => {
 
         <TiesBar
           :ties="data.guitar!.ties"
+          :new-tie="tieAddState.newTie"
           :num-strings="numStrings!"
           :start-row="notesRow"
           :start-column="i * (columnsPerBar + 1) + 2"
