@@ -26,6 +26,8 @@ const subunit = computed(() => 1 / props.subdivisions);
 const colPositions = computed(() => relativePositions.value.map(pos => 1 + pos / subunit.value));
 
 const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150 ${(props.data.notchPosition + 1) % 2 * 255})`);
+
+const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-font-size)" : "1fr");
 </script>
 
 <template>
@@ -77,7 +79,7 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
   display: grid;
 
   /* grid-template-columns: calc(var(--min-division-width) / 2) repeat(calc(v-bind(subdivisions) - 1), 1fr); */
-  grid-template-columns: var(--note-font-size) repeat(v-bind(subdivisions), 1fr);
+  grid-template-columns: v-bind(firstColWidth) repeat(v-bind(subdivisions), 1fr);
   grid-template-rows: repeat(v-bind(numStrings), calc(var(--min-division-width) / 2));
   /* grid-template-columns: repeat(v-bind(numColumns), min(calc(var(--min-division-width / 2)), 1fr)); */
   /* grid-template-columns: repeat(v-bind(numColumns), calc(var(--min-division-width) / 2 / v-bind(numColumns))) 1fr; */
@@ -97,7 +99,8 @@ const debugColor = computed(() => `rgb(${props.data.notchPosition % 2 * 255} 150
 
 .substack {
   grid-row: 1 / -1;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 0, 0, 0.1);
+  min-width: 2px;
 }
 
 .indicator {
