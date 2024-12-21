@@ -101,26 +101,9 @@ function onSelectInput(e: Event) {
 }
 
 const selectHeight = "18px";
-const select = useTemplateRef("select");
-const { focused: selectFocused } = useFocus(select);
-
-document.addEventListener("click", (event) => {
-  if (select.value && !select.value.contains(event.target as Node)) {
-    selectFocused.value = false;
-  }
-});
 
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
-
-watch(
-  () => coords.upswingTo.center,
-  (c, l) => console.log(l, c),
-);
-watch(upswingPath, (c, l) => {
-  console.log(l);
-  console.log(c);
-});
 </script>
 
 <template>
@@ -148,11 +131,6 @@ watch(upswingPath, (c, l) => {
     >
       <path d="M 0 0 L 10 5 L 0 10 z" />
     </marker>
-    <path
-      class="upswing-curve"
-      :d="upswingPath"
-      :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
-    />
     <rect
       :x="coords.upswingTo.left"
       :y="0"
@@ -175,11 +153,7 @@ watch(upswingPath, (c, l) => {
       @mouseover="bendEditState.onLabelHover"
     >
       <div :class="{ dragging: bendEditState.dragging }" class="bend-label">
-        <select
-          ref="select"
-          @input="onSelectInput"
-          @change="selectFocused = false"
-        >
+        <select ref="select" @input="onSelectInput">
           <option
             v-for="[bendBy, label] in Object.entries(bendLabels).sort(
               (a, b) => +a[0] - +b[0],
@@ -193,6 +167,11 @@ watch(upswingPath, (c, l) => {
         <span v-html="bendLabel" />
       </div>
     </foreignObject>
+    <path
+      class="upswing-curve"
+      :d="upswingPath"
+      :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
+    />
     <g v-if="coords.through">
       <path
         v-if="bend.releaseType === 'connect'"
@@ -254,42 +233,40 @@ watch(upswingPath, (c, l) => {
 }
 
 .bend-label {
-  font-size: calc(var(--note-font-size) * 0.75);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  justify-content: center;
   /* justify-content: center; */
   width: 120%;
-
   &:not(.dragging) {
-    span:hover,
     select:hover + span {
       background-color: lightgray;
-      width: calc(var(--cell-height) + 4px);
-      text-align: center;
-      /* display: none;
-      & + select {
-        display: block;
-      } */
     }
   }
 
   & span {
+    font-size: calc(var(--note-font-size) * 0.75);
     cursor: text;
+    background: white;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-left: -2px;
+    margin-top: 1px;
+    grid-row: 1 / 1;
+    grid-column: 1 / 1;
   }
 
   & select {
-    position: absolute;
-    width: calc(var(--cell-height) + 4px);
+    pointer-events: all;
+    width: calc(var(--cell-height));
+    margin-top: 1px;
     cursor: text;
     appearance: none;
+    border: none;
+    outline: none;
     text-align: center;
     height: v-bind(selectHeight);
-    opacity: 0;
-
-    &:focus {
-      opacity: 1;
-    }
+    grid-row: 1 / 1;
+    grid-column: 1 / 1;
 
     & [value="delete"] {
       color: darkred;

@@ -40,8 +40,4 @@ svg {
   pointer-events: none;
   z-index: 1;
 }
-
-svg * {
-  pointer-events: all;
-}
 </style>
