@@ -10,6 +10,7 @@ import {
   type TieAddState,
 } from "../guitar/state/tie-add-state";
 import { EditingInjectionKey, type EditingState } from "../state/editing-state";
+import { useTemplateRef } from "vue";
 
 const props = withDefaults(
   defineProps<{
@@ -57,8 +58,7 @@ function onStackMouseMove() {
   if (selecting.dragging) (document.activeElement as HTMLElement).blur();
 }
 
-type InputRef = InstanceType<typeof NoteInput> | null;
-const inputRefs = ref<InputRef[]>([]);
+const inputRefs = useTemplateRef("inputs");
 
 const tieable = (
   note: GuitarNote | undefined,
@@ -96,7 +96,7 @@ function onSpotMouseDown(
         crosshair: tieable(note, string),
         collapse,
       }"
-      @click="inputRefs[string]?.focus()"
+      @click="inputRefs![string]?.focus()"
       @mousedown="(e) => onSpotMouseDown(e, string, note)"
       @mouseenter="hovering = string"
       @mouseleave="hovering = undefined"
@@ -113,7 +113,7 @@ function onSpotMouseDown(
       />
       <div class="input">
         <NoteInput
-          :ref="(el) => inputRefs.push(el as InputRef)"
+          ref="inputs"
           :data="note"
           :string="string"
           :position="position"

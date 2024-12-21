@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Annotation } from "~/model/data";
 import type { OverlayPosition } from "../overlay-objects";
+import { useTemplateRef } from "vue";
 
 const props = defineProps<
   OverlayPosition & {
@@ -15,7 +16,7 @@ const emit = defineEmits<{
 
 const pointerEvents = computed(() => (props.annotation ? "auto" : "none"));
 
-const titleEl = ref<HTMLDivElement>();
+const titleEl = useTemplateRef("title");
 
 function titleInput() {
   if (props.annotation) {
@@ -42,7 +43,7 @@ watch(
 <template>
   <div :class="`annotation annotation-${row}`">
     <div
-      ref="titleEl"
+      ref="title"
       class="title"
       contenteditable
       @input="titleInput"
