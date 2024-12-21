@@ -4,8 +4,8 @@ import Drape from "./Drape.vue";
 import { emptyDivisions } from "./empty-divisions";
 
 const props = defineProps<{
-  divisions: DivisionData[]
-  tuning: Midi[]
+  divisions: DivisionData[];
+  tuning: Midi[];
 }>();
 
 const hovering = ref(0);
@@ -17,48 +17,50 @@ const spacers = computed(() => emptyDivisions(props.divisions));
 
 <template>
   <div class="toolbar">
-    <div v-for="i in numNotches"
-         :key="i"
-         :style="{ gridColumn: `${i} / span 1` }"
-         :class="{ border: i != hovering, even: i % 2 === 0, odd: i % 2 === 1 }"
-         class="notch">
-      <div class="selectable"
-           @mouseover="hovering = i"
-           @mouseleave="hovering = 0"
+    <div
+      v-for="i in numNotches"
+      :key="i"
+      :style="{ gridColumn: `${i} / span 1` }"
+      :class="{ border: i != hovering, even: i % 2 === 0, odd: i % 2 === 1 }"
+      class="notch"
+    >
+      <div
+        class="selectable"
+        @mouseover="hovering = i"
+        @mouseleave="hovering = 0"
       />
     </div>
-    <Drape v-for="{ start, columns } in spacers"
-           :key="start"
-           collapsed="show"
-           default="hide"
-           :start
-           :columns
-           :num-strings
-           :row-start="2"
-           color="var(--substack-bg)">
+    <Drape
+      v-for="{ start, columns } in spacers"
+      :key="start"
+      collapsed="show"
+      default="hide"
+      :start
+      :columns
+      :num-strings
+      :row-start="2"
+      color="var(--substack-bg)"
+    >
       <!-- <template #up>
         <div :style="{ width: '100%', height: 'var(--cell-height)', pointerEvents: 'auto' }" />
       </template> -->
       <template #down>
         <div class="spacer-overlay">
           <div class="indicator-container">
-            <div class="spacer-indicator">
-              ⇤
-            </div>
-            <div class="spacer-indicator">
-              ⇥
-            </div>
+            <div class="spacer-indicator">⇤</div>
+            <div class="spacer-indicator">⇥</div>
           </div>
         </div>
       </template>
     </Drape>
 
-    <Drape v-if="hovering"
-           :start="hovering"
-           :columns="1"
-           :row-start="2"
-           :num-strings
-           color="var(--highlight-color)"
+    <Drape
+      v-if="hovering"
+      :start="hovering"
+      :columns="1"
+      :row-start="2"
+      :num-strings
+      color="var(--highlight-color)"
     />
   </div>
 </template>
