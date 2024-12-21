@@ -5,11 +5,11 @@ import Drape from "./toolbar/Drape.vue";
 
 const props = withDefaults(
   defineProps<{
-    data: DivisionData;
-    subdivisions?: number;
-    frets: number;
-    tuning: Midi[];
-    debug?: boolean;
+    data: DivisionData
+    subdivisions?: number
+    frets: number
+    tuning: Midi[]
+    debug?: boolean
   }>(),
   {
     subdivisions: 4,
@@ -19,7 +19,7 @@ const props = withDefaults(
 const numStrings = computed(() => props.tuning.length);
 
 const emit = defineEmits<{
-  noteChange: [note: NoteSpot];
+  noteChange: [note: NoteSpot]
 }>();
 
 const sortedSubstacks = computed(
@@ -34,13 +34,13 @@ const numSubstacks = computed(
 );
 const relativePositions = computed(() =>
   sortedSubstacks.value.map(
-    (substack) => substack.notchPosition - props.data.notchPosition,
+    substack => substack.notchPosition - props.data.notchPosition,
   ),
 );
 // const subunit = computed(() => SpacingsDescending.find(spacing => relativePositions.value?.every(relative => relative % spacing === 0)) || 1);
 const subunit = computed(() => 1 / props.subdivisions);
 const colPositions = computed(() =>
-  relativePositions.value.map((pos) => 1 + pos / subunit.value),
+  relativePositions.value.map(pos => 1 + pos / subunit.value),
 );
 
 const firstColWidth = computed(() =>
@@ -56,8 +56,7 @@ const substackMinWidth = computed(() =>
 <template>
   <div
     class="division"
-    @click="debug && console.log({ subunit, subdivisions, colPositions })"
-  >
+    @click="debug && console.log({ subunit, subdivisions, colPositions })">
     <div class="stack">
       <TabsNoteInput
         v-for="noteSpot in props.data.stack"
@@ -74,13 +73,11 @@ const substackMinWidth = computed(() =>
       v-for="(substack, i) in sortedSubstacks"
       :key="substack.notchPosition"
       class="substack"
-      :style="{ gridColumn: colPositions[i] }"
-    >
+      :style="{ gridColumn: colPositions[i] }">
       <div
         v-for="noteSpot in substack.stack"
         :key="noteSpot.string"
-        class="indicator"
-      >
+        class="indicator">
         <div
           v-if="noteSpot.data"
           class="square"
@@ -110,11 +107,12 @@ const substackMinWidth = computed(() =>
       height-unit="var(--cell-height) * 2"
       color="var(--substack-bg)"
       :num-strings
-      @click="substacksExpanded = !substacksExpanded"
-    >
+      @click="substacksExpanded = !substacksExpanded">
       <template #up>
         <div class="unexpander">
-          <div class="label">↤</div>
+          <div class="label">
+            ↤
+          </div>
         </div>
       </template>
     </Drape>
@@ -149,7 +147,7 @@ const substackMinWidth = computed(() =>
   height: var(--cell-height);
   width: 100%;
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
   align-items: center;
   container-name: unexpander;
   container-type: size;
