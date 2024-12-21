@@ -27,6 +27,16 @@ notes.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 4, "C4");
 notes.setNote(Spacing.Quarter * 2 + Spacing.SixtyFourth * 3, 5, "F3");
 
 notes.setNote(Spacing.Quarter * 2 + Spacing.Sixteenth, 5, "F2");
+
+notes.setNote(Spacing.Quarter * 6, 0, "C5");
+
+notes.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth, 1, "G5");
+notes.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth * 2, 4, "B3");
+// notes.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth * 3, 4, "C4");
+// notes.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth * 3, 5, "F3");
+
+notes.setNote(Spacing.Quarter * 7 + Spacing.SixtyFourth * 2, 1, "G5");
+notes.setNote(Spacing.Quarter * 7 + Spacing.SixtyFourth * 3, 4, "B3");
 </script>
 
 <template>

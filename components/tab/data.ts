@@ -182,6 +182,7 @@ export enum Spacing {
   Sixteenth = 0.25,
   ThirtySecond = 0.125,
   SixtyFourth = 0.0625,
+  OneTwentyEighth = 0.03125,
 }
 
 export const smallestSpacing = Spacing.SixtyFourth;

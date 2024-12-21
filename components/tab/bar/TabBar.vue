@@ -4,6 +4,9 @@ import type { NoteSpot, BarStore } from "../data";
 import { Spacing, smallestSpacing } from "../data";
 import { VisualizationStateKey } from "../providers";
 import Stack from "./Stack.vue";
+import Drape, { type DrapeData } from "./toolbar/Drape.vue";
+import ExpanderOverlay from "./toolbar/ExpanderOverlay.vue";
+import UnexpanderOverlay from "./toolbar/UnexpanderOverlay.vue";
 
 export type DivisionData = {
   notchPosition: number
@@ -44,6 +47,8 @@ const strings = computed(() => props.data.strings);
 const unit = computed<Spacing>(() => (props.data.end - props.data.start) / (props.notches));
 const subunit = computed<Spacing>(() => unit.value / props.subdivisions);
 
+const isNotch = (column: ColumnData) => column.position % unit.value === 0;
+
 const columnData = computed<ColumnData[]>(() => {
   const columns: Array<ColumnData> = [];
 
@@ -59,6 +64,7 @@ const columnData = computed<ColumnData[]>(() => {
 
 const visualizationState = inject(VisualizationStateKey)!;
 
+// TODO: make sure to set this up to work now that substacks aren't part of stacks
 const isExpanded = (column: number) =>
   visualizationState.isExpanded(props.data.start, props.notches, column);
 
@@ -70,6 +76,40 @@ const isExpanded = (column: number) =>
 const toggleExpanded = (column: number, num?: number) =>
   visualizationState.toggleExpanded(props.data.start, props.notches, column, num);
 
+const spacers = computed<DrapeData[]>(() => {
+  const drapeData: DrapeData[] = [];
+  let firstNotchIndex: number | undefined;
+  let lastNotchIndex: number | undefined;
+  columnData.value.forEach((col, i) => {
+    if (col.stack.every(spot => !spot.data)) {
+      if (isNotch(col)) {
+        lastNotchIndex = i;
+        if (firstNotchIndex === undefined) {
+          firstNotchIndex = i;
+        }
+      }
+      return;
+    }
+    // if (firstNotchIndex !== undefined && lastNotchIndex !== undefined) {
+    //   drapeData.push({ start: firstNotchIndex + 1, columns: lastNotchIndex - firstNotchIndex });
+    // }
+    if (firstNotchIndex !== undefined) {
+      const columns = isNotch(col) ? i - firstNotchIndex : lastNotchIndex! - firstNotchIndex;
+      drapeData.push({ start: firstNotchIndex + 1, columns });
+    }
+    firstNotchIndex = undefined;
+    lastNotchIndex = undefined;
+  });
+  if (firstNotchIndex !== undefined) {
+    const columns = columnData.value.length - firstNotchIndex;
+    drapeData.push({ start: firstNotchIndex + 1, columns });
+  }
+  return drapeData;
+});
+
+const collapsed = computed < Set<number>;
+
+console.log(spacers.value);
 // everything will expand to var(--cell-height)
 /* const expandsTo = computed<{ [column: number]: string }>(
   () => Object.fromEntries(
@@ -79,8 +119,9 @@ const toggleExpanded = (column: number, num?: number) =>
     ]))); */
 
 const gridTemplateColumns = computed<string>(() => {
-  const columns: string[] = columnData.value.map(({ position }) => {
-    if (position % unit.value === 0) {
+  const columns: string[] = columnData.value.map((col) => {
+    const isEmpty = col.stack.every(spot => !spot.data);
+    if (isNotch(col) && !isEmpty) {
       return "var(--cell-height)";
     }
     return "1fr";
@@ -126,6 +167,27 @@ function noteChange(changed: NoteSpot) {
            :class="{ substack: col.position % unit !== 0, even: i % 2 === 0 }"
            @note-change="noteChange"
     />
+    <Drape
+      v-for="{ start, columns } in spacers"
+      :key="start"
+      class="spacer"
+      collapsed="show"
+      default="hide"
+      up="reverse"
+      :start
+      :columns
+      :num-strings="strings"
+      :row-start="2"
+      color="var(--substack-bg)"
+      @click="toggleExpanded(start, columns)">
+      <template #up>
+        <UnexpanderOverlay v-if="isExpanded(start)" />
+      </template>
+      <template
+        #down>
+        <ExpanderOverlay />
+      </template>
+    </Drape>
     <!-- <TabBarDivision v-for="div in divisions" -->
     <!--                 :key="div.notchPosition" -->
     <!--                 :subdivisions -->
