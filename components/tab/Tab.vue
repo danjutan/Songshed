@@ -39,18 +39,13 @@ const bars = computed<Bar>(() => {
     i <= Math.max(newBarStart.value, props.data.guitar.lastPosition() ?? 0);
     i += barSize.value
   ) {
-    /* const columns: GuitarStack[] = [];
-    for (let position = i; position < i + barSize.value; position += subUnit.value) {
-      const stack =
-        props.data.guitar.stacks.get(position) ??
-        props.data.guitar.tuning.map((_, string) => ({ string, position }));
-      columns.push({ stack, position });
-    } */
-    const columns: GuitarStack[] = props.data.guitar
-      .getStacks(i, i + barSize.value, subUnit.value)
-      .map((stack, p) => ({ position: i + p * subUnit.value, stack }));
+    const columns: GuitarStack[] = [
+      ...props.data.guitar.getStacks(i, i + barSize.value, subUnit.value).entries(),
+    ].map(([position, stack]) => ({ position, stack }));
+
     bars.push(columns);
   }
+  console.log(bars);
   return bars;
 });
 

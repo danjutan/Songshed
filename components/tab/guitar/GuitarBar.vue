@@ -49,8 +49,6 @@ const collapsedEmpty = computed<Set<number>>(() => {
   return collapsed;
 });
 
-console.log(props.stackData);
-
 const collapsed = computed<Set<number>>(() => {
   const positions = new Set<number>(
     props.stackData

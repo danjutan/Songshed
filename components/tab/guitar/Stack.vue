@@ -23,6 +23,7 @@ const noteSpots = computed(() => {
   for (const note of props.notes) {
     noteSpots[note.string] = note;
   }
+
   return noteSpots;
 });
 
