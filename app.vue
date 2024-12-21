@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GuitarNote, TabData, TieOrBendData } from "~/model/data";
+import type { GuitarNote, TabData } from "~/model/data";
 import type { TabStore } from "./model/stores";
 import { createTabStore } from "./model/stores";
 import { deserializeTabData } from "./model/serialize";
@@ -29,7 +29,7 @@ if (id) {
 
   const guitar = store.createGuitarTab();
 
-  const guitarNotes: Array<[number, number, string, TieOrBendData?]> = [
+  const guitarNotes: Array<[number, number, string]> = [
     [0, 0, "B4"],
     [Spacing.Quarter * 2, 2, "B4"],
     [Spacing.Quarter * 2 + Spacing.Sixteenth, 2, "D4"],
@@ -60,11 +60,11 @@ if (id) {
 
   const ties = guitar.ties;
 
-  ties.setTie(5, Spacing.Quarter * 4, {
+  ties.setTie(5, Spacing.Quarter * 4 - Spacing.Eighth, {
     type: "bend",
     releaseType: "connect",
     bend: 2,
-    through: [Spacing.Sixteenth * 3],
+    through: [Spacing.Sixteenth * 1],
     to: Spacing.Quarter * 5,
   });
 

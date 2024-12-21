@@ -2,27 +2,31 @@
 import type { Bend } from "~/model/stores";
 import type { OverlayPosition } from "../../overlay-objects";
 
-const props = defineProps<OverlayPosition & { bendRow: number; bend: Bend }>();
+export type BendRenderProps = OverlayPosition & {
+  bend: Bend;
+  throughColumns: number[];
+};
+const props = defineProps<BendRenderProps & { bendRow: number }>();
 
-const upswingEnd = computed(() =>
-  props.bend.through?.[0]
-    ? props.bend.through[0] + props.bend.from
-    : props.bend.to,
+console.log(props.bendRow);
+const upswingEndColumn = computed(
+  () => props.throughColumns[0] || props.endColumn,
 );
+
 const upswingColumns = computed(
-  () =>
-    1 +
-    ((upswingEnd.value - props.bend.from) / (props.bend.to - props.bend.from)) *
-      (props.endColumn - props.startColumn),
+  () => upswingEndColumn.value - props.startColumn + 1,
 );
 
-const restColumns = computed(
-  () => props.endColumn - props.startColumn - upswingColumns.value,
-);
+console.log({
+  throughColumns: props.throughColumns,
+  upswingColumns: upswingColumns.value,
+});
+
+// const restColumns = computed(
+//   () => props.endColumn - props.startColumn - upswingColumns.value,
+// );
 
 const rowSpan = computed(() => props.row - props.bendRow + 1);
-
-console.log({ upswingColumns: upswingColumns.value });
 
 const vbu = 12;
 
@@ -77,7 +81,7 @@ const bendLabels: { [bend: number]: string } = {
 <style scoped>
 .label {
   grid-row: v-bind(bendRow);
-  grid-column: calc(v-bind(startColumn) + v-bind(upswingColumns) - 1);
+  grid-column: v-bind(upswingEndColumn);
   font-size: calc(var(--note-font-size) * 0.75);
   justify-self: center;
 }
@@ -89,7 +93,7 @@ const bendLabels: { [bend: number]: string } = {
   justify-self: center;
   height: 100%;
   /* grid-column: v-bind(startColumn) / calc(v-bind(endColumn) + 1); */
-  grid-column: v-bind(startColumn) / span calc(v-bind(upswingColumns));
+  grid-column: v-bind(startColumn) / calc(v-bind(upswingEndColumn) + 1);
   grid-row: v-bind(bendRow) / calc(v-bind(row) + 1);
   overflow: visible;
 }

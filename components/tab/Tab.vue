@@ -194,6 +194,9 @@ onBeforeUnmount(() => {
       <template v-for="(bar, i) in tabLine" :key="bar.start">
         <div
           class="divider hoverable"
+          :style="{
+            gridColumn: i * (columnsPerBar + 1) + 1,
+          }"
           @click="data.guitar?.shiftFrom(bar.start, barSize)"
         />
 
@@ -237,26 +240,22 @@ onBeforeUnmount(() => {
       <div
         v-if="tabLineIndex === tabLines.length - 1"
         class="divider"
+        :style="{ gridColumn: tabLine.length * (columnsPerBar + 1) + 1 }"
         @click="newBarClick(tabLine.at(-1)?.start)"
       >
         <div class="new-button">+</div>
       </div>
 
       <AnnotationRender
-        v-for="{
-          row,
-          startColumn,
-          endColumn,
-          annotation,
-        } in annotationRenders.get(tabLineIndex)"
-        :key="startColumn"
-        :row
-        :start-column
-        :end-column
-        :annotation
-        @update-title="(title) => (annotation!.title = title)"
+        v-for="render in annotationRenders.get(tabLineIndex)"
+        :key="render.startColumn"
+        v-bind="render"
+        @update-title="(title) => (render.annotation!.title = title)"
         @delete="
-          data.annotations.deleteAnnotation(annotationRows - row, annotation!)
+          data.annotations.deleteAnnotation(
+            annotationRows - render.row,
+            render.annotation!,
+          )
         "
       />
 
@@ -264,19 +263,9 @@ onBeforeUnmount(() => {
         <!--TODO: only show this while dragging new bends/interacting with bends-->
         <div class="bend-row-label">bend</div>
         <BendRender
-          v-for="{
-            row,
-            startColumn,
-            endColumn,
-            upswingColumn,
-            bend,
-          } in bendRenders!.get(tabLineIndex)"
-          :key="startColumn"
-          :row
-          :start-column
-          :end-column
-          :upswing-column
-          :bend
+          v-for="render in bendRenders!.get(tabLineIndex)"
+          :key="render.startColumn"
+          v-bind="render"
           :bend-row
         />
       </template>
