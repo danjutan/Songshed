@@ -73,7 +73,7 @@ const bars = computed<Bar[]>(() => {
   const bars: Bar[] = [];
   for (
     let i = 0;
-    i <= Math.max(newBarStart.value, props.data.guitar.lastPosition() ?? 0);
+    i <= Math.max(newBarStart.value, props.data.guitar.getLastPosition());
     i += barSize.value
   ) {
     bars.push({
@@ -178,9 +178,14 @@ function onLeaveTab() {
   editingState.blurEditing();
 }
 
-function newBarClick(lastBarStart?: number) {
-  if (lastBarStart !== undefined)
-    newBarStart.value = lastBarStart + notchUnit.value * props.notches;
+function newBarClick() {
+  const lastBarStart = bars.value.at(-1)!.start;
+  newBarStart.value = lastBarStart + notchUnit.value * props.notches;
+}
+
+function deleteBar(start: number) {
+  props.data.guitar!.deleteStacks(start, start + barSize.value);
+  props.data.guitar!.shiftFrom(start, -barSize.value);
 }
 
 function onKeyUp(e: KeyboardEvent) {
@@ -192,11 +197,6 @@ function onKeyUp(e: KeyboardEvent) {
       );
     }
   }
-}
-
-function deleteBar(start: number) {
-  props.data.guitar!.deleteStacks(start, start + barSize.value);
-  props.data.guitar!.shiftFrom(start, -barSize.value);
 }
 
 onMounted(() => {
@@ -296,7 +296,7 @@ const overlayedBarStart = ref<number | undefined>();
         v-if="tabLineIndex === tabLines.length - 1"
         class="divider"
         :style="{ gridColumn: tabLine.length * (columnsPerBar + 1) + 1 }"
-        @click="newBarClick(tabLine.at(-1)?.start)"
+        @click="newBarClick()"
       >
         <div class="new-button">+</div>
       </div>

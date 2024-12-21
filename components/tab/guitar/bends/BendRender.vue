@@ -81,9 +81,9 @@ const downswingFrom = computed(() => {
 
 const downswingTo = computed(() => {
   if (props.half === "left" && props.fullRestColumns) {
-    return vbu * props.fullRestColumns - vbu / 2;
+    return vbu * props.fullRestColumns - vbu / 2 - 1;
   }
-  return vbu * restColumns.value - vbu / 2;
+  return vbu * restColumns.value - vbu / 2 - 1;
 });
 
 const showLabel = computed(() => {
@@ -211,7 +211,7 @@ function onLabelHover() {
         class="downswing-curve"
         :d="
           `M ${downswingFrom} ${vbu * 0.6}` +
-          `Q ${downswingTo} ${vbu * 0.6} ${downswingTo} ${vbu * rowSpan - vbu * 0.85}`
+          `Q ${downswingTo} ${vbu * 0.6} ${downswingTo} ${vbu * rowSpan - vbu * 0.95}`
         "
         :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
@@ -374,7 +374,7 @@ function onLabelHover() {
 
 .downswing-arrow-hover {
   height: 100%;
-  margin-top: -30%;
+  margin-top: -50%;
   grid-row: v-bind(row);
   grid-column: v-bind(endColumn);
 }

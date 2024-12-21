@@ -196,18 +196,13 @@ function createAnnotationStore(
 interface StackStore<N extends NoteData> {
   getStacks: (start?: number, end?: number) => StackMap<N>;
   setStack: (position: number, stack: NoteStack<N>) => void;
-  lastPosition: () => number | undefined;
   shiftFrom: (position: number, shiftBy: number) => void;
+  getLastPosition: () => number;
 }
 function createStackStore<N extends NoteData>(
   stacks: StackMap<N>,
 ): StackStore<N> {
-  const furthestPos: number[] = [];
-
-  // TODO: Figure out why we need toRaw (setNote breaks otherwise)
-  for (const key of [...toRaw(stacks).keys()].sort((a, b) => a - b)) {
-    furthestPos.push(key);
-  }
+  const getLastPosition = () => [...stacks.keys()].sort((a, b) => b - a)[0];
 
   function getStacks(start = 0, end?: number) {
     const subset: StackMap<N> = new Map();
@@ -223,15 +218,9 @@ function createStackStore<N extends NoteData>(
     if (position < 0) return;
     if (stack.size === 0) {
       stacks.delete(position);
-      if (position === furthestPos.at(-1)) {
-        furthestPos.pop();
-      }
       return;
     }
     stacks.set(position, stack);
-    if (position > (furthestPos.at(-1) ?? 0)) {
-      furthestPos.push(position);
-    }
   }
 
   // function deleteStacks(start: number, end: number) {
@@ -245,14 +234,10 @@ function createStackStore<N extends NoteData>(
   //   }
   // }
 
-  function lastPosition() {
-    return furthestPos.at(-1);
-  }
-
   function shiftFrom(position: number, shiftBy: number) {
-    if (position < 0 || !furthestPos.length || position > furthestPos.at(-1)!)
-      return;
+    if (position < 0) return;
 
+    // we need to move the "last" stacks before the "first"
     const comparator =
       shiftBy > 0
         ? (a: number, b: number) => b - a
@@ -268,7 +253,12 @@ function createStackStore<N extends NoteData>(
     }
   }
 
-  return { getStacks, setStack, lastPosition, shiftFrom };
+  return {
+    getStacks,
+    setStack,
+    getLastPosition,
+    shiftFrom,
+  };
 }
 
 export type Tie = TieData & {
