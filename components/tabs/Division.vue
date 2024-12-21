@@ -3,84 +3,118 @@ import { type NoteSpot } from "./data";
 import type { DivisionData } from "./TabBar.vue";
 import Drape from "./toolbar/Drape.vue";
 
-const props = withDefaults(defineProps<{
-  data: DivisionData
-  subdivisions?: number
-  frets: number
-  tuning: Midi[]
-  debug?: boolean
-}>(), {
-  subdivisions: 4,
-});
+const props = withDefaults(
+  defineProps<{
+    data: DivisionData;
+    subdivisions?: number;
+    frets: number;
+    tuning: Midi[];
+    debug?: boolean;
+  }>(),
+  {
+    subdivisions: 4,
+  },
+);
 
 const numStrings = computed(() => props.tuning.length);
 
 const emit = defineEmits<{
-  noteChange: [note: NoteSpot]
+  noteChange: [note: NoteSpot];
 }>();
 
-const sortedSubstacks = computed(() => props.data.substacks?.toSorted((a, b) => a.notchPosition - b.notchPosition) || []);
+const sortedSubstacks = computed(
+  () =>
+    props.data.substacks?.toSorted(
+      (a, b) => a.notchPosition - b.notchPosition,
+    ) || [],
+);
 const numFilledSubstacks = computed(() => sortedSubstacks.value.length);
-const numSubstacks = computed(() => numFilledSubstacks.value && props.subdivisions - 1);
-const relativePositions = computed(() => sortedSubstacks.value.map(substack => substack.notchPosition - props.data.notchPosition));
+const numSubstacks = computed(
+  () => numFilledSubstacks.value && props.subdivisions - 1,
+);
+const relativePositions = computed(() =>
+  sortedSubstacks.value.map(
+    (substack) => substack.notchPosition - props.data.notchPosition,
+  ),
+);
 // const subunit = computed(() => SpacingsDescending.find(spacing => relativePositions.value?.every(relative => relative % spacing === 0)) || 1);
 const subunit = computed(() => 1 / props.subdivisions);
-const colPositions = computed(() => relativePositions.value.map(pos => 1 + pos / subunit.value));
+const colPositions = computed(() =>
+  relativePositions.value.map((pos) => 1 + pos / subunit.value),
+);
 
-const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-font-size)" : "1fr");
+const firstColWidth = computed(() =>
+  sortedSubstacks.value.length ? "var(--note-font-size)" : "1fr",
+);
 
-const expanded = ref(false);
-const substackMinWidth = computed(() => expanded.value ? "var(--cell-height)" : "1px");
+const substacksExpanded = ref(false);
+const substackMinWidth = computed(() =>
+  substacksExpanded.value ? "var(--cell-height)" : "1px",
+);
 </script>
 
 <template>
-  <div class="division"
-       @click="debug && console.log({ subunit, subdivisions, colPositions })">
+  <div
+    class="division"
+    @click="debug && console.log({ subunit, subdivisions, colPositions })"
+  >
     <div class="stack">
-      <TabsNoteInput v-for="(noteSpot) in props.data.stack"
-                     :key="noteSpot.string"
-                     :collapse="numFilledSubstacks == 0"
-                     :data="noteSpot.data"
-                     :tuning="props.tuning[noteSpot.string]"
-                     :frets="props.frets"
-                     @data-change="emit('noteChange', { ...noteSpot, data: $event })"
+      <TabsNoteInput
+        v-for="noteSpot in props.data.stack"
+        :key="noteSpot.string"
+        :collapse="numFilledSubstacks == 0"
+        :data="noteSpot.data"
+        :tuning="props.tuning[noteSpot.string]"
+        :frets="props.frets"
+        @data-change="emit('noteChange', { ...noteSpot, data: $event })"
       />
     </div>
 
-    <div v-for="(substack, i) in sortedSubstacks"
-         :key="substack.notchPosition"
-         class="substack"
-         :style="{ gridColumn: colPositions[i] }">
-      <div v-for="noteSpot in substack.stack"
-           :key="noteSpot.string"
-           class="indicator">
-        <div v-if="noteSpot.data"
-             class="square"
-             :style="{ backgroundColor: defaultColors[getChroma(noteSpot.data.midi)] }"
+    <div
+      v-for="(substack, i) in sortedSubstacks"
+      :key="substack.notchPosition"
+      class="substack"
+      :style="{ gridColumn: colPositions[i] }"
+    >
+      <div
+        v-for="noteSpot in substack.stack"
+        :key="noteSpot.string"
+        class="indicator"
+      >
+        <div
+          v-if="noteSpot.data"
+          class="square"
+          :style="{
+            backgroundColor: defaultColors[getChroma(noteSpot.data.midi)],
+          }"
         />
         <div class="input">
-          <TabsNoteInput :data="noteSpot.data"
-                         :tuning="props.tuning[noteSpot.string]"
-                         :frets="props.frets"
-                         blocking-color="transparent"
-                         @data-change="emit('noteChange', { ...noteSpot, data: $event })"
+          <TabsNoteInput
+            :data="noteSpot.data"
+            :tuning="props.tuning[noteSpot.string]"
+            :frets="props.frets"
+            blocking-color="transparent"
+            @data-change="emit('noteChange', { ...noteSpot, data: $event })"
           />
         </div>
       </div>
     </div>
 
-    <Drape v-if="numFilledSubstacks"
-           collapsed="show"
-           default="hide"
-           :start="2"
-           :columns="numSubstacks"
-           height-unit="var(--cell-height) * 2"
-           color="var(--substack-bg)"
-           :num-strings
-           @click="expanded = !expanded">
+    <Drape
+      v-if="numFilledSubstacks"
+      collapsed="show"
+      default="hide"
+      up="reverse"
+      :start="2"
+      :columns="numSubstacks"
+      height-unit="var(--cell-height) * 2"
+      color="var(--substack-bg)"
+      :num-strings
+      @click="substacksExpanded = !substacksExpanded"
+    >
       <template #up>
         <div class="unexpander">
-          test
+          <div class="label">↤</div>
         </div>
       </template>
     </Drape>
@@ -90,7 +124,10 @@ const substackMinWidth = computed(() => expanded.value ? "var(--cell-height)" : 
 <style scoped>
 .division {
   display: grid;
-  grid-template-columns: v-bind(firstColWidth) repeat(v-bind(numSubstacks), minmax(v-bind(substackMinWidth), 1fr));
+  grid-template-columns: v-bind(firstColWidth) repeat(
+      v-bind(numSubstacks),
+      minmax(v-bind(substackMinWidth), 1fr)
+    );
   grid-template-rows: repeat(v-bind(numStrings), var(--cell-height));
 }
 
@@ -109,8 +146,25 @@ const substackMinWidth = computed(() => expanded.value ? "var(--cell-height)" : 
 
 .unexpander {
   background-color: green;
-  height: 100%;
+  height: var(--cell-height);
   width: 100%;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  container-name: unexpander;
+  container-type: size;
+}
+
+.unexpander .label {
+  /* font-size: 100cqw; */
+  /* font-size: var(--cell-height); */
+  font-size: min(100cqw, var(--cell-height));
+}
+
+@container unexpander (aspect-ratio < 0.5) {
+  .unexpander .label {
+    display: none;
+  }
 }
 
 .indicator {
@@ -133,7 +187,6 @@ const substackMinWidth = computed(() => expanded.value ? "var(--cell-height)" : 
   .square {
     display: none;
   }
-
 }
 
 @container (aspect-ratio < 1) {

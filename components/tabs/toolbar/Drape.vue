@@ -1,76 +1,104 @@
 <script lang="ts" setup>
 export type DrapeData = {
-  start: number
-  columns: number
+  start: number;
+  columns: number;
 };
 
-const props = withDefaults(defineProps<DrapeData & {
-  default?: "show" | "hide"
-  collapsed?: "show" | "hide"
-  color: string
-  numStrings: number
-  heightUnit?: string
-  rowStart?: number
-}>(), {
-  default: "show",
-  collapsed: "show",
-  rowStart: 1,
-  // e.g. multiply this by 2 and the collapse will trigger at half the width
-  heightUnit: "var(--cell-height)",
-});
+const props = withDefaults(
+  defineProps<
+    DrapeData & {
+      default?: "show" | "hide";
+      collapsed?: "show" | "hide";
+      up?: "same" | "reverse";
+      color: string;
+      numStrings: number;
+      heightUnit?: string;
+      rowStart?: number;
+    }
+  >(),
+  {
+    default: "show",
+    collapsed: "show",
+    up: "same",
+    rowStart: 1,
+    // e.g. multiply this by 2 and the collapse will trigger at half the width
+    heightUnit: "var(--cell-height)",
+  },
+);
 
 defineSlots<{
-  down: () => never
-  up: () => never
+  down: () => never;
+  up: () => never;
 }>();
 
-const defaultDisplay = computed(() => props.default === "show" ? "block" : "none");
-const collapsedDisplay = computed(() => props.collapsed === "show" ? "block" : "none");
+const toDisplay = (p: "show" | "hide") => (p === "show" ? "block" : "none");
+const toReverse = (p: "show" | "hide") => (p === "show" ? "hide" : "show");
+
+const defaultDisplay = computed(() => toDisplay(props.default));
+const collapsedDisplay = computed(() => toDisplay(props.collapsed));
+
+const upDefaultDisplay = computed(() => {
+  if (props.up === "same") {
+    return defaultDisplay.value;
+  }
+  return toDisplay(toReverse(props.default));
+});
+
+const upCollapsedDisplay = computed(() => {
+  if (props.up === "same") {
+    return collapsedDisplay.value;
+  }
+  return toDisplay(toReverse(props.collapsed));
+});
 // const columnEnd = computed(() => props.columns ? `span ${props.columns}` : "-1");
 </script>
 
 <template>
   <div class="drape collapse">
+    <div class="drape-up">
+      <slot name="up" />
+    </div>
     <div class="drape-down">
-      <div class="drape-up">
-        <slot name="up" />
-      </div>
       <slot name="down" />
     </div>
   </div>
 </template>
 
 <style>
-  .collapse {
-    container-name: drape;
-    container-type: size;
-  }
+.collapse {
+  container-name: drape;
+  container-type: size;
+}
 
-  .drape {
-    grid-column: v-bind(start) / span v-bind(columns);
-    grid-row: v-bind(rowStart) / -1;
-    /* rid-row: 2; */
-    height: calc(v-bind(heightUnit) * v-bind(columns));
-    pointer-events: none;
-  }
+.drape {
+  grid-column: v-bind(start) / span v-bind(columns);
+  grid-row: v-bind(rowStart) / -1;
+  /* rid-row: 2; */
+  height: calc(v-bind(heightUnit) * v-bind(columns));
+  pointer-events: none;
+}
 
+.drape-down {
+  background-color: v-bind(color);
+  pointer-events: auto;
+  height: calc(v-bind(numStrings) * var(--cell-height));
+  display: v-bind(defaultDisplay);
+}
+
+.drape-up {
+  width: 100%;
+  pointer-events: auto;
+  position: absolute;
+  top: calc(-1 * var(--cell-height));
+  display: v-bind(upDefaultDisplay);
+}
+
+@container drape (aspect-ratio < 0.5) {
   .drape-down {
-    background-color: v-bind(color);
-    pointer-events: auto;
-    height: calc(v-bind(numStrings) * var(--cell-height));
-    display: v-bind(defaultDisplay);
+    display: v-bind(collapsedDisplay);
   }
-
   .drape-up {
-    width: 100%;
-    pointer-events: auto;
-    position: absolute;
-    top: calc(-1 * var(--cell-height));
+    display: v-bind(upCollapsedDisplay);
   }
-
-  @container drape (aspect-ratio < 0.5) {
-    .drape-down {
-      display: v-bind(collapsedDisplay);
-    }
-  }
+}
 </style>
