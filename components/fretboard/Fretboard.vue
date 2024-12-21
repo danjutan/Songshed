@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { NoteData, NoteSpot } from "../tab/data";
 import NoteView from "./NoteView.vue";
 import { defaultFrameColor } from "~/composables/colors";
 
@@ -7,20 +8,19 @@ const props = withDefaults(
     tuning?: Midi[]
     frets?: number
     colors?: NoteColors
-    labeledNotes?: Midi[]
+    stack?: NoteSpot[]
   }>(),
   {
-    tuning: () => defaultTuning,
-    frets: 12,
+    frets: 24,
     colors: () => defaultColors,
+    tuning: () => defaultTuning,
+    stack: () => defaultTuning.map((midi, string) => ({ midi, string, position: 0 })),
   },
 );
 
 const emit = defineEmits<{
-  noteClicked: [note: Midi]
+  noteChange: [spot: NoteSpot]
 }>();
-
-const stringValues: Array<Midi | false> = reactive([...props.tuning]);
 
 const cellRatio = 15 / 25; // height / width
 const cellWidth = 50;
@@ -47,15 +47,17 @@ const rowLinesY = rows.map((_, y) => cellHeight / 2 + y * cellHeight);
 const fretLabels = ["Open", ...range(props.frets)];
 
 const noteToggle = (selected: boolean, string: number, midi: Midi) => {
+  let data: NoteData | undefined = props.stack[string].data;
   if (selected) {
-    stringValues[string] = midi;
-    return;
+    data = { midi };
   }
-  if (stringValues[string] === props.tuning[string]) {
-    stringValues[string] = false;
-    return;
+  else if (data?.midi === props.tuning[string]) {
+    data = undefined;
   }
-  stringValues[string] = props.tuning[string];
+  else {
+    data = { midi: props.tuning[string] };
+  }
+  emit("noteChange", { ...props.stack[string], data });
 };
 </script>
 
@@ -63,6 +65,7 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
   <svg :viewBox>
     <line
       v-for="i in frets - 1"
+      :key="i"
       class="fret-line"
       :stroke="defaultFrameColor"
       :x1="(i + 1) * cellWidth"
@@ -73,6 +76,7 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
 
     <text
       v-for="(label, i) in fretLabels"
+      :key="i"
       text-anchor="middle"
       :x="i * cellWidth + cellWidth / 2"
       :y="rowLinesY[rowLinesY.length - 1] + 25"
@@ -82,7 +86,8 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
       {{ label }}
     </text>
 
-    <template v-for="(row, yi) in rows">
+    <template v-for="(row, yi) in rows"
+              :key="yi">
       <line
         class="string"
         :stroke="defaultFrameColor"
@@ -94,8 +99,9 @@ const noteToggle = (selected: boolean, string: number, midi: Midi) => {
 
       <NoteView
         v-for="(midi, xi) in row"
+        :key="xi"
         :color="defaultColors[getChroma(midi)]"
-        :selected="stringValues[yi] === midi"
+        :selected="stack[yi].data?.midi === midi"
         :frame-color="defaultFrameColor"
         :midi
         :note-radius

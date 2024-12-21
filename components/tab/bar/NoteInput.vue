@@ -124,7 +124,7 @@ input {
 }
 
 .note-input:hover > input{
-  background-color: var(--highlight-color);
+  background-color: var(--note-hover-color);
 }
 
 @container collapser (aspect-ratio < 0.5) {

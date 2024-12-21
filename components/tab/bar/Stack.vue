@@ -1,17 +1,19 @@
 <script lang="ts" setup>
 import type { NoteSpot } from "../data";
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   stack: NoteSpot[]
   frets: number
   tuning: Midi[]
-}>();
-
-const numStrings = computed(() => props.tuning.length);
+  selected?: boolean
+}>(), {
+});
 
 const emit = defineEmits<{
   noteChange: [note: NoteSpot]
 }>();
+
+const backgroundColor = computed(() => props.selected ? "var(--highlight-color)" : "transparent");
 </script>
 
 <template>
@@ -30,6 +32,7 @@ const emit = defineEmits<{
           :data="noteSpot.data"
           :tuning="props.tuning[noteSpot.string]"
           :frets="props.frets"
+          :blocking-color="selected ? 'transparent' : undefined"
           @data-change="emit('noteChange', { ...noteSpot, data: $event })"
         />
       </div>
@@ -42,6 +45,7 @@ const emit = defineEmits<{
   grid-row: 2 / -1;
   display: flex;
   flex-direction: column;
+  background-color: v-bind(backgroundColor);
 }
 
 .container {

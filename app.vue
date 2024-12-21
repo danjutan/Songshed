@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { NoteSpot } from "./components/tab/data";
 import { Spacing, createTabStore } from "./components/tab/data";
 import Tab from "./components/tab/Tab.vue";
 import { SelectionStateKey, createSelectionState } from "./components/tab/providers/selection-state";
@@ -40,18 +41,45 @@ notes.setNote(Spacing.Quarter * 6 + Spacing.SixtyFourth * 3, 4, "C4");
 
 notes.setNote(Spacing.Quarter * 7 + Spacing.SixtyFourth * 2, 1, "G5");
 notes.setNote(Spacing.Quarter * 7 + Spacing.SixtyFourth * 3, 4, "B3");
+
+const activeStack = computed(() => {
+  if (selectionState.start) {
+    return notes.getStack(selectionState.start);
+  }
+  return notes.tuning.map((_, string) => ({ position: -1, string }));
+});
+
+function fretboardNoteChange(note: NoteSpot) {
+  const { position, string, data } = note;
+  if (data) {
+    notes.setNote(position, string, data);
+    return;
+  }
+  notes.deleteNote(position, string);
+}
+const notches = ref(4);
+const subdivisions = ref(4);
 </script>
 
 <template>
   <!-- <input type="checkbox" v-model="showDivisions"/> -->
+  Notches per beat: <input v-model="notches"
+                           type="number">
+  Subdivide notches by: <input v-model="subdivisions"
+                               type="number">
   <Tab :data="notes"
-       :resolution="4"
+       :notches
+       :subdivisions
   />
-  <Tab :data="notes"
-       :resolution="8"
+  <Fretboard
+    width="75%"
+    :stack="activeStack"
+    @note-change="fretboardNoteChange"
   />
-  <Fretboard width="50%" />
 </template>
 
-<style>
+<style scoped>
+  input {
+    width: 50px;
+  }
 </style>

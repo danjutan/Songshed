@@ -8,13 +8,15 @@ provide(ExpansionStateKey, createExpansionState());
 
 const props = withDefaults(defineProps<{
   data: TabStore
-  resolution?: number
+  notches?: number
+  subdivisions: number
   // The top part of a time signature
   beatsPerBar?: number
   // The bottom part of a time signature
   beatSize?: number
 }>(), {
-  resolution: 4,
+  notches: 4,
+  subdivisions: 4,
   beatsPerBar: 4,
   beatSize: Spacing.Quarter,
 });
@@ -28,6 +30,12 @@ const bars = computed<BarStore[]>(() => {
   }
   return barStores;
 });
+
+const newBarUntil = ref(0);
+
+function newBarClick() {
+  newBarUntil.value = Math.max((props.data.lastPosition() || 0), newBarUntil.value + barSize.value);
+}
 </script>
 
 <template>
@@ -36,9 +44,11 @@ const bars = computed<BarStore[]>(() => {
             :key="barStore.start"
             :data="barStore"
             :beats="barSize"
-            :notches="resolution * beatsPerBar"
+            :notches="notches * beatsPerBar"
+            :subdivisions="subdivisions"
     />
-    <div class="new-button">
+    <div class="new-button"
+         @click="newBarClick">
       <span>+</span>
     </div>
   </div>
@@ -53,7 +63,9 @@ const bars = computed<BarStore[]>(() => {
   --substack-bg: rgba(255, 0, 0, 0.1);
   --string-width: 1px;
   --string-color: gray;
-  --highlight-color: rgba(172, 206, 247, 0.6);
+  --highlight-color: rgba(172, 206, 247, 0.4);
+  --note-hover-color: rgba(172, 206, 247, 0.8);
+
 }
 
 .tab > .bar {

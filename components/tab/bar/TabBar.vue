@@ -56,13 +56,14 @@ const hasSubstacks = (columnIndex: number) => columnData.value
 
 const columnData = computed<ColumnData[]>(() => {
   const columns: Array<ColumnData> = [];
-
   const stackMap = props.data.stacks;
 
   for (let position = props.data.start; position < props.data.end; position += subunit.value) {
     const stack = stackMap.get(position) || props.data.tuning.map((_, string) => ({ string, position }));
     columns.push({ stack, position });
   }
+
+  console.log(columns);
 
   return columns;
 });
@@ -186,12 +187,13 @@ function noteChange(changed: NoteSpot) {
            :frets="data.frets"
            :tuning="data.tuning"
            :stack="col.stack"
+           :selected="isSelected(col)"
            :class="{
              substack: col.position % unit !== 0,
              even: i % 2 === 0,
              selected: isSelected(col),
            }"
-           @mouseover="selectNotch(col)"
+           @mouseover="selectColumn(col)"
            @note-change="noteChange"
     />
     <Drape
@@ -250,7 +252,6 @@ function noteChange(changed: NoteSpot) {
 }
 
 .stack.selected {
-  background-color: var(--highlight-color);
 }
 
 .stack.substack {
