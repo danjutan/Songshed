@@ -5,9 +5,9 @@ import GuitarBar from "./guitar/GuitarBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 
 import {
-  createSelectionStore,
+  createSelectionState,
   SelectionInjectionKey,
-  type SelectionStore,
+  type SelectionState,
 } from "./guitar/providers/selection";
 
 const props = withDefaults(
@@ -26,7 +26,7 @@ const props = withDefaults(
   },
 );
 
-const selectionState = createSelectionStore();
+const selectionState = createSelectionState();
 provide(SelectionInjectionKey, selectionState);
 
 const barSize = computed(() => props.data.beatsPerBar * props.data.beatSize);
@@ -209,6 +209,27 @@ function cancelSelection() {
   annotationEnd();
   selectionState.end();
 }
+
+function onKeyUp(e: KeyboardEvent) {
+  if (e.key === "Escape" || e.key === "Backspace") {
+    console.log("here");
+    if (props.data.guitar && selectionState.selectedRange) {
+      console.log(selectionState.selectedRange);
+      props.data.guitar?.deleteStacks(
+        selectionState.selectedRange.start,
+        selectionState.selectedRange.end,
+      );
+    }
+  }
+}
+
+onMounted(() => {
+  document.addEventListener("keyup", onKeyUp);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("keyup", onKeyUp);
+});
 </script>
 
 <template>
@@ -302,6 +323,10 @@ function cancelSelection() {
   --highlight-color: rgba(172, 206, 247, 0.4);
   /*https://graphicdesign.stackexchange.com/a/113050*/
   --highlight-blocking: rgb(221.8, 235.4, 251.8);
+  /* --highlight-blocking: rgb(
+    from var(--highlight-color) calc(255 - 0.4 * (255 - r))
+      calc(255 - 0.4 * (255 - g)) calc(255 - 0.4 * (255 - b))
+  );*/
   --note-hover-color: rgba(172, 206, 247, 0.8);
   user-select: none;
 }

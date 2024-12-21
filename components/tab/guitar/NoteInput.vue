@@ -77,6 +77,7 @@ function onClick(e: MouseEvent) {
       pattern="[0-9]{1,2}"
       @input="onInput"
       @click="onClick"
+      @keyup="(e) => e.stopPropagation()"
     />
   </div>
 </template>

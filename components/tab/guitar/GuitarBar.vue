@@ -6,7 +6,7 @@ import Overlay from "./Overlay.vue";
 import Unexpander from "./Unexpander.vue";
 import {
   SelectionInjectionKey,
-  type SelectionStore,
+  type SelectionState,
 } from "./providers/selection";
 
 const props = defineProps<{
@@ -27,7 +27,7 @@ const emit = defineEmits<{
   noteChange: [position: number, string: number, note: GuitarNote];
 }>();
 
-const selectionState = inject(SelectionInjectionKey) as SelectionStore;
+const selectionState = inject(SelectionInjectionKey) as SelectionState;
 
 const isNotch = (position: number) => position % props.notchUnit === 0;
 const subUnit = computed(() => props.notchUnit / props.subdivisions);
@@ -79,6 +79,15 @@ function toggleSubdivisions(notchPosition: number) {
     expanded.add(pos);
   }
 }
+
+function onStackMouseDown(position: number) {
+  selectionState.start(position);
+}
+
+function onStackMouseMove(position: number) {
+  selectionState.drag(position);
+  if (selectionState.isDragging) (document.activeElement as HTMLElement).blur();
+}
 </script>
 
 <template>
@@ -109,8 +118,8 @@ function toggleSubdivisions(notchPosition: number) {
           emit('noteChange', position, string, note)
       "
       @note-delete="(string: number) => emit('noteDelete', position, string)"
-      @mousedown="selectionState.start(position)"
-      @mousemove="selectionState.drag(position)"
+      @mousedown="onStackMouseDown(position)"
+      @mousemove="onStackMouseMove(position)"
     />
     <template v-if="isNotch(position)">
       <template v-if="collapsedEmpty.has(position)">
@@ -119,6 +128,19 @@ function toggleSubdivisions(notchPosition: number) {
           :columns="props.subdivisions"
           :start-row
           :rows="numStrings"
+          @mousedown="
+            !selectionState.isSelected(position) &&
+              selectionState.start(
+                position,
+                position + subUnit * (props.subdivisions - 1),
+              )
+          "
+          @mousemove="
+            selectionState.drag(
+              position,
+              position + subUnit * (props.subdivisions - 1),
+            )
+          "
         >
           <div
             class="overlay-fill"
@@ -133,6 +155,19 @@ function toggleSubdivisions(notchPosition: number) {
           :columns="props.subdivisions - 1"
           :start-row
           :rows="numStrings"
+          @mousedown="
+            !selectionState.isSelected(position + subUnit) &&
+              selectionState.start(
+                position + subUnit,
+                position + subUnit * (props.subdivisions - 1),
+              )
+          "
+          @mousemove="
+            selectionState.drag(
+              position + subUnit,
+              position + subUnit * (props.subdivisions - 1),
+            )
+          "
         >
           <div
             class="overlay-fill"
@@ -146,7 +181,7 @@ function toggleSubdivisions(notchPosition: number) {
         class="unexpander"
         :start-column="startColumn + i"
         :columns="props.subdivisions"
-        :row="startRow + 1"
+        :row="startRow + numStrings"
         @click="toggleSubdivisions(position)"
       />
     </template>

@@ -15,25 +15,41 @@ export interface TabStore {
   title: string;
   beatsPerBar: number;
   beatSize: number;
-  createGuitarTab: (tuning?: Midi[], strings?: number, frets?: number) => GuitarStore;
+  createGuitarTab: (
+    tuning?: Midi[],
+    strings?: number,
+    frets?: number,
+  ) => GuitarStore;
   guitar?: GuitarStore;
   annotations: AnnotationStore;
   chords: ChordStore;
   serialize: () => string;
 }
 
-const defaults: Pick<TabData, "title" | "beatsPerBar" | "beatSize" | "chordsData"> = {
+const defaults: Pick<
+  TabData,
+  "title" | "beatsPerBar" | "beatSize" | "chordsData"
+> = {
   title: "new tab",
   beatsPerBar: 4,
   beatSize: Spacing.Quarter,
-  chordsData: { tuning: defaultTuning, chords: [{ title: "", notes: new Map() }] },
+  chordsData: {
+    tuning: defaultTuning,
+    chords: [{ title: "", notes: new Map() }],
+  },
 };
 
 export function createTabStore(tabData: TabData): TabStore;
 export function createTabStore(options?: Partial<typeof defaults>): TabStore;
-export function createTabStore(init?: TabData | Partial<typeof defaults>): TabStore {
+export function createTabStore(
+  init?: TabData | Partial<typeof defaults>,
+): TabStore {
   if (init === undefined) init = {};
-  const data: TabData = reactive({ ...defaults, annotations: new Map(), ...init });
+  const data: TabData = reactive({
+    ...defaults,
+    annotations: new Map(),
+    ...init,
+  });
 
   const guitarStore = ref<undefined | GuitarStore>();
   if (data.guitarData) {
@@ -123,7 +139,9 @@ interface AnnotationStore {
   createNextRow: () => void;
 }
 
-function createAnnotationStore(annotations: Map<number, Annotation[]>): AnnotationStore {
+function createAnnotationStore(
+  annotations: Map<number, Annotation[]>,
+): AnnotationStore {
   function createAnnotation(row: number, data: Annotation) {
     const ofRow = annotations.get(row);
     if (!ofRow) {
@@ -134,7 +152,8 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
     // TODO: revist: <= vs <; do we need this check at all?
     const overlaps = ofRow.some(
       (a: Annotation) =>
-        (a.start < data.start && a.end > data.start) || (a.start > data.start && a.end < data.end),
+        (a.start < data.start && a.end > data.start) ||
+        (a.start > data.start && a.end < data.end),
     );
     if (overlaps) return false;
     ofRow.push(data);
@@ -144,7 +163,9 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
   function deleteAnnotation(row: number, data: Annotation) {
     const ofRow = annotations.get(row);
     if (ofRow) {
-      const toDelete = ofRow.findIndex((a) => a.start === data.start && a.end === data.end);
+      const toDelete = ofRow.findIndex(
+        (a) => a.start === data.start && a.end === data.end,
+      );
       ofRow.splice(toDelete, 1);
     }
   }
@@ -161,15 +182,24 @@ function createAnnotationStore(annotations: Map<number, Annotation[]>): Annotati
     return annotations.set(getRows().length, []);
   }
 
-  return { createAnnotation, deleteAnnotation, getAnnotations, getRows, createNextRow };
+  return {
+    createAnnotation,
+    deleteAnnotation,
+    getAnnotations,
+    getRows,
+    createNextRow,
+  };
 }
 interface StackStore<N extends NoteData> {
   getStacks: (start?: number, end?: number) => StackMap<N>;
   setStack: (position: number, stack: NoteStack<N>) => void;
+  deleteStacks: (start: number, end: number) => void;
   lastPosition: () => number | undefined;
   shiftFrom: (position: number, shiftBy: number) => void;
 }
-function createStackStore<N extends NoteData>(stacks: StackMap<N>): StackStore<N> {
+function createStackStore<N extends NoteData>(
+  stacks: StackMap<N>,
+): StackStore<N> {
   const furthestPos: number[] = [];
 
   // TODO: Figure out why we need toRaw (setNote breaks otherwise)
@@ -202,15 +232,33 @@ function createStackStore<N extends NoteData>(stacks: StackMap<N>): StackStore<N
     }
   }
 
+  function deleteStacks(start: number, end: number) {
+    for (const position of [...stacks.keys()].sort((a, b) => a - b)) {
+      if (position >= start && position <= end) {
+        stacks.delete(position);
+        if (position === furthestPos.at(-1)) {
+          furthestPos.pop();
+        }
+      }
+    }
+  }
+
   function lastPosition() {
     return furthestPos.at(-1);
   }
 
   function shiftFrom(position: number, shiftBy: number) {
-    if (position < 0 || !furthestPos.length || position > furthestPos.at(-1)! || shiftBy <= 0)
+    if (
+      position < 0 ||
+      !furthestPos.length ||
+      position > furthestPos.at(-1)! ||
+      shiftBy <= 0
+    )
       return;
 
-    const keysFromBack = [...stacks.keys()].filter((pos) => pos >= position).sort((a, b) => b - a);
+    const keysFromBack = [...stacks.keys()]
+      .filter((pos) => pos >= position)
+      .sort((a, b) => b - a);
 
     for (const pos of keysFromBack) {
       const stack = stacks.get(pos);
@@ -221,13 +269,18 @@ function createStackStore<N extends NoteData>(stacks: StackMap<N>): StackStore<N
     }
   }
 
-  return { getStacks, setStack, lastPosition, shiftFrom };
+  return { getStacks, setStack, deleteStacks, lastPosition, shiftFrom };
 }
 
-interface GuitarStore extends Omit<StackStore<GuitarNote> & GuitarTabData, "getStacks"> {
+interface GuitarStore
+  extends Omit<StackStore<GuitarNote> & GuitarTabData, "getStacks"> {
   setNote: (position: number, string: number, data: GuitarNote) => void;
   deleteNote: (position: number, string: number) => void;
-  getStacks: (start: number, end: number, subunit: number) => StackMap<GuitarNote>;
+  getStacks: (
+    start: number,
+    end: number,
+    subunit: number,
+  ) => StackMap<GuitarNote>;
 }
 
 function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
@@ -255,7 +308,11 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     }
   }
 
-  function getStacks(start = 0, end: number, subunit: number): StackMap<GuitarNote> {
+  function getStacks(
+    start = 0,
+    end: number,
+    subunit: number,
+  ): StackMap<GuitarNote> {
     const subset = noteStore.getStacks(start, end);
     for (let i = start; i < end; i += subunit) {
       if (!subset.has(i)) {
@@ -270,5 +327,14 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
   }
 
   const { stacks, strings, frets, tuning } = guitarData;
-  return { ...noteStore, getStacks, setNote, deleteNote, stacks, strings, frets, tuning };
+  return {
+    ...noteStore,
+    getStacks,
+    setNote,
+    deleteNote,
+    stacks,
+    strings,
+    frets,
+    tuning,
+  };
 }
