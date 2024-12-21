@@ -4,6 +4,7 @@ export function createSettingsState() {
     subdivisions: 4, // per beat
     collapseSubdivisions: true,
     collapseEmpty: true,
+    collapseAll: false,
   });
 
   return settings;

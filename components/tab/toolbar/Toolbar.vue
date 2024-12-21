@@ -53,19 +53,21 @@ const saveId = ref(props.id);
     <input v-model="settings.barsPerLine" type="number" />
     Subdivisions:
     <input v-model="settings.subdivisions" type="number" />
-    <label for="collapse-subdivisions">Collapse subdivisions:</label>
+    <label for="collapse-subdivisions">Collapse subdivisions</label>
     <input
       id="collapse-subdivisions"
       v-model="settings.collapseSubdivisions"
       type="checkbox"
     />
 
-    <label for="collapse-empty">Collapse empty notches:</label>
+    <label for="collapse-empty">Collapse empty</label>
     <input
       id="collapse-empty"
       v-model="settings.collapseEmpty"
       type="checkbox"
     />
+    <label for="collapse-all">Collapse all</label>
+    <input id="collapse-all" v-model="settings.collapseAll" type="checkbox" />
     <input v-model="saveId" type="text" />
     <button @click="$emit('save', saveId)">Save</button>
   </div>

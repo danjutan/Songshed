@@ -178,9 +178,10 @@ input {
   width: var(--cell-height);
 }
 
-.has-note.focused input {
+/* I think this does nothing*/
+/* .has-note.focused input {
   width: var(--note-font-size);
-}
+} */
 
 .input-bg {
   width: min-content;
@@ -193,11 +194,5 @@ input {
 .hovering:not(.has-note) > input { */
 .hovering > input {
   background-color: var(--note-hover-color);
-}
-
-@container collapser (aspect-ratio < 0.5) {
-  input {
-    display: none;
-  }
 }
 </style>
