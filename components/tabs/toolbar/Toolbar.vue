@@ -19,25 +19,29 @@ const spacers = computed(() => emptyDivisions(props.divisions));
 
 <template>
   <div class="toolbar">
+    <Drape v-for="{ start, columns } in spacers"
+           :key="start"
+           collapsed="show"
+           default="hide"
+           :start
+           :columns
+           :num-strings
+           :row-start="2"
+           color="var(--substack-bg)"
+    />
     <div v-for="i in numNotches"
          :key="i"
+         :style="{ gridColumn: `${i} / span 1` }"
          class="notch">
       <div class="selectable"
            @mouseover="hovering = i"
            @mouseleave="hovering = 0"
       />
     </div>
-    <Drape v-for="{ start, columns } in spacers"
-           :key="start"
-           only-collapsed
-           :start
-           :columns
-           :num-strings
-           color="var(--substack-bg)"
-    />
     <Drape v-if="hovering"
            :start="hovering"
            :columns="1"
+           :row-start="2"
            :num-strings
            color="rgba(0,170,255,0.1)"
     />

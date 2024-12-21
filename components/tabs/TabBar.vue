@@ -146,6 +146,7 @@ const divisionPlacement = (column: number) => ({
     <TabsDivision
       v-for="data in divisions"
       :key="data.notchPosition"
+      debug
       :subdivisions="(Spacing.Whole / smallestSpacing) / notches"
       :data
       :tuning

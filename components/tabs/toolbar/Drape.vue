@@ -4,16 +4,28 @@ export type DrapeData = {
   columns: number
 };
 
-const props = defineProps<DrapeData & {
-  onlyCollapsed?: boolean
+const props = withDefaults(defineProps<DrapeData & {
+  default?: "show" | "hide"
+  collapsed: "show" | "hide"
   color: string
   numStrings: number
-}>();
+  heightUnit?: string
+  rowStart?: number
+}>(), {
+  default: "show",
+  collapsed: "show",
+  rowStart: 1,
+  // e.g. multiply this by 2 and the collapse will trigger at half the width
+  heightUnit: "var(--min-division-width) / 2",
+});
+
+const defaultDisplay = computed(() => props.default === "show" ? "block" : "none");
+const collapsedDisplay = computed(() => props.collapsed === "show" ? "block" : "none");
+// const columnEnd = computed(() => props.columns ? `span ${props.columns}` : "-1");
 </script>
 
 <template>
-  <div class="drape"
-       :class="{ collapse: onlyCollapsed }">
+  <div class="drape collapse">
     <div class="drape-down" />
   </div>
 </template>
@@ -26,8 +38,9 @@ const props = defineProps<DrapeData & {
 
   .drape {
     grid-column: v-bind(start) / span v-bind(columns);
-    grid-row: 2;
-    height: calc(var(--min-division-width) / 2 * v-bind(columns));
+    grid-row: v-bind(rowStart) / -1;
+    /* grid-row: 2; */
+    height: calc(v-bind(heightUnit) * v-bind(columns));
     pointer-events: none;
   }
 
@@ -35,12 +48,12 @@ const props = defineProps<DrapeData & {
     background-color: v-bind(color);
     height: calc(v-bind(numStrings) * var(--min-division-width) / 2);
     pointer-events: none;
-    display: none;
+    display: v-bind(defaultDisplay);
   }
 
   @container drape (aspect-ratio < 0.5) {
     .drape-down {
-      display: block;
+      display: v-bind(collapsedDisplay);
     }
   }
 </style>

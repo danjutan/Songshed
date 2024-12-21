@@ -1,12 +1,14 @@
 <script lang="ts" setup>
 import { type NoteSpot } from "./data";
 import type { DivisionData } from "./TabBar.vue";
+import Drape from "./toolbar/Drape.vue";
 
 const props = withDefaults(defineProps<{
   data: DivisionData
   subdivisions?: number
   frets: number
   tuning: Midi[]
+  debug?: boolean
 }>(), {
   subdivisions: 4,
 });
@@ -20,7 +22,6 @@ const emit = defineEmits<{
 const sortedSubstacks = computed(() => props.data.substacks?.toSorted((a, b) => a.notchPosition - b.notchPosition) || []);
 const numFilledSubstacks = computed(() => sortedSubstacks.value.length);
 const numSubstacks = computed(() => numFilledSubstacks.value && props.subdivisions - 1);
-watchEffect(() => console.log(numFilledSubstacks.value, numSubstacks.value, sortedSubstacks.value));
 const relativePositions = computed(() => sortedSubstacks.value.map(substack => substack.notchPosition - props.data.notchPosition));
 // const subunit = computed(() => SpacingsDescending.find(spacing => relativePositions.value?.every(relative => relative % spacing === 0)) || 1);
 const subunit = computed(() => 1 / props.subdivisions);
@@ -33,7 +34,8 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
 
 <template>
   <div class="division"
-       @click="console.log({ subunit, subdivisions, colPositions })">
+       :class="{ debug }"
+       @click="debug && console.log({ subunit, subdivisions, colPositions })">
     <div class="stack">
       <TabsNoteInput v-for="(noteSpot) in props.data.stack"
                      :key="noteSpot.string"
@@ -45,14 +47,11 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
       />
     </div>
     <!-- <TabsStrings /> -->
-    <div v-if="numFilledSubstacks"
-         class="substack-bg"
-    />
+
     <div v-for="(substack, i) in sortedSubstacks"
          :key="substack.notchPosition"
          class="substack"
-         :style="{ gridColumn: colPositions[i] }"
-         @click="console.log(substack.notchPosition)">
+         :style="{ gridColumn: colPositions[i] }">
       <div v-for="noteSpot in substack.stack"
            :key="noteSpot.string"
            class="indicator">
@@ -70,16 +69,28 @@ const firstColWidth = computed(() => sortedSubstacks.value.length ? "var(--note-
         </div>
       </div>
     </div>
+    <Drape v-if="numFilledSubstacks"
+           collapsed="show"
+           default="hide"
+           :start="2"
+           :columns="numSubstacks"
+           height-unit="var(--min-division-width)"
+           color="var(--substack-bg)"
+           :num-strings
+    />
   </div>
 </template>
 
 <style scoped>
 .division {
-
   display: grid;
-
   grid-template-columns: v-bind(firstColWidth) repeat(v-bind(numSubstacks), minmax(10px, 1fr));
   grid-template-rows: repeat(v-bind(numStrings), calc(var(--min-division-width) / 2));
+}
+
+.division.debug {
+  border-top: 2px solid v-bind(debugColor);
+  margin-top: -2px;
 }
 
 .stack,
