@@ -1,18 +1,47 @@
 <script lang="ts" setup>
 import type { DivisionData } from "../TabBar.vue";
+import type { DrapeData } from "./Drape.vue";
 import Drape from "./Drape.vue";
 import { emptyDivisions } from "./empty-divisions";
+import ExpanderOverlay from "./ExpanderOverlay.vue";
 
 const props = defineProps<{
-  divisions: DivisionData[];
-  tuning: Midi[];
+  divisions: DivisionData[]
+  tuning: Midi[]
+  subdivisions: number
 }>();
+
+const expanded = defineModel<Set<number>>("expanded", { default: new Set() });
+
+const expandsTo = computed<{ [column: number]: string }>(
+  () => Object.fromEntries(
+    props.divisions.map(div => [
+      div.notchPosition + 1,
+      div.substacks ? `calc(${props.subdivisions} * var(--cell-height))` : "var(--cell-height)",
+    ])));
+
+function toggleExpanded(start: number, end?: number) {
+  const newSet = new Set(expanded.value);
+  for (let i = start; i <= (end ?? start); i++) {
+    if (newSet.has(i)) {
+      newSet.delete(i);
+      continue;
+    }
+    newSet.add(i);
+  }
+  expanded.value = newSet;
+}
 
 const hovering = ref(0);
 
 const numStrings = computed(() => props.tuning.length);
 const numNotches = computed(() => props.divisions.length);
-const spacers = computed(() => emptyDivisions(props.divisions));
+const spacers = computed<DrapeData[]>(() => emptyDivisions(props.divisions));
+const stackExpanderStarts = computed<number[]>(
+  () => props.divisions
+    .filter(div => div.substacks)
+    .map(div => div.notchPosition + 1),
+);
 </script>
 
 <template>
@@ -20,10 +49,12 @@ const spacers = computed(() => emptyDivisions(props.divisions));
     <div
       v-for="i in numNotches"
       :key="i"
-      :style="{ gridColumn: `${i} / span 1` }"
+      :style="{
+        gridColumn: `${i} / span 1`,
+        ...(expanded.has(i) && { width: expandsTo[i] }),
+      }"
       :class="{ border: i != hovering, even: i % 2 === 0, odd: i % 2 === 1 }"
-      class="notch"
-    >
+      class="notch">
       <div
         class="selectable"
         @mouseover="hovering = i"
@@ -39,18 +70,12 @@ const spacers = computed(() => emptyDivisions(props.divisions));
       :columns
       :num-strings
       :row-start="2"
-      color="var(--substack-bg)"
-    >
+      color="var(--substack-bg)">
       <!-- <template #up>
         <div :style="{ width: '100%', height: 'var(--cell-height)', pointerEvents: 'auto' }" />
       </template> -->
       <template #down>
-        <div class="spacer-overlay">
-          <div class="indicator-container">
-            <div class="spacer-indicator">⇤</div>
-            <div class="spacer-indicator">⇥</div>
-          </div>
-        </div>
+        <ExpanderOverlay />
       </template>
     </Drape>
 
@@ -62,6 +87,33 @@ const spacers = computed(() => emptyDivisions(props.divisions));
       :num-strings
       color="var(--highlight-color)"
     />
+
+    <Drape
+      v-for="start in stackExpanderStarts"
+      :key="start"
+      collapsed="show"
+      default="hide"
+      up="reverse"
+      :start
+      :columns="1"
+      :row-start="2"
+      :height-unit="`${subdivisions * 2 - 1} * var(--cell-height)`"
+      color="var(--substack-bg)"
+      :num-strings
+      @click="toggleExpanded(start)">
+      <template #down>
+        <ExpanderOverlay />
+      </template>
+      <template v-if="expanded.has(start)"
+                #up>
+        <div class="unexpander">
+          <div class="label">
+            <div>↦</div>
+            <div>↤</div>
+          </div>
+        </div>
+      </template>
+    </Drape>
   </div>
 </template>
 
@@ -91,31 +143,30 @@ const spacers = computed(() => emptyDivisions(props.divisions));
   margin-top: -2px;
 }
 
-.spacer-overlay {
-  display: flex;
-  height: 100%;
-  justify-content: center;
-  align-items: center;
+.unexpander {
+  background-color: var(--substack-bg);
+  height: var(--cell-height);
+  width: 100%;
+  cursor: pointer;
+  container-name: unexpander;
+  container-type: size;
 }
 
-.indicator-container {
-  width: 100%;
-  /* margin-top: calc(var(--cell-height) / 2); */
-  height: calc(var(--cell-height) * 2);
-  container-type: size;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  pointer-events: none;
-  opacity: 0;
-}
-.spacer-overlay:hover .indicator-container {
-  opacity: 0.6;
-}
-.spacer-indicator {
-  /* margin-top: -50%; */
-  font-size: clamp(10px, 50cqw, calc(var(--cell-height) * 2));
+.unexpander .label {
+  /* font-size: 100cqw; */
+  /* font-size: var(--cell-height); */
   color: rgb(255, 0, 0);
+  font-weight: bold;
+  font-size: min(100cqw, var(--cell-height));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@container unexpander (aspect-ratio < 1) {
+  .unexpander .label {
+    display: none;
+  }
 }
 
 /* .spacer-indicator:first-child {
@@ -125,12 +176,6 @@ const spacers = computed(() => emptyDivisions(props.divisions));
 .spacer-indicator:last-child {
   margin-right: -1cqw;
 } */
-
-@container (aspect-ratio < 0.8) {
-  .spacer-indicator {
-    display: none;
-  }
-}
 
 .notch:not(:first-child) .selectable {
   /* border-left: var(--string-width) solid var(--string-color); */

@@ -1,19 +1,19 @@
 <script lang="ts" setup>
 export type DrapeData = {
-  start: number;
-  columns: number;
+  start: number
+  columns: number
 };
 
 const props = withDefaults(
   defineProps<
     DrapeData & {
-      default?: "show" | "hide";
-      collapsed?: "show" | "hide";
-      up?: "same" | "reverse";
-      color: string;
-      numStrings: number;
-      heightUnit?: string;
-      rowStart?: number;
+      default?: "show" | "hide"
+      collapsed?: "show" | "hide"
+      up?: "same" | "reverse"
+      color: string
+      numStrings: number
+      heightUnit?: string
+      rowStart?: number
     }
   >(),
   {
@@ -27,8 +27,8 @@ const props = withDefaults(
 );
 
 defineSlots<{
-  down: () => never;
-  up: () => never;
+  down: () => never
+  up: () => never
 }>();
 
 const toDisplay = (p: "show" | "hide") => (p === "show" ? "block" : "none");

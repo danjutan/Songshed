@@ -28,6 +28,18 @@ const sortedSubstacks = computed(
       (a, b) => a.notchPosition - b.notchPosition,
     ) || [],
 );
+
+const emptySubstackPositions = computed(() => {
+  const notchPositions = [];
+  const filled = new Set(sortedSubstacks.value.map(({ notchPosition }) => notchPosition));
+  for (let i = 0; i < props.subdivisions - 1; i++) {
+    if (!filled.has(i)) {
+      notchPositions.push(i);
+    }
+  }
+  return notchPositions;
+});
+
 const numFilledSubstacks = computed(() => sortedSubstacks.value.length);
 const numSubstacks = computed(
   () => numFilledSubstacks.value && props.subdivisions - 1,
@@ -51,6 +63,8 @@ const substacksExpanded = ref(false);
 const substackMinWidth = computed(() =>
   substacksExpanded.value ? "var(--cell-height)" : "1px",
 );
+
+// Next task: all draping goes in toolbar
 </script>
 
 <template>
@@ -68,6 +82,16 @@ const substackMinWidth = computed(() =>
         @data-change="emit('noteChange', { ...noteSpot, data: $event })"
       />
     </div>
+
+    <!-- <div v-for="i in emptySubstackPositions"
+         :key="i"
+         class="substack"
+         :style="{ gridColumn: i + 1 }">
+    >
+    <TabsNoteInput
+      v-for="string in tuning"
+
+  </div> -->
 
     <div
       v-for="(substack, i) in sortedSubstacks"
@@ -90,32 +114,11 @@ const substackMinWidth = computed(() =>
             :data="noteSpot.data"
             :tuning="props.tuning[noteSpot.string]"
             :frets="props.frets"
-            blocking-color="transparent"
             @data-change="emit('noteChange', { ...noteSpot, data: $event })"
           />
         </div>
       </div>
     </div>
-
-    <Drape
-      v-if="numFilledSubstacks"
-      collapsed="show"
-      default="hide"
-      up="reverse"
-      :start="2"
-      :columns="numSubstacks"
-      height-unit="var(--cell-height) * 2"
-      color="var(--substack-bg)"
-      :num-strings
-      @click="substacksExpanded = !substacksExpanded">
-      <template #up>
-        <div class="unexpander">
-          <div class="label">
-            ↤
-          </div>
-        </div>
-      </template>
-    </Drape>
   </div>
 </template>
 
@@ -140,29 +143,6 @@ const substackMinWidth = computed(() =>
   grid-row: 1 / -1;
   grid-column: 2 / -1;
   background-color: var(--substack-bg);
-}
-
-.unexpander {
-  background-color: green;
-  height: var(--cell-height);
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  container-name: unexpander;
-  container-type: size;
-}
-
-.unexpander .label {
-  /* font-size: 100cqw; */
-  /* font-size: var(--cell-height); */
-  font-size: min(100cqw, var(--cell-height));
-}
-
-@container unexpander (aspect-ratio < 0.5) {
-  .unexpander .label {
-    display: none;
-  }
 }
 
 .indicator {

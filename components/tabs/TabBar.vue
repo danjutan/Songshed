@@ -137,25 +137,28 @@ const divisionPlacement = (column: number) => ({
   gridRow: `2 / span ${strings.value}`,
   gridColumn: `${column} / span 1`,
 });
+
+const subdivisions = computed(() => (Spacing.Whole / smallestSpacing) / props.notches);
 </script>
 
 <template>
   <div class="bar">
     <TabsStrings />
-    <TabsToolbar
-      :divisions
-      :tuning
-    />
     <TabsDivision
       v-for="data in divisions"
       :key="data.notchPosition"
       debug
-      :subdivisions="(Spacing.Whole / smallestSpacing) / notches"
+      :subdivisions
       :data
       :tuning
       :frets
       :style="divisionPlacement(data.notchPosition + 1)"
       @note-change="updateNote"
+    />
+    <TabsToolbar
+      :divisions
+      :tuning
+      :subdivisions
     />
     <!-- <TabsSpacer
       v-for="data in emptyDivisions"
