@@ -15,7 +15,7 @@ const props = withDefaults(defineProps<{
   // The bottom part of a time signature
   beatSize?: number
 }>(), {
-  notches: 4,
+  notches: 2,
   subdivisions: 4,
   beatsPerBar: 4,
   beatSize: Spacing.Quarter,

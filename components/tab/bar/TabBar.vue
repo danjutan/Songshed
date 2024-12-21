@@ -149,7 +149,7 @@ function isSelected(column: ColumnData) {
 
 const gridTemplateColumns = computed<string>(() => {
   const columns: string[] = columnData.value.map((col, i) => {
-    if (isExpanded(i + 1) || (isNotch(col) && (!isEmpty(col) || hasSubstacks(i)))) {
+    if (isExpanded(i + 1) || (isNotch(col) /* && (!isEmpty(col) || hasSubstacks(i)) */)) {
       return "var(--cell-height)";
     }
     return "1fr";
