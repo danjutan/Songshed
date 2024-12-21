@@ -73,14 +73,13 @@ onMounted(() => {
 <template>
   <div
     class="note-input"
-    :class="{ collapse: false }"
+    :class="{ collapse: !relativeNote }"
     @mouseover="mouseOver"
     @mouseleave="emit('endEdit')">
     <span v-if="relativeNote"
           class="input-bg">{{ relativeNote }}</span>
     <input
       ref="input"
-      :size="2"
       :value="relativeNote"
       type="text"
       inputmode="numeric"
@@ -99,14 +98,14 @@ onMounted(() => {
 }
 
 .collapse {
-  container-type: size;
-  container-name: collapser;
+  width: calc(var(--min-division-width) / 8);
+  /* container-type: size;
+  container-name: collapser; */
 }
 
 input {
   all: unset;
   text-shadow: 1px 1px 0px lightgray;
-  border-left: 1px solid pink;
   max-width: calc(var(--min-division-width) / 2);
   /* z-index: var(--z-index-notes); */
 }
