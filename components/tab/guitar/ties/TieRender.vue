@@ -32,6 +32,10 @@ const labelText = computed(() => {
 
 function onSelectInput(e: Event) {
   const value = (e.target as HTMLSelectElement).value;
+  if (value === "delete") {
+    emit("delete");
+    return;
+  }
   emit("updateType", value as TieType);
 }
 </script>
@@ -50,7 +54,7 @@ function onSelectInput(e: Event) {
       bottom: lastString,
     }"
   >
-    <!-- <div v-if="endColumn - startColumn >= (half ? 1 : 2)" class="block-notes" /> -->
+    <div v-if="endColumn - startColumn >= (half ? 1 : 2)" class="block-notes" />
 
     <div v-if="props.type === 'slide'" class="slide-box" />
     <!-- <svg
@@ -74,9 +78,10 @@ function onSelectInput(e: Event) {
         <option value="slide" :selected="type === 'slide'">
           {{ slideText }}
         </option>
+        <option value="delete">&Cross;</option>
       </select>
       <div v-if="type === 'hammer'" class="label">{{ labelText }}</div>
-      <div class="delete" @click="emit('delete')">&Cross;</div>
+      <!-- <div class="delete" @click="emit('delete')">&Cross;</div> -->
     </div>
   </div>
 </template>
@@ -310,9 +315,15 @@ function onSelectInput(e: Event) {
 
   & select {
     display: none;
+    text-align: center;
+    /* margin-left: -10px; */
+    transform: translateX(-25%) translateY(-10%);
+    & [value="delete"] {
+      color: darkred;
+    }
   }
 
-  & .delete {
+  /* & .delete {
     font-size: calc(var(--label-font-size) * 0.8);
     transform: translateY(-25%);
     display: none;
@@ -323,7 +334,7 @@ function onSelectInput(e: Event) {
       font-weight: bold;
       color: darkred;
     }
-  }
+  } */
 }
 
 .container:has(.block-notes:hover) .indicator,

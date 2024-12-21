@@ -21,6 +21,7 @@ export type BendRenderProps = OverlayPosition & {
 const props = defineProps<BendRenderProps & { bendRow: number }>();
 const emit = defineEmits<{
   updateBend: [bend: Bend];
+  delete: [];
 }>();
 
 const cellHoverEvents = inject(CellHoverInjectionKey) as CellHoverEvents;
@@ -37,7 +38,9 @@ const upswingEndColumn = computed(() => {
   return props.throughColumn || props.endColumn;
 });
 
-const prebend = computed(() => props.startColumn === upswingEndColumn.value);
+const prebend = computed(
+  () => props.half !== "right" && props.startColumn === upswingEndColumn.value,
+);
 
 const upswingColumns = computed(
   () => upswingEndColumn.value - props.startColumn + 1,
@@ -84,11 +87,19 @@ const showLabel = computed(() => {
 });
 
 const bendLabels: { [bend: number]: string } = {
+  0.5: "&half;",
   1: "full",
-  0.5: "1/2",
-  1.5: "1 1/2",
+  1.5: "1 &half;",
 };
 
+function onSelectInput(e: Event) {
+  const value = (e.target as HTMLSelectElement).value;
+  if (value === "delete") {
+    emit("delete");
+    return;
+  }
+  emit("updateBend", { ...props.bend, bend: +value });
+}
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
 
@@ -227,10 +238,19 @@ function onLabelHover() {
     />
   </template>
   <div v-if="showLabel" class="label" @mouseover="onLabelHover">
-    <div class="row">
-      <span>{{ bendLabels[props.bend.bend] || props.bend.bend }}</span>
-      <!-- <div v-if="!restColumns" class="grabber right" /> -->
-    </div>
+    <span v-html="bendLabels[props.bend.bend] || props.bend.bend" />
+    <select @input="onSelectInput">
+      <option
+        v-for="[bendBy, label] in Object.entries(bendLabels).sort(
+          (a, b) => +a[0] - +b[0],
+        )"
+        :value="bendBy"
+        :selected="props.bend.bend === +bendBy"
+        v-html="label"
+      />
+      <option value="delete">&Cross;</option>
+    </select>
+    <!-- <div v-if="!restColumns" class="grabber right" /> -->
   </div>
   <div
     v-if="!restColumns && !dragging"
@@ -294,19 +314,29 @@ function onLabelHover() {
   font-size: calc(var(--note-font-size) * 0.75);
   justify-self: center;
   align-self: end;
-  /* background-color: yellow; */
   height: min-content;
   display: flex;
   flex-direction: column;
   align-items: center;
   background-color: transparent;
-  /* height: calc(100% + var(--cell-height) / 2); */
   width: calc(120%);
-  /* margin-bottom: calc(var(--cell-height) * -0.75); */
 
-  & .row {
-    display: flex;
-    align-items: center;
+  &:hover {
+    span {
+      display: none;
+    }
+    select {
+      display: block;
+    }
+  }
+
+  & select {
+    display: none;
+    text-align: center;
+
+    & [value="delete"] {
+      color: darkred;
+    }
   }
 }
 

@@ -294,6 +294,9 @@ onBeforeUnmount(() => {
             (bend) =>
               data.guitar!.ties.setTie(render.row - notesRow, bend.from, bend)
           "
+          @delete="
+            data.guitar!.ties.deleteTie(render.row - notesRow, render.bend.from)
+          "
         />
       </template>
     </div>
