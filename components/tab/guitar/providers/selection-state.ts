@@ -5,7 +5,11 @@ export interface SelectionState {
   clear: () => void;
   end: () => void;
   isSelected: (position: number) => boolean;
-  isDragging: boolean;
+  dragging: boolean;
+  // TODO? separate the editingNote stuff into its own provider
+  editingNote?: { string?: number; position?: number };
+  setEditing: (string: number, position: number) => void;
+  blurEditing: () => void;
 }
 
 export function createSelectionState(): SelectionState {
@@ -13,16 +17,21 @@ export function createSelectionState(): SelectionState {
   const endPosition = ref<number | undefined>();
   const dragging = ref(false);
 
+  const editingNote = reactive<{ string?: number; position?: number }>({});
+
+  function setEditing(string: number, position: number) {
+    editingNote.string = string;
+    editingNote.position = position;
+  }
+
+  function blurEditing() {
+    editingNote.string = undefined;
+    editingNote.position = undefined;
+  }
+
   const selectedRange = () => {
     if (startPosition.value === undefined || endPosition.value === undefined)
       return;
-    // const [start, end] = [startPosition.value, endPosition.value].sort(
-    //   (a, b) => a - b,
-    // );
-    // return {
-    //   start,
-    //   end,
-    // };
     return {
       start: startPosition.value,
       end: endPosition.value,
@@ -62,9 +71,12 @@ export function createSelectionState(): SelectionState {
     get selectedRange() {
       return selectedRange();
     },
-    get isDragging() {
+    get dragging() {
       return dragging.value;
     },
+    editingNote,
+    setEditing,
+    blurEditing,
     start,
     drag,
     clear,

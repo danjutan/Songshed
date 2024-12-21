@@ -7,7 +7,7 @@ import Unexpander from "./Unexpander.vue";
 import {
   SelectionInjectionKey,
   type SelectionState,
-} from "./providers/selection";
+} from "./providers/selection-state";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
@@ -79,15 +79,6 @@ function toggleSubdivisions(notchPosition: number) {
     expanded.add(pos);
   }
 }
-
-function onStackMouseDown(position: number) {
-  selectionState.start(position);
-}
-
-function onStackMouseMove(position: number) {
-  selectionState.drag(position);
-  if (selectionState.isDragging) (document.activeElement as HTMLElement).blur();
-}
 </script>
 
 <template>
@@ -109,17 +100,15 @@ function onStackMouseMove(position: number) {
         gridRow: `${startRow} / span ${numStrings}`,
       }"
       :notes="stack"
+      :position="position"
       :collapse="collapsed.has(position)"
       :tuning
       :frets
-      :selected="selectionState.isSelected(position)"
       @note-change="
         (string: number, note: GuitarNote) =>
           emit('noteChange', position, string, note)
       "
       @note-delete="(string: number) => emit('noteDelete', position, string)"
-      @mousedown="onStackMouseDown(position)"
-      @mousemove="onStackMouseMove(position)"
     />
     <template v-if="isNotch(position)">
       <template v-if="collapsedEmpty.has(position)">

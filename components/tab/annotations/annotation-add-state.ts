@@ -1,9 +1,9 @@
 import type { AnnotationStore } from "~/model/stores";
 
 export interface NewAnnotation {
-  row: undefined | number;
-  startPos: undefined | number;
-  endPos: undefined | number;
+  row?: number;
+  startPos?: number;
+  endPos?: number;
 }
 
 export function createAnnotationAddState(
@@ -16,12 +16,12 @@ export function createAnnotationAddState(
     endPos: undefined,
   });
 
-  function addStart(row: number, position: number) {
+  function start(row: number, position: number) {
     newAnnotation.row = row;
     newAnnotation.startPos = position;
   }
 
-  function addDrag(position: number) {
+  function drag(position: number) {
     if (newAnnotation.startPos !== undefined) {
       /* if (position > newAnnotation.start) {
       newAnnotation.end = position + subUnit.value;
@@ -32,7 +32,7 @@ export function createAnnotationAddState(
     }
   }
 
-  function addEnd() {
+  function end() {
     const { row, startPos: start, endPos: end } = newAnnotation;
     if (
       row !== undefined &&
@@ -53,8 +53,8 @@ export function createAnnotationAddState(
 
   return reactive({
     newAnnotation,
-    addStart,
-    addDrag,
-    addEnd,
+    start,
+    drag,
+    end,
   });
 }

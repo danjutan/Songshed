@@ -1,9 +1,19 @@
 <script lang="ts" setup>
 import type { GuitarNote } from "~/model/data";
+import {
+  SelectionInjectionKey,
+  type SelectionState,
+} from "./providers/selection-state";
+import {
+  TieAddInjectionKey,
+  type TieAddState,
+} from "./providers/tie-add-state";
 
 const props = withDefaults(
   defineProps<{
     data?: GuitarNote;
+    string: number;
+    position: number;
     tuning: Midi;
     frets: number;
     startFocused?: boolean;
@@ -19,16 +29,37 @@ const props = withDefaults(
 const emit = defineEmits<{
   noteChange: [data: Partial<GuitarNote>];
   noteDelete: [];
+  // TODO: remove if unused
+  focus: [];
+  blur: [];
 }>();
+
+const { editingNote, setEditing } = inject(
+  SelectionInjectionKey,
+) as SelectionState;
+
+const tieAdd = inject(TieAddInjectionKey) as TieAddState;
 
 const input = ref<HTMLInputElement>();
 
 function focus() {
   input.value!.focus();
   input.value!.select();
+  setEditing(props.string, props.position);
+  emit("focus");
 }
 
+const editing = computed(
+  () =>
+    editingNote?.position === props.position &&
+    editingNote?.string === props.string,
+);
+
 defineExpose({ focus });
+
+function onBlur(e: Event) {
+  emit("blur");
+}
 
 const relativeNote = computed(() => {
   if (props.data) {
@@ -36,6 +67,8 @@ const relativeNote = computed(() => {
   }
   return "";
 });
+
+const hasNote = computed(() => relativeNote.value !== "");
 
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
@@ -57,18 +90,26 @@ function onInput(e: Event) {
 
 onMounted(() => {
   if (props.startFocused) {
-    input.value?.focus();
+    focus();
   }
 });
 
 function onClick(e: MouseEvent) {
   focus();
 }
+
+function onSideMouseDown(e: MouseEvent) {
+  tieAdd.start(props.string, props.position, props.data!.midi!);
+  e.stopImmediatePropagation();
+}
 </script>
 
 <template>
-  <div class="note-input" :class="{ hovering }">
+  <div class="note-input" :class="{ hovering, editing, 'has-note': hasNote }">
     <span class="input-bg">{{ relativeNote }}</span>
+    <div v-if="editing && relativeNote" class="side left">
+      <span>&ldca;</span>
+    </div>
     <input
       ref="input"
       :value="relativeNote"
@@ -76,9 +117,17 @@ function onClick(e: MouseEvent) {
       inputmode="numeric"
       pattern="[0-9]{1,2}"
       @input="onInput"
+      @blur="onBlur"
       @click="onClick"
       @keyup="(e) => e.stopPropagation()"
     />
+    <div
+      v-if="editing && hasNote"
+      class="side right"
+      @mousedown="onSideMouseDown"
+    >
+      <span>&rdca;</span>
+    </div>
   </div>
 </template>
 
@@ -87,6 +136,33 @@ function onClick(e: MouseEvent) {
   display: grid;
   justify-items: center;
   align-items: center; /*comment this if you want other centering*/
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.side {
+  /* background-color: v-bind(blockingColor); */
+  cursor: crosshair;
+  grid-row: 1;
+  width: calc(var(--note-font-size) / 2);
+  height: 100%;
+  display: flex;
+  align-items: end;
+
+  &:hover {
+    background-color: var(--note-hover-color);
+  }
+
+  &.left {
+    grid-column: 1;
+  }
+
+  &.right {
+    grid-column: 3;
+  }
+
+  & span {
+    transform: translateY(3px);
+  }
 }
 
 input {
@@ -96,10 +172,17 @@ input {
 
 .input-bg,
 input {
-  grid-area: 1 / 1;
-  width: var(--cell-height);
+  grid-area: 1 / 2;
   font-size: var(--note-font-size);
   text-align: center; /*comment this if you want other centering*/
+}
+
+input {
+  width: var(--cell-height);
+}
+
+.has-note.focused input {
+  width: var(--note-font-size);
 }
 
 .input-bg {

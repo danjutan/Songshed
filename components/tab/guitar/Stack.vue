@@ -1,13 +1,21 @@
 <script lang="ts" setup>
 import type { GuitarNote, NoteStack } from "~/model/data";
 import NoteInput from "./NoteInput.vue";
+import {
+  SelectionInjectionKey,
+  type SelectionState,
+} from "./providers/selection-state";
+import {
+  TieAddInjectionKey,
+  type TieAddState,
+} from "./providers/tie-add-state";
 
 const props = withDefaults(
   defineProps<{
     notes: NoteStack<GuitarNote>;
+    position: number;
     frets: number;
     tuning: Midi[];
-    selected?: boolean;
     collapse?: boolean;
   }>(),
   {},
@@ -18,6 +26,9 @@ const emit = defineEmits<{
   noteChange: [string: number, note: GuitarNote];
 }>();
 
+const selecting = inject(SelectionInjectionKey) as SelectionState;
+const tieAdd = inject(TieAddInjectionKey) as TieAddState;
+
 const noteSpots = computed(() => {
   const noteSpots = new Array(props.tuning.length);
   for (const [string, note] of props.notes.entries()) {
@@ -27,23 +38,51 @@ const noteSpots = computed(() => {
   return noteSpots;
 });
 
+const selected = computed(() => selecting.isSelected(props.position));
+
 const backgroundColor = computed(() =>
-  props.selected ? "var(--highlight-color)" : "transparent",
+  selected.value ? "var(--highlight-color)" : "transparent",
 );
 
 const hovering = ref<number | undefined>();
+
+function onStackMouseDown() {
+  selecting.start(props.position);
+}
+
+function onStackMouseMove() {
+  selecting.drag(props.position);
+  if (selecting.dragging) (document.activeElement as HTMLElement).blur();
+}
+
+function onSpotMouseEnter(string: number) {
+  hovering.value = string;
+  const midi = props.notes.get(string)?.midi;
+  tieAdd.drag(props.position, midi);
+}
+
+function onSpotMouseUp() {
+  tieAdd.end();
+}
 
 type InputRef = InstanceType<typeof NoteInput> | null;
 const inputRefs = ref<InputRef[]>([]);
 </script>
 
 <template>
-  <div class="stack">
+  <div
+    class="stack"
+    @mousedown="onStackMouseDown"
+    @mousemove="onStackMouseMove"
+  >
     <div
       v-for="(note, string) in noteSpots"
       class="container"
-      :class="{ collapse }"
-      @mouseover="hovering = string"
+      :class="{
+        collapse: selecting.editingNote?.position !== position && collapse,
+      }"
+      @mouseup="onSpotMouseUp"
+      @mouseenter="onSpotMouseEnter(string)"
       @click="inputRefs[string]?.focus()"
       @mouseleave="hovering = undefined"
     >
@@ -58,6 +97,8 @@ const inputRefs = ref<InputRef[]>([]);
         <NoteInput
           :ref="(el) => inputRefs.push(el as InputRef)"
           :data="note"
+          :string="string"
+          :position="position"
           :tuning="props.tuning[string]"
           :frets="props.frets"
           :blocking-color="selected ? 'var(--highlight-blocking)' : undefined"

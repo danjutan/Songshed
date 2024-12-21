@@ -9,9 +9,13 @@ import {
   createSelectionState,
   SelectionInjectionKey,
   type SelectionState,
-} from "./guitar/providers/selection";
+} from "./guitar/providers/selection-state";
 import { createAnnotationAddState } from "./annotations/annotation-add-state";
 import { createAnnotationRenderState } from "./annotations/annotation-render-state";
+import {
+  createTieAddState,
+  TieAddInjectionKey,
+} from "./guitar/providers/tie-add-state";
 
 const props = withDefaults(
   defineProps<{
@@ -31,6 +35,8 @@ const props = withDefaults(
 
 const selectionState = createSelectionState();
 provide(SelectionInjectionKey, selectionState);
+const tieAddState = createTieAddState(computed(() => props.data.guitar?.ties));
+provide(TieAddInjectionKey, tieAddState);
 
 const barSize = computed(() => props.data.beatsPerBar * props.data.beatSize);
 const notchUnit = computed(() => barSize.value / props.notches);
@@ -121,8 +127,9 @@ function newAnnotationRow() {
 const notesRow = computed(() => annotationRows.value + 1);
 
 function cancelSelection() {
-  annotationAdd.addEnd();
+  annotationAdd.end();
   selectionState.end();
+  selectionState.blurEditing();
 }
 
 function newBarClick(lastBarStart?: number) {
@@ -191,7 +198,7 @@ onBeforeUnmount(() => {
               gridColumn: i * (columnsPerBar + 1) + 1,
               gridRow: annotationRows - rowIndex,
             }"
-            @mousedown="annotationAdd.addStart(rowIndex, bar.start)"
+            @mousedown="annotationAdd.start(rowIndex, bar.start)"
           />
           <div
             v-for="([position], s) in bar.stacks"
@@ -200,8 +207,8 @@ onBeforeUnmount(() => {
               gridColumn: i * (columnsPerBar + 1) + 2 + s,
               gridRow: annotationRows - rowIndex,
             }"
-            @mousedown="annotationAdd.addStart(rowIndex, position)"
-            @mouseover="annotationAdd.addDrag(position)"
+            @mousedown="annotationAdd.start(rowIndex, position)"
+            @mouseover="annotationAdd.drag(position)"
           />
         </template>
 

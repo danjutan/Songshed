@@ -3,6 +3,10 @@ import type { TieData } from "~/model/data";
 import TieRender, { type TieRenderProps } from "./TieRender.vue";
 import type { OverlayPosition } from "~/components/tab/overlay-objects";
 import type { TieMap, TieStore } from "~/model/stores";
+import {
+  TieAddInjectionKey,
+  type TieAddState,
+} from "../providers/tie-add-state";
 
 const props = defineProps<{
   ties: TieStore;
@@ -13,11 +17,16 @@ const props = defineProps<{
   subUnit: number;
 }>();
 
+const addState = inject(TieAddInjectionKey) as TieAddState;
 // Assumes ties can stretch over one divider, but not two
 
 const tieRenders = computed<TieRenderProps[]>(() => {
   const ties: TieRenderProps[] = [];
-  for (const [string, stringTies] of props.ties.getTies()) {
+  for (const [string, value] of props.ties.getTies()) {
+    const stringTies = value;
+    if (addState.newTie.to && addState.newTie.string === string) {
+      stringTies.push(addState.newTie);
+    }
     for (const tie of stringTies) {
       const direction = (tie.midiFrom ?? 0) < (tie.midiTo ?? 0) ? "up" : "down";
       if (tie.from >= props.startPosition && tie.from < props.endPosition) {
