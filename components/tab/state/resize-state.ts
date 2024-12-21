@@ -1,4 +1,4 @@
-import { useElementBounding, useElementSize } from "@vueuse/core";
+import { useElementBounding } from "@vueuse/core";
 import type { InjectionKey } from "vue";
 
 export interface StackCoords {
@@ -8,7 +8,8 @@ export interface StackCoords {
 }
 export interface ResizeState {
   registerStackRef: (startPos: number, stack: HTMLDivElement | null) => void;
-  getStackCoords: (startPos: number) => Ref<StackCoords | undefined>;
+  getStackCoords: (startPos: number) => ComputedRef<StackCoords | undefined>;
+  subUnit: ComputedRef<number>; // TODO: remove
 }
 
 export function createResizeState(subUnit: ComputedRef<number>): ResizeState {
@@ -51,7 +52,7 @@ export function createResizeState(subUnit: ComputedRef<number>): ResizeState {
     });
   }
 
-  return { registerStackRef, getStackCoords };
+  return { registerStackRef, getStackCoords, subUnit };
 }
 
 export const ResizeStateInjectionKey = Symbol() as InjectionKey<ResizeState>;

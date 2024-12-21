@@ -66,9 +66,6 @@ const bendEditState = createBendEditState(
 );
 provide(BendEditInjectionKey, bendEditState);
 
-const resizeState = createResizeState(computed(() => subUnit.value));
-provide(ResizeStateInjectionKey, resizeState);
-
 export type Bar = {
   start: number;
   stacks: StackMap<GuitarNote>;

@@ -6,6 +6,7 @@ import TiesBar from "./ties/TiesBar.vue";
 import BendRender from "./bends/BendRender.vue";
 import BendDragBar from "./bends/BendDragBar.vue";
 import { createBendRenderState } from "./state/bend-render-state";
+import OverlaySVG from "./overlay/OverlaySVG.vue";
 import {
   createTieAddState,
   TieAddInjectionKey,
@@ -21,6 +22,10 @@ import {
   createBendEditState,
   type BendEditState,
 } from "./state/bend-edit-state";
+import {
+  createResizeState,
+  ResizeStateInjectionKey,
+} from "../state/resize-state";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -35,20 +40,27 @@ const props = defineProps<{
 
 const tieAddState = inject(TieAddInjectionKey) as TieAddState;
 
-const bendRenders = createBendRenderState(
-  props.guitarStore.ties,
-  computed(() => props.startRow + 1),
-  props.posToCol,
-  computed(() => tieAddState.newBend),
-);
+// const bendRenders = createBendRenderState(
+//   props.guitarStore.ties,
+//   computed(() => props.startRow + 1),
+//   props.posToCol,
+//   computed(() => tieAddState.newBend),
+// );
 
-const bendRow = computed(() =>
-  bendRenders.value.has(props.tabLineIndex) ? props.startRow : undefined,
+const resizeState = createResizeState(computed(() => props.subUnit));
+provide(ResizeStateInjectionKey, resizeState);
+
+const bendRow = computed(
+  () =>
+    // bendRenders.value.has(props.tabLineIndex) ? props.startRow : undefined,
+    props.startRow,
 );
 
 const notesRow = computed(() =>
   bendRow.value ? bendRow.value + 1 : props.startRow,
 );
+
+const numStrings = computed(() => props.guitarStore.strings);
 </script>
 
 <template>
@@ -69,12 +81,12 @@ const notesRow = computed(() =>
       :start-row="notesRow"
       :tuning="guitarStore.tuning"
       :frets="guitarStore.frets"
-      :num-strings="guitarStore.strings"
+      :num-strings="numStrings"
       @note-change="guitarStore.setNote"
       @note-delete="guitarStore.deleteNote"
     />
 
-    <TiesBar
+    <!-- <TiesBar
       :ties="guitarStore.ties"
       :new-tie="tieAddState.newTie"
       :num-strings="guitarStore.strings"
@@ -83,7 +95,7 @@ const notesRow = computed(() =>
       :start-position="bar.start"
       :end-position="bar.start + bar.stacks.size * subUnit"
       :sub-unit="subUnit"
-    />
+    /> -->
   </template>
   <template v-if="bendRow">
     <!-- <div
@@ -93,13 +105,14 @@ const notesRow = computed(() =>
     >
       bend
     </div> -->
-    <BendRender
+    <!-- <BendRender
       v-for="render in bendRenders!.get(tabLineIndex)"
       :key="render.startColumn"
       v-bind="render"
       :bend-row
-    />
+    /> -->
   </template>
+  <OverlaySVG class="overlay"></OverlaySVG>
 </template>
 
 <style scoped>
@@ -114,5 +127,10 @@ const notesRow = computed(() =>
   align-self: center;
   /* writing-mode: vertical-rl;
   text-orientation: upright; */
+}
+
+.overlay {
+  grid-column: 1 / -1;
+  grid-row: v-bind(bendRow) / span calc(v-bind(numStrings) + 1);
 }
 </style>
