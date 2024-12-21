@@ -45,7 +45,6 @@ const bars = computed<Bar>(() => {
 
     bars.push(columns);
   }
-  console.log(bars);
   return bars;
 });
 

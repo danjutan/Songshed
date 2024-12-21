@@ -50,7 +50,7 @@ export interface TabData {
   annotations: Map<number, Annotation[]>; // annotation row -> annotations on that row
 }
 
-interface SerializeableTabData extends Omit<TabData, "guitarData" | "annotations"> {
+export interface SerializeableTabData extends Omit<TabData, "guitarData" | "annotations"> {
   guitarData?: SerializeableGuitar;
   annotations: Array<[number, Annotation[]]>;
 }
@@ -72,11 +72,12 @@ function serializeTabData(data: TabData): string {
     annotations: [...data.annotations.entries()],
     ...(data.guitarData && { guitarData }),
   };
+
   return JSON.stringify(serializeable);
 }
 
-function deserializeTabData(data: string): TabData {
-  const parsed: SerializeableTabData = JSON.parse(data);
+export function deserializeTabData(data: string | SerializeableTabData): TabData {
+  const parsed: SerializeableTabData = typeof data === "string" ? JSON.parse(data) : data;
   let guitarData: GuitarTabData | undefined;
   if (parsed.guitarData) {
     const stacks: StackMap<GuitarNote> = new Map();
@@ -114,26 +115,23 @@ export interface TabStore {
   serialize: () => string;
 }
 
-/* title = "new tab",
-  beatsPerBar = 4,
-  beatSize = Spacing.Quarter, */
 const defaults = {
   title: "new tab",
   beatsPerBar: 4,
   beatSize: Spacing.Quarter,
 };
 
-export function createTabStore(deserialize: string): TabStore;
+export function createTabStore(tabData: TabData): TabStore;
 export function createTabStore(options?: Partial<typeof defaults>): TabStore;
-export function createTabStore(init?: string | Partial<typeof defaults>): TabStore {
+export function createTabStore(init?: TabData | Partial<typeof defaults>): TabStore {
   if (init === undefined) init = {};
-  const data: TabData = reactive(
-    typeof init === "object"
-      ? { ...defaults, ...init, annotations: new Map() }
-      : deserializeTabData(init),
-  );
+  const data: TabData = reactive({ ...defaults, annotations: new Map(), ...init });
 
   const guitarStore = ref<undefined | GuitarStore>();
+  if (data.guitarData) {
+    guitarStore.value = createGuitarStore(data.guitarData);
+  }
+
   const annotationStore = createAnnotationStore(data.annotations);
 
   function createGuitarTab(tuning = defaultTuning, strings = 6, frets = 24) {
@@ -238,6 +236,11 @@ interface StackStore<N extends NoteData> {
 
 function createStackStore<N extends NoteData>(stacks: StackMap<N>): StackStore<N> {
   const furthestPos: number[] = [];
+
+  // TODO: Figure out why we need toRaw (setNote breaks otherwise)
+  for (const key of [...toRaw(stacks).keys()].sort((a, b) => a - b)) {
+    furthestPos.push(key);
+  }
 
   function getStacks(start = 0, end?: number) {
     const subset: StackMap<N> = new Map();

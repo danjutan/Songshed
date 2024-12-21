@@ -1,8 +1,16 @@
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, "id");
-  console.log(event.method);
-  await hubKV().set(id!, { id });
-  return {
-    test: id,
-  };
+  if (!id) return;
+  if (event.method === "POST") {
+    const body = await readBody(event);
+
+    await hubKV().set(id!, body);
+    return {
+      id,
+    };
+  }
+  if (event.method === "GET") {
+    const tabData = await hubKV().get(id);
+    return tabData;
+  }
 });
