@@ -6,28 +6,12 @@ export interface SelectionState {
   end: () => void;
   isSelected: (position: number) => boolean;
   dragging: boolean;
-  // TODO? separate the editingNote stuff into its own provider
-  editingNote?: { string?: number; position?: number };
-  setEditing: (string: number, position: number) => void;
-  blurEditing: () => void;
 }
 
 export function createSelectionState(): SelectionState {
   const startPosition = ref<number | undefined>();
   const endPosition = ref<number | undefined>();
   const dragging = ref(false);
-
-  const editingNote = reactive<{ string?: number; position?: number }>({});
-
-  function setEditing(string: number, position: number) {
-    editingNote.string = string;
-    editingNote.position = position;
-  }
-
-  function blurEditing() {
-    editingNote.string = undefined;
-    editingNote.position = undefined;
-  }
 
   const selectedRange = () => {
     if (startPosition.value === undefined || endPosition.value === undefined)
@@ -74,9 +58,6 @@ export function createSelectionState(): SelectionState {
     get dragging() {
       return dragging.value;
     },
-    editingNote,
-    setEditing,
-    blurEditing,
     start,
     drag,
     clear,

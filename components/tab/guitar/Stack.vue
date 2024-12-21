@@ -9,6 +9,10 @@ import {
   TieAddInjectionKey,
   type TieAddState,
 } from "./providers/tie-add-state";
+import {
+  EditingInjectionKey,
+  type EditingState,
+} from "./providers/editing-state";
 
 const props = withDefaults(
   defineProps<{
@@ -27,6 +31,7 @@ const emit = defineEmits<{
 }>();
 
 const selecting = inject(SelectionInjectionKey) as SelectionState;
+const editing = inject(EditingInjectionKey) as EditingState;
 const tieAdd = inject(TieAddInjectionKey) as TieAddState;
 
 const noteSpots = computed(() => {
@@ -57,8 +62,7 @@ function onStackMouseMove() {
 
 function onSpotMouseEnter(string: number) {
   hovering.value = string;
-  const midi = props.notes.get(string)?.midi;
-  tieAdd.drag(props.position, midi);
+  tieAdd.drag(props.position);
 }
 
 function onSpotMouseUp() {
@@ -79,7 +83,7 @@ const inputRefs = ref<InputRef[]>([]);
       v-for="(note, string) in noteSpots"
       class="container"
       :class="{
-        collapse: selecting.editingNote?.position !== position && collapse,
+        collapse: editing.editingNote?.position !== position && collapse,
       }"
       @mouseup="onSpotMouseUp"
       @mouseenter="onSpotMouseEnter(string)"

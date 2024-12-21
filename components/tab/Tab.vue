@@ -16,6 +16,10 @@ import {
   createTieAddState,
   TieAddInjectionKey,
 } from "./guitar/providers/tie-add-state";
+import {
+  createEditingState,
+  EditingInjectionKey,
+} from "./guitar/providers/editing-state";
 
 const props = withDefaults(
   defineProps<{
@@ -33,20 +37,24 @@ const props = withDefaults(
   },
 );
 
-const selectionState = createSelectionState();
-provide(SelectionInjectionKey, selectionState);
-const tieAddState = createTieAddState(computed(() => props.data.guitar?.ties));
-provide(TieAddInjectionKey, tieAddState);
-
 const barSize = computed(() => props.data.beatsPerBar * props.data.beatSize);
 const notchUnit = computed(() => barSize.value / props.notches);
 const subUnit = computed(() => notchUnit.value / props.subdivisions);
 
 const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
-
 const newBarStart = ref(0);
 
 const numStrings = computed(() => props.data.guitar?.strings);
+
+const selectionState = createSelectionState();
+provide(SelectionInjectionKey, selectionState);
+const tieAddState = createTieAddState(
+  computed(() => props.data.guitar),
+  subUnit,
+);
+provide(TieAddInjectionKey, tieAddState);
+const editingState = createEditingState();
+provide(EditingInjectionKey, editingState);
 
 export type Bar = {
   start: number;
@@ -129,7 +137,7 @@ const notesRow = computed(() => annotationRows.value + 1);
 function cancelSelection() {
   annotationAdd.end();
   selectionState.end();
-  selectionState.blurEditing();
+  editingState.blurEditing();
 }
 
 function newBarClick(lastBarStart?: number) {
@@ -252,7 +260,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .tab {
-  --cell-height: 24px;
+  --cell-height: 32px;
   --note-font-size: calc(var(--cell-height) * 0.8);
   --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);

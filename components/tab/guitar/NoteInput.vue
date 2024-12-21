@@ -8,6 +8,10 @@ import {
   TieAddInjectionKey,
   type TieAddState,
 } from "./providers/tie-add-state";
+import {
+  EditingInjectionKey,
+  type EditingState,
+} from "./providers/editing-state";
 
 const props = withDefaults(
   defineProps<{
@@ -34,9 +38,7 @@ const emit = defineEmits<{
   blur: [];
 }>();
 
-const { editingNote, setEditing } = inject(
-  SelectionInjectionKey,
-) as SelectionState;
+const { editingNote, setEditing } = inject(EditingInjectionKey) as EditingState;
 
 const tieAdd = inject(TieAddInjectionKey) as TieAddState;
 
@@ -107,7 +109,11 @@ function onSideMouseDown(e: MouseEvent) {
 <template>
   <div class="note-input" :class="{ hovering, editing, 'has-note': hasNote }">
     <span class="input-bg">{{ relativeNote }}</span>
-    <div v-if="editing && relativeNote" class="side left">
+    <div
+      v-if="editing && relativeNote && !(tieAdd.dragDirection /*=== 'right'*/)"
+      class="side left"
+      @mousedown="onSideMouseDown"
+    >
       <span>&ldca;</span>
     </div>
     <input
@@ -122,7 +128,7 @@ function onSideMouseDown(e: MouseEvent) {
       @keyup="(e) => e.stopPropagation()"
     />
     <div
-      v-if="editing && hasNote"
+      v-if="editing && hasNote && !(tieAdd.dragDirection /*=== 'left'*/)"
       class="side right"
       @mousedown="onSideMouseDown"
     >
@@ -143,7 +149,8 @@ function onSideMouseDown(e: MouseEvent) {
   /* background-color: v-bind(blockingColor); */
   cursor: crosshair;
   grid-row: 1;
-  width: calc(var(--note-font-size) / 2);
+  /* width: calc(var(--note-font-size) / 2); */
+  font-size: calc(var(--note-font-size));
   height: 100%;
   display: flex;
   align-items: end;

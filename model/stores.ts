@@ -284,6 +284,7 @@ export type TieMap = Map<number, Tie[]>;
 
 export interface TieStore {
   setTie: (string: number, from: number, tie: TieData) => void;
+  deleteTie: (string: number, from: number) => void;
   getTies: () => TieMap;
 }
 
@@ -295,6 +296,13 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
       return;
     }
     stringTies.set(from, tie);
+  }
+
+  function deleteTie(string: number, from: number) {
+    const stringTies = guitarData.ties.get(string);
+    if (stringTies) {
+      stringTies.delete(from);
+    }
   }
 
   function getTies(): TieMap {
@@ -316,10 +324,10 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
     return map;
   }
 
-  return { setTie, getTies };
+  return { setTie, deleteTie, getTies };
 }
 
-interface GuitarStore
+export interface GuitarStore
   extends Omit<StackStore<GuitarNote> & GuitarTabData, "getStacks" | "ties"> {
   setNote: (position: number, string: number, data: GuitarNote) => void;
   deleteNote: (position: number, string: number) => void;

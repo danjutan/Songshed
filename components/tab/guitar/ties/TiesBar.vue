@@ -7,6 +7,10 @@ import {
   TieAddInjectionKey,
   type TieAddState,
 } from "../providers/tie-add-state";
+import {
+  EditingInjectionKey,
+  type EditingState,
+} from "../providers/editing-state";
 
 const props = defineProps<{
   ties: TieStore;
@@ -19,6 +23,7 @@ const props = defineProps<{
 }>();
 
 const addState = inject(TieAddInjectionKey) as TieAddState;
+const editingState = inject(EditingInjectionKey) as EditingState;
 // Assumes ties can stretch over one divider, but not two
 
 function tieToRender(string: number, tie: Tie): TieRenderProps | undefined {
@@ -72,7 +77,11 @@ const tieRenders = computed<TieRenderProps[]>(() => {
   for (let i = 0; i < props.numStrings; i++) {
     const stringTies = [];
     const fromData = props.ties.getTies().get(i);
-    if (addState.newTie.to && addState.newTie.string === i) {
+    if (
+      addState.newTie.to &&
+      addState.newTie.string === i &&
+      addState.newTie.to !== addState.newTie.from
+    ) {
       stringTies.push(addState.newTie);
     }
     if (fromData) {
@@ -92,6 +101,17 @@ const tieRenders = computed<TieRenderProps[]>(() => {
 
   return ties;
 });
+
+const isEditing = (data: TieRenderProps) => {
+  if (editingState.editingNote) {
+    const { string, position } = editingState.editingNote;
+    return (
+      string === data.row - props.startRow &&
+      (position === data.from || position === data.to)
+    );
+  }
+  return false;
+};
 </script>
 
 <template>
@@ -99,6 +119,7 @@ const tieRenders = computed<TieRenderProps[]>(() => {
     v-for="(data, i) in tieRenders"
     :key="i"
     v-bind="data"
+    :editing="isEditing(data)"
     @update-type="
       (type) =>
         ties.setTie(data.row - startRow, data.from, {
@@ -106,6 +127,7 @@ const tieRenders = computed<TieRenderProps[]>(() => {
           to: data.to,
         })
     "
+    @delete="ties.deleteTie(data.row - startRow, data.from)"
   />
 </template>
 

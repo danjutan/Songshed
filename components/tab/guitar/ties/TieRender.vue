@@ -13,6 +13,7 @@ export type TieRenderProps = OverlayPosition & {
 
 const emit = defineEmits<{
   updateType: [type: TieType];
+  delete: [];
 }>();
 const props = defineProps<TieRenderProps>();
 
@@ -57,6 +58,7 @@ function onSelectInput(e: Event) {
         <option value="slide" :selected="type === 'slide'">S</option>
       </select>
       <div class="label">{{ labelText }}</div>
+      <div class="delete" @click="emit('delete')">&Cross;</div>
     </div>
   </div>
 </template>
@@ -126,7 +128,7 @@ function onSelectInput(e: Event) {
 
 .left .slide-box {
   justify-self: end;
-  width: calc(100% - 50% / var(--column-span) - var(--cell-height) / 2);
+  width: calc(100% - 50% / var(--column-span) - var(--cell-height) / 4);
   /*TODO: make this look better across dividers, probably with an "other half (start or end point)" prop*/
   clip-path: polygon(
     -1px calc(100% - 1px),
@@ -144,7 +146,7 @@ function onSelectInput(e: Event) {
 
 .right .slide-box {
   justify-self: start;
-  width: calc(100% - 50% / var(--column-span) - var(--cell-height) / 2);
+  width: calc(100% - 50% / var(--column-span) - var(--cell-height) / 4);
   clip-path: polygon(
     -1px calc(50% - 1px),
     100% 0%,
@@ -182,6 +184,7 @@ function onSelectInput(e: Event) {
 
 .left .tie-box {
   justify-content: end;
+  /* width: calc(100% + var(--cell-height)); */
 }
 
 .right .tie-box {
@@ -213,7 +216,7 @@ function onSelectInput(e: Event) {
 
 .right .arc-rect {
   --margin-left: calc(-100% / (2 * var(--column-span)));
-  --left-path-point: calc(-1 * var(--margin-left) + 3px);
+  --left-path-point: calc(-1 * var(--margin-left));
   --right-path-point: calc(
     var(--left-path-point) + var(--label-font-size) * 0.7
   );
@@ -245,6 +248,8 @@ function onSelectInput(e: Event) {
 .indicator {
   pointer-events: auto;
   z-index: 1;
+  display: flex;
+  align-items: start;
 
   & select,
   .label {
@@ -254,12 +259,28 @@ function onSelectInput(e: Event) {
   & select {
     display: none;
   }
+
+  & .delete {
+    font-size: calc(var(--label-font-size) * 0.8);
+    transform: translateY(-25%);
+    display: none;
+    color: maroon;
+    cursor: pointer;
+    padding: 0px 1px;
+    &:hover {
+      font-weight: bold;
+      color: darkred;
+    }
+  }
+
   &.editing,
   &:hover {
+    margin-right: calc(var(--label-font-size) * -1.6);
     & .label {
       display: none;
     }
-    & select {
+    & select,
+    .delete {
       display: block;
     }
   }
@@ -276,7 +297,7 @@ function onSelectInput(e: Event) {
 .right .indicator {
   justify-self: start;
   & .label {
-    margin-left: 4px;
+    margin-left: 1px;
   }
   /* transform: translateX(-200%) translateY(30%); */
 }
