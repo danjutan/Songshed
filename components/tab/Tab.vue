@@ -142,7 +142,6 @@ const bendRenders = computed(() => {
   if (props.data.guitar) {
     return createBendRenderState(
       props.data.guitar!.ties,
-      subUnit,
       computed(() => annotationRows.value + 2),
       computed(() => props.barsPerLine * (columnsPerBar.value + 1)),
       posToCol,
@@ -291,8 +290,7 @@ onBeforeUnmount(() => {
           v-bind="render"
           :bend-row
           @update-bend="
-            (bend) =>
-              data.guitar!.ties.setTie(render.row - notesRow, bend.from, bend)
+            (bend) => data.guitar!.ties.updateTie(render.row - notesRow, bend)
           "
           @delete="
             data.guitar!.ties.deleteTie(render.row - notesRow, render.bend.from)

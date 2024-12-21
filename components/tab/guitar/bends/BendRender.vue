@@ -130,7 +130,7 @@ function updateOnDrag(type: HoveredRow, position: number) {
 }
 
 cellHoverEvents.addHoverListener((type, position) => {
-  if (!tieAddState.dragging) {
+  if (dragging.value && !tieAddState.dragging) {
     emit("updateBend", updateOnDrag(type, position));
   }
 });

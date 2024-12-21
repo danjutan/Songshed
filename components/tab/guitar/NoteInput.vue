@@ -29,7 +29,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  noteChange: [data: Partial<GuitarNote>];
+  noteChange: [data: GuitarNote];
   noteDelete: [];
   // TODO: remove if unused
   focus: [];

@@ -6,7 +6,6 @@ import type { BendWithString } from "./tie-add-state";
 
 export function createBendRenderState(
   store: TieStore,
-  subUnit: ComputedRef<number>,
   startRow: ComputedRef<number>,
   tablineColumns: ComputedRef<number>,
   posToCol: (pos: number) => TablineColumn,

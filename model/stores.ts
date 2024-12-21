@@ -286,9 +286,11 @@ export type BendMap = Map<number, Bend[]>;
 
 export interface TieStore {
   setTie: (string: number, from: number, tie: TieData | BendData) => void;
+  updateTie: (string: number, bend: Bend) => void;
   deleteTie: (string: number, from: number) => void;
   getTies: () => TieMap;
   getBends: () => BendMap;
+  shiftFrom: (position: number, shiftBy: number) => void;
 }
 
 function createTieStore(guitarData: GuitarTabData): TieStore {
@@ -299,6 +301,11 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
       return;
     }
     stringTies.set(from, tie);
+  }
+
+  function updateTie(string: number, bend: Bend) {
+    const { from, ...bendData } = bend;
+    setTie(string, bend.from, bendData);
   }
 
   function deleteTie(string: number, from: number) {
@@ -334,7 +341,7 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
       const addBends: Bend[] = [];
       for (const [from, tie] of stringTies) {
         if (tie.type === "bend") {
-          addBends.push({ from, ...tie });
+          addBends.push({ ...tie, from });
         }
       }
       map.set(string, addBends);
@@ -342,7 +349,25 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
     return map;
   }
 
-  return { setTie, deleteTie, getTies, getBends };
+  function shiftFrom(position: number, shiftBy: number) {
+    for (const [string, ties] of guitarData.ties) {
+      const newTies = new Map<number, TieData | BendData>();
+      for (const [from, tie] of ties) {
+        if (tie.to >= position && from <= position) continue;
+        if (tie.to >= position && from >= position) {
+          newTies.set(from + shiftBy, {
+            ...tie,
+            to: tie.to + shiftBy,
+          });
+          continue;
+        }
+        newTies.set(from, tie);
+      }
+      guitarData.ties.set(string, newTies);
+    }
+  }
+
+  return { setTie, updateTie, deleteTie, getTies, getBends, shiftFrom };
 }
 
 export interface GuitarStore
@@ -412,13 +437,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
 
   function shiftFrom(position: number, shiftBy: number) {
     noteStore.shiftFrom(position, shiftBy);
-    for (const [string, ties] of guitarData.ties) {
-      const newTies = new Map<number, TieData | BendData>();
-      for (const [from, tie] of ties) {
-        newTies.set(from + shiftBy, { ...tie, to: tie.to + shiftBy });
-      }
-      guitarData.ties.set(string, newTies);
-    }
+    tieStore.shiftFrom(position, shiftBy);
   }
   return {
     ...noteStore,
