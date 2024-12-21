@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import type { PropType } from "vue";
 import type { NoteSpot, BarStore } from "../data";
-import { Spacing, smallestSpacing } from "../data";
+import { Spacing } from "../data";
 import { VisualizationStateKey } from "../providers";
 import Stack from "./Stack.vue";
-import Drape, { type DrapeData } from "./toolbar/Drape.vue";
-import ExpanderOverlay from "./toolbar/ExpanderOverlay.vue";
-import UnexpanderOverlay from "./toolbar/UnexpanderOverlay.vue";
+import Drape, { type DrapeData } from "./overlays/Drape.vue";
+import ExpanderOverlay from "./overlays/ExpanderOverlay.vue";
+import UnexpanderOverlay from "./overlays/UnexpanderOverlay.vue";
 
 export type DivisionData = {
   notchPosition: number
