@@ -54,6 +54,7 @@ export function createTieAddState(
       to.value = position;
       return;
     }
+    // TODO: use this collision logic for editing, too. also, document it. maybe we don't need a separate bende-edit-state?
     if (position < dragFrom.value) {
       for (
         let i = dragFrom.value - subUnit.value;
