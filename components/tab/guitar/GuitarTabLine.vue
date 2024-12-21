@@ -4,7 +4,7 @@ import type { Bar, TablineColumn } from "../Tab.vue";
 import GuitarBar from "./GuitarBar.vue";
 import TiesBar from "./ties/TiesBar.vue";
 import BendRender from "./bends/BendRender.vue";
-import BendDragBar from "./bends/BendDragBar.vue";
+import BendDragBar from "./overlay/Bend/BendDragBar.vue";
 import { createBendRenderState } from "./state/bend-render-state";
 import OverlaySVG from "./overlay/OverlaySVG.vue";
 import {

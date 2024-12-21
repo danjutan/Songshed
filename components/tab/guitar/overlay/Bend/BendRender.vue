@@ -228,10 +228,9 @@ const releaseArrowHover = ref(false);
 .upswing-curve,
 .downswing-curve,
 .hold-line {
-  stroke: red;
   stroke-width: 1;
+  stroke: black;
   fill: none;
-  /* vector-effect: non-scaling-stroke; */
 }
 
 .bend-label {
