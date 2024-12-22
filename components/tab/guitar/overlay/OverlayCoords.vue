@@ -11,6 +11,7 @@ import {
 const props = defineProps<{
   tablineStart: number;
   tablineLast: number;
+  positions: Array<number | undefined>;
 }>();
 
 const resizeObserver = inject(
@@ -27,8 +28,9 @@ const nextLineStart = computed(
   () => getStackCoords(getNextStackPos(props.tablineLast)!)!.left,
 );
 
-const toCoords = (position: number): StackCoords => {
-  const coords = getStackCoords(position)!;
+const toCoords = (position: number): StackCoords | undefined => {
+  const coords = getStackCoords(position);
+  if (!coords) return;
   if (position < props.tablineStart) {
     const offset = coords.left - lastLineEnd.value; // will be negative
     return withOffset(getStackCoords(props.tablineStart)!, offset);
@@ -42,5 +44,9 @@ const toCoords = (position: number): StackCoords => {
 </script>
 
 <template>
-  <slot :to-coords :resize-observer />
+  <slot
+    :coords="
+      positions.map((pos) => (pos !== undefined ? toCoords(pos) : undefined))
+    "
+  />
 </template>

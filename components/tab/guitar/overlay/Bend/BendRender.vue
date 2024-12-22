@@ -28,6 +28,10 @@ const bendEditState = inject(BendEditInjectionKey) as BendEditState;
 const settingState = inject(SettingsInjectionKey) as Settings;
 const cellHeight = computed(() => parseInt(settingState.cellHeight));
 
+const { getNextStackPos } = inject(
+  StackResizeObserverInjectionKey,
+) as StackResizeObserver;
+
 const startY = computed(() => {
   return cellHeight.value * (props.bend.string + 2);
 });
@@ -37,7 +41,7 @@ const throughPos = computed(() =>
   hasThrough.value ? props.bend.from + props.bend.through![0] : undefined,
 );
 
-const upswingTo = computed(() => throughPos.value ?? props.bend.to);
+const upswingToPos = computed(() => throughPos.value ?? props.bend.to);
 
 const isPrebend = computed(() => props.bend.from === props.bend.to);
 
@@ -68,15 +72,19 @@ const releaseArrowHover = ref(false);
 
 <template>
   <OverlayCoords
-    v-slot="{
-      toCoords: c,
-      resizeObserver: { getStackCoords, getNextStackPos },
-    }"
+    v-slot="{ coords: [from, to, upswingTo, through, afterTo] }"
+    :positions="[
+      props.bend.from,
+      props.bend.to,
+      upswingToPos,
+      throughPos,
+      getNextStackPos(props.bend.to),
+    ]"
     :tabline-start
     :tabline-last
   >
     <g
-      v-if="getStackCoords(props.bend.from) && getStackCoords(props.bend.to)"
+      v-if="from && to && upswingTo"
       :class="`bend-${bend.from}-${bend.to}-s${bend.string}`"
     >
       <marker
@@ -105,9 +113,9 @@ const releaseArrowHover = ref(false);
 
       <rect
         class="upswing-dragger"
-        :x="c(upswingTo).left"
+        :x="upswingTo.left"
         :y="0"
-        :width="c(upswingTo).right - c(upswingTo).left"
+        :width="upswingTo.right - upswingTo.left"
         :height="cellHeight * 1.5"
         opacity="0"
         @mousedown="bendEditState.start('upswing', props.bend)"
@@ -116,10 +124,10 @@ const releaseArrowHover = ref(false);
       />
 
       <foreignObject
-        v-if="!hasThrough || c(throughPos!).left <= c(tablineLast).left"
-        :x="c(upswingTo).left - 1.3 * (c(upswingTo).right - c(upswingTo).left)"
+        v-if="!through || through.left <= to.left"
+        :x="upswingTo.left - 1.3 * (upswingTo.right - upswingTo.left)"
         :y="0"
-        :width="3 * (c(upswingTo).right - c(upswingTo).left)"
+        :width="3 * (upswingTo.right - upswingTo.left)"
         :height="selectHeight"
         @mouseover="bendEditState.onLabelHover"
       >
@@ -143,26 +151,26 @@ const releaseArrowHover = ref(false);
         class="upswing-curve"
         :d="
           isPrebend
-            ? `M ${c(bend.from).center} ${startY - cellHeight * 0.85} V ${cellHeight * 0.75}`
-            : `M ${(c(bend.from).right + c(bend.from).center) / 2} ${startY - cellHeight * 0.6} 
-               Q ${c(upswingTo).center} ${startY - cellHeight * 0.55} ${c(upswingTo).center} ${cellHeight * 0.75}`
+            ? `M ${from.center} ${startY - cellHeight * 0.85} V ${cellHeight * 0.75}`
+            : `M ${(from.right + from.center) / 2} ${startY - cellHeight * 0.6} 
+               Q ${upswingTo.center} ${startY - cellHeight * 0.55} ${upswingTo.center} ${cellHeight * 0.75}`
         "
         :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
 
-      <g v-if="hasThrough">
+      <g v-if="through">
         <path
           v-if="bend.releaseType === 'connect'"
           class="downswing-curve"
-          :d="`M ${c(throughPos!).right} ${cellHeight * 0.35}
-               Q ${c(bend.to).center} ${cellHeight * 0.35} ${c(bend.to).center} ${startY - cellHeight * 0.95}`"
+          :d="`M ${through.right} ${cellHeight * 0.35}
+               Q ${to.center} ${cellHeight * 0.35} ${to.center} ${startY - cellHeight * 0.95}`"
           :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
         />
         <line
           v-else
           class="hold-line"
-          :x1="c(throughPos!).right"
-          :x2="c(bend.to).center"
+          :x1="through.right"
+          :x2="to.center"
           :y1="cellHeight * 0.35"
           :y2="cellHeight * 0.35"
           :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : undefined"
@@ -172,13 +180,13 @@ const releaseArrowHover = ref(false);
       <g v-if="!bendEditState.dragging">
         <rect
           class="release-grabber"
-          :x="hasThrough ? c(bend.to).left : c(bend.to).right"
+          :x="hasThrough ? to.left : to.right"
           :y="
             hasThrough && bend.releaseType === 'connect'
               ? startY - cellHeight * 1.5
               : 0
           "
-          :width="c(bend.to).right - c(bend.to).left"
+          :width="to.right - to.left"
           :height="cellHeight"
           opacity="0"
           @mousedown="bendEditState.start('release', props.bend)"
@@ -189,10 +197,10 @@ const releaseArrowHover = ref(false);
           @mouseleave="releaseArrowHover = false"
         />
         <line
-          v-if="!hasThrough"
-          :x1="c(bend.to).right"
+          v-if="!hasThrough && afterTo"
+          :x1="to.right"
           :y1="cellHeight * 0.35"
-          :x2="c(getNextStackPos(bend.to)!).center"
+          :x2="afterTo.center"
           :y2="cellHeight * 0.35"
           stroke="black"
           opacity="0.4"
