@@ -4,9 +4,10 @@ export function useTiePath(
   y: number,
   orientationUp: boolean = false,
 ) {
-  const curvePointY = Math.abs(x2 - x1) < 50 ? [2, 3] : [10, 11];
+  const yOffsetTop = Math.abs(x2 - x1) * 0.1;
+  const curvePointY = [yOffsetTop, yOffsetTop + 1];
 
-  const orientation = orientationUp ? 1 : -1;
+  const orientation = orientationUp ? -1 : 1;
   const topY = y + curvePointY[0] * orientation;
   const bottomY = y + curvePointY[1] * orientation;
   const curvePointX = (x2 + x1) / 2;

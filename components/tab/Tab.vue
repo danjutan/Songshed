@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
-import GuitarTabLine from "./guitar/GuitarTabLine.vue";
+import GuitarTabLine from "./guitar/tabline/GuitarTabLine.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 

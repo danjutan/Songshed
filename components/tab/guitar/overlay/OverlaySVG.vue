@@ -9,12 +9,11 @@ import {
 } from "../../state/settings-state";
 import BendRender from "./Bend/BendRender.vue";
 import TieRender from "./Tie/TieRender.vue";
-import type { Bend } from "~/model/stores";
+import type { Bend, Tie } from "~/model/stores";
 
 const props = defineProps<{
   bends: Bend[];
-  tablineStart: number;
-  tablineLast: number;
+  ties: Tie[];
 }>();
 
 // const lineStart = computed(() => resizeState.getStackCoords(0).value?.center);
@@ -26,19 +25,22 @@ const props = defineProps<{
   <svg>
     <BendRender
       v-for="bend in bends"
-      :key="`${bend.from}${bend.string}`"
+      :key="`${bend.from}-${bend.string}`"
       :bend
-      :tabline-start
-      :tabline-last
     />
-    <TieRender />
+    <TieRender
+      v-for="tie in ties"
+      :key="`${tie.from}-${tie.string}`"
+      :tie
+      :first-row="bends.length ? 2 : 1"
+    />
   </svg>
 </template>
 
 <style scoped>
 svg {
   width: 100%;
-  height: 100%;
+  height: calc(100% + var(--cell-height) / 2);
   pointer-events: none;
   z-index: 1;
 }

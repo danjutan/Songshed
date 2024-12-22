@@ -1,17 +1,16 @@
 <script lang="ts" setup>
 import type { GuitarStore } from "~/model/stores";
-import type { Bar, TablineColumn } from "../Tab.vue";
-import GuitarBar from "./GuitarBar.vue";
-import TiesBar from "./ties/TiesBar.vue";
-import BendRender from "./bends/BendRender.vue";
-import BendDragBar from "./overlay/Bend/BendDragBar.vue";
-import { createBendRenderState } from "./state/bend-render-state";
-import OverlaySVG from "./overlay/OverlaySVG.vue";
+import type { Bar, TablineColumn } from "../../Tab.vue";
+import GuitarBar from "../GuitarBar.vue";
+import BendDragBar from "../overlay/Bend/BendDragBar.vue";
+import { createBendRenderState } from "../state/bend-render-state";
+import OverlaySVG from "../overlay/OverlaySVG.vue";
 import {
   createTieAddState,
   TieAddInjectionKey,
   type TieAddState,
-} from "./state/tie-add-state";
+} from "../state/tie-add-state";
+import { provideTablineBounds } from "./provide-tabline.bounds";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -26,27 +25,27 @@ const props = defineProps<{
 
 const tieAddState = inject(TieAddInjectionKey) as TieAddState;
 
+const tablineBounds = provideTablineBounds(props);
+
 const notesRow = computed(() =>
   bendRow.value ? bendRow.value + 1 : props.startRow,
 );
 
 const numStrings = computed(() => props.guitarStore.strings);
 
-const tablineStart = computed(() => props.bars[0].start);
-const tablineLast = computed(
-  () =>
-    tablineStart.value +
-    props.bars.length * props.columnsPerBar * props.subUnit -
-    props.subUnit,
-);
-
 const inBounds = (position: number) =>
-  position >= tablineStart.value && position <= tablineLast.value;
+  position >= tablineBounds.start && position <= tablineBounds.last;
 
 const bends = computed(() => {
   const bends = props.guitarStore.ties.getBends();
   const withNew = tieAddState.newBend ? [...bends, tieAddState.newBend] : bends;
   return withNew.filter((bend) => inBounds(bend.from) || inBounds(bend.to));
+});
+
+const ties = computed(() => {
+  const ties = props.guitarStore.ties.getTies();
+  const withNew = tieAddState.newTie ? [...ties, tieAddState.newTie] : ties;
+  return withNew.filter((tie) => inBounds(tie.from) || inBounds(tie.to));
 });
 
 const bendRow = computed(() =>
@@ -93,7 +92,7 @@ const columnEnd = computed(
     /> -->
   </template>
   <ClientOnly>
-    <OverlaySVG class="overlay" :bends :tabline-start :tabline-last />
+    <OverlaySVG class="overlay" :bends :ties />
   </ClientOnly>
 </template>
 

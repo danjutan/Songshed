@@ -1,43 +1,51 @@
 <script lang="ts" setup>
 import {
+  SettingsInjectionKey,
+  type Settings,
+} from "../../state/settings-state";
+import {
   StackResizeObserverInjectionKey,
   type StackResizeObserver,
   withOffset,
   type StackCoords,
 } from "../../state/stack-resize-observer";
+import { injectTablineBounds } from "../tabline/provide-tabline.bounds";
 
 // There's an argument for this being a hook instead of a component. I liked the ergonomics of being able to do the positioning within the template, and I didn't like the idea of inject() outside of a component.
 
 const props = defineProps<{
-  tablineStart: number;
-  tablineLast: number;
   positions: Array<number | undefined>;
 }>();
+
+const bounds = injectTablineBounds();
 
 const resizeObserver = inject(
   StackResizeObserverInjectionKey,
 ) as StackResizeObserver;
 
+const settingState = inject(SettingsInjectionKey) as Settings;
+const cellHeight = computed(() => parseInt(settingState.cellHeight));
+
 const { getStackCoords, getPreviousStackPos, getNextStackPos } = resizeObserver;
 
 const lastLineEnd = computed(
-  () => getStackCoords(getPreviousStackPos(props.tablineStart)!)!.right,
+  () => getStackCoords(getPreviousStackPos(bounds.start)!)!.right,
 );
 
 const nextLineStart = computed(
-  () => getStackCoords(getNextStackPos(props.tablineLast)!)!.left,
+  () => getStackCoords(getNextStackPos(bounds.last)!)!.left,
 );
 
 const toCoords = (position: number): StackCoords | undefined => {
   const coords = getStackCoords(position);
   if (!coords) return;
-  if (position < props.tablineStart) {
+  if (position < bounds.start) {
     const offset = coords.left - lastLineEnd.value; // will be negative
-    return withOffset(getStackCoords(props.tablineStart)!, offset);
+    return withOffset(getStackCoords(bounds.start)!, offset);
   }
-  if (position > props.tablineLast) {
+  if (position > bounds.last) {
     const offset = coords.right - nextLineStart.value; // will be positive;
-    return withOffset(getStackCoords(props.tablineLast)!, offset);
+    return withOffset(getStackCoords(bounds.last)!, offset);
   }
   return coords;
 };
@@ -48,5 +56,6 @@ const toCoords = (position: number): StackCoords | undefined => {
     :coords="
       positions.map((pos) => (pos !== undefined ? toCoords(pos) : undefined))
     "
+    :cell-height
   />
 </template>

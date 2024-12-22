@@ -18,23 +18,16 @@ import OverlayCoords from "../OverlayCoords.vue";
 
 export interface BendRenderProps {
   bend: Bend;
-  tablineStart: number;
-  tablineLast: number;
 }
 
 const props = defineProps<BendRenderProps>();
 const bendEditState = inject(BendEditInjectionKey) as BendEditState;
 
-const settingState = inject(SettingsInjectionKey) as Settings;
-const cellHeight = computed(() => parseInt(settingState.cellHeight));
-
 const { getNextStackPos } = inject(
   StackResizeObserverInjectionKey,
 ) as StackResizeObserver;
 
-const startY = computed(() => {
-  return cellHeight.value * (props.bend.string + 2);
-});
+const startRow = computed(() => props.bend.string + 2);
 
 const hasThrough = computed(() => !!props.bend.through?.length);
 const throughPos = computed(() =>
@@ -72,7 +65,7 @@ const releaseArrowHover = ref(false);
 
 <template>
   <OverlayCoords
-    v-slot="{ coords: [from, to, upswingTo, through, afterTo] }"
+    v-slot="{ coords: [from, to, upswingTo, through, afterTo], cellHeight }"
     :positions="[
       props.bend.from,
       props.bend.to,
@@ -80,8 +73,6 @@ const releaseArrowHover = ref(false);
       throughPos,
       getNextStackPos(props.bend.to),
     ]"
-    :tabline-start
-    :tabline-last
   >
     <g
       v-if="from && to && upswingTo"
@@ -151,9 +142,9 @@ const releaseArrowHover = ref(false);
         class="upswing-curve"
         :d="
           isPrebend
-            ? `M ${from.center} ${startY - cellHeight * 0.85} V ${cellHeight * 0.75}`
-            : `M ${(from.right + from.center) / 2} ${startY - cellHeight * 0.6} 
-               Q ${upswingTo.center} ${startY - cellHeight * 0.55} ${upswingTo.center} ${cellHeight * 0.75}`
+            ? `M ${from.center} ${(startRow - 0.85) * cellHeight} V ${cellHeight * 0.75}`
+            : `M ${(from.right + from.center) / 2} ${(startRow - 0.6) * cellHeight} 
+               Q ${upswingTo.center} ${(startRow - 0.55) * cellHeight} ${upswingTo.center} ${cellHeight * 0.75}`
         "
         :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
@@ -163,7 +154,7 @@ const releaseArrowHover = ref(false);
           v-if="bend.releaseType === 'connect'"
           class="downswing-curve"
           :d="`M ${through.right} ${cellHeight * 0.35}
-               Q ${to.center} ${cellHeight * 0.35} ${to.center} ${startY - cellHeight * 0.95}`"
+               Q ${to.center} ${cellHeight * 0.35} ${to.center} ${(startRow - 0.95) * cellHeight}`"
           :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
         />
         <line
@@ -183,7 +174,7 @@ const releaseArrowHover = ref(false);
           :x="hasThrough ? to.left : to.right"
           :y="
             hasThrough && bend.releaseType === 'connect'
-              ? startY - cellHeight * 1.5
+              ? (startRow - 1.5) * cellHeight
               : 0
           "
           :width="to.right - to.left"
