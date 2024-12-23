@@ -1,41 +1,26 @@
 <script setup lang="ts">
 import type { GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
-import GuitarTabLine from "./guitar/tabline/GuitarTabLine.vue";
+import GuitarTabLine from "./guitar/GuitarTabLine.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 
-import {
-  createSelectionState,
-  SelectionInjectionKey,
-} from "./state/selection-state";
+import { provideSelectionState } from "./state/provide-selection-state";
 
-import { createAnnotationAddState } from "./state/annotation-add-state";
-import { createAnnotationRenderState } from "./state/annotation-render-state";
-import { createEditingState, EditingInjectionKey } from "./state/editing-state";
-import {
-  CellHoverInjectionKey,
-  createCellHoverEvents,
-} from "./state/cell-hover-events";
-import {
-  createTieAddState,
-  TieAddInjectionKey,
-} from "./guitar/state/tie-add-state";
-import {
-  BendEditInjectionKey,
-  createBendEditState,
-} from "./guitar/state/bend-edit-state";
-import {
-  createStackResizeObserver,
-  StackResizeObserverInjectionKey,
-} from "./state/stack-resize-observer";
-import { SettingsInjectionKey, type Settings } from "./state/settings-state";
+import { createAnnotationAddState } from "./annotations/state/annotation-add-state";
+import { createAnnotationRenderState } from "./annotations/state/annotation-render-state";
+import { provideEditingState } from "./state/provide-editing-state";
+import { provideCellHoverEvents } from "./events/provide-cell-hover-events";
+import { provideTieAddState } from "./guitar/overlay/state/provide-tie-add-state";
+import { provideBendEditState } from "./guitar/overlay/state/provide-bend-edit-state";
+import { provideStackResizeObserver } from "./events/provide-resize-observer";
+import { injectSettingsState } from "./state/provide-settings-state";
 
 const props = defineProps<{
   tabStore: TabStore;
 }>();
 
-const settings = inject(SettingsInjectionKey) as Settings;
+const settings = injectSettingsState();
 const cellHeight = computed(() => settings.cellHeight);
 const barSize = computed(
   () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
@@ -46,29 +31,23 @@ const subUnit = computed(() => props.tabStore.beatSize / settings.subdivisions);
 const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
 const newBarStart = ref(0);
 
-const cellHoverEvents = createCellHoverEvents();
-provide(CellHoverInjectionKey, cellHoverEvents);
-const selectionState = createSelectionState(cellHoverEvents);
-provide(SelectionInjectionKey, selectionState);
-const editingState = createEditingState();
-provide(EditingInjectionKey, editingState);
+const cellHoverEvents = provideCellHoverEvents();
+const selectionState = provideSelectionState(cellHoverEvents);
+const editingState = provideEditingState();
 
-const resizeState = createStackResizeObserver();
-provide(StackResizeObserverInjectionKey, resizeState);
+provideStackResizeObserver();
 
-const tieAddState = createTieAddState(
+const tieAddState = provideTieAddState(
   cellHoverEvents,
   computed(() => props.tabStore.guitar),
   computed(() => subUnit.value),
 );
-provide(TieAddInjectionKey, tieAddState);
 
-const bendEditState = createBendEditState(
+provideBendEditState(
   cellHoverEvents,
   tieAddState,
   computed(() => props.tabStore.guitar?.ties),
 );
-provide(BendEditInjectionKey, bendEditState);
 
 export type Bar = {
   start: number;

@@ -2,8 +2,8 @@
 import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
 import Strings from "./Strings.vue";
 import Stack from "./Stack.vue";
-import { SettingsInjectionKey, type Settings } from "../state/settings-state";
-import { EditingInjectionKey, type EditingState } from "../state/editing-state";
+import { injectSettingsState } from "@/components/tab/state/provide-settings-state";
+import { injectEditingState } from "../../state/provide-editing-state";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
@@ -21,8 +21,8 @@ const emit = defineEmits<{
   noteChange: [position: number, string: number, note: GuitarNote];
 }>();
 
-const settings = inject(SettingsInjectionKey) as Settings;
-const editing = inject(EditingInjectionKey) as EditingState;
+const settings = injectSettingsState();
+const editing = injectEditingState();
 
 const isSubdivision = (position: number) => position % props.beatSize !== 0;
 

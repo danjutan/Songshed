@@ -1,8 +1,5 @@
 <script lang="ts" setup>
-import {
-  CellHoverInjectionKey,
-  type CellHoverEvents,
-} from "../../../state/cell-hover-events";
+import { injectCellHoverEvents } from "../../../events/provide-cell-hover-events";
 
 const props = defineProps<{
   // startRow: number;
@@ -11,7 +8,7 @@ const props = defineProps<{
   barPositions: number[];
 }>();
 
-const cellHoverState = inject(CellHoverInjectionKey) as CellHoverEvents;
+const cellHoverState = injectCellHoverEvents();
 </script>
 
 <template>

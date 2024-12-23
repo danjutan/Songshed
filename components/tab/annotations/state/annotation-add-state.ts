@@ -1,5 +1,5 @@
 import type { AnnotationStore } from "~/model/stores";
-import type { CellHoverEvents } from "./cell-hover-events";
+import type { CellHoverEvents } from "../../events/provide-cell-hover-events";
 
 export interface NewAnnotation {
   row?: number;

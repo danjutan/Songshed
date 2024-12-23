@@ -3,18 +3,14 @@ import type { TabStore } from "~/model/stores";
 import Toolbar from "./tab/toolbar/Toolbar.vue";
 import Tab from "./tab/Tab.vue";
 import ChordGroup from "./chords/ChordGroup.vue";
-import {
-  createSettingsState,
-  SettingsInjectionKey,
-} from "./tab/state/settings-state";
+import { provideSettingsState } from "./tab/state/provide-settings-state";
 
 const props = defineProps<{
   tabStore: TabStore;
   id: string;
 }>();
 
-const settings = createSettingsState();
-provide(SettingsInjectionKey, settings);
+const settings = provideSettingsState();
 
 async function save(saveId: string) {
   if (props.tabStore && saveId) {

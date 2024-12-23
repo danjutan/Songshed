@@ -1,6 +1,5 @@
 <script lang="ts" setup>
-import type { TabStore } from "~/model/stores";
-import { SettingsInjectionKey, type Settings } from "../state/settings-state";
+import { injectSettingsState } from "../state/provide-settings-state";
 
 const props = defineProps<{
   id: string;
@@ -27,7 +26,7 @@ function onBeatSizeSelect(event: Event) {
   beatSize.value = spacingValues[beatSizeNumbers.indexOf(number)];
 }
 
-const settings = inject(SettingsInjectionKey) as Settings;
+const settings = injectSettingsState();
 
 const saveId = ref(props.id);
 </script>

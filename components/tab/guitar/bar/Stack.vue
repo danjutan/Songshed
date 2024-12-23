@@ -1,20 +1,10 @@
 <script lang="ts" setup>
 import type { GuitarNote, NoteStack } from "~/model/data";
 import NoteInput from "./NoteInput.vue";
-import {
-  SelectionInjectionKey,
-  type SelectionState,
-} from "../state/selection-state";
-import {
-  TieAddInjectionKey,
-  type TieAddState,
-} from "../guitar/state/tie-add-state";
-import { EditingInjectionKey, type EditingState } from "../state/editing-state";
-import { useTemplateRef } from "vue";
-import {
-  StackResizeObserverInjectionKey,
-  type StackResizeObserver,
-} from "../state/stack-resize-observer";
+import { injectTieAddState } from "../overlay/state/provide-tie-add-state";
+import { injectSelectionState } from "../../state/provide-selection-state";
+import { injectEditingState } from "../../state/provide-editing-state";
+import { injectStackResizeObserver } from "../../events/provide-resize-observer";
 
 const props = withDefaults(
   defineProps<{
@@ -32,12 +22,11 @@ const emit = defineEmits<{
   noteChange: [string: number, note: GuitarNote];
 }>();
 
-const selecting = inject(SelectionInjectionKey) as SelectionState;
-const editing = inject(EditingInjectionKey) as EditingState;
-const tieAdd = inject(TieAddInjectionKey) as TieAddState;
-const resizeState = inject(
-  StackResizeObserverInjectionKey,
-) as StackResizeObserver;
+const selecting = injectSelectionState();
+const editing = injectEditingState();
+const tieAdd = injectTieAddState();
+
+const resizeState = injectStackResizeObserver();
 
 const noteSpots = computed(() => {
   const noteSpots = new Array<GuitarNote | undefined>(props.tuning.length);

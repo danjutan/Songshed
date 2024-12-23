@@ -1,15 +1,11 @@
 <script lang="ts" setup>
+import { injectSettingsState } from "../../state/provide-settings-state";
 import {
-  SettingsInjectionKey,
-  type Settings,
-} from "../../state/settings-state";
-import {
-  StackResizeObserverInjectionKey,
-  type StackResizeObserver,
   withOffset,
   type StackCoords,
-} from "../../state/stack-resize-observer";
-import { injectTablineBounds } from "../tabline/provide-tabline.bounds";
+  injectStackResizeObserver,
+} from "../../events/provide-resize-observer";
+import { injectTablineBounds } from "../provide-tabline-bounds";
 
 // There's an argument for this being a hook instead of a component. I liked the ergonomics of being able to do the positioning within the template, and I didn't like the idea of inject() outside of a component.
 
@@ -19,11 +15,9 @@ const props = defineProps<{
 
 const bounds = injectTablineBounds();
 
-const resizeObserver = inject(
-  StackResizeObserverInjectionKey,
-) as StackResizeObserver;
+const resizeObserver = injectStackResizeObserver();
+const settingState = injectSettingsState();
 
-const settingState = inject(SettingsInjectionKey) as Settings;
 const cellHeight = computed(() => parseInt(settingState.cellHeight));
 
 const { getStackCoords, getPreviousStackPos, getNextStackPos } = resizeObserver;

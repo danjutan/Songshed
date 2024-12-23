@@ -1,14 +1,6 @@
 <script lang="ts" setup>
-import {
-  StackResizeObserverInjectionKey,
-  type StackResizeObserver,
-} from "../../state/stack-resize-observer";
-import {
-  SettingsInjectionKey,
-  type Settings,
-} from "../../state/settings-state";
-import BendRender from "./Bend/BendRender.vue";
-import TieRender from "./Tie/TieRender.vue";
+import BendRender from "./bend/BendRender.vue";
+import TieRender from "./tie/TieRender.vue";
 import type { Bend, Tie } from "~/model/stores";
 
 const props = defineProps<{

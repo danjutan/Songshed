@@ -22,7 +22,7 @@ export function withOffset(coords: StackCoords, offset: number): StackCoords {
   };
 }
 
-export function createStackResizeObserver(): StackResizeObserver {
+function createStackResizeObserver(): StackResizeObserver {
   interface Stack {
     x: StackCoords; //reactive computed
     prev?: number;
@@ -115,5 +115,15 @@ export function createStackResizeObserver(): StackResizeObserver {
   };
 }
 
-export const StackResizeObserverInjectionKey =
+const StackResizeObserverInjectionKey =
   Symbol() as InjectionKey<StackResizeObserver>;
+
+export function provideStackResizeObserver() {
+  const stackResizeObserver = createStackResizeObserver();
+  provide(StackResizeObserverInjectionKey, stackResizeObserver);
+  return stackResizeObserver;
+}
+
+export function injectStackResizeObserver() {
+  return inject(StackResizeObserverInjectionKey) as StackResizeObserver;
+}

@@ -1,19 +1,10 @@
 <script lang="ts" setup>
 import type { Bend } from "~/model/stores";
-import {
-  type StackCoords,
-  StackResizeObserverInjectionKey,
-  type StackResizeObserver,
-  withOffset,
-} from "../../../state/stack-resize-observer";
-import {
-  SettingsInjectionKey,
-  type Settings,
-} from "../../../state/settings-state";
+import { injectStackResizeObserver } from "@/components/tab/events/provide-resize-observer";
 import {
   BendEditInjectionKey,
   type BendEditState,
-} from "../../state/bend-edit-state";
+} from "../state/provide-bend-edit-state";
 import OverlayCoords from "../OverlayCoords.vue";
 
 export interface BendRenderProps {
@@ -23,9 +14,7 @@ export interface BendRenderProps {
 const props = defineProps<BendRenderProps>();
 const bendEditState = inject(BendEditInjectionKey) as BendEditState;
 
-const { getNextStackPos } = inject(
-  StackResizeObserverInjectionKey,
-) as StackResizeObserver;
+const { getNextStackPos } = injectStackResizeObserver();
 
 const startRow = computed(() => props.bend.string + 2);
 

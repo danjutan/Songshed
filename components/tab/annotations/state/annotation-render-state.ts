@@ -1,8 +1,8 @@
 import type { AnnotationStore } from "~/model/stores";
-import type { TablineColumn } from "../Tab.vue";
+import type { TablineColumn } from "@/components/tab/Tab.vue";
 import type { NewAnnotation } from "./annotation-add-state";
-import type { OverlayPosition } from "../overlay-objects";
 import type { Annotation } from "~/model/data";
+import type { AnnotationRenderProps } from "../AnnotationRender.vue";
 
 export function createAnnotationRenderState(
   store: AnnotationStore,
@@ -13,11 +13,7 @@ export function createAnnotationRenderState(
   return computed(() => {
     const annotationRenders: Map<
       number, // tabline index
-      Array<
-        OverlayPosition & {
-          annotation: Annotation | undefined;
-        }
-      >
+      Array<AnnotationRenderProps>
     > = new Map();
 
     function push(

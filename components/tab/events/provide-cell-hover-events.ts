@@ -1,7 +1,9 @@
 export type HoveredRow = number | "bend" | "annotation";
+
 type HoverListener = (row: HoveredRow, position: number) => void;
 type ReleaseListener = () => void;
-export function createCellHoverEvents() {
+
+function createCellHoverEvents() {
   // const hoveredCell = ref<
   //   | {
   //       string: number | "bend";
@@ -54,4 +56,14 @@ export function createCellHoverEvents() {
 
 export type CellHoverEvents = ReturnType<typeof createCellHoverEvents>;
 
-export const CellHoverInjectionKey = Symbol() as InjectionKey<CellHoverEvents>;
+const CellHoverInjectionKey = Symbol() as InjectionKey<CellHoverEvents>;
+
+export function provideCellHoverEvents() {
+  const cellHoverEvents = createCellHoverEvents();
+  provide(CellHoverInjectionKey, cellHoverEvents);
+  return cellHoverEvents;
+}
+
+export function injectCellHoverEvents() {
+  return inject(CellHoverInjectionKey) as CellHoverEvents;
+}

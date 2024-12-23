@@ -1,5 +1,5 @@
 import type { Reactive } from "vue";
-import type { Bar } from "../../Tab.vue";
+import type { Bar } from "@/components/tab/Tab.vue";
 
 export interface TablineBounds {
   start: number;

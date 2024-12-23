@@ -1,16 +1,11 @@
 <script lang="ts" setup>
 import type { GuitarStore } from "~/model/stores";
-import type { Bar, TablineColumn } from "../../Tab.vue";
-import GuitarBar from "../GuitarBar.vue";
-import BendDragBar from "../overlay/Bend/BendDragBar.vue";
-import { createBendRenderState } from "../state/bend-render-state";
-import OverlaySVG from "../overlay/OverlaySVG.vue";
-import {
-  createTieAddState,
-  TieAddInjectionKey,
-  type TieAddState,
-} from "../state/tie-add-state";
-import { provideTablineBounds } from "./provide-tabline.bounds";
+import type { Bar, TablineColumn } from "@/components/tab/Tab.vue";
+import GuitarBar from "./bar/GuitarBar.vue";
+import BendDragBar from "./overlay/bend/BendDragBar.vue";
+import OverlaySVG from "./overlay/OverlaySVG.vue";
+import { injectTieAddState } from "./overlay/state/provide-tie-add-state";
+import { provideTablineBounds } from "./provide-tabline-bounds";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -23,7 +18,7 @@ const props = defineProps<{
   subUnit: number;
 }>();
 
-const tieAddState = inject(TieAddInjectionKey) as TieAddState;
+const tieAddState = injectTieAddState();
 
 const tablineBounds = provideTablineBounds(props);
 

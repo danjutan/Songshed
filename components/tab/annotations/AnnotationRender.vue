@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import type { Annotation } from "~/model/data";
-import type { OverlayPosition } from "../overlay-objects";
 import { useTemplateRef } from "vue";
 
-const props = defineProps<
-  OverlayPosition & {
-    annotation?: Annotation;
-  }
->();
+export interface AnnotationRenderProps {
+  row: number;
+  startColumn: number;
+  endColumn: number;
+  annotation?: Annotation;
+}
+
+const props = defineProps<AnnotationRenderProps>();
 
 const emit = defineEmits<{
   updateTitle: [string];

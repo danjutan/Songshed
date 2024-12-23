@@ -3,10 +3,10 @@ import type { Bend, GuitarStore, Tie, TieStore } from "~/model/stores";
 import type {
   CellHoverEvents,
   HoveredRow,
-} from "../../state/cell-hover-events";
+} from "../../../events/provide-cell-hover-events";
 import type { TieType } from "~/model/data";
 
-export function createTieAddState(
+export function provideTieAddState(
   cellHoverEvents: CellHoverEvents,
   store: ComputedRef<GuitarStore | undefined>,
   subUnit: ComputedRef<number>,
@@ -111,7 +111,7 @@ export function createTieAddState(
     dragFrom.value = undefined;
   }
 
-  return reactive({
+  const tieAddState = reactive({
     get dragging() {
       return dragFrom.value !== undefined;
     },
@@ -146,8 +146,16 @@ export function createTieAddState(
     drag,
     end,
   });
+
+  provide(TieAddInjectionKey, tieAddState);
+
+  return tieAddState;
 }
 
-export type TieAddState = ReturnType<typeof createTieAddState>;
+type TieAddState = ReturnType<typeof provideTieAddState>;
 
-export const TieAddInjectionKey = Symbol() as InjectionKey<TieAddState>;
+const TieAddInjectionKey = Symbol() as InjectionKey<TieAddState>;
+
+export function injectTieAddState() {
+  return inject(TieAddInjectionKey) as TieAddState;
+}

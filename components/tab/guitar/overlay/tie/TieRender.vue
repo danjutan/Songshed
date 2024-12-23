@@ -1,10 +1,6 @@
 <script lang="ts" setup>
 import type { Tie } from "~/model/stores";
 import { useTiePath } from "./use-tie-path";
-import {
-  SettingsInjectionKey,
-  type Settings,
-} from "~/components/tab/state/settings-state";
 import OverlayCoords from "../OverlayCoords.vue";
 
 const props = withDefaults(defineProps<{ tie: Tie; firstRow: number }>(), {

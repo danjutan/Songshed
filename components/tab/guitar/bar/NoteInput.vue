@@ -1,16 +1,9 @@
 <script lang="ts" setup>
 import type { GuitarNote } from "~/model/data";
-import {
-  SelectionInjectionKey,
-  type SelectionState,
-} from "../state/selection-state";
-import { TieAddInjectionKey, type TieAddState } from "./state/tie-add-state";
-import { EditingInjectionKey, type EditingState } from "../state/editing-state";
-import {
-  CellHoverInjectionKey,
-  type CellHoverEvents,
-} from "../state/cell-hover-events";
+
 import { useTemplateRef } from "vue";
+import { injectEditingState } from "../../state/provide-editing-state";
+import { injectCellHoverEvents } from "../../events/provide-cell-hover-events";
 
 const props = withDefaults(
   defineProps<{
@@ -37,8 +30,8 @@ const emit = defineEmits<{
   blur: [];
 }>();
 
-const { editingNote, setEditing } = inject(EditingInjectionKey) as EditingState;
-const { hover } = inject(CellHoverInjectionKey) as CellHoverEvents;
+const { editingNote, setEditing } = injectEditingState();
+const { hover } = injectCellHoverEvents();
 
 const input = useTemplateRef("input");
 

@@ -2,11 +2,12 @@ import type { Bend, TieStore } from "~/model/stores";
 import type {
   CellHoverEvents,
   HoveredRow,
-} from "../../state/cell-hover-events";
-import type { TieAddState } from "./tie-add-state";
+} from "../../../events/provide-cell-hover-events";
+import type { TieAddState } from "./provide-tie-add-state";
 
 type StartType = "upswing" | "release";
-export function createBendEditState(
+
+export function provideBendEditState(
   cellHoverEvents: CellHoverEvents,
   tieAddState: TieAddState,
   tieStore: ComputedRef<TieStore | undefined>,
@@ -89,7 +90,7 @@ export function createBendEditState(
     tieStore.value!.updateBend({ ...bend, bend: value });
   }
 
-  return {
+  const bendEditState = {
     start,
     onLabelHover,
     deleteBend,
@@ -99,8 +100,12 @@ export function createBendEditState(
       return dragging.value !== undefined;
     },
   };
+
+  provide(BendEditInjectionKey, bendEditState);
+
+  return bendEditState;
 }
 
-export type BendEditState = ReturnType<typeof createBendEditState>;
+export type BendEditState = ReturnType<typeof provideBendEditState>;
 
 export const BendEditInjectionKey = Symbol() as InjectionKey<BendEditState>;

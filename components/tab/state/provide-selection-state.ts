@@ -1,4 +1,4 @@
-import type { CellHoverEvents } from "./cell-hover-events";
+import type { CellHoverEvents } from "../events/provide-cell-hover-events";
 
 export interface SelectionState {
   selectedRange?: { start: number; end: number };
@@ -10,8 +10,8 @@ export interface SelectionState {
   dragging: boolean;
 }
 
-export function createSelectionState(
-  cellHoverState: CellHoverEvents,
+export function provideSelectionState(
+  cellHoverEvents: CellHoverEvents,
 ): SelectionState {
   const startPosition = ref<number | undefined>();
   const endPosition = ref<number | undefined>();
@@ -26,8 +26,8 @@ export function createSelectionState(
     };
   };
 
-  cellHoverState.addHoverListener((string, position) => drag(position));
-  cellHoverState.addMouseUpListener(end);
+  cellHoverEvents.addHoverListener((string, position) => drag(position));
+  cellHoverEvents.addMouseUpListener(end);
 
   function start(position: number, end?: number) {
     dragging.value = true;
@@ -58,7 +58,7 @@ export function createSelectionState(
     return range.start <= position && position <= range.end;
   }
 
-  return {
+  const selectionState = {
     get selectedRange() {
       return selectedRange();
     },
@@ -71,6 +71,13 @@ export function createSelectionState(
     end,
     isSelected,
   };
+
+  provide(SelectionInjectionKey, selectionState);
+  return selectionState;
 }
 
-export const SelectionInjectionKey = Symbol() as InjectionKey<SelectionState>;
+export function injectSelectionState() {
+  return inject(SelectionInjectionKey) as SelectionState;
+}
+
+const SelectionInjectionKey = Symbol() as InjectionKey<SelectionState>;

@@ -4,7 +4,9 @@ export interface EditingState {
   blurEditing: () => void;
 }
 
-export function createEditingState(): EditingState {
+const EditingInjectionKey = Symbol() as InjectionKey<EditingState>;
+
+export function provideEditingState(): EditingState {
   const editingNote = reactive<{ string?: number; position?: number }>({});
 
   function setEditing(string: number, position: number) {
@@ -16,11 +18,17 @@ export function createEditingState(): EditingState {
     editingNote.string = undefined;
     editingNote.position = undefined;
   }
-  return {
+  const editingState = {
     editingNote,
     setEditing,
     blurEditing,
   };
+
+  provide(EditingInjectionKey, editingState);
+
+  return editingState;
 }
 
-export const EditingInjectionKey = Symbol() as InjectionKey<EditingState>;
+export function injectEditingState() {
+  return inject(EditingInjectionKey) as EditingState;
+}
