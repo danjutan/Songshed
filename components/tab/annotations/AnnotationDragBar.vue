@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { AnnotationAddState } from "./state/annotation-add-state";
-import { injectCellHoverEvents } from "../events/provide-cell-hover-events";
+import { injectCellHoverEvents } from "../providers/events/provide-cell-hover-events";
 
 const props = defineProps<{
   // startRow: number;

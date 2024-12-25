@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { injectSettingsState } from "../state/provide-settings-state";
+import { injectSettingsState } from "../providers/state/provide-settings-state";
 
 const props = defineProps<{
   id: string;

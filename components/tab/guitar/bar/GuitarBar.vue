@@ -2,8 +2,8 @@
 import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
 import Strings from "./Strings.vue";
 import Stack from "./Stack.vue";
-import { injectSettingsState } from "@/components/tab/state/provide-settings-state";
-import { injectEditingState } from "../../state/provide-editing-state";
+import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
+import { injectEditingState } from "../../providers/state/provide-editing-state";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;

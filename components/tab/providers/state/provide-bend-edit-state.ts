@@ -2,18 +2,22 @@ import type { Bend, TieStore } from "~/model/stores";
 import type {
   CellHoverEvents,
   HoveredRow,
-} from "../../../events/provide-cell-hover-events";
+} from "../events/provide-cell-hover-events";
 import type { TieAddState } from "./provide-tie-add-state";
 
 type StartType = "upswing" | "release";
 
 export function provideBendEditState(
-  cellHoverEvents: CellHoverEvents,
-  tieAddState: TieAddState,
-  tieStore: ComputedRef<TieStore | undefined>,
+  props: ReactiveComputed<{
+    cellHoverEvents: CellHoverEvents;
+    tieAddState: TieAddState;
+    tieStore: TieStore | undefined;
+  }>,
 ) {
   const dragging = ref<StartType | undefined>();
   const draggingBend = ref<Bend | undefined>();
+
+  const { cellHoverEvents, tieAddState } = props;
 
   function start(startType: StartType, editing: Bend) {
     dragging.value = startType;
@@ -53,7 +57,7 @@ export function provideBendEditState(
   cellHoverEvents.addHoverListener((type, position) => {
     if (dragging.value && !tieAddState.dragging) {
       const updated = updateOnDrag(type, position);
-      tieStore.value!.updateBend(updated);
+      props.tieStore!.updateBend(updated);
       // emit("updateBend", updated);
     }
   });
@@ -67,13 +71,13 @@ export function provideBendEditState(
       const bend = { ...draggingBend.value! };
       bend.to = bend.through![0] + bend.from;
       bend.through = undefined;
-      tieStore.value!.updateBend(bend);
+      props.tieStore!.updateBend(bend);
     }
   }
 
   function onReleaseGrabberClick(grabberPosition: number) {
     if (!draggingBend.value?.through?.length) {
-      tieStore.value!.updateBend({
+      props.tieStore!.updateBend({
         ...draggingBend.value!,
         through: [draggingBend.value!.to - draggingBend.value!.from!],
         to: grabberPosition,
@@ -83,11 +87,11 @@ export function provideBendEditState(
   }
 
   function deleteBend(bend: Bend) {
-    tieStore.value!.deleteTie(bend.string, bend.from);
+    props.tieStore!.deleteTie(bend.string, bend.from);
   }
 
   function setBendValue(bend: Bend, value: number) {
-    tieStore.value!.updateBend({ ...bend, bend: value });
+    props.tieStore!.updateBend({ ...bend, bend: value });
   }
 
   const bendEditState = {

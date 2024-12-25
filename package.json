@@ -16,7 +16,8 @@
     "nuxi": "^3.10.1",
     "tonal": "^6.0.0",
     "vue": "^3.5.13",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "vue3-select-component": "^0.7.0"
   },
   "devDependencies": {
     "@nuxt/eslint": "^0.3.13",

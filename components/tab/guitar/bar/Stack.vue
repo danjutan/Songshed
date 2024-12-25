@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import type { GuitarNote, NoteStack } from "~/model/data";
 import NoteInput from "./NoteInput.vue";
-import { injectTieAddState } from "../overlay/state/provide-tie-add-state";
-import { injectSelectionState } from "../../state/provide-selection-state";
-import { injectEditingState } from "../../state/provide-editing-state";
-import { injectStackResizeObserver } from "../../events/provide-resize-observer";
+import { injectTieAddState } from "../../providers/state/provide-tie-add-state";
+import { injectSelectionState } from "../../providers/state/provide-selection-state";
+import { injectEditingState } from "../../providers/state/provide-editing-state";
+import { injectStackResizeObserver } from "../../providers/events/provide-resize-observer";
 
 const props = withDefaults(
   defineProps<{

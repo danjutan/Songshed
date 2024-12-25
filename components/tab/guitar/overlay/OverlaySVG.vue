@@ -34,6 +34,6 @@ svg {
   width: 100%;
   height: calc(100% + var(--cell-height) / 2);
   pointer-events: none;
-  z-index: 1;
+  /* z-index: 1; */
 }
 </style>

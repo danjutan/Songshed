@@ -1,16 +1,19 @@
 import type { AnnotationStore } from "~/model/stores";
-import type { TablineColumn } from "@/components/tab/Tab.vue";
 import type { NewAnnotation } from "./annotation-add-state";
 import type { Annotation } from "~/model/data";
 import type { AnnotationRenderProps } from "../AnnotationRender.vue";
+import { type ColumnsMap } from "../../providers/provide-columns-map";
 
 export function createAnnotationRenderState(
-  store: AnnotationStore,
-  subUnit: ComputedRef<number>,
-  posToCol: (pos: number) => TablineColumn,
-  newAnnotation: NewAnnotation,
+  props: ReactiveComputed<{
+    store: AnnotationStore;
+    subUnit: number;
+    newAnnotation: NewAnnotation;
+    columnsMap: ColumnsMap;
+  }>,
 ) {
   return computed(() => {
+    const { store, subUnit, newAnnotation, columnsMap } = props;
     const annotationRenders: Map<
       number, // tabline index
       Array<AnnotationRenderProps>
@@ -24,7 +27,13 @@ export function createAnnotationRenderState(
       annotation?: Annotation,
     ) {
       const atTabline = annotationRenders.get(tablineIndex) || [];
-      atTabline.push({ row, startColumn, endColumn, annotation });
+      const columnSpan = endColumn - startColumn;
+      atTabline.push({
+        row,
+        startColumn,
+        columnSpan,
+        annotation,
+      });
       annotationRenders.set(tablineIndex, atTabline);
     }
 
@@ -33,8 +42,8 @@ export function createAnnotationRenderState(
       const annotations = store.getAnnotations(rowIndex);
       const row = annotationRows - rowIndex;
       for (const annotation of annotations) {
-        const start = posToCol(annotation.start);
-        const end = posToCol(annotation.end);
+        const start = columnsMap[annotation.start];
+        const end = columnsMap[annotation.end];
         if (start.tabline !== end.tabline) {
           push(
             start.tabline,
@@ -43,7 +52,9 @@ export function createAnnotationRenderState(
             start.tablineColumns,
             annotation,
           );
-          push(end.tabline, row, 2, end.column, annotation);
+          if (end.column > 2) {
+            push(end.tabline, row, 2, end.column, annotation);
+          }
           continue;
         }
         push(start.tabline, row, start.column, end.column, annotation);
@@ -54,13 +65,13 @@ export function createAnnotationRenderState(
       const row = annotationRows - newAnnotation.row!;
       const start = newAnnotation.startPos;
       const end = newAnnotation.endPos ?? start;
-      const first = posToCol(Math.min(start, end));
-      const last = posToCol(Math.max(start, end) + subUnit.value);
+      const first = columnsMap[Math.min(start, end)];
+      const last = columnsMap[Math.max(start, end)];
       if (first.tabline !== last.tabline) {
         push(first.tabline, row, first.column, first.tablineColumns);
-        push(last.tabline, row, 2, last.column);
+        push(last.tabline, row, 2, last.column + 1);
       } else {
-        push(first.tabline, row, first.column, last.column);
+        push(first.tabline, row, first.column, last.column + 1);
       }
     }
 

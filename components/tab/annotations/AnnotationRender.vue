@@ -5,7 +5,7 @@ import { useTemplateRef } from "vue";
 export interface AnnotationRenderProps {
   row: number;
   startColumn: number;
-  endColumn: number;
+  columnSpan: number;
   annotation?: Annotation;
 }
 
@@ -62,8 +62,7 @@ watch(
   display: flex;
   align-items: center;
   border-right: 1px solid gray;
-  grid-column-start: v-bind(startColumn);
-  grid-column-end: v-bind(endColumn);
+  grid-column: v-bind(startColumn) / span v-bind(columnSpan);
   grid-row: v-bind(row);
   background-color: lightblue;
   pointer-events: v-bind(pointerEvents);

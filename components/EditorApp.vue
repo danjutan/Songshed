@@ -3,14 +3,14 @@ import type { TabStore } from "~/model/stores";
 import Toolbar from "./tab/toolbar/Toolbar.vue";
 import Tab from "./tab/Tab.vue";
 import ChordGroup from "./chords/ChordGroup.vue";
-import { provideSettingsState } from "./tab/state/provide-settings-state";
+import { provideSettingsState } from "./tab/providers/state/provide-settings-state";
 
 const props = defineProps<{
   tabStore: TabStore;
   id: string;
 }>();
 
-const settings = provideSettingsState();
+provideSettingsState();
 
 async function save(saveId: string) {
   if (props.tabStore && saveId) {
@@ -23,6 +23,8 @@ async function save(saveId: string) {
     });
   }
 }
+
+const selected = ref("");
 </script>
 
 <template>

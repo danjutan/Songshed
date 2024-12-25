@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import type { Bend } from "~/model/stores";
-import { injectStackResizeObserver } from "@/components/tab/events/provide-resize-observer";
+import { injectStackResizeObserver } from "~/components/tab/providers/events/provide-resize-observer";
 import {
   BendEditInjectionKey,
   type BendEditState,
-} from "../state/provide-bend-edit-state";
+} from "@/components/tab/providers/state/provide-bend-edit-state";
 import OverlayCoords from "../OverlayCoords.vue";
+import OverlaySelect from "../OverlaySelect.vue";
 
 export interface BendRenderProps {
   bend: Bend;
@@ -37,15 +38,6 @@ const bendLabel = computed(
   () => bendLabels[props.bend.bend] || props.bend.bend,
 );
 
-function onSelectInput(e: Event) {
-  const value = (e.target as HTMLSelectElement).value;
-  if (value === "delete") {
-    bendEditState.deleteBend(props.bend);
-    return;
-  }
-  bendEditState.setBendValue(props.bend, +value);
-}
-
 const selectHeight = "18px";
 
 const upswingArrowHover = ref(false);
@@ -53,6 +45,15 @@ const releaseArrowHover = ref(false);
 </script>
 
 <template>
+  <OverlaySelect
+    class="bend-select"
+    :class="{ dragging: bendEditState.dragging }"
+    :options="Object.entries(bendLabels).sort((a, b) => +a[0] - +b[0])"
+    :placeholder="bendLabel"
+    :model-value="props.bend.bend"
+    @update:model-value="bendEditState.setBendValue(props.bend, $event)"
+    @on-delete-clicked="bendEditState.deleteBend(props.bend)"
+  />
   <OverlayCoords
     v-slot="{ coords: [from, to, upswingTo, through, afterTo], cellHeight }"
     :positions="[
@@ -107,12 +108,11 @@ const releaseArrowHover = ref(false);
         v-if="!through || through.left <= to.left"
         :x="upswingTo.left - 1.3 * (upswingTo.right - upswingTo.left)"
         :y="0"
-        :width="3 * (upswingTo.right - upswingTo.left)"
-        :height="selectHeight"
+        :width="3 * (upswingTo.right - upswingTo.left) + 100"
+        :height="200"
         @mouseover="bendEditState.onLabelHover"
       >
-        <div :class="{ dragging: bendEditState.dragging }" class="bend-label">
-          <select ref="select" @input="onSelectInput">
+        <!-- <select ref="select" @input="onSelectInput">
             <option
               v-for="[bendBy, label] in Object.entries(bendLabels).sort(
                 (a, b) => +a[0] - +b[0],
@@ -122,9 +122,7 @@ const releaseArrowHover = ref(false);
               v-html="label"
             />
             <option value="delete">&Cross;</option>
-          </select>
-          <span v-html="bendLabel" />
-        </div>
+          </select> -->
       </foreignObject>
 
       <path
@@ -200,6 +198,9 @@ const releaseArrowHover = ref(false);
   fill: none;
 }
 
+.bend-select {
+  pointer-events: all;
+}
 .bend-label {
   display: grid;
   justify-content: center;
@@ -222,7 +223,7 @@ const releaseArrowHover = ref(false);
     grid-column: 1 / 1;
   }
 
-  & select {
+  /* & select {
     pointer-events: all;
     width: calc(var(--cell-height));
     margin-top: 1px;
@@ -239,7 +240,7 @@ const releaseArrowHover = ref(false);
     & [value="delete"] {
       color: darkred;
     }
-  }
+  } */
 }
 
 rect {

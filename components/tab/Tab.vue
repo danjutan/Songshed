@@ -5,16 +5,18 @@ import GuitarTabLine from "./guitar/GuitarTabLine.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 
-import { provideSelectionState } from "./state/provide-selection-state";
-
 import { createAnnotationAddState } from "./annotations/state/annotation-add-state";
 import { createAnnotationRenderState } from "./annotations/state/annotation-render-state";
-import { provideEditingState } from "./state/provide-editing-state";
-import { provideCellHoverEvents } from "./events/provide-cell-hover-events";
-import { provideTieAddState } from "./guitar/overlay/state/provide-tie-add-state";
-import { provideBendEditState } from "./guitar/overlay/state/provide-bend-edit-state";
-import { provideStackResizeObserver } from "./events/provide-resize-observer";
-import { injectSettingsState } from "./state/provide-settings-state";
+
+import { provideSelectionState } from "./providers/state/provide-selection-state";
+import { provideEditingState } from "./providers/state/provide-editing-state";
+import { provideCellHoverEvents } from "./providers/events/provide-cell-hover-events";
+import { provideTieAddState } from "./providers/state/provide-tie-add-state";
+import { provideBendEditState } from "./providers/state/provide-bend-edit-state";
+import { provideStackResizeObserver } from "./providers/events/provide-resize-observer";
+import { provideColumnsMap } from "./providers/provide-columns-map";
+
+import { injectSettingsState } from "./providers/state/provide-settings-state";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -25,7 +27,7 @@ const cellHeight = computed(() => settings.cellHeight);
 const barSize = computed(
   () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
 );
-// const notchUnit = computed(() => props.tabStore.beatSize);
+
 const subUnit = computed(() => props.tabStore.beatSize / settings.subdivisions);
 
 const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
@@ -38,15 +40,19 @@ const editingState = provideEditingState();
 provideStackResizeObserver();
 
 const tieAddState = provideTieAddState(
-  cellHoverEvents,
-  computed(() => props.tabStore.guitar),
-  computed(() => subUnit.value),
+  reactiveComputed(() => ({
+    cellHoverEvents,
+    store: props.tabStore.guitar,
+    subUnit,
+  })),
 );
 
 provideBendEditState(
-  cellHoverEvents,
-  tieAddState,
-  computed(() => props.tabStore.guitar?.ties),
+  reactiveComputed(() => ({
+    cellHoverEvents,
+    tieAddState,
+    tieStore: props.tabStore.guitar?.ties,
+  })),
 );
 
 export type Bar = {
@@ -75,8 +81,8 @@ const bars = computed<Bar[]>(() => {
   return bars;
 });
 
-const tabLines = computed<Array<Bar[]>>(() => {
-  const tabLineBars: Array<Bar[]> = [];
+const tablines = computed<Array<Bar[]>>(() => {
+  const tablineBars: Array<Bar[]> = [];
   let currTabLine: Bar[] = [];
   bars.value.forEach((bar, i) => {
     currTabLine.push(bar);
@@ -84,15 +90,21 @@ const tabLines = computed<Array<Bar[]>>(() => {
       currTabLine.length === settings.barsPerLine ||
       props.tabStore.lineBreaks.has((i + 1) * barSize.value)
     ) {
-      tabLineBars.push(currTabLine);
+      tablineBars.push(currTabLine);
       currTabLine = [];
     }
   });
   if (currTabLine.length) {
-    tabLineBars.push(currTabLine);
+    tablineBars.push(currTabLine);
   }
-  return tabLineBars;
+  return tablineBars;
 });
+
+const columnsMap = provideColumnsMap(
+  reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
+);
+
+// console.log("map", columnsMap);
 
 const gridTemplateColumns = computed<string>(() => {
   const barTemplateColumns = `repeat(${columnsPerBar.value}, 1fr)`;
@@ -100,41 +112,8 @@ const gridTemplateColumns = computed<string>(() => {
     { length: settings.barsPerLine },
     () => barTemplateColumns,
   ).join(" min-content ");
-  return `var(--note-font-size) ${bars} var(--note-font-size)`;
+  return `var(--note-font-size) ${bars}`;
 });
-
-export type TablineColumn = {
-  tabline: number;
-  column: number;
-  tablineColumns: number; // total columns in tabline
-};
-
-const posToCol = (pos: number): TablineColumn => {
-  let tabLineIndex = 0;
-  let tabLineLength = -1;
-  for (const tabLine of tabLines.value) {
-    const tabLength = tabLine.length * barSize.value;
-    tabLineLength = tabLength;
-    if (pos - tabLength < 0) break;
-    pos -= tabLength;
-    tabLineIndex++;
-  }
-  const colsIntoLine = pos / subUnit.value;
-  const tablineCols = tabLineLength / subUnit.value;
-
-  // add 1 to work with grid columns
-  let column = colsIntoLine + Math.ceil(colsIntoLine / columnsPerBar.value) + 1;
-  // TODO: document how this works
-  if (column % (columnsPerBar.value + 1) === 1) {
-    column += 1;
-  }
-  const tablineColumns = tablineCols + tablineCols / columnsPerBar.value + 1;
-  return {
-    tabline: tabLineIndex,
-    column,
-    tablineColumns,
-  };
-};
 
 const annotationAddState = createAnnotationAddState(
   props.tabStore.annotations,
@@ -143,10 +122,12 @@ const annotationAddState = createAnnotationAddState(
 );
 
 const annotationRenders = createAnnotationRenderState(
-  props.tabStore.annotations,
-  subUnit,
-  posToCol,
-  annotationAddState.newAnnotation,
+  reactiveComputed(() => ({
+    store: props.tabStore.annotations,
+    subUnit,
+    newAnnotation: annotationAddState.newAnnotation,
+    columnsMap,
+  })),
 );
 
 const annotationRows = computed(() =>
@@ -226,7 +207,7 @@ const overlayedBarStart = ref<number | undefined>();
 
 <template>
   <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
-    <div v-for="(tabLine, tabLineIndex) in tabLines" class="tab-line">
+    <div v-for="(tabLine, tabLineIndex) in tablines" class="tab-line">
       <template v-for="(bar, i) in tabLine" :key="bar.start">
         <AnnotationDragBar
           :start-column="i * (columnsPerBar + 1) + 1"
@@ -260,7 +241,6 @@ const overlayedBarStart = ref<number | undefined>();
         :guitar-store="tabStore.guitar"
         :bars="tabLine"
         :start-row="annotationRows + 1"
-        :pos-to-col
         :beat-size="tabStore.beatSize"
         :sub-unit
         :columns-per-bar
@@ -312,7 +292,7 @@ const overlayedBarStart = ref<number | undefined>();
 
         <div
           v-if="
-            tabLineIndex === tabLines.length - 1 &&
+            tabLineIndex === tablines.length - 1 &&
             barIndex === tabLine.length - 1
           "
           class="divider"
@@ -390,7 +370,7 @@ const overlayedBarStart = ref<number | undefined>();
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
+  z-index: 1;
 
   & .buttons {
     height: 100%;

@@ -3,13 +3,15 @@ import type { Bend, GuitarStore, Tie, TieStore } from "~/model/stores";
 import type {
   CellHoverEvents,
   HoveredRow,
-} from "../../../events/provide-cell-hover-events";
+} from "../events/provide-cell-hover-events";
 import type { TieType } from "~/model/data";
 
 export function provideTieAddState(
-  cellHoverEvents: CellHoverEvents,
-  store: ComputedRef<GuitarStore | undefined>,
-  subUnit: ComputedRef<number>,
+  props: ReactiveComputed<{
+    cellHoverEvents: CellHoverEvents;
+    store: GuitarStore | undefined;
+    subUnit: number;
+  }>,
 ) {
   // const newTie = ref<NewTie>();
   const bend = ref(false);
@@ -33,8 +35,10 @@ export function provideTieAddState(
     return "right";
   });
 
-  cellHoverEvents.addHoverListener((row, position) => drag(row, position));
-  cellHoverEvents.addMouseUpListener(end);
+  props.cellHoverEvents.addHoverListener((row, position) =>
+    drag(row, position),
+  );
+  props.cellHoverEvents.addMouseUpListener(end);
 
   function start(string: number, position: number, midi: Midi) {
     dragFrom.value = position;
@@ -57,11 +61,11 @@ export function provideTieAddState(
     // TODO: use this collision logic for editing, too. also, document it. maybe we don't need a separate bende-edit-state?
     if (position < dragFrom.value) {
       for (
-        let i = dragFrom.value - subUnit.value;
+        let i = dragFrom.value - props.subUnit;
         i > position;
-        i -= subUnit.value
+        i -= props.subUnit
       ) {
-        const stack = store.value?.stacks.get(i);
+        const stack = props.store?.stacks.get(i);
         if (stack?.get(dragFromString.value)) {
           position = i;
           break;
@@ -69,16 +73,16 @@ export function provideTieAddState(
       }
       from.value = position;
       to.value = dragFrom.value; // for when you've left the screen
-      const stack = store.value?.stacks.get(position);
+      const stack = props.store?.stacks.get(position);
       const noteData = stack?.get(dragFromString.value);
       if (noteData && noteData.note !== "muted") midiFrom.value = noteData.note;
     } else {
       for (
-        let i = dragFrom.value + subUnit.value;
+        let i = dragFrom.value + props.subUnit;
         i < position;
-        i += subUnit.value
+        i += props.subUnit
       ) {
-        const stack = store.value?.stacks.get(i);
+        const stack = props.store?.stacks.get(i);
         if (stack?.get(dragFromString.value)) {
           position = i;
           break;
@@ -87,23 +91,23 @@ export function provideTieAddState(
 
       to.value = position;
       from.value = dragFrom.value;
-      const stack = store.value?.stacks.get(position);
+      const stack = props.store?.stacks.get(position);
       const noteData = stack?.get(dragFromString.value);
       if (noteData && noteData.note !== "muted") midiTo.value = noteData.note;
     }
   }
 
   function end() {
-    if (!store.value || dragFrom.value === undefined) return;
+    if (!props.store || dragFrom.value === undefined) return;
     if (bend.value) {
-      store.value.ties.setTie(dragFromString.value, dragFrom.value, {
+      props.store.ties.setTie(dragFromString.value, dragFrom.value, {
         type: "bend",
         to: to.value,
         releaseType: "connect",
         bend: 1,
       });
     } else if (to.value !== from.value) {
-      store.value.ties.setTie(dragFromString.value, from.value, {
+      props.store.ties.setTie(dragFromString.value, from.value, {
         type: tieType,
         to: to.value,
       });
@@ -152,7 +156,7 @@ export function provideTieAddState(
   return tieAddState;
 }
 
-type TieAddState = ReturnType<typeof provideTieAddState>;
+export type TieAddState = ReturnType<typeof provideTieAddState>;
 
 const TieAddInjectionKey = Symbol() as InjectionKey<TieAddState>;
 

@@ -2,8 +2,8 @@
 import type { GuitarNote } from "~/model/data";
 
 import { useTemplateRef } from "vue";
-import { injectEditingState } from "../../state/provide-editing-state";
-import { injectCellHoverEvents } from "../../events/provide-cell-hover-events";
+import { injectEditingState } from "../../providers/state/provide-editing-state";
+import { injectCellHoverEvents } from "../../providers/events/provide-cell-hover-events";
 
 const props = withDefaults(
   defineProps<{
