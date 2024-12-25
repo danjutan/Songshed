@@ -12,14 +12,7 @@ const cellHoverState = injectCellHoverEvents();
 </script>
 
 <template>
-  <!-- <div
-      class="bend-cell between"
-      :style="{
-        gridColumn: startColumn,
-        gridRow: bendRow,
-      }"
-      @mouseover="cellHoverState.hover('bend', barPositions[0])"
-    /> -->
+  <div class="teleport-bend-labels" />
   <div
     v-for="(position, i) in barPositions"
     class="bend-cell"
@@ -31,4 +24,13 @@ const cellHoverState = injectCellHoverEvents();
   />
 </template>
 
-<style scoped></style>
+<style scoped>
+.teleport-bend-labels {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-row: v-bind(bendRow);
+  grid-template-columns: subgrid;
+  grid-template-rows: 1fr;
+  /* background: green; */
+}
+</style>

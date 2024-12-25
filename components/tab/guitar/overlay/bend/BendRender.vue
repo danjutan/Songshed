@@ -1,19 +1,20 @@
 <script lang="ts" setup>
 import type { Bend } from "~/model/stores";
 import { injectStackResizeObserver } from "~/components/tab/providers/events/provide-resize-observer";
-import {
-  BendEditInjectionKey,
-  type BendEditState,
-} from "@/components/tab/providers/state/provide-bend-edit-state";
+import { injectBendEditState } from "@/components/tab/providers/state/provide-bend-edit-state";
+import { injectColumnsMap } from "~/components/tab/providers/provide-columns-map";
 import OverlayCoords from "../OverlayCoords.vue";
 import OverlaySelect from "../OverlaySelect.vue";
+import { injectTablineBounds } from "../../provide-tabline-bounds";
 
 export interface BendRenderProps {
   bend: Bend;
 }
 
 const props = defineProps<BendRenderProps>();
-const bendEditState = inject(BendEditInjectionKey) as BendEditState;
+const bendEditState = injectBendEditState();
+const columnsMap = injectColumnsMap();
+const tablineBounds = injectTablineBounds();
 
 const { getNextStackPos } = injectStackResizeObserver();
 
@@ -38,22 +39,32 @@ const bendLabel = computed(
   () => bendLabels[props.bend.bend] || props.bend.bend,
 );
 
-const selectHeight = "18px";
+const bendColumn = computed(() => {
+  if (props.bend.to > tablineBounds.last) {
+    return false;
+  }
+  return columnsMap[props.bend.to].column;
+});
 
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
 </script>
 
 <template>
-  <OverlaySelect
-    class="bend-select"
-    :class="{ dragging: bendEditState.dragging }"
-    :options="Object.entries(bendLabels).sort((a, b) => +a[0] - +b[0])"
-    :placeholder="bendLabel"
-    :model-value="props.bend.bend"
-    @update:model-value="bendEditState.setBendValue(props.bend, $event)"
-    @on-delete-clicked="bendEditState.deleteBend(props.bend)"
-  />
+  <foreignObject>
+    <Teleport to=".teleport-bend-labels">
+      <OverlaySelect
+        v-if="bendColumn"
+        class="bend-select"
+        :class="{ dragging: bendEditState.dragging }"
+        :options="Object.entries(bendLabels).sort((a, b) => +a[0] - +b[0])"
+        :placeholder="bendLabel"
+        :model-value="props.bend.bend"
+        @update:model-value="bendEditState.setBendValue(props.bend, $event)"
+        @on-delete-clicked="bendEditState.deleteBend(props.bend)"
+      />
+    </Teleport>
+  </foreignObject>
   <OverlayCoords
     v-slot="{ coords: [from, to, upswingTo, through, afterTo], cellHeight }"
     :positions="[
@@ -200,7 +211,10 @@ const releaseArrowHover = ref(false);
 
 .bend-select {
   pointer-events: all;
+  grid-column: v-bind(bendColumn);
+  grid-row: 1;
 }
+
 .bend-label {
   display: grid;
   justify-content: center;

@@ -110,6 +110,10 @@ export function provideBendEditState(
   return bendEditState;
 }
 
+export function injectBendEditState() {
+  return inject(BendEditInjectionKey) as BendEditState;
+}
+
 export type BendEditState = ReturnType<typeof provideBendEditState>;
 
 export const BendEditInjectionKey = Symbol() as InjectionKey<BendEditState>;

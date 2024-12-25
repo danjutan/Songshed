@@ -2,7 +2,7 @@
 import type { GuitarStore } from "~/model/stores";
 import type { Bar } from "@/components/tab/Tab.vue";
 import GuitarBar from "./bar/GuitarBar.vue";
-import BendDragBar from "./overlay/bend/BendDragBar.vue";
+import BendDragBar from "./overlay/bend/BendTopBar.vue";
 import OverlaySVG from "./overlay/OverlaySVG.vue";
 import { injectTieAddState } from "../providers/state/provide-tie-add-state";
 import { provideTablineBounds } from "./provide-tabline-bounds";

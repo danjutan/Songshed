@@ -31,7 +31,6 @@ const options = computed(() => {
       <span v-html="option.label" />
     </template>
     <template #clear>
-      <!--restoring their icon, adding our click handler-->
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"
