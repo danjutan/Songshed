@@ -32,7 +32,7 @@ const isPrebend = computed(() => props.bend.from === props.bend.to);
 const bendLabels: { [bend: number]: string } = {
   0.5: "&half;",
   1: "full",
-  1.5: "1 &half;",
+  1.5: "1&half;",
 };
 
 const bendLabel = computed(
@@ -40,10 +40,10 @@ const bendLabel = computed(
 );
 
 const bendColumn = computed(() => {
-  if (props.bend.to > tablineBounds.last) {
+  if (upswingToPos.value > tablineBounds.last) {
     return false;
   }
-  return columnsMap[props.bend.to].column;
+  return columnsMap[upswingToPos.value].column;
 });
 
 const upswingArrowHover = ref(false);
@@ -51,7 +51,7 @@ const releaseArrowHover = ref(false);
 </script>
 
 <template>
-  <foreignObject>
+  <!-- <foreignObject>
     <Teleport to=".teleport-bend-labels">
       <OverlaySelect
         v-if="bendColumn"
@@ -64,7 +64,7 @@ const releaseArrowHover = ref(false);
         @on-delete-clicked="bendEditState.deleteBend(props.bend)"
       />
     </Teleport>
-  </foreignObject>
+  </foreignObject> -->
   <OverlayCoords
     v-slot="{ coords: [from, to, upswingTo, through, afterTo], cellHeight }"
     :positions="[

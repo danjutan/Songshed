@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { Tie } from "~/model/stores";
-import { useTiePath } from "./use-tie-path";
 import OverlayCoords from "../OverlayCoords.vue";
+import TieCurve from "./TieCurve.vue";
 
 const props = withDefaults(defineProps<{ tie: Tie; firstRow: number }>(), {
   firstRow: 1,
@@ -14,13 +14,13 @@ const connected = computed(
 const ascending = computed(
   () => !connected.value || props.tie.midiFrom! < props.tie.midiTo!,
 );
-const row = computed(() => props.firstRow + props.tie.string - 1);
+const row = computed(() => props.firstRow + props.tie.string);
 
 const slideRowStart = computed(() =>
-  ascending.value ? row.value + 0.2 : row.value + 0.8,
+  ascending.value ? row.value - 0.8 : row.value - 0.2,
 );
 const slideRowEnd = computed(() =>
-  ascending.value ? row.value + 0.8 : row.value + 0.2,
+  ascending.value ? row.value + -0.2 : row.value - 0.8,
 );
 </script>
 
@@ -30,15 +30,11 @@ const slideRowEnd = computed(() =>
     :positions="[tie.from, tie.to]"
   >
     <svg v-if="from && to">
-      <path
+      <TieCurve
         v-if="tie.type.hammer"
-        :d="
-          useTiePath(
-            (from.center + from.right) / 2,
-            (to.center + to.left) / 2,
-            (firstRow + tie.string - 0.1) * cellHeight,
-          )
-        "
+        :x1="from.center"
+        :x2="to.center"
+        :y="(firstRow + tie.string - 0.1) * cellHeight"
       />
       <line
         v-if="tie.type.slide"
@@ -56,5 +52,8 @@ path,
 line {
   stroke: black;
   stroke-width: 1;
+}
+text {
+  pointer-events: all;
 }
 </style>

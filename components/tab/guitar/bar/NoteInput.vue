@@ -162,6 +162,7 @@ input {
   width: min-content;
   pointer-events: none;
   color: transparent;
+  height: 2px;
   background-color: v-bind(blockingColor);
 }
 

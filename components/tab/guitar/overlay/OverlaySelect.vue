@@ -6,7 +6,11 @@ const props = defineProps<{
   placeholder: string | number;
 }>();
 
-const model = defineModel();
+const model = defineModel({
+  get(value) {
+    return `${value}`;
+  },
+});
 
 const emit = defineEmits<{
   onDeleteClicked: () => void;
@@ -15,15 +19,14 @@ const emit = defineEmits<{
 const options = computed(() => {
   return props.options.map(([value, label]) => ({ label, value }));
 });
+
+watchEffect(() => {
+  console.log(model.value);
+});
 </script>
 
 <template>
-  <VueSelect
-    v-model="model"
-    class="select"
-    :options
-    :placeholder="`${placeholder}`"
-  >
+  <VueSelect v-model="model" class="select" :options>
     <template #value="{ option }">
       <span v-html="option.label" />
     </template>
@@ -45,4 +48,35 @@ const options = computed(() => {
   </VueSelect>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* https://vue3-select-component.vercel.app/styling.html */
+/*
+.select:hover {
+  width: 100%;
+}
+
+.select :deep(.control) {
+  min-height: 0px;
+  height: 0px;
+}
+
+
+.select:not(:hover) {
+  --vs-border: 0px;
+  --vs-input-outline: none;
+}
+
+.select:not(:hover) :deep(.indicators-container) {
+  display: none !important;
+} */
+
+.select {
+  --vs-input-placeholder-color: black;
+  --vs-font-size: calc(var(--note-font-size) * 0.75);
+}
+
+.select :deep(.value-container) > * {
+  padding-block: 0px;
+  padding-inline: 0px;
+}
+</style>
