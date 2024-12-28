@@ -236,7 +236,7 @@ const overlayedBarStart = ref<number | undefined>();
 
       <GuitarTabLine
         v-if="tabStore.guitar"
-        v-slot="{ bar, barIndex, notesRow, numStrings }"
+        v-slot="{ bar, barIndex, notesRow, numStrings, bendRow }"
         :tab-line-index
         :guitar-store="tabStore.guitar"
         :bars="tabLine"
@@ -286,7 +286,7 @@ const overlayedBarStart = ref<number | undefined>();
           :style="{
             gridColumnStart: barIndex * (columnsPerBar + 1) + 2,
             gridColumnEnd: (barIndex + 1) * (columnsPerBar + 1) + 2,
-            gridRow: `${notesRow} / span ${numStrings}`,
+            gridRow: `${bendRow ?? notesRow} / span ${bendRow ? numStrings + 1 : numStrings}`,
           }"
         />
 
@@ -315,7 +315,7 @@ const overlayedBarStart = ref<number | undefined>();
   --note-font-size: calc(var(--cell-height) * 0.8);
   --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);
-  --delete-overlay-bg: rgba(0, 0, 0, 0.15);
+  --delete-overlay-bg: rgba(255, 0, 0, 0.15);
   --string-width: 1px;
   --string-color: gray;
   --highlight-color: rgba(172, 206, 247, 0.4);

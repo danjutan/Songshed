@@ -3,9 +3,11 @@ import type { GuitarStore } from "~/model/stores";
 import type { Bar } from "@/components/tab/Tab.vue";
 import GuitarBar from "./bar/GuitarBar.vue";
 import BendDragBar from "./overlay/bend/BendTopBar.vue";
-import OverlaySVG from "./overlay/OverlaySVG.vue";
+import BendRender from "./overlay/bend/BendRender.vue";
+import TieRender from "./overlay/tie/TieRender.vue";
 import { injectTieAddState } from "../providers/state/provide-tie-add-state";
 import { provideTablineBounds } from "./provide-tabline-bounds";
+import { provideEditTie } from "./overlay/tie/provide-edit-tie";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -20,6 +22,8 @@ const props = defineProps<{
 const tieAddState = injectTieAddState();
 
 const tablineBounds = provideTablineBounds(props);
+
+provideEditTie(props.guitarStore.ties);
 
 const notesRow = computed(() =>
   bendRow.value ? bendRow.value + 1 : props.startRow,
@@ -46,6 +50,15 @@ const bendRow = computed(() =>
   bends.value.length ? props.startRow : undefined,
 );
 
+const barStarts = computed(() => props.bars.map((bar) => bar.start));
+
+const centeredOverDivider = (from: number, to: number) => {
+  const dividerBetween = barStarts.value.find(
+    (start) => start > from && start <= to,
+  )!;
+  return to + props.subUnit - dividerBetween === dividerBetween - from;
+};
+
 const columnEnd = computed(
   () => props.columnsPerBar * props.bars.length + props.bars.length + 1,
 );
@@ -53,7 +66,13 @@ const columnEnd = computed(
 
 <template>
   <template v-for="(bar, i) in bars" :key="bar.start">
-    <slot :notes-row :num-strings="guitarStore.strings" :bar :bar-index="i" />
+    <slot
+      :notes-row
+      :num-strings="guitarStore.strings"
+      :bar
+      :bar-index="i"
+      :bend-row
+    />
     <BendDragBar
       v-if="bendRow"
       :bend-row
@@ -73,20 +92,22 @@ const columnEnd = computed(
       @note-change="guitarStore.setNote"
       @note-delete="guitarStore.deleteNote"
     />
-
-    <!-- <TiesBar
-      :ties="guitarStore.ties"
-      :new-tie="tieAddState.newTie"
-      :num-strings="guitarStore.strings"
-      :start-row="notesRow"
-      :start-column="i * (columnsPerBar + 1) + 2"
-      :start-position="bar.start"
-      :end-position="bar.start + bar.stacks.size * subUnit"
-      :sub-unit="subUnit"
-    /> -->
   </template>
   <ClientOnly>
-    <OverlaySVG class="overlay" :bends :ties />
+    <svg class="overlay">
+      <BendRender
+        v-for="bend in bends"
+        :key="`${bend.from}-${bend.string}`"
+        :bend
+      />
+      <TieRender
+        v-for="tie in ties"
+        :key="`${tie.from}-${tie.string}`"
+        :tie
+        :first-row="bends.length ? 2 : 1"
+        :over-divider="centeredOverDivider(tie.from, tie.to)"
+      />
+    </svg>
   </ClientOnly>
 </template>
 
@@ -107,5 +128,9 @@ const columnEnd = computed(
 .overlay {
   grid-column: 2 / v-bind(columnEnd);
   grid-row: v-bind(bendRow) / span calc(v-bind(numStrings) + 1);
+  width: 100%;
+  height: calc(100% + var(--cell-height) / 2);
+  pointer-events: none;
+  position: relative; /* somehow makes the VueSelect hover events work right */
 }
 </style>

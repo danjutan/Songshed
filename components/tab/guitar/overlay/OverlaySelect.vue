@@ -2,8 +2,8 @@
 import VueSelect from "vue3-select-component";
 
 const props = defineProps<{
-  options: Array<[value: number | string, label: string]>;
-  placeholder: string | number;
+  options: Array<[value: string, label: string]>;
+  placeholder: string;
 }>();
 
 const model = defineModel({
@@ -26,7 +26,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <VueSelect v-model="model" class="select" :options>
+  <VueSelect v-model="model" class="select" :options :placeholder>
     <template #value="{ option }">
       <span v-html="option.label" />
     </template>
@@ -71,12 +71,27 @@ watchEffect(() => {
 } */
 
 .select {
+  pointer-events: all;
   --vs-input-placeholder-color: black;
-  --vs-font-size: calc(var(--note-font-size) * 0.75);
+  --vs-font-size: calc(var(--note-font-size) * 0.8);
 }
 
-.select :deep(.value-container) > * {
-  padding-block: 0px;
-  padding-inline: 0px;
+.select :deep(.value-container) {
+  height: fit-content;
+  & > * {
+    padding-block: 0px;
+    padding-inline: 0px;
+  }
+}
+
+.select :deep(.control) {
+  height: fit-content;
+  min-height: 0px;
+}
+
+.select :deep(.indicators-container) {
+  height: fit-content;
+  min-height: 0px;
+  padding: 0px;
 }
 </style>

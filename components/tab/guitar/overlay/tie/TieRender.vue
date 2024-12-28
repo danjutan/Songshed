@@ -2,10 +2,15 @@
 import type { Tie } from "~/model/stores";
 import OverlayCoords from "../OverlayCoords.vue";
 import TieCurve from "./TieCurve.vue";
+import { injectEditTie } from "./provide-edit-tie";
 
-const props = withDefaults(defineProps<{ tie: Tie; firstRow: number }>(), {
-  firstRow: 1,
-});
+const props = defineProps<{
+  tie: Tie;
+  firstRow: number;
+  overDivider: boolean;
+}>();
+
+const { updateType } = injectEditTie();
 
 const connected = computed(
   () => props.tie.midiFrom !== undefined && props.tie.midiTo !== undefined,
@@ -34,7 +39,8 @@ const slideRowEnd = computed(() =>
         v-if="tie.type.hammer"
         :x1="from.center"
         :x2="to.center"
-        :y="(firstRow + tie.string - 0.1) * cellHeight"
+        :y="(firstRow + tie.string - 0.2) * cellHeight"
+        :shift-label="overDivider"
       />
       <line
         v-if="tie.type.slide"

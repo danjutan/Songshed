@@ -278,6 +278,7 @@ export interface Bend extends BendData {
 export interface TieStore {
   setTie: (string: number, from: number, tie: TieData | BendData) => void;
   updateBend: (bend: Bend) => void;
+  updateTie: (tie: Tie) => void;
   deleteTie: (string: number, from: number) => void;
   deleteAt: (string: number, position: number) => void;
   getTies: () => Tie[];
@@ -298,6 +299,11 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
   function updateBend(bend: Bend) {
     const { string, from, ...bendData } = bend;
     setTie(string, from, bendData);
+  }
+
+  function updateTie(tie: Tie) {
+    const { string, from, ...tieData } = tie;
+    setTie(string, from, tieData);
   }
 
   function deleteTie(string: number, from: number) {
@@ -373,6 +379,7 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
   return {
     setTie,
     updateBend,
+    updateTie,
     deleteTie,
     deleteAt,
     getTies,
