@@ -94,6 +94,9 @@ const columnEnd = computed(
     />
   </template>
   <ClientOnly>
+    <svg class="overlay-controls">
+      <!--Teleport-->
+    </svg>
     <svg class="overlay">
       <BendRender
         v-for="bend in bends"
@@ -126,11 +129,19 @@ const columnEnd = computed(
 }
 
 .overlay {
+}
+
+.overlay-controls {
+  z-index: 2;
+  position: relative; /* somehow makes the VueSelect hover events work right */
+}
+
+.overlay,
+.overlay-controls {
+  pointer-events: none;
   grid-column: 2 / v-bind(columnEnd);
   grid-row: v-bind(bendRow) / span calc(v-bind(numStrings) + 1);
   width: 100%;
-  height: calc(100% + var(--cell-height) / 2);
-  pointer-events: none;
-  position: relative; /* somehow makes the VueSelect hover events work right */
+  height: calc(100% - var(--cell-height) / 2 + 100px);
 }
 </style>

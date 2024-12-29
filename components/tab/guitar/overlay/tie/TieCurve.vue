@@ -29,7 +29,7 @@ const curvePath = computed(() => {
 const label = reactiveComputed(() => {
   return {
     x: (props.x2 + props.x1) / 2 + (props.shiftLabel ? 6 : -5),
-    y: bottom.value + 5,
+    y: bottom.value - 10,
   };
 });
 
@@ -50,17 +50,7 @@ const id = useId();
     </mask>
   </defs>
   <path :d="curvePath" :mask="`url(#mask-${id})`" />
-  <text :x="label.x" :y="label.y">H</text>
-  <!-- <foreignObject :x="(x2 + x1) / 2 - 5" :y="bottom" width="100" height="100">
-    <OverlaySelect
-      :placeholder="'H'"
-      :options="[
-        ['H', 'H'],
-        ['P', 'P'],
-        ['/', 'slide'],
-      ]"
-    />
-  </foreignObject> -->
+  <slot :x="label.x" :y="label.y" />
 </template>
 
 <style scoped></style>

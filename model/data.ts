@@ -13,11 +13,11 @@ export interface NoteData {
 export type TieType =
   | {
       hammer: true;
-      slide?: true;
+      slide?: boolean;
     }
   | {
       slide: true;
-      hammer?: true;
+      hammer?: boolean;
     };
 
 export type TieData = {

@@ -6,6 +6,9 @@ export function provideEditTie(tieStore: TieStore) {
     updateType(tie: Tie, type: TieType) {
       tieStore.updateTie({ ...tie, type });
     },
+    deleteTie(tie: Tie) {
+      tieStore.deleteTie(tie.string, tie.from);
+    },
   };
   provide(EditTieInjectionKey, functions);
   return functions;
