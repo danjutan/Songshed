@@ -13,7 +13,8 @@ const props = withDefaults(
     frets: 24,
     colors: () => defaultColors,
     tuning: () => defaultTuning,
-    stack: () => defaultTuning.map((midi, string) => ({ midi, string, position: 0 })),
+    stack: () =>
+      defaultTuning.map((midi, string) => ({ midi, string, position: 0 })),
   },
 );
 
@@ -36,6 +37,12 @@ const nextMidiClamp = (midi: number) => {
   if (validMidi(nextMidi)) return nextMidi;
   return 127;
 };
+
+function range(countOrStart: number, end?: number) {
+  const length = end ? end - countOrStart + 1 : countOrStart;
+  const start = end ? countOrStart : 1;
+  return Array.from({ length }, (_, i) => start + i);
+}
 
 const rows: Midi[][] = props.tuning.map((startNote) =>
   range(startNote - 1, startNote + props.frets - 1).map(nextMidiClamp),
