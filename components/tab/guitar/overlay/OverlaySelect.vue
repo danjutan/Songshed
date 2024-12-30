@@ -64,7 +64,7 @@ const options = computed(() => {
   --vs-indicators-gap: 0px;
   --vs-menu-offset-top: 2px;
 
-  &.inactive:not(:hover):not(.open) {
+  &.inactive:not(.open) {
     --vs-input-bg: transparent;
     --vs-input-outline: transparent;
     --vs-border: 1px solid transparent;

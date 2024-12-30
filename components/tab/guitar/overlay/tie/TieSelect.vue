@@ -39,6 +39,11 @@ const model = defineModel({
     updateType(props.tie, value as TieType);
   },
 });
+
+const emits = defineEmits<{
+  mouseenter: [];
+  mouseleave: [];
+}>();
 </script>
 
 <template>
@@ -51,6 +56,8 @@ const model = defineModel({
         :options
         :override-display="{ [TieType.Slide]: '', [TieType.TieSlide]: '' }"
         @delete-clicked="deleteTie(tie)"
+        @mouseenter="$emit('mouseenter')"
+        @mouseleave="$emit('mouseleave')"
       />
     </foreignObject>
   </Teleport>

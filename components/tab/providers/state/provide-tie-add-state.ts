@@ -115,7 +115,7 @@ export function provideTieAddState(
     dragFrom.value = undefined;
   }
 
-  const tieAddState = reactive({
+  const tieAddState = {
     get dragging() {
       return dragFrom.value !== undefined;
     },
@@ -149,7 +149,7 @@ export function provideTieAddState(
     start,
     drag,
     end,
-  });
+  };
 
   provide(TieAddInjectionKey, tieAddState);
 

@@ -6,6 +6,7 @@ import TieSelect from "./TieSelect.vue";
 import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import { TieType } from "~/model/data";
+import { injectTieAddState } from "~/components/tab/providers/state/provide-tie-add-state";
 
 const props = defineProps<{
   tie: Tie;
@@ -15,6 +16,7 @@ const props = defineProps<{
 
 const { editingNote } = injectEditingState();
 const { hoveredCell } = injectCellHoverEvents();
+const tieAddState = injectTieAddState();
 
 const connected = computed(
   () => props.tie.midiFrom !== undefined && props.tie.midiTo !== undefined,
@@ -33,7 +35,11 @@ const slideRowEnd = computed(() =>
   ascending.value ? row.value - 0.8 : row.value - 0.2,
 );
 
-const showTie = computed(() => {
+const selectHovered = ref(false);
+
+const selectActive = computed(() => {
+  if (tieAddState.dragging) return false;
+  if (selectHovered.value) return true;
   if (editingNote?.string && editingNote?.position) {
     if (
       editingNote.string === props.tie.string &&
@@ -73,7 +79,14 @@ const showTie = computed(() => {
         :y="(firstRow + tie.string - 0.2) * cellHeight"
         :shift-label="overDivider"
       >
-        <TieSelect :active="showTie" :tie :x :y />
+        <TieSelect
+          :active="selectActive"
+          :tie
+          :x
+          :y
+          @mouseenter="selectHovered = true"
+          @mouseleave="selectHovered = false"
+        />
       </TieCurve>
       <template v-if="[TieType.Slide, TieType.TieSlide].includes(tie.type)">
         <line
@@ -83,7 +96,7 @@ const showTie = computed(() => {
           :y2="slideRowEnd * cellHeight"
         />
         <TieSelect
-          v-if="showTie"
+          v-if="selectActive"
           active
           :x="(from.right + to.left) / 2 - 20"
           :y="slideRowEnd * cellHeight"
