@@ -4,13 +4,13 @@ type HoverListener = (row: HoveredRow, position: number) => void;
 type ReleaseListener = () => void;
 
 function createCellHoverEvents() {
-  // const hoveredCell = ref<
-  //   | {
-  //       string: number | "bend";
-  //       position: number;
-  //     }
-  //   | undefined
-  // >();
+  const hoveredCell = ref<
+    | {
+        row: HoveredRow;
+        position: number;
+      }
+    | undefined
+  >();
 
   const hoverListeners = new Set<HoverListener>();
   const mouseupListeners = new Set<ReleaseListener>();
@@ -21,6 +21,7 @@ function createCellHoverEvents() {
   function hover(row: HoveredRow, position: number) {
     // hoveredCell.value = { string, position };
     hoverListeners.forEach((listener) => listener(row, position));
+    hoveredCell.value = { row, position };
   }
 
   function mouseup() {
@@ -29,6 +30,7 @@ function createCellHoverEvents() {
 
   function leaveTab() {
     leaveTabListeners.forEach((listener) => listener());
+    hoveredCell.value = undefined;
   }
 
   function addHoverListener(listener: HoverListener) {
@@ -44,7 +46,7 @@ function createCellHoverEvents() {
   }
 
   return {
-    // hoveredCell,
+    hoveredCell,
     hover,
     mouseup,
     leaveTab,

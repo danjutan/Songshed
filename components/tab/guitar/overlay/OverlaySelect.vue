@@ -29,7 +29,7 @@ const options = computed(() => {
 <template>
   <VueSelect v-model="model" class="select" :options :placeholder>
     <template #value="{ option }">
-      <span v-html="overrideDisplay?.[option.value!] || option.label" />
+      <span v-html="overrideDisplay?.[option.value!] ?? option.label" />
     </template>
     <template #option="{ option }">
       <span v-html="option.label" />
@@ -81,23 +81,29 @@ const options = computed(() => {
   --vs-menu-offset-top: 2px;
 }
 
-.select :deep(.value-container) {
-  height: fit-content;
-  & > * {
-    padding-block: 0px;
-    padding-inline: 0px;
-  }
+.select.open :deep(.single-value) {
+  position: static !important;
 }
 
 .select :deep(.control) {
   height: fit-content;
+  width: fit-content;
   min-height: 0px;
-}
 
-.select :deep(.indicators-container) {
-  flex-direction: row-reverse;
-  min-height: 0px;
-  /* height: fit-content; */
-  padding: 0px;
+  & .value-container {
+    height: fit-content;
+    max-width: fit-content;
+    & > * {
+      padding-block: 0px;
+      padding-inline: 0px;
+    }
+  }
+
+  & .indicators-container {
+    flex-direction: row-reverse;
+    min-height: 0px;
+    /* height: fit-content; */
+    padding: 0px;
+  }
 }
 </style>

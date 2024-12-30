@@ -4,6 +4,9 @@ import OverlayCoords from "../OverlayCoords.vue";
 import TieCurve from "./TieCurve.vue";
 import TieSelect from "./TieSelect.vue";
 import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
+import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
+import { TieType } from "~/model/data";
+
 const props = defineProps<{
   tie: Tie;
   firstRow: number;
@@ -11,6 +14,7 @@ const props = defineProps<{
 }>();
 
 const { editingNote } = injectEditingState();
+const { hoveredCell } = injectCellHoverEvents();
 
 const connected = computed(
   () => props.tie.midiFrom !== undefined && props.tie.midiTo !== undefined,
@@ -31,10 +35,21 @@ const slideRowEnd = computed(() =>
 
 const showTie = computed(() => {
   if (editingNote?.string && editingNote?.position) {
-    return (
+    if (
       editingNote.string === props.tie.string &&
       [props.tie.from, props.tie.to].includes(editingNote.position)
-    );
+    )
+      return true;
+  }
+  if (hoveredCell.value) {
+    const { row, position } = hoveredCell.value;
+    if (
+      row === props.tie.string &&
+      props.tie.from < position &&
+      props.tie.to > position
+    ) {
+      return true;
+    }
   }
 
   return false;
@@ -48,8 +63,11 @@ const showTie = computed(() => {
   >
     <svg v-if="from && to">
       <TieCurve
-        v-if="tie.type.hammer"
+        v-if="
+          [TieType.Hammer, TieType.Tap, TieType.TieSlide].includes(tie.type)
+        "
         v-slot="{ x, y }"
+        :close="tie.type === TieType.TieSlide"
         :x1="from.center"
         :x2="to.center"
         :y="(firstRow + tie.string - 0.2) * cellHeight"
@@ -57,12 +75,19 @@ const showTie = computed(() => {
       >
         <TieSelect :active="showTie" :tie :x :y />
       </TieCurve>
-      <template v-if="tie.type.slide">
+      <template v-if="[TieType.Slide, TieType.TieSlide].includes(tie.type)">
         <line
           :x1="from.center + (from.right - from.left) * 0.4"
           :x2="to.center - (to.right - to.left) * 0.4"
           :y1="slideRowStart * cellHeight"
           :y2="slideRowEnd * cellHeight"
+        />
+        <TieSelect
+          v-if="showTie"
+          active
+          :x="(from.right + to.left) / 2 - 20"
+          :y="slideRowEnd * cellHeight"
+          :tie
         />
       </template>
     </svg>
@@ -70,7 +95,6 @@ const showTie = computed(() => {
 </template>
 
 <style scoped>
-path,
 line {
   stroke: black;
   stroke-width: 1;

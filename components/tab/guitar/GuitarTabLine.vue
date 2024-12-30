@@ -129,11 +129,13 @@ const columnEnd = computed(
 }
 
 .overlay {
+  height: calc(100% + var(--cell-height) / 2);
 }
 
 .overlay-controls {
   z-index: 2;
   position: relative; /* somehow makes the VueSelect hover events work right */
+  height: calc(100% + var(--cell-height) / 2 + 100px);
 }
 
 .overlay,
@@ -142,6 +144,5 @@ const columnEnd = computed(
   grid-column: 2 / v-bind(columnEnd);
   grid-row: v-bind(bendRow) / span calc(v-bind(numStrings) + 1);
   width: 100%;
-  height: calc(100% - var(--cell-height) / 2 + 100px);
 }
 </style>

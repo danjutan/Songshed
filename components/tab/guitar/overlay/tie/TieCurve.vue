@@ -7,6 +7,7 @@ const props = defineProps<{
   x1: number;
   x2: number;
   y: number;
+  close: boolean;
   shiftLabel?: boolean;
 }>();
 
@@ -49,8 +50,8 @@ const id = useId();
       />
     </mask>
   </defs>
-  <path :d="curvePath" :mask="`url(#mask-${id})`" />
-  <slot :x="label.x" :y="label.y" />
+  <path :d="curvePath" :mask="!close ? `url(#mask-${id})` : undefined" />
+  <slot v-if="!close" :x="label.x" :y="label.y" />
 </template>
 
 <style scoped></style>

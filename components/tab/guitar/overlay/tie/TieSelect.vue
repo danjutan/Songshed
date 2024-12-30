@@ -2,7 +2,7 @@
 import OverlaySelect from "../OverlaySelect.vue";
 import type { Tie } from "~/model/stores";
 import { injectEditTie } from "./provide-edit-tie";
-import type { TieType } from "~/model/data";
+import { TieType } from "~/model/data";
 
 const props = defineProps<{
   active: boolean;
@@ -12,58 +12,46 @@ const props = defineProps<{
 }>();
 
 const { updateType, deleteTie } = injectEditTie();
-const isHovered = ref(false);
 
-const values: Record<string, TieType> = {
-  hammer: { hammer: true },
-  slide: { slide: true },
-  "hammer-slide": { hammer: true, slide: true },
-};
-type Value = keyof typeof values;
-
-const options = computed<[Value, string][]>(() => {
+const options = computed<[TieType, string][]>(() => {
   const connected =
     props.tie.midiFrom !== undefined && props.tie.midiTo !== undefined;
   const ascending = !connected || props.tie.midiFrom! < props.tie.midiTo!;
   const hammerChar = ascending ? "H" : "P";
-  const slideChar = ascending ? "/" : "\\";
+  const slideChar = ascending ? "&#x27CB;" : "&#x27CD;";
+  const tieSlideChar = `<span class="tie-slide">
+    <span class="tie">&smile;</span>
+    <span class="slide">${slideChar}</span>
+  </span>`;
   return [
-    ["hammer", hammerChar],
-    ["slide", slideChar],
-    ["hammer-slide", hammerChar + slideChar],
+    [TieType.Hammer, hammerChar],
+    [TieType.Slide, slideChar],
+    [TieType.TieSlide, tieSlideChar],
+    [TieType.Tap, "T"],
   ];
 });
 
 const model = defineModel({
   get() {
-    if (props.tie.type.hammer && props.tie.type.slide) {
-      return "hammer-slide";
-    } else if (props.tie.type.hammer) {
-      return "hammer";
-    } else {
-      return "slide";
-    }
+    return props.tie.type;
   },
   set(value) {
-    updateType(props.tie, values[value as Value]);
+    updateType(props.tie, value as TieType);
   },
 });
 </script>
 
 <template>
   <Teleport to=".overlay-controls">
-    <foreignObject :x :y :width="50" height="1000">
+    <foreignObject :x :y :width="55" height="1000">
       <OverlaySelect
         v-model="model"
         class="select"
         :class="{ inactive: !active }"
         :placeholder="'H'"
         :options
-        :override-display="active || isHovered ? {} : { 'hammer-slide': 'H' }"
+        :override-display="{ [TieType.Slide]: '', [TieType.TieSlide]: '' }"
         @delete-clicked="deleteTie(tie)"
-        @mouseenter="isHovered = true"
-        @mouseleave="isHovered = false"
-        @option-selected="isHovered = false"
       />
     </foreignObject>
   </Teleport>
@@ -81,6 +69,28 @@ const model = defineModel({
 
   &:deep(.control) {
     width: 10px;
+  }
+}
+
+.select {
+  &:deep(.tie-slide) {
+    display: grid;
+    grid-template-rows: 1fr;
+    grid-template-columns: 1fr;
+    transform: translateY(-10%);
+    & .tie {
+      font-size: 100%;
+      display: block;
+      grid-column: 1 / 1;
+      grid-row: 1 / 1;
+      transform: translateY(80%);
+    }
+
+    & .slide {
+      font-size: 90%;
+      grid-column: 1 / 1;
+      grid-row: 1 / 1;
+    }
   }
 }
 </style>

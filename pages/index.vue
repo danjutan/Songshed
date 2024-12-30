@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { GuitarNote } from "~/model/data";
+import { TieType, type GuitarNote } from "~/model/data";
 import { createTabStore } from "~/model/stores";
 
 const store = createTabStore();
@@ -80,32 +80,32 @@ ties.setTie(2, Spacing.Quarter * 11, {
 
 ties.setTie(2, Spacing.Quarter * 2, {
   to: Spacing.Quarter * 2 + Spacing.Sixteenth,
-  type: { hammer: true },
+  type: TieType.Hammer,
 });
 
 ties.setTie(1, Spacing.Quarter * 3 + Spacing.Sixteenth, {
   to: Spacing.Whole + Spacing.Sixteenth,
-  type: { slide: true, hammer: true },
+  type: TieType.TieSlide,
 });
 
 ties.setTie(2, Spacing.Whole * 2 - Spacing.Sixteenth, {
   to: Spacing.Whole * 2,
-  type: { hammer: true },
+  type: TieType.Hammer,
 });
 
 ties.setTie(2, Spacing.Whole * 3 - Spacing.Eighth, {
   to: Spacing.Whole * 3,
-  type: { slide: true },
+  type: TieType.Slide,
 });
 
 ties.setTie(0, Spacing.Quarter * 9, {
   to: Spacing.Quarter * 10 - Spacing.Sixteenth,
-  type: { slide: true },
+  type: TieType.Slide,
 });
 
 ties.setTie(2, Spacing.Quarter * 9 - Spacing.Sixteenth, {
   to: Spacing.Quarter * 10 + Spacing.Sixteenth,
-  type: { hammer: true },
+  type: TieType.Hammer,
 });
 </script>
 

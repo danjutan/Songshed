@@ -4,7 +4,7 @@ import type {
   CellHoverEvents,
   HoveredRow,
 } from "../events/provide-cell-hover-events";
-import type { TieType } from "~/model/data";
+import { TieType } from "~/model/data";
 
 export function provideTieAddState(
   props: ReactiveComputed<{
@@ -21,7 +21,7 @@ export function provideTieAddState(
   const to = ref<number>(0);
   const midiFrom = ref<Midi>();
   const midiTo = ref<Midi>();
-  const tieType: TieType = { hammer: true };
+  const defaultTieType = TieType.Hammer;
   // const hitNote = ref<number | undefined>();
 
   const dragDirection = computed<"right" | "left" | undefined>(() => {
@@ -108,7 +108,7 @@ export function provideTieAddState(
       });
     } else if (to.value !== from.value) {
       props.store.ties.setTie(dragFromString.value, from.value, {
-        type: tieType,
+        type: defaultTieType,
         to: to.value,
       });
     }
@@ -128,7 +128,7 @@ export function provideTieAddState(
           string: dragFromString.value,
           from: from.value,
           to: to.value,
-          type: tieType,
+          type: defaultTieType,
           midiFrom: midiFrom.value,
           midiTo: midiTo.value,
         };
