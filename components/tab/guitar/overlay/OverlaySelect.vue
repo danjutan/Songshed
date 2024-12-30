@@ -4,6 +4,7 @@ import VueSelect from "vue3-select-component";
 const props = defineProps<{
   options: Array<[value: string, label: string]>;
   placeholder: string;
+  overrideDisplay?: { [value: string]: string };
 }>();
 
 const model = defineModel({
@@ -28,7 +29,7 @@ const options = computed(() => {
 <template>
   <VueSelect v-model="model" class="select" :options :placeholder>
     <template #value="{ option }">
-      <span v-html="option.label" />
+      <span v-html="overrideDisplay?.[option.value!] || option.label" />
     </template>
     <template #option="{ option }">
       <span v-html="option.label" />

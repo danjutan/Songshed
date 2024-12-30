@@ -12,6 +12,7 @@ const props = defineProps<{
 }>();
 
 const { updateType, deleteTie } = injectEditTie();
+const isHovered = ref(false);
 
 const values: Record<string, TieType> = {
   hammer: { hammer: true },
@@ -32,6 +33,7 @@ const options = computed<[Value, string][]>(() => {
     ["hammer-slide", hammerChar + slideChar],
   ];
 });
+
 const model = defineModel({
   get() {
     if (props.tie.type.hammer && props.tie.type.slide) {
@@ -57,7 +59,11 @@ const model = defineModel({
         :class="{ inactive: !active }"
         :placeholder="'H'"
         :options
+        :override-display="active || isHovered ? {} : { 'hammer-slide': 'H' }"
         @delete-clicked="deleteTie(tie)"
+        @mouseenter="isHovered = true"
+        @mouseleave="isHovered = false"
+        @option-selected="isHovered = false"
       />
     </foreignObject>
   </Teleport>
@@ -67,7 +73,7 @@ const model = defineModel({
 .inactive:not(:hover) {
   --vs-input-bg: transparent;
   --vs-input-outline: transparent;
-  --vs-border: 0px;
+  --vs-border: 1px solid transparent;
 
   &:deep(.indicators-container) {
     display: none;

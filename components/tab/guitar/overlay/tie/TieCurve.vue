@@ -28,7 +28,7 @@ const curvePath = computed(() => {
 
 const label = reactiveComputed(() => {
   return {
-    x: (props.x2 + props.x1) / 2 + (props.shiftLabel ? 6 : -5),
+    x: (props.x2 + props.x1) / 2 - 1 + (props.shiftLabel ? 6 : -5),
     y: bottom.value - 10,
   };
 });
