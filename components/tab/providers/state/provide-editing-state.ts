@@ -12,9 +12,11 @@ export function provideEditingState(): EditingState {
   function setEditing(string: number, position: number) {
     editingNote.string = string;
     editingNote.position = position;
+    console.log("set editing", string, position);
   }
 
   function blurEditing() {
+    console.log("blurred!", editingNote.string, editingNote.position);
     editingNote.string = undefined;
     editingNote.position = undefined;
   }

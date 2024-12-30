@@ -136,6 +136,7 @@ const columnEnd = computed(
   z-index: 2;
   position: relative; /* somehow makes the VueSelect hover events work right */
   height: calc(100% + var(--cell-height) / 2 + 100px);
+  overflow: visible;
 }
 
 .overlay,

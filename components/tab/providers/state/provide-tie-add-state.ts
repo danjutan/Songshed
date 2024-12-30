@@ -58,7 +58,7 @@ export function provideTieAddState(
       to.value = position;
       return;
     }
-    // TODO: use this collision logic for editing, too. also, document it. maybe we don't need a separate bende-edit-state?
+    // TODO: use this collision logic for editing, too (there's currently inconsistencies). also, document it. maybe we don't need a separate bend-edit-state?
     if (position < dragFrom.value) {
       for (
         let i = dragFrom.value - props.subUnit;

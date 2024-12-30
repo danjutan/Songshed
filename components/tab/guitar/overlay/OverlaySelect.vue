@@ -2,16 +2,13 @@
 import VueSelect from "vue3-select-component";
 
 const props = defineProps<{
-  options: Array<[value: string, label: string]>;
-  placeholder: string;
+  options: Array<[value: string | number, label: string]>;
+  active: boolean; // if false, becomes active on hover
+  placeholder?: string;
   overrideDisplay?: { [value: string]: string };
 }>();
 
-const model = defineModel({
-  get(value) {
-    return `${value}`;
-  },
-});
+const model = defineModel();
 
 const emit = defineEmits<{
   deleteClicked: () => void;
@@ -27,7 +24,13 @@ const options = computed(() => {
 </script>
 
 <template>
-  <VueSelect v-model="model" class="select" :options :placeholder>
+  <VueSelect
+    v-model="model"
+    class="select"
+    :class="{ inactive: !active }"
+    :options
+    :placeholder
+  >
     <template #value="{ option }">
       <span v-html="overrideDisplay?.[option.value!] ?? option.label" />
     </template>
@@ -51,25 +54,6 @@ const options = computed(() => {
 
 <style scoped>
 /* https://vue3-select-component.vercel.app/styling.html */
-/*
-.select:hover {
-  width: 100%;
-}
-
-.select :deep(.control) {
-  min-height: 0px;
-  height: 0px;
-}
-
-
-.select:not(:hover) {
-  --vs-border: 0px;
-  --vs-input-outline: none;
-}
-
-.select:not(:hover) :deep(.indicators-container) {
-  display: none !important;
-} */
 
 .select {
   pointer-events: all;
@@ -79,6 +63,22 @@ const options = computed(() => {
   --vs-option-padding: 1px 2px;
   --vs-indicators-gap: 0px;
   --vs-menu-offset-top: 2px;
+
+  &.inactive:not(:hover):not(.open) {
+    --vs-input-bg: transparent;
+    --vs-input-outline: transparent;
+    --vs-border: 1px solid transparent;
+
+    width: fit-content;
+
+    &:deep(.indicators-container) {
+      display: none;
+    }
+
+    &:deep(.control) {
+      /* width: 10px; */
+    }
+  }
 }
 
 .select.open :deep(.single-value) {

@@ -13,8 +13,6 @@ export interface BendRenderProps {
 
 const props = defineProps<BendRenderProps>();
 const bendEditState = injectBendEditState();
-const columnsMap = injectColumnsMap();
-const tablineBounds = injectTablineBounds();
 
 const { getNextStackPos } = injectStackResizeObserver();
 
@@ -29,21 +27,19 @@ const upswingToPos = computed(() => throughPos.value ?? props.bend.to);
 
 const isPrebend = computed(() => props.bend.from === props.bend.to);
 
-const bendLabels: { [bend: number]: string } = {
-  0.5: "&half;",
-  1: "full",
-  1.5: "1&half;",
-};
+const options: Array<[value: number, label: string]> = [
+  [0.5, "&half;"],
+  [1, "full"],
+  [1.5, "1&half;"],
+];
 
-const bendLabel = computed(
-  () => bendLabels[props.bend.bend] || props.bend.bend,
-);
-
-const bendColumn = computed(() => {
-  if (upswingToPos.value > tablineBounds.last) {
-    return false;
-  }
-  return columnsMap[upswingToPos.value].column;
+const model = defineModel({
+  get() {
+    return props.bend.bend;
+  },
+  set(value) {
+    bendEditState.setBendValue(props.bend, value as number);
+  },
 });
 
 const upswingArrowHover = ref(false);
@@ -61,7 +57,7 @@ const releaseArrowHover = ref(false);
         :placeholder="bendLabel"
         :model-value="props.bend.bend"
         @update:model-value="bendEditState.setBendValue(props.bend, $event)"
-        @on-delete-clicked="bendEditState.deleteBend(props.bend)"
+        @on-delete-clicked=""
       />
     </Teleport>
   </foreignObject> -->
@@ -117,10 +113,6 @@ const releaseArrowHover = ref(false);
 
       <foreignObject
         v-if="!through || through.left <= to.left"
-        :x="upswingTo.left - 1.3 * (upswingTo.right - upswingTo.left)"
-        :y="0"
-        :width="3 * (upswingTo.right - upswingTo.left) + 100"
-        :height="200"
         @mouseover="bendEditState.onLabelHover"
       >
         <!-- <select ref="select" @input="onSelectInput">
@@ -135,6 +127,27 @@ const releaseArrowHover = ref(false);
             <option value="delete">&Cross;</option>
           </select> -->
       </foreignObject>
+
+      <Teleport to=".overlay-controls">
+        <foreignObject :x="upswingTo.left" :y="-3" :width="65" :height="200">
+          <div
+            class="select-container"
+            :style="{
+              width: `${upswingTo.right - upswingTo.left}px`,
+              display: 'flex',
+              justifyContent: 'center',
+            }"
+          >
+            <OverlaySelect
+              v-model="model"
+              :active="false"
+              :options
+              class="select"
+              @delete-clicked="bendEditState.deleteBend(props.bend)"
+            />
+          </div>
+        </foreignObject>
+      </Teleport>
 
       <path
         class="upswing-curve"
@@ -207,54 +220,6 @@ const releaseArrowHover = ref(false);
   stroke-width: 1;
   stroke: black;
   fill: none;
-}
-
-.bend-select {
-  pointer-events: all;
-  grid-column: v-bind(bendColumn);
-  grid-row: 1;
-}
-
-.bend-label {
-  display: grid;
-  justify-content: center;
-  align-items: end;
-  /* justify-content: center; */
-  width: 120%;
-  &:not(.dragging) {
-    select:hover + span {
-      background-color: lightgray;
-    }
-  }
-
-  & span {
-    /* align-self: start; */
-    font-size: calc(var(--note-font-size) * 0.75);
-    cursor: text;
-    padding: 0px 7px;
-    margin-bottom: 2px;
-    grid-row: 1 / 1;
-    grid-column: 1 / 1;
-  }
-
-  /* & select {
-    pointer-events: all;
-    width: calc(var(--cell-height));
-    margin-top: 1px;
-    cursor: text;
-    appearance: none;
-    border: none;
-    outline: none;
-    color: transparent;
-    text-align: center;
-    height: v-bind(selectHeight);
-    grid-row: 1 / 1;
-    grid-column: 1 / 1;
-
-    & [value="delete"] {
-      color: darkred;
-    }
-  } */
 }
 
 rect {

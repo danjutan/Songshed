@@ -146,7 +146,7 @@ function newAnnotationRow() {
 
 function onMouseUp() {
   cellHoverEvents.mouseup();
-  editingState.blurEditing();
+  // editingState.blurEditing();
 }
 
 function onLeaveTab() {

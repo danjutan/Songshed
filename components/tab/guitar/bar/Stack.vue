@@ -102,7 +102,7 @@ let refRegistered: boolean;
         crosshair: tieable(note, string),
         collapse,
       }"
-      @click="inputRefs![string]?.focus()"
+      @click="/*inputRefs![string]?.focus()*/ () => {}"
       @mousedown="(e) => onSpotMouseDown(e, string, note)"
       @mouseenter="hovering = string"
       @mouseleave="hovering = undefined"

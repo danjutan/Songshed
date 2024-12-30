@@ -48,6 +48,7 @@ const isEditing = computed(
     editingNote?.string === props.string,
 );
 
+// TODO: I think we can get rid of this
 defineExpose({ focus });
 
 function onBlur(e: Event) {
@@ -95,6 +96,7 @@ onMounted(() => {
 });
 
 function onClick(e: MouseEvent) {
+  console.log("click handler");
   focus();
 }
 

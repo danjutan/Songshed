@@ -43,12 +43,11 @@ const model = defineModel({
 
 <template>
   <Teleport to=".overlay-controls">
-    <foreignObject :x :y :width="55" height="1000">
+    <foreignObject :x :y :width="55" :height="200">
       <OverlaySelect
         v-model="model"
         class="select"
-        :class="{ inactive: !active }"
-        :placeholder="'H'"
+        :active
         :options
         :override-display="{ [TieType.Slide]: '', [TieType.TieSlide]: '' }"
         @delete-clicked="deleteTie(tie)"
@@ -58,39 +57,23 @@ const model = defineModel({
 </template>
 
 <style scoped>
-.inactive:not(:hover) {
-  --vs-input-bg: transparent;
-  --vs-input-outline: transparent;
-  --vs-border: 1px solid transparent;
-
-  &:deep(.indicators-container) {
-    display: none;
+.select :deep(.tie-slide) {
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr;
+  transform: translateY(-10%);
+  & .tie {
+    font-size: 100%;
+    display: block;
+    grid-column: 1 / 1;
+    grid-row: 1 / 1;
+    transform: translateY(80%);
   }
 
-  &:deep(.control) {
-    width: 10px;
-  }
-}
-
-.select {
-  &:deep(.tie-slide) {
-    display: grid;
-    grid-template-rows: 1fr;
-    grid-template-columns: 1fr;
-    transform: translateY(-10%);
-    & .tie {
-      font-size: 100%;
-      display: block;
-      grid-column: 1 / 1;
-      grid-row: 1 / 1;
-      transform: translateY(80%);
-    }
-
-    & .slide {
-      font-size: 90%;
-      grid-column: 1 / 1;
-      grid-row: 1 / 1;
-    }
+  & .slide {
+    font-size: 90%;
+    grid-column: 1 / 1;
+    grid-row: 1 / 1;
   }
 }
 </style>
