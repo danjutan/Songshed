@@ -4,6 +4,12 @@ import type { GuitarNote } from "~/model/data";
 import { useTemplateRef } from "vue";
 import { injectEditingState } from "../../providers/state/provide-editing-state";
 import { injectCellHoverEvents } from "../../providers/events/provide-cell-hover-events";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
+import {
+  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 const props = withDefaults(
   defineProps<{
@@ -34,6 +40,10 @@ const { editingNote, setEditing } = injectEditingState();
 const { hover } = injectCellHoverEvents();
 
 const input = useTemplateRef("input");
+const container = useTemplateRef("container");
+
+const isDragging = ref(false);
+let dndCleanup: () => void;
 
 function focus() {
   input.value!.focus();
@@ -41,6 +51,36 @@ function focus() {
   setEditing(props.string, props.position);
   emit("focus");
 }
+
+onMounted(() => {
+  if (props.startFocused) {
+    focus();
+  }
+  dndCleanup = combine(
+    draggable({
+      element: container.value!,
+      onGenerateDragPreview: ({ nativeSetDragImage, source }) => {
+        // if (source.data.selecting) {
+        //   disableNativeDragPreview({ nativeSetDragImage });
+        //   preventUnhandled.start();
+        // }
+      },
+      getInitialData: (s) => ({
+        position: props.position,
+        string: props.string,
+        // selecting: s.input.shiftKey,
+      }),
+      onDragStart: () => (isDragging.value = true),
+      onDrop: () => (isDragging.value = false),
+    }),
+    dropTargetForElements({
+      element: container.value!,
+      // getData: () => ({ position: props.position, string: props.string }),
+      canDrop: ({ source }) => source.data.position !== undefined,
+      onDragEnter: focus,
+    }),
+  );
+});
 
 const isEditing = computed(
   () =>
@@ -89,12 +129,6 @@ function onInput(e: Event) {
   target.value = `${noteText.value}`;
 }
 
-onMounted(() => {
-  if (props.startFocused) {
-    focus();
-  }
-});
-
 function onClick(e: MouseEvent) {
   console.log("click handler");
   focus();
@@ -104,13 +138,25 @@ function onClick(e: MouseEvent) {
 //   tieAdd.start(props.string, props.position, props.data!.midi!);
 //   e.stopImmediatePropagation();
 // }
+
+function disableNativeDragPreview(arg0: {
+  nativeSetDragImage: ((image: Element, x: number, y: number) => void) | null;
+}) {
+  throw new Error("Function not implemented.");
+}
 </script>
 
 <template>
   <div
+    ref="container"
     class="note-input"
-    :class="{ hovering, editing: isEditing, 'has-note': hasNote }"
-    @mouseover="hover(string, position)"
+    :class="{
+      hovering,
+      editing: isEditing,
+      dragging: isDragging,
+      'has-note': hasNote,
+    }"
+    @mouseover="() => {} /*hover(string, position)*/"
   >
     <span class="input-bg">{{ noteText }}</span>
     <!-- <div class="input-hover" /> -->
@@ -134,6 +180,10 @@ function onClick(e: MouseEvent) {
   display: grid;
   justify-items: center;
   align-items: center; /*comment this if you want other centering*/
+
+  &.dragging {
+    opacity: 0.8;
+  }
 }
 
 input {
