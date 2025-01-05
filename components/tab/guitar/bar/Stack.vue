@@ -6,6 +6,15 @@ import { injectSelectionState } from "../../providers/state/provide-selection-st
 import { injectEditingState } from "../../providers/state/provide-editing-state";
 import { injectStackResizeObserver } from "../../providers/events/provide-resize-observer";
 
+import {
+  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { getNoteInputDragData, getNoteInputDropData } from "../../dnd/types";
+import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
+import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
+import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 const props = withDefaults(
   defineProps<{
     notes: NoteStack<GuitarNote>;
@@ -22,11 +31,10 @@ const emit = defineEmits<{
   noteChange: [string: number, note: GuitarNote];
 }>();
 
-const selecting = injectSelectionState();
 const editing = injectEditingState();
 const tieAdd = injectTieAddState();
-
 const resizeState = injectStackResizeObserver();
+const { isSelected, selectNote, selections } = injectSelectionState();
 
 const noteSpots = computed(() => {
   const noteSpots = new Array<GuitarNote | undefined>(props.tuning.length);
@@ -37,22 +45,16 @@ const noteSpots = computed(() => {
   return noteSpots;
 });
 
-const selected = computed(() => selecting.isSelected(props.position));
-
-const backgroundColor = computed(() =>
-  selected.value ? "var(--highlight-color)" : "transparent",
-);
+// const backgroundColor = computed(() =>
+//   selected.value ? "var(--highlight-color)" : "transparent",
+// );
 
 const hovering = ref<number | undefined>();
 
-function onStackMouseDown() {
-  selecting.start(props.position);
-  console.log(props.position);
-}
-
-function onStackMouseMove() {
-  if (selecting.dragging) (document.activeElement as HTMLElement).blur();
-}
+// TODO: move to child
+// function onStackMouseMove() {
+//   if (selecting.dragging) (document.activeElement as HTMLElement).blur();
+// }
 
 const inputRefs = useTemplateRef("inputs");
 
@@ -62,8 +64,7 @@ const tieable = (
 ): note is { note: Midi } =>
   note !== undefined &&
   note.note !== "muted" &&
-  editing.editingNote?.string === string &&
-  editing.editingNote.position === props.position;
+  editing.isEditing({ string, position: props.position });
 
 function onSpotMouseDown(
   e: MouseEvent,
@@ -78,32 +79,58 @@ function onSpotMouseDown(
   }
 }
 
-let refRegistered: boolean;
+const stackContainerRef = useTemplateRef("stack");
+const noteContainerRefs = useTemplateRef("noteContainers");
+
+const dndCleanups: CleanupFn[] = [];
+onMounted(() => {
+  resizeState.registerStackRef(props.position, stackContainerRef.value);
+  for (const [string, container] of noteContainerRefs.value!.entries()) {
+    const notePosition = { position: props.position, string };
+    dndCleanups[string] = combine(
+      dropTargetForElements({
+        element: container,
+        getData: () => getNoteInputDropData(notePosition),
+        // onDragEnter: focus,
+      }),
+      draggable({
+        element: container,
+        onGenerateDragPreview: ({ nativeSetDragImage, source }) => {
+          // if (source.data.selecting) {
+          disableNativeDragPreview({ nativeSetDragImage });
+          preventUnhandled.start();
+          // }
+        },
+        getInitialData: () =>
+          getNoteInputDragData({
+            ...notePosition,
+            dragType: editing.isEditing(notePosition) ? "tie-add" : "select",
+            data: noteSpots.value[string],
+          }),
+      }),
+    );
+  }
+});
+
+onUnmounted(() => {
+  for (const cleanup of dndCleanups) {
+    cleanup?.();
+  }
+});
 </script>
 
 <template>
-  <div
-    :ref="
-      (el) => {
-        if (!refRegistered) {
-          resizeState.registerStackRef(position, el as HTMLDivElement | null);
-          refRegistered = true;
-        }
-      }
-    "
-    class="stack"
-    @mousedown="onStackMouseDown"
-    @mousemove="onStackMouseMove"
-  >
+  <div ref="stack" class="stack">
     <div
       v-for="(note, string) in noteSpots"
+      ref="noteContainers"
       class="container"
       :class="{
+        selected: isSelected({ string, position: props.position }),
         crosshair: tieable(note, string),
         collapse,
       }"
-      @click="/*inputRefs![string]?.focus()*/ () => {}"
-      @mousedown="(e) => onSpotMouseDown(e, string, note)"
+      @click="() => selectNote({ string, position: props.position })"
       @mouseenter="hovering = string"
       @mouseleave="hovering = undefined"
     >
@@ -121,12 +148,11 @@ let refRegistered: boolean;
         <NoteInput
           ref="inputs"
           :data="note"
-          :string="string"
-          :position="position"
+          :note-position="{ string, position: props.position }"
           :tuning="props.tuning[string]"
           :frets="props.frets"
-          :blocking-color="selected ? 'var(--highlight-blocking)' : undefined"
           :hovering="hovering === string"
+          :selected="isSelected({ string, position: props.position })"
           @note-delete="emit('noteDelete', string)"
           @note-change="
             (updated) => emit('noteChange', string, { ...note, ...updated })
@@ -141,16 +167,18 @@ let refRegistered: boolean;
 .stack {
   display: grid;
   grid-template-rows: subgrid;
-  background-color: v-bind(backgroundColor);
 }
 
 .container {
   display: flex;
   height: var(--cell-height);
-  /* border: 1px solid red; */
   justify-content: center;
   align-items: center;
   cursor: text;
+}
+
+.container.selected {
+  background-color: var(--highlight-color);
 }
 
 .container.crosshair {

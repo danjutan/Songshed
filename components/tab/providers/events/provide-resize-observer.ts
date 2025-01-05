@@ -24,7 +24,7 @@ export function withOffset(coords: StackCoords, offset: number): StackCoords {
 
 function createStackResizeObserver(): StackResizeObserver {
   interface Stack {
-    x: StackCoords; //reactive computed
+    x: ReactiveComputed<StackCoords>;
     prev?: number;
     next?: number;
   }

@@ -1,83 +1,161 @@
-import type { CellHoverEvents } from "../events/provide-cell-hover-events";
+import type { GuitarStore } from "~/model/stores";
+
+interface NotePosition {
+  position: number;
+  string: number;
+}
+interface Selection {
+  start: NotePosition;
+  end: NotePosition;
+}
+
+type NotePositionKey = `${number}-${number}`;
+export const notePositionKey = (position: NotePosition): NotePositionKey =>
+  `${position.string}-${position.position}`;
 
 export interface SelectionState {
-  selectedRange?: { start: number; end: number };
-  start: (position: number, end?: number) => void;
-  drag: (position: number, end?: number) => void;
-  clear: () => void;
-  end: () => void;
-  isSelected: (position: number) => boolean;
-  dragging: boolean;
+  selections: Set<NotePositionKey>;
+  toggleNote: (position: NotePosition) => void;
+  addSelection: (selection: Selection) => void;
+  clearSelections: () => void;
+  isSelected: (position: NotePosition) => boolean;
+  moveSelectionsIfValid: (anchor: NotePosition, moveTo: NotePosition) => void;
+  selectNote: (position: NotePosition) => void;
 }
 
 export function provideSelectionState(
-  cellHoverEvents: CellHoverEvents,
+  guitar: ComputedRef<GuitarStore | undefined>,
 ): SelectionState {
-  const startPosition = ref<number | undefined>();
-  const endPosition = ref<number | undefined>();
-  const dragging = ref(false);
+  const selections = reactive<Set<NotePositionKey>>(new Set());
 
-  const selectedRange = () => {
-    if (startPosition.value === undefined || endPosition.value === undefined)
-      return;
-    return {
-      start: startPosition.value,
-      end: endPosition.value,
-    };
-  };
-
-  cellHoverEvents.addHoverListener((string, position) => drag(position));
-  cellHoverEvents.addMouseUpListener(end);
-
-  function start(position: number, end?: number) {
-    dragging.value = true;
-    const [first, last] = [position, end ?? position].sort((a, b) => a - b);
-    startPosition.value = first;
-    endPosition.value = last;
-  }
-
-  function drag(position: number, end?: number) {
-    if (!dragging.value || startPosition.value === undefined) return;
-    const [first, last] = [position, end ?? position].sort((a, b) => a - b);
-    if (position <= startPosition.value) {
-      startPosition.value = first;
+  function toggleNote(position: NotePosition) {
+    if (selections.has(notePositionKey(position))) {
+      selections.delete(notePositionKey(position));
       return;
     }
-    endPosition.value = last;
-  }
-  function end() {
-    dragging.value = false;
-  }
-  function clear() {
-    startPosition.value = undefined;
-    endPosition.value = undefined;
-  }
-  function isSelected(position: number) {
-    const range = selectedRange();
-    if (!range) return false;
-    return range.start <= position && position <= range.end;
+    selections.add(notePositionKey(position));
   }
 
-  const selectionState = {
-    get selectedRange() {
-      return selectedRange();
-    },
-    get dragging() {
-      return dragging.value;
-    },
-    start,
-    drag,
-    clear,
-    end,
+  function selectNote(position: NotePosition): void {
+    selections.add(notePositionKey(position));
+  }
+
+  function addSelection(selection: Selection): void {
+    const minString = Math.min(selection.start.string, selection.end.string);
+    const maxString = Math.max(selection.start.string, selection.end.string);
+    const minPosition = Math.min(
+      selection.start.position,
+      selection.end.position,
+    );
+    const maxPosition = Math.max(
+      selection.start.position,
+      selection.end.position,
+    );
+
+    for (let string = minString; string <= maxString; string++) {
+      for (let position = minPosition; position <= maxPosition; position++) {
+        selections.add(notePositionKey({ string, position }));
+      }
+    }
+  }
+
+  function clearSelections(): void {
+    selections.clear();
+  }
+
+  // function inSelection(position: NotePosition, selection: Selection): boolean {
+  //   const minString = Math.min(selection.start.string, selection.end.string);
+  //   const maxString = Math.max(selection.start.string, selection.end.string);
+  //   const minPosition = Math.min(
+  //     selection.start.position,
+  //     selection.end.position,
+  //   );
+  //   const maxPosition = Math.max(
+  //     selection.start.position,
+  //     selection.end.position,
+  //   );
+
+  //   return (
+  //     position.string >= minString &&
+  //     position.string <= maxString &&
+  //     position.position >= minPosition &&
+  //     position.position <= maxPosition
+  //   );
+  // }
+
+  function isSelected(position: NotePosition): boolean {
+    return selections.has(notePositionKey(position));
+  }
+
+  function moveSelectionsIfValid(
+    anchor: NotePosition,
+    moveTo: NotePosition,
+  ): void {
+    if (!guitar.value) return;
+    const stringDiff = moveTo.string - anchor.string;
+    const positionDiff = moveTo.position - anchor.position;
+
+    // Get all selected positions
+    const selectedPositions = Array.from(selections).map((key) => {
+      const [string, position] = key.split("-").map(Number);
+      return { string, position };
+    });
+
+    if (stringDiff < 0) {
+      const minString = Math.min(...selectedPositions.map((p) => p.string));
+      if (minString + stringDiff < 0) {
+        return;
+      }
+    }
+
+    if (stringDiff > 0) {
+      const maxString = Math.max(...selectedPositions.map((p) => p.string));
+      if (maxString + stringDiff > guitar.value.strings) {
+        return;
+      }
+    }
+
+    if (positionDiff < 0) {
+      const minPosition = Math.min(...selectedPositions.map((p) => p.position));
+      if (minPosition + positionDiff < 0) {
+        return;
+      }
+    }
+
+    // Clear current selections
+    selections.clear();
+
+    // Add new shifted positions
+    for (const pos of selectedPositions) {
+      guitar.value.moveNote(pos, {
+        string: pos.string + stringDiff,
+        position: pos.position + positionDiff,
+      });
+      selections.add(
+        notePositionKey({
+          string: pos.string + stringDiff,
+          position: pos.position + positionDiff,
+        }),
+      );
+    }
+  }
+
+  const selectionState: SelectionState = {
+    toggleNote,
+    selectNote,
+    selections,
+    addSelection,
+    clearSelections,
     isSelected,
+    moveSelectionsIfValid,
   };
 
   provide(SelectionInjectionKey, selectionState);
   return selectionState;
 }
 
-export function injectSelectionState() {
+const SelectionInjectionKey = Symbol() as InjectionKey<SelectionState>;
+
+export function injectSelectionState(): SelectionState {
   return inject(SelectionInjectionKey) as SelectionState;
 }
-
-const SelectionInjectionKey = Symbol() as InjectionKey<SelectionState>;

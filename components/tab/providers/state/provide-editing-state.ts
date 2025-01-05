@@ -1,29 +1,37 @@
+import type { NotePosition } from "~/model/stores";
+
 export interface EditingState {
-  editingNote?: { string?: number; position?: number };
-  setEditing: (string: number, position: number) => void;
+  editingNote: Ref<NotePosition | undefined>;
+  setEditing: (notePosition: NotePosition) => void;
   blurEditing: () => void;
+  isEditing: (notePosition: NotePosition) => boolean;
 }
 
 const EditingInjectionKey = Symbol() as InjectionKey<EditingState>;
 
 export function provideEditingState(): EditingState {
-  const editingNote = reactive<{ string?: number; position?: number }>({});
+  const editingNote = ref<NotePosition | undefined>(undefined);
 
-  function setEditing(string: number, position: number) {
-    editingNote.string = string;
-    editingNote.position = position;
-    console.log("set editing", string, position);
+  function setEditing(notePosition: NotePosition) {
+    editingNote.value = notePosition;
   }
 
   function blurEditing() {
-    console.log("blurred!", editingNote.string, editingNote.position);
-    editingNote.string = undefined;
-    editingNote.position = undefined;
+    editingNote.value = undefined;
   }
+
+  function isEditing(notePosition: NotePosition) {
+    return (
+      editingNote.value?.position === notePosition.position &&
+      editingNote.value?.string === notePosition.string
+    );
+  }
+
   const editingState = {
     editingNote,
     setEditing,
     blurEditing,
+    isEditing,
   };
 
   provide(EditingInjectionKey, editingState);

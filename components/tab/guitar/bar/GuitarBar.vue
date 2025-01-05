@@ -4,6 +4,7 @@ import Strings from "./Strings.vue";
 import Stack from "./Stack.vue";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectEditingState } from "../../providers/state/provide-editing-state";
+import type { NotePosition } from "~/model/stores";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
@@ -17,8 +18,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  noteDelete: [position: number, string: number];
-  noteChange: [position: number, string: number, note: GuitarNote];
+  noteDelete: [notePosition: NotePosition];
+  noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
 
 const settings = injectSettingsState();
@@ -33,7 +34,7 @@ const collapsed = computed<Set<number>>(() => {
     [...props.stackData]
       .filter(([position, stack]) => {
         // if (expanded.has(position)) return false;
-        if (editing.editingNote?.position === position) return false;
+        if (editing.editingNote.value?.position === position) return false;
         if (settings.collapseAll) return true;
         if (settings.collapseEmpty && stack.size === 0) return true;
         if (settings.collapseSubdivisions && isSubdivision(position))
@@ -70,9 +71,11 @@ const collapsed = computed<Set<number>>(() => {
       :frets
       @note-change="
         (string: number, note: GuitarNote) =>
-          emit('noteChange', position, string, note)
+          emit('noteChange', { position, string }, note)
       "
-      @note-delete="(string: number) => emit('noteDelete', position, string)"
+      @note-delete="
+        (string: number) => emit('noteDelete', { position, string })
+      "
     />
   </template>
 </template>

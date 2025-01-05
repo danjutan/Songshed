@@ -16,7 +16,10 @@ import { provideBendEditState } from "./providers/state/provide-bend-edit-state"
 import { provideStackResizeObserver } from "./providers/events/provide-resize-observer";
 import { provideColumnsMap } from "./providers/provide-columns-map";
 
+import { useTieAddMonitor } from "./dnd/use-tie-add-monitor";
+
 import { injectSettingsState } from "./providers/state/provide-settings-state";
+import { useSelectMonitor } from "./dnd/use-select-monitor";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -34,7 +37,9 @@ const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't 
 const newBarStart = ref(0);
 
 const cellHoverEvents = provideCellHoverEvents();
-const selectionState = provideSelectionState(cellHoverEvents);
+const selectionState = provideSelectionState(
+  computed(() => props.tabStore.guitar),
+);
 const editingState = provideEditingState();
 
 provideStackResizeObserver();
@@ -54,6 +59,11 @@ provideBendEditState(
     tieStore: props.tabStore.guitar?.ties,
   })),
 );
+
+onMounted(() => {
+  useTieAddMonitor(tieAddState);
+  useSelectMonitor(selectionState);
+});
 
 export type Bar = {
   start: number;
@@ -185,12 +195,12 @@ function joinBreak(start: number) {
 
 function onKeyUp(e: KeyboardEvent) {
   if (e.key === "Backspace") {
-    if (props.tabStore.guitar && selectionState.selectedRange) {
-      props.tabStore.guitar?.deleteStacks(
-        selectionState.selectedRange.start,
-        selectionState.selectedRange.end,
-      );
-    }
+    // if (props.tabStore.guitar && selectionState.selectedRange) {
+    //   props.tabStore.guitar?.deleteStacks(
+    //     selectionState.selectedRange.start,
+    //     selectionState.selectedRange.end,
+    //   );
+    // }
   }
 }
 
@@ -318,14 +328,18 @@ const overlayedBarStart = ref<number | undefined>();
   --delete-overlay-bg: rgba(255, 0, 0, 0.15);
   --string-width: 1px;
   --string-color: gray;
-  --highlight-color: rgba(172, 206, 247, 0.4);
-  /*https://graphicdesign.stackexchange.com/a/113050*/
-  --highlight-blocking: rgb(221.8, 235.4, 251.8);
-  /* --highlight-blocking: rgb(
-    from var(--highlight-color) calc(255 - 0.4 * (255 - r))
-      calc(255 - 0.4 * (255 - g)) calc(255 - 0.4 * (255 - b))
-  );*/
   --note-hover-color: rgba(172, 206, 247, 0.8);
+  --highlight-color: rgba(var(--h-r), var(--h-g), var(--h-b), var(--h-a));
+  --h-r: 172.8;
+  --h-g: 206;
+  --h-b: 247;
+  --h-a: 0.4;
+  /*https://graphicdesign.stackexchange.com/a/113050*/
+  --highlight-blocking: rgb(
+    calc(255 - var(--h-a) * (255 - var(--h-r))),
+    calc(255 - var(--h-a) * (255 - var(--h-g))),
+    calc(255 - var(--h-a) * (255 - var(--h-b)))
+  );
   user-select: none;
 }
 

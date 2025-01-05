@@ -80,6 +80,7 @@ const selectActive = computed(() => {
         :shift-label="overDivider"
       >
         <TieSelect
+          v-if="tie.to !== tie.from"
           :active="selectActive"
           :tie
           :x
@@ -96,7 +97,7 @@ const selectActive = computed(() => {
           :y2="slideRowEnd * cellHeight"
         />
         <TieSelect
-          v-if="selectActive"
+          v-if="tie.to !== tie.from && selectActive"
           active
           :x="(from.right + to.left) / 2 - 20"
           :y="slideRowEnd * cellHeight"
