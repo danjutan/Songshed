@@ -112,6 +112,10 @@ onMounted(() => {
   }
 });
 
+function onNoteClick(string: number) {
+  selectNote({ string, position: props.position });
+  editing.setEditing({ string, position: props.position });
+}
 onUnmounted(() => {
   for (const cleanup of dndCleanups) {
     cleanup?.();
@@ -127,10 +131,10 @@ onUnmounted(() => {
       class="container"
       :class="{
         selected: isSelected({ string, position: props.position }),
-        crosshair: tieable(note, string),
+        tieable: tieable(note, string),
         collapse,
       }"
-      @click="() => selectNote({ string, position: props.position })"
+      @click="onNoteClick(string)"
       @mouseenter="hovering = string"
       @mouseleave="hovering = undefined"
     >
@@ -171,27 +175,32 @@ onUnmounted(() => {
 
 .container {
   display: flex;
+  width: 100%;
   height: var(--cell-height);
   justify-content: center;
   align-items: center;
   cursor: text;
-}
 
-.container.selected {
-  background-color: var(--highlight-color);
-}
+  &.selected {
+    background-color: var(--highlight-color);
+  }
 
-.container.crosshair {
-  cursor: crosshair;
-}
+  &.tieable {
+    cursor: crosshair;
+    &:deep(input) {
+      caret-color: transparent;
+    }
+  }
 
-.container.collapse {
-  container-type: size;
-}
+  &.collapse {
+    /* All this does is allow the @container rules to work */
+    container-type: size;
+  }
 
-.container:not(.collapse) {
-  width: var(--cell-height);
-  justify-self: center;
+  &:not(.collapse) {
+    min-width: var(--cell-height);
+    justify-self: center;
+  }
 }
 
 .square {

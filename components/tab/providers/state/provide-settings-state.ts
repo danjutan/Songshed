@@ -1,6 +1,6 @@
 export function provideSettingsState() {
   const settings = reactive({
-    barsPerLine: 3,
+    barsPerLine: 2,
     subdivisions: 4, // per beat
     collapseSubdivisions: false,
     collapseEmpty: false,

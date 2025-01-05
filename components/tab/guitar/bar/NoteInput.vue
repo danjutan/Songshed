@@ -30,13 +30,10 @@ const emit = defineEmits<{
   blur: [];
 }>();
 
-const { isEditing, setEditing } = injectEditingState();
-
 const input = useTemplateRef("input");
 
 function onClick() {
   input.value!.select();
-  setEditing(props.notePosition);
   // emit("focus");
 }
 
@@ -98,12 +95,9 @@ function onInput(e: Event) {
     class="note-input"
     :class="{
       hovering,
-      editing: isEditing(notePosition),
       'has-note': hasNote,
       selected,
     }"
-    @mousedown="onMouseDown"
-    @mouseover="() => {} /*hover(string, position)*/"
   >
     <span class="input-bg">{{ noteText }}</span>
     <!-- <div class="input-hover" /> -->
@@ -114,11 +108,10 @@ function onInput(e: Event) {
       inputmode="numeric"
       pattern="[0-9]{1,2}"
       @input="onInput"
-      @click="onClick"
       @blur="onBlur"
       @keyup="(e) => e.stopPropagation()"
     />
-    <div v-if="isEditing(notePosition)" class="tie-add-dragger" />
+    <!-- <div v-if="isEditing(notePosition)" class="tie-add-dragger" /> -->
   </div>
 </template>
 
