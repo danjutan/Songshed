@@ -32,9 +32,9 @@ const emit = defineEmits<{
 }>();
 
 const editing = injectEditingState();
-const tieAdd = injectTieAddState();
 const resizeState = injectStackResizeObserver();
-const { isSelected, selectNote, selections } = injectSelectionState();
+
+const { isSelected, selectNote, clearSelections } = injectSelectionState();
 
 const noteSpots = computed(() => {
   const noteSpots = new Array<GuitarNote | undefined>(props.tuning.length);
@@ -56,8 +56,6 @@ const hovering = ref<number | undefined>();
 //   if (selecting.dragging) (document.activeElement as HTMLElement).blur();
 // }
 
-const inputRefs = useTemplateRef("inputs");
-
 const tieable = (
   note: GuitarNote | undefined,
   string: number,
@@ -65,19 +63,6 @@ const tieable = (
   note !== undefined &&
   note.note !== "muted" &&
   editing.isEditing({ string, position: props.position });
-
-function onSpotMouseDown(
-  e: MouseEvent,
-  string: number,
-
-  note: GuitarNote | undefined,
-) {
-  if (tieable(note, string)) {
-    tieAdd.start(string, props.position, note!.note);
-    e.preventDefault(); //prevents default drag-drop behavior
-    e.stopPropagation(); //prevents onStackMouseDown from triggering
-  }
-}
 
 const stackContainerRef = useTemplateRef("stack");
 const noteContainerRefs = useTemplateRef("noteContainers");
@@ -104,7 +89,9 @@ onMounted(() => {
         getInitialData: () =>
           getNoteInputDragData({
             ...notePosition,
-            dragType: editing.isEditing(notePosition) ? "tie-add" : "select",
+            dragType: tieable(noteSpots.value[string], string)
+              ? "tie-add"
+              : "select",
             data: noteSpots.value[string],
           }),
       }),
@@ -112,10 +99,17 @@ onMounted(() => {
   }
 });
 
-function onNoteClick(string: number) {
+function onMouseDown(e: MouseEvent) {
+  if (!e.ctrlKey && !e.metaKey) {
+    clearSelections();
+  }
+}
+
+function onNoteClick(e: MouseEvent, string: number) {
   selectNote({ string, position: props.position });
   editing.setEditing({ string, position: props.position });
 }
+
 onUnmounted(() => {
   for (const cleanup of dndCleanups) {
     cleanup?.();
@@ -134,7 +128,8 @@ onUnmounted(() => {
         tieable: tieable(note, string),
         collapse,
       }"
-      @click="onNoteClick(string)"
+      @click="(e) => onNoteClick(e, string)"
+      @mousedown="onMouseDown"
       @mouseenter="hovering = string"
       @mouseleave="hovering = undefined"
     >

@@ -38,7 +38,10 @@ const newBarStart = ref(0);
 
 const cellHoverEvents = provideCellHoverEvents();
 const selectionState = provideSelectionState(
-  computed(() => props.tabStore.guitar),
+  reactiveComputed(() => ({
+    guitar: props.tabStore.guitar,
+    subUnit,
+  })),
 );
 const editingState = provideEditingState();
 

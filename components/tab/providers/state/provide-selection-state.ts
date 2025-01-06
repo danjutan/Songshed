@@ -14,9 +14,10 @@ export const notePositionKey = (position: NotePosition): NotePositionKey =>
   `${position.string}-${position.position}`;
 
 export interface SelectionState {
-  selections: Set<NotePositionKey>;
   toggleNote: (position: NotePosition) => void;
-  addSelection: (selection: Selection) => void;
+  startSelection: (position: NotePosition) => void;
+  endSelection: () => void;
+  addSelection: (position: NotePosition) => void;
   clearSelections: () => void;
   isSelected: (position: NotePosition) => boolean;
   moveSelectionsIfValid: (anchor: NotePosition, moveTo: NotePosition) => void;
@@ -24,9 +25,14 @@ export interface SelectionState {
 }
 
 export function provideSelectionState(
-  guitar: ComputedRef<GuitarStore | undefined>,
+  props: ReactiveComputed<{
+    guitar: GuitarStore | undefined;
+    subUnit: number;
+  }>,
 ): SelectionState {
   const selections = reactive<Set<NotePositionKey>>(new Set());
+  let currentSelectionStart: NotePosition | undefined;
+  let currentSelectionEnd: NotePosition | undefined;
 
   function toggleNote(position: NotePosition) {
     if (selections.has(notePositionKey(position))) {
@@ -40,7 +46,45 @@ export function provideSelectionState(
     selections.add(notePositionKey(position));
   }
 
-  function addSelection(selection: Selection): void {
+  function startSelection(position: NotePosition): void {
+    currentSelectionStart = position;
+    currentSelectionEnd = position;
+  }
+
+  function endSelection(): void {
+    currentSelectionStart = undefined;
+    currentSelectionEnd = undefined;
+  }
+
+  function addSelection(position: NotePosition): void {
+    if (!currentSelectionStart || !currentSelectionEnd) {
+      return;
+    }
+    clearSelection({ start: currentSelectionStart, end: currentSelectionEnd });
+    const minString = Math.min(currentSelectionStart.string, position.string);
+    const maxString = Math.max(currentSelectionStart.string, position.string);
+    const minPosition = Math.min(
+      currentSelectionStart.position,
+      position.position,
+    );
+    const maxPosition = Math.max(
+      currentSelectionStart.position,
+      position.position,
+    );
+
+    for (let string = minString; string <= maxString; string++) {
+      for (
+        let position = minPosition;
+        position <= maxPosition;
+        position += props.subUnit
+      ) {
+        selections.add(notePositionKey({ string, position }));
+      }
+    }
+    currentSelectionEnd = position;
+  }
+
+  function clearSelection(selection: Selection): void {
     const minString = Math.min(selection.start.string, selection.end.string);
     const maxString = Math.max(selection.start.string, selection.end.string);
     const minPosition = Math.min(
@@ -53,8 +97,12 @@ export function provideSelectionState(
     );
 
     for (let string = minString; string <= maxString; string++) {
-      for (let position = minPosition; position <= maxPosition; position++) {
-        selections.add(notePositionKey({ string, position }));
+      for (
+        let position = minPosition;
+        position <= maxPosition;
+        position += props.subUnit
+      ) {
+        selections.delete(notePositionKey({ string, position }));
       }
     }
   }
@@ -91,7 +139,8 @@ export function provideSelectionState(
     anchor: NotePosition,
     moveTo: NotePosition,
   ): void {
-    if (!guitar.value) return;
+    const guitar = props.guitar;
+    if (!guitar) return;
     const stringDiff = moveTo.string - anchor.string;
     const positionDiff = moveTo.position - anchor.position;
 
@@ -110,7 +159,7 @@ export function provideSelectionState(
 
     if (stringDiff > 0) {
       const maxString = Math.max(...selectedPositions.map((p) => p.string));
-      if (maxString + stringDiff > guitar.value.strings) {
+      if (maxString + stringDiff > guitar.strings) {
         return;
       }
     }
@@ -127,7 +176,7 @@ export function provideSelectionState(
 
     // Add new shifted positions
     for (const pos of selectedPositions) {
-      guitar.value.moveNote(pos, {
+      guitar.moveNote(pos, {
         string: pos.string + stringDiff,
         position: pos.position + positionDiff,
       });
@@ -143,7 +192,8 @@ export function provideSelectionState(
   const selectionState: SelectionState = {
     toggleNote,
     selectNote,
-    selections,
+    startSelection,
+    endSelection,
     addSelection,
     clearSelections,
     isSelected,
