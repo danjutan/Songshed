@@ -8,6 +8,7 @@ import TieRender from "./overlay/tie/TieRender.vue";
 import { injectTieAddState } from "../providers/state/provide-tie-add-state";
 import { provideTablineBounds } from "./provide-tabline-bounds";
 import { provideEditTie } from "./overlay/tie/provide-edit-tie";
+import { provideOverlayControlsTeleport } from "./overlay/provide-overlay-controls-teleport";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -22,7 +23,7 @@ const props = defineProps<{
 const tieAddState = injectTieAddState();
 
 const tablineBounds = provideTablineBounds(props);
-
+const overlayControlsId = provideOverlayControlsTeleport();
 provideEditTie(props.guitarStore.ties);
 
 const notesRow = computed(() =>
@@ -94,7 +95,7 @@ const columnEnd = computed(
     />
   </template>
   <ClientOnly>
-    <svg class="overlay-controls">
+    <svg :id="overlayControlsId" class="overlay-controls">
       <!--Teleport-->
     </svg>
     <svg class="overlay">

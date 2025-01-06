@@ -6,6 +6,7 @@ import { injectColumnsMap } from "~/components/tab/providers/provide-columns-map
 import OverlayCoords from "../OverlayCoords.vue";
 import OverlaySelect from "../OverlaySelect.vue";
 import { injectTablineBounds } from "../../provide-tabline-bounds";
+import { injectOverlayControlsTeleport } from "../provide-overlay-controls-teleport";
 
 export interface BendRenderProps {
   bend: Bend;
@@ -13,6 +14,7 @@ export interface BendRenderProps {
 
 const props = defineProps<BendRenderProps>();
 const bendEditState = injectBendEditState();
+const { overlayControlsSelector } = injectOverlayControlsTeleport();
 
 const { getNextStackPos } = injectStackResizeObserver();
 
@@ -128,7 +130,7 @@ const releaseArrowHover = ref(false);
           </select> -->
       </foreignObject>
 
-      <Teleport to=".overlay-controls">
+      <Teleport :to="overlayControlsSelector">
         <foreignObject :x="upswingTo.left" :y="-3" :width="65" :height="200">
           <div
             class="select-container"
