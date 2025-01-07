@@ -30,6 +30,9 @@ export function useTieAddMonitor(tieAddState: TieAddState) {
             }
           }
         },
+        onDrop(args) {
+          tieAddState.end();
+        },
       }),
     );
   });

@@ -32,15 +32,19 @@ const emit = defineEmits<{
 
 const input = useTemplateRef("input");
 
+defineExpose({
+  blur: () => input.value!.blur(),
+  focus: () => input.value!.focus(),
+});
+
 function onClick() {
-  input.value!.select();
+  // input.value!.select();
   // emit("focus");
+  input.value!.focus();
 }
 
 function onMouseDown(e: MouseEvent) {
-  setTimeout(() => {
-    input.value!.blur();
-  }, 0);
+  // input.value!.blur();
 }
 
 onMounted(() => {
@@ -98,6 +102,8 @@ function onInput(e: Event) {
       'has-note': hasNote,
       selected,
     }"
+    @click="onClick"
+    @mousedown="onMouseDown"
   >
     <span class="input-bg">{{ noteText }}</span>
     <!-- <div class="input-hover" /> -->
@@ -111,7 +117,6 @@ function onInput(e: Event) {
       @blur="onBlur"
       @keyup="(e) => e.stopPropagation()"
     />
-    <!-- <div v-if="isEditing(notePosition)" class="tie-add-dragger" /> -->
   </div>
 </template>
 
@@ -147,7 +152,6 @@ input,
 }
 
 input {
-  /* width: var(--cell-height); */
   width: 100%;
   max-width: var(--cell-height);
 }

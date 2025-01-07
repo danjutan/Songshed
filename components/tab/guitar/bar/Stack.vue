@@ -10,7 +10,12 @@ import {
   draggable,
   dropTargetForElements,
 } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { getNoteInputDragData, getNoteInputDropData } from "../../dnd/types";
+import type { DragType } from "../../dnd/types";
+import {
+  getNoteInputDragData,
+  getNoteInputDropData,
+  isNoteInputDragData,
+} from "../../dnd/types";
 import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
@@ -33,6 +38,7 @@ const emit = defineEmits<{
 
 const editing = injectEditingState();
 const resizeState = injectStackResizeObserver();
+const tieAddState = injectTieAddState();
 
 const { isSelected, selectNote, clearSelections } = injectSelectionState();
 
@@ -45,16 +51,7 @@ const noteSpots = computed(() => {
   return noteSpots;
 });
 
-// const backgroundColor = computed(() =>
-//   selected.value ? "var(--highlight-color)" : "transparent",
-// );
-
 const hovering = ref<number | undefined>();
-
-// TODO: move to child
-// function onStackMouseMove() {
-//   if (selecting.dragging) (document.activeElement as HTMLElement).blur();
-// }
 
 const tieable = (
   note: GuitarNote | undefined,
@@ -64,8 +61,18 @@ const tieable = (
   note.note !== "muted" &&
   editing.isEditing({ string, position: props.position });
 
+const dragging = reactive<Array<"tie-add" | "select" | undefined>>(
+  new Array(props.tuning.length).fill(undefined),
+);
+
+// currently unused, see below
+const dropping = reactive<Array<DragType | undefined>>(
+  new Array(props.tuning.length).fill(undefined),
+);
+
 const stackContainerRef = useTemplateRef("stack");
 const noteContainerRefs = useTemplateRef("noteContainers");
+const noteInputRefs = useTemplateRef("noteInputs");
 
 const dndCleanups: CleanupFn[] = [];
 onMounted(() => {
@@ -76,6 +83,14 @@ onMounted(() => {
       dropTargetForElements({
         element: container,
         getData: () => getNoteInputDropData(notePosition),
+        onDragEnter: (args) => {
+          if (isNoteInputDragData(args.source.data)) {
+            dropping[string] = args.source.data.dragType;
+          }
+        },
+        onDragLeave: () => {
+          dropping[string] = undefined;
+        },
         // onDragEnter: focus,
       }),
       draggable({
@@ -85,6 +100,15 @@ onMounted(() => {
           disableNativeDragPreview({ nativeSetDragImage });
           preventUnhandled.start();
           // }
+        },
+        onDragStart: () => {
+          dragging[string] = tieable(noteSpots.value[string], string)
+            ? "tie-add"
+            : "select";
+          noteInputRefs.value![string]!.blur();
+        },
+        onDrop: () => {
+          dragging[string] = undefined;
         },
         getInitialData: () =>
           getNoteInputDragData({
@@ -99,7 +123,7 @@ onMounted(() => {
   }
 });
 
-function onMouseDown(e: MouseEvent) {
+function onMouseDown(e: MouseEvent, string: number) {
   if (!e.ctrlKey && !e.metaKey) {
     clearSelections();
   }
@@ -108,6 +132,7 @@ function onMouseDown(e: MouseEvent) {
 function onNoteClick(e: MouseEvent, string: number) {
   selectNote({ string, position: props.position });
   editing.setEditing({ string, position: props.position });
+  noteInputRefs.value![string]!.focus(); // For when you click at the edge, outside the input
 }
 
 onUnmounted(() => {
@@ -115,6 +140,31 @@ onUnmounted(() => {
     cleanup?.();
   }
 });
+
+const cursor = computed(() =>
+  props.tuning.map((_, string) => {
+    if (
+      tieable(noteSpots.value[string], string) ||
+      dragging[string] === "tie-add"
+    ) {
+      return "crosshair";
+    }
+    return "text";
+
+    // NOTE: the following will not work; the cursor won't change during the drag process. I believe this is a limitation of the platform.
+    // if (
+    //   tieable(noteSpots.value[string], string) ||
+    //   dropping[string] === "tie-add" ||
+    //   dragging[string] === "tie-add"
+    // ) {
+    //   return "crosshair";
+    // }
+    // if (dropping[string] === "select" || dragging[string] === "select") {
+    //   return "text";
+    // }
+    // return "text";
+  }),
+);
 </script>
 
 <template>
@@ -128,8 +178,9 @@ onUnmounted(() => {
         tieable: tieable(note, string),
         collapse,
       }"
+      :style="{ cursor: cursor[string] }"
       @click="(e) => onNoteClick(e, string)"
-      @mousedown="onMouseDown"
+      @mousedown="(e) => onMouseDown(e, string)"
       @mouseenter="hovering = string"
       @mouseleave="hovering = undefined"
     >
@@ -143,21 +194,20 @@ onUnmounted(() => {
               : defaultColors[getChroma(note.note)],
         }"
       />
-      <div class="input">
-        <NoteInput
-          ref="inputs"
-          :data="note"
-          :note-position="{ string, position: props.position }"
-          :tuning="props.tuning[string]"
-          :frets="props.frets"
-          :hovering="hovering === string"
-          :selected="isSelected({ string, position: props.position })"
-          @note-delete="emit('noteDelete', string)"
-          @note-change="
-            (updated) => emit('noteChange', string, { ...note, ...updated })
-          "
-        />
-      </div>
+      <NoteInput
+        ref="noteInputs"
+        class="input"
+        :data="note"
+        :note-position="{ string, position: props.position }"
+        :tuning="props.tuning[string]"
+        :frets="props.frets"
+        :hovering="hovering === string"
+        :selected="isSelected({ string, position: props.position })"
+        @note-delete="emit('noteDelete', string)"
+        @note-change="
+          (updated) => emit('noteChange', string, { ...note, ...updated })
+        "
+      />
     </div>
   </div>
 </template>
@@ -169,22 +219,16 @@ onUnmounted(() => {
 }
 
 .container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: var(--cell-height);
   width: 100%;
   height: var(--cell-height);
-  justify-content: center;
+  justify-items: center;
   align-items: center;
-  cursor: text;
 
   &.selected {
     background-color: var(--highlight-color);
-  }
-
-  &.tieable {
-    cursor: crosshair;
-    &:deep(input) {
-      caret-color: transparent;
-    }
   }
 
   &.collapse {
@@ -196,6 +240,13 @@ onUnmounted(() => {
     min-width: var(--cell-height);
     justify-self: center;
   }
+}
+
+.tie-add-dragger {
+  width: 100%;
+  height: 100%;
+  background-color: red;
+  grid-area: 1 / 1;
 }
 
 .square {
