@@ -49,20 +49,6 @@ const releaseArrowHover = ref(false);
 </script>
 
 <template>
-  <!-- <foreignObject>
-    <Teleport to=".teleport-bend-labels">
-      <OverlaySelect
-        v-if="bendColumn"
-        class="bend-select"
-        :class="{ dragging: bendEditState.dragging }"
-        :options="Object.entries(bendLabels).sort((a, b) => +a[0] - +b[0])"
-        :placeholder="bendLabel"
-        :model-value="props.bend.bend"
-        @update:model-value="bendEditState.setBendValue(props.bend, $event)"
-        @on-delete-clicked=""
-      />
-    </Teleport>
-  </foreignObject> -->
   <OverlayCoords
     v-slot="{ coords: [from, to, upswingTo, through, afterTo], cellHeight }"
     :positions="[
