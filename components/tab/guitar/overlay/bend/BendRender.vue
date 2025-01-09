@@ -2,11 +2,11 @@
 import type { Bend } from "~/model/stores";
 import { injectStackResizeObserver } from "~/components/tab/providers/events/provide-resize-observer";
 import { injectBendEditState } from "@/components/tab/providers/state/provide-bend-edit-state";
-import { injectColumnsMap } from "~/components/tab/providers/provide-columns-map";
 import OverlayCoords from "../OverlayCoords.vue";
 import OverlaySelect from "../OverlaySelect.vue";
-import { injectTablineBounds } from "../../provide-tabline-bounds";
 import { injectOverlayControlsTeleport } from "../provide-overlay-controls-teleport";
+import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
+import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
 
 export interface BendRenderProps {
   bend: Bend;
@@ -15,6 +15,7 @@ export interface BendRenderProps {
 const props = defineProps<BendRenderProps>();
 const bendEditState = injectBendEditState();
 const { overlayControlsSelector } = injectOverlayControlsTeleport();
+const { editingNote } = injectEditingState();
 
 const { getNextStackPos } = injectStackResizeObserver();
 
@@ -42,6 +43,19 @@ const model = defineModel({
   set(value) {
     bendEditState.setBendValue(props.bend, value as number);
   },
+});
+
+const labelHover = ref(false);
+const selectActive = computed(() => {
+  if (labelHover.value) return true;
+  if (editingNote.value) {
+    if (
+      editingNote.value.string === props.bend.string &&
+      [props.bend.from, props.bend.to].includes(editingNote.value.position)
+    )
+      return true;
+  }
+  return false;
 });
 
 const upswingArrowHover = ref(false);
@@ -128,9 +142,11 @@ const releaseArrowHover = ref(false);
           >
             <OverlaySelect
               v-model="model"
-              :active="false"
+              :active="selectActive"
               :options
               class="select"
+              @mouseenter="labelHover = true"
+              @mouseleave="labelHover = false"
               @delete-clicked="bendEditState.deleteBend(props.bend)"
             />
           </div>

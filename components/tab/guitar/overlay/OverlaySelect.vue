@@ -81,6 +81,10 @@ const options = computed(() => {
   }
 }
 
+.select :deep(.menu) {
+  width: fit-content !important;
+  left: 0 !important;
+}
 .select.open :deep(.single-value) {
   position: static !important;
 }

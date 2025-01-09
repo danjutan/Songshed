@@ -6,6 +6,7 @@ export type DragType = "select" | "tie-add" | "move";
 
 const noteInputDragDataPrivateKey = Symbol("NoteInput drag data");
 const noteInputDropDataPrivateKey = Symbol("NoteInput drop data");
+const bendBarDropDataPrivateKey = Symbol("Bend bar drop data");
 
 type NoteInputDragData = {
   [noteInputDragDataPrivateKey]: true;
@@ -19,6 +20,11 @@ type NoteInputDropData = {
   [noteInputDropDataPrivateKey]: true;
   position: number;
   string: number;
+};
+
+type BendBarDropData = {
+  [bendBarDropDataPrivateKey]: true;
+  position: number;
 };
 
 export function getNoteInputDragData({
@@ -55,6 +61,14 @@ export function getNoteInputDropData({
   };
 }
 
+export function getBendBarDropData({
+  position,
+}: {
+  position: number;
+}): BendBarDropData {
+  return { [bendBarDropDataPrivateKey]: true, position };
+}
+
 export function isNoteInputDragData(
   data: Record<string | symbol, unknown>,
 ): data is NoteInputDragData {
@@ -65,4 +79,10 @@ export function isNoteInputDropData(
   data: Record<string | symbol, unknown>,
 ): data is NoteInputDropData {
   return !!data[noteInputDropDataPrivateKey];
+}
+
+export function isBendBarDropData(
+  data: Record<string | symbol, unknown>,
+): data is BendBarDropData {
+  return !!data[bendBarDropDataPrivateKey];
 }

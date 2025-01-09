@@ -6,16 +6,21 @@ import { injectSelectionState } from "../../providers/state/provide-selection-st
 import { injectEditingState } from "../../providers/state/provide-editing-state";
 import { injectStackResizeObserver } from "../../providers/events/provide-resize-observer";
 
-import Draggable from "../../dnd/Draggable.vue";
-import DropTarget from "../../dnd/DropTarget.vue";
-
+import {
+  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { DragType } from "../../dnd/types";
 import {
   getNoteInputDragData,
   getNoteInputDropData,
   isNoteInputDragData,
 } from "../../dnd/types";
-
+import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
+import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
+import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { injectCellHoverEvents } from "../../providers/events/provide-cell-hover-events";
 const props = withDefaults(
   defineProps<{
     notes: NoteStack<GuitarNote>;
@@ -35,6 +40,7 @@ const emit = defineEmits<{
 const editing = injectEditingState();
 const resizeState = injectStackResizeObserver();
 const tieAddState = injectTieAddState();
+const cellHoverState = injectCellHoverEvents();
 
 const { isSelected, selectNote, clearSelections } = injectSelectionState();
 
@@ -47,7 +53,16 @@ const noteSpots = computed(() => {
   return noteSpots;
 });
 
-const hovering = ref<number | undefined>();
+const hovering = computed<number | false>(() => {
+  const hoveredCell = cellHoverState.hoveredCell.value;
+  if (
+    hoveredCell?.position !== props.position ||
+    typeof hoveredCell?.row !== "number"
+  ) {
+    return false;
+  }
+  return hoveredCell.row;
+});
 
 const tieable = (
   note: GuitarNote | undefined,
@@ -70,8 +85,53 @@ const stackContainerRef = useTemplateRef("stack");
 const noteContainerRefs = useTemplateRef("noteContainers");
 const noteInputRefs = useTemplateRef("noteInputs");
 
+const dndCleanups: CleanupFn[] = [];
 onMounted(() => {
   resizeState.registerStackRef(props.position, stackContainerRef.value);
+  for (const [string, container] of noteContainerRefs.value!.entries()) {
+    const notePosition = { position: props.position, string };
+    dndCleanups[string] = combine(
+      dropTargetForElements({
+        element: container,
+        getData: () => getNoteInputDropData(notePosition),
+        onDragEnter: (args) => {
+          if (isNoteInputDragData(args.source.data)) {
+            dropping[string] = args.source.data.dragType;
+          }
+        },
+        onDragLeave: () => {
+          dropping[string] = undefined;
+        },
+        // onDragEnter: focus,
+      }),
+      draggable({
+        element: container,
+        onGenerateDragPreview: ({ nativeSetDragImage, source }) => {
+          // if (source.data.selecting) {
+          disableNativeDragPreview({ nativeSetDragImage });
+          preventUnhandled.start();
+          // }
+        },
+        onDragStart: () => {
+          dragging[string] = tieable(noteSpots.value[string], string)
+            ? "tie-add"
+            : "select";
+          noteInputRefs.value![string]!.blur();
+        },
+        onDrop: () => {
+          dragging[string] = undefined;
+        },
+        getInitialData: () =>
+          getNoteInputDragData({
+            ...notePosition,
+            dragType: tieable(noteSpots.value[string], string)
+              ? "tie-add"
+              : "select",
+            data: noteSpots.value[string],
+          }),
+      }),
+    );
+  }
 });
 
 function onMouseDown(e: MouseEvent, string: number) {
@@ -85,6 +145,12 @@ function onNoteClick(e: MouseEvent, string: number) {
   editing.setEditing({ string, position: props.position });
   noteInputRefs.value![string]!.focus(); // For when you click at the edge, outside the input
 }
+
+onUnmounted(() => {
+  for (const cleanup of dndCleanups) {
+    cleanup?.();
+  }
+});
 
 const cursor = computed(() =>
   props.tuning.map((_, string) => {
@@ -126,68 +192,32 @@ const cursor = computed(() =>
       :style="{ cursor: cursor[string] }"
       @click="(e) => onNoteClick(e, string)"
       @mousedown="(e) => onMouseDown(e, string)"
-      @mouseenter="hovering = string"
-      @mouseleave="hovering = undefined"
+      @mouseenter="cellHoverState.hover(string, props.position)"
     >
-      <DropTarget
-        :data="getNoteInputDropData({ position: props.position, string })"
-        @drag-enter="
-          (args) => {
-            if (isNoteInputDragData(args.source.data)) {
-              dropping[string] = args.source.data.dragType;
-            }
-          }
+      <div
+        v-if="collapse && note"
+        class="square"
+        :style="{
+          backgroundColor:
+            note.note === 'muted'
+              ? 'gray'
+              : defaultColors[getChroma(note.note)],
+        }"
+      />
+      <NoteInput
+        ref="noteInputs"
+        class="input"
+        :data="note"
+        :note-position="{ string, position: props.position }"
+        :tuning="props.tuning[string]"
+        :frets="props.frets"
+        :hovering="hovering === string"
+        :selected="isSelected({ string, position: props.position })"
+        @note-delete="emit('noteDelete', string)"
+        @note-change="
+          (updated) => emit('noteChange', string, { ...note, ...updated })
         "
-        @drag-leave="() => (dropping[string] = undefined)"
-      >
-        <Draggable
-          :data="
-            getNoteInputDragData({
-              position: props.position,
-              string,
-              dragType: tieable(noteSpots[string], string)
-                ? 'tie-add'
-                : 'select',
-              data: noteSpots[string],
-            })
-          "
-          disable-preview
-          @drag-start="
-            () => {
-              dragging[string] = tieable(noteSpots[string], string)
-                ? 'tie-add'
-                : 'select';
-              noteInputRefs![string]!.blur();
-            }
-          "
-          @drop="() => (dragging[string] = undefined)"
-        >
-          <div
-            v-if="collapse && note"
-            class="square"
-            :style="{
-              backgroundColor:
-                note.note === 'muted'
-                  ? 'gray'
-                  : defaultColors[getChroma(note.note)],
-            }"
-          />
-          <NoteInput
-            ref="noteInputs"
-            class="input"
-            :data="note"
-            :note-position="{ string, position: props.position }"
-            :tuning="props.tuning[string]"
-            :frets="props.frets"
-            :hovering="hovering === string"
-            :selected="isSelected({ string, position: props.position })"
-            @note-delete="emit('noteDelete', string)"
-            @note-change="
-              (updated) => emit('noteChange', string, { ...note, ...updated })
-            "
-          />
-        </Draggable>
-      </DropTarget>
+      />
     </div>
   </div>
 </template>
