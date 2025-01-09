@@ -9,6 +9,14 @@ interface Selection {
   end: NotePosition;
 }
 
+// The rectangular boundary of a contiguous set of selected notes. start <= end
+interface RegionBounds {
+  startPosition: number;
+  endPosition: number;
+  startString: number;
+  endString: number;
+}
+
 type NotePositionKey = `${number}-${number}`;
 export const notePositionKey = (position: NotePosition): NotePositionKey =>
   `${position.string}-${position.position}`;
@@ -28,9 +36,94 @@ export function provideSelectionState(
   props: ReactiveComputed<{
     guitar: GuitarStore | undefined;
     subUnit: number;
+    barSize: number;
   }>,
 ): SelectionState {
   const selections = reactive<Set<NotePositionKey>>(new Set());
+
+  const selectionRegions = computed<RegionBounds[]>(() => {
+    // Convert selection keys back to positions
+    const positions = Array.from(selections).map((key) => {
+      const [string, position] = key.split("-").map(Number);
+      return { string, position };
+    });
+
+    if (positions.length === 0) return [];
+
+    // Sort positions by position then string for easier grouping
+    positions.sort((a, b) => {
+      if (a.position === b.position) {
+        return a.string - b.string;
+      }
+      return a.position - b.position;
+    });
+
+    const regions: RegionBounds[] = [];
+    let currentRegion: RegionBounds | null = null;
+
+    // Helper to check if two positions are adjacent
+    const isAdjacent = (pos1: NotePosition, pos2: NotePosition) => {
+      return (
+        Math.abs(pos1.position - pos2.position) <= props.subUnit &&
+        Math.abs(pos1.string - pos2.string) <= 1
+      );
+    };
+
+    // Helper to expand region to include position
+    const expandRegion = (region: RegionBounds, pos: NotePosition) => {
+      region.startPosition = Math.min(region.startPosition, pos.position);
+      region.endPosition = Math.max(region.endPosition, pos.position);
+      region.startString = Math.min(region.startString, pos.string);
+      region.endString = Math.max(region.endString, pos.string);
+    };
+
+    // Process each position
+    for (let i = 0; i < positions.length; i++) {
+      const pos = positions[i];
+
+      // Check if this position connects to current region
+      let connectsToCurrent = false;
+      if (currentRegion) {
+        // Check if position is adjacent to any position in current bounds
+        for (let j = i - 1; j >= 0; j--) {
+          const prevPos = positions[j];
+          if (prevPos.position < currentRegion.startPosition) break;
+          if (isAdjacent(pos, prevPos)) {
+            connectsToCurrent = true;
+            break;
+          }
+        }
+      }
+
+      if (connectsToCurrent) {
+        // Expand current region
+        expandRegion(currentRegion!, pos);
+      } else {
+        // Start new region
+        if (currentRegion) {
+          regions.push(currentRegion);
+        }
+        currentRegion = {
+          startPosition: pos.position,
+          endPosition: pos.position,
+          startString: pos.string,
+          endString: pos.string,
+        };
+      }
+    }
+
+    // Add final region
+    if (currentRegion) {
+      regions.push(currentRegion);
+    }
+
+    return regions;
+  });
+
+  watchEffect(() => {
+    console.log(selectionRegions.value);
+  });
+
   let currentSelectionStart: NotePosition | undefined;
   let currentSelectionEnd: NotePosition | undefined;
 
