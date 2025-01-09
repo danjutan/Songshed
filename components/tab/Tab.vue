@@ -41,6 +41,7 @@ const selectionState = provideSelectionState(
   reactiveComputed(() => ({
     guitar: props.tabStore.guitar,
     subUnit,
+    barSize,
   })),
 );
 const editingState = provideEditingState();
@@ -337,7 +338,10 @@ const overlayedBarStart = ref<number | undefined>();
   --h-g: 206;
   --h-b: 247;
   --h-a: 0.4;
-  /*https://graphicdesign.stackexchange.com/a/113050*/
+  /*
+    https://graphicdesign.stackexchange.com/a/113050
+    TODO: can we do all this with relative colors? (Does it have wide browser support yet?)
+  */
   --highlight-blocking: rgb(
     calc(255 - var(--h-a) * (255 - var(--h-r))),
     calc(255 - var(--h-a) * (255 - var(--h-g))),

@@ -4,22 +4,31 @@ interface NotePosition {
   position: number;
   string: number;
 }
-interface Selection {
-  start: NotePosition;
-  end: NotePosition;
-}
-
-// The rectangular boundary of a contiguous set of selected notes. start <= end
-interface RegionBounds {
-  startPosition: number;
-  endPosition: number;
-  startString: number;
-  endString: number;
-}
 
 type NotePositionKey = `${number}-${number}`;
 export const notePositionKey = (position: NotePosition): NotePositionKey =>
   `${position.string}-${position.position}`;
+
+// The rectangular boundary of a contiguous set of selected notes.
+interface RegionBounds {
+  minPosition: number;
+  maxPosition: number;
+  minString: number;
+  maxString: number;
+}
+
+// type RegionBoundsKey = `${number}-${number}-${number}-${number}`;
+// export const regionBoundsKey = (bounds: RegionBounds): RegionBoundsKey =>
+//   `${bounds.minString}-${bounds.maxString}-${bounds.minPosition}-${bounds.maxPosition}`;
+
+function getRegionBounds(start: NotePosition, end: NotePosition): RegionBounds {
+  return {
+    minString: Math.min(start.string, end.string),
+    maxString: Math.max(start.string, end.string),
+    minPosition: Math.min(start.position, end.position),
+    maxPosition: Math.max(start.position, end.position),
+  };
+}
 
 export interface SelectionState {
   toggleNote: (position: NotePosition) => void;
@@ -40,88 +49,81 @@ export function provideSelectionState(
   }>,
 ): SelectionState {
   const selections = reactive<Set<NotePositionKey>>(new Set());
-
-  const selectionRegions = computed<RegionBounds[]>(() => {
-    // Convert selection keys back to positions
-    const positions = Array.from(selections).map((key) => {
+  const selectedPositions = computed<NotePosition[]>(() => {
+    return Array.from(selections).map((key) => {
       const [string, position] = key.split("-").map(Number);
       return { string, position };
     });
+  });
 
-    if (positions.length === 0) return [];
+  const regions = computed<RegionBounds[]>(() => {
+    const selected = selectedPositions.value; // Get all selected positions
+    const visited = new Set<NotePositionKey>();
+    const outputRegions: RegionBounds[] = [];
 
-    // Sort positions by position then string for easier grouping
-    positions.sort((a, b) => {
-      if (a.position === b.position) {
-        return a.string - b.string;
-      }
-      return a.position - b.position;
-    });
-
-    const regions: RegionBounds[] = [];
-    let currentRegion: RegionBounds | null = null;
-
-    // Helper to check if two positions are adjacent
-    const isAdjacent = (pos1: NotePosition, pos2: NotePosition) => {
+    // Helper to check adjacency
+    function areAdjacent(note1: NotePosition, note2: NotePosition): boolean {
       return (
-        Math.abs(pos1.position - pos2.position) <= props.subUnit &&
-        Math.abs(pos1.string - pos2.string) <= 1
+        Math.abs(note1.string - note2.string) <= 1 &&
+        Math.abs(note1.position - note2.position) <= props.subUnit
       );
-    };
+    }
 
-    // Helper to expand region to include position
-    const expandRegion = (region: RegionBounds, pos: NotePosition) => {
-      region.startPosition = Math.min(region.startPosition, pos.position);
-      region.endPosition = Math.max(region.endPosition, pos.position);
-      region.startString = Math.min(region.startString, pos.string);
-      region.endString = Math.max(region.endString, pos.string);
-    };
+    // Helper to check if two positions cross a bar line
+    function isCrossingBar(position1: number, position2: number): boolean {
+      const barIndex1 = Math.floor(position1 / props.barSize);
+      const barIndex2 = Math.floor(position2 / props.barSize);
+      return barIndex1 !== barIndex2;
+    }
 
-    // Process each position
-    for (let i = 0; i < positions.length; i++) {
-      const pos = positions[i];
+    // Flood-fill algorithm to find regions
+    function findRegion(start: NotePosition): NotePosition[] {
+      const stack = [start];
+      const region: NotePosition[] = [];
 
-      // Check if this position connects to current region
-      let connectsToCurrent = false;
-      if (currentRegion) {
-        // Check if position is adjacent to any position in current bounds
-        for (let j = i - 1; j >= 0; j--) {
-          const prevPos = positions[j];
-          if (prevPos.position < currentRegion.startPosition) break;
-          if (isAdjacent(pos, prevPos)) {
-            connectsToCurrent = true;
-            break;
+      while (stack.length > 0) {
+        const current = stack.pop()!;
+        const key = notePositionKey(current);
+        if (visited.has(key)) continue;
+
+        visited.add(key);
+        region.push(current);
+
+        // Add adjacent positions
+        for (const other of selected) {
+          const otherKey = notePositionKey(other);
+          if (
+            !visited.has(otherKey) &&
+            areAdjacent(current, other) &&
+            !isCrossingBar(current.position, other.position)
+          ) {
+            stack.push(other);
           }
         }
       }
 
-      if (connectsToCurrent) {
-        // Expand current region
-        expandRegion(currentRegion!, pos);
-      } else {
-        // Start new region
-        if (currentRegion) {
-          regions.push(currentRegion);
-        }
-        currentRegion = {
-          startPosition: pos.position,
-          endPosition: pos.position,
-          startString: pos.string,
-          endString: pos.string,
-        };
-      }
+      return region;
     }
 
-    // Add final region
-    if (currentRegion) {
-      regions.push(currentRegion);
+    // Process each selected note
+    for (const note of selected) {
+      const key = notePositionKey(note);
+      if (visited.has(key)) continue;
+
+      // Find a region and compute its bounds
+      const region = findRegion(note);
+      const strings = region.map((n) => n.string);
+      const positions = region.map((n) => n.position);
+
+      outputRegions.push({
+        minString: Math.min(...strings),
+        maxString: Math.max(...strings),
+        minPosition: Math.min(...positions),
+        maxPosition: Math.max(...positions),
+      });
     }
 
-    return regions;
-  });
-
-  watchEffect(() => {
-    console.log(selectionRegions.value);
+    return outputRegions;
   });
 
   let currentSelectionStart: NotePosition | undefined;
@@ -135,7 +137,7 @@ export function provideSelectionState(
     selections.add(notePositionKey(position));
   }
 
-  function selectNote(position: NotePosition): void {
+  function selectNote(position: NotePosition) {
     selections.add(notePositionKey(position));
   }
 
@@ -153,22 +155,13 @@ export function provideSelectionState(
     if (!currentSelectionStart || !currentSelectionEnd) {
       return;
     }
-    clearSelection({ start: currentSelectionStart, end: currentSelectionEnd });
-    const minString = Math.min(currentSelectionStart.string, position.string);
-    const maxString = Math.max(currentSelectionStart.string, position.string);
-    const minPosition = Math.min(
-      currentSelectionStart.position,
-      position.position,
-    );
-    const maxPosition = Math.max(
-      currentSelectionStart.position,
-      position.position,
-    );
+    clearSelection(getRegionBounds(currentSelectionStart, currentSelectionEnd));
 
-    for (let string = minString; string <= maxString; string++) {
+    const bounds = getRegionBounds(currentSelectionStart, position);
+    for (let string = bounds.minString; string <= bounds.maxString; string++) {
       for (
-        let position = minPosition;
-        position <= maxPosition;
+        let position = bounds.minPosition;
+        position <= bounds.maxPosition;
         position += props.subUnit
       ) {
         selections.add(notePositionKey({ string, position }));
@@ -177,22 +170,11 @@ export function provideSelectionState(
     currentSelectionEnd = position;
   }
 
-  function clearSelection(selection: Selection): void {
-    const minString = Math.min(selection.start.string, selection.end.string);
-    const maxString = Math.max(selection.start.string, selection.end.string);
-    const minPosition = Math.min(
-      selection.start.position,
-      selection.end.position,
-    );
-    const maxPosition = Math.max(
-      selection.start.position,
-      selection.end.position,
-    );
-
-    for (let string = minString; string <= maxString; string++) {
+  function clearSelection(bounds: RegionBounds): void {
+    for (let string = bounds.minString; string <= bounds.maxString; string++) {
       for (
-        let position = minPosition;
-        position <= maxPosition;
+        let position = bounds.minPosition;
+        position <= bounds.maxPosition;
         position += props.subUnit
       ) {
         selections.delete(notePositionKey({ string, position }));
@@ -237,28 +219,28 @@ export function provideSelectionState(
     const stringDiff = moveTo.string - anchor.string;
     const positionDiff = moveTo.position - anchor.position;
 
-    // Get all selected positions
-    const selectedPositions = Array.from(selections).map((key) => {
-      const [string, position] = key.split("-").map(Number);
-      return { string, position };
-    });
-
     if (stringDiff < 0) {
-      const minString = Math.min(...selectedPositions.map((p) => p.string));
+      const minString = Math.min(
+        ...selectedPositions.value.map((p) => p.string),
+      );
       if (minString + stringDiff < 0) {
         return;
       }
     }
 
     if (stringDiff > 0) {
-      const maxString = Math.max(...selectedPositions.map((p) => p.string));
+      const maxString = Math.max(
+        ...selectedPositions.value.map((p) => p.string),
+      );
       if (maxString + stringDiff > guitar.strings) {
         return;
       }
     }
 
     if (positionDiff < 0) {
-      const minPosition = Math.min(...selectedPositions.map((p) => p.position));
+      const minPosition = Math.min(
+        ...selectedPositions.value.map((p) => p.position),
+      );
       if (minPosition + positionDiff < 0) {
         return;
       }
@@ -268,7 +250,7 @@ export function provideSelectionState(
     selections.clear();
 
     // Add new shifted positions
-    for (const pos of selectedPositions) {
+    for (const pos of selectedPositions.value) {
       guitar.moveNote(pos, {
         string: pos.string + stringDiff,
         position: pos.position + positionDiff,
