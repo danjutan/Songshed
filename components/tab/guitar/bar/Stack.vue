@@ -181,6 +181,7 @@ const cursor = computed(() =>
 
 <template>
   <div ref="stack" class="stack">
+    <div class="pos-line" />
     <div
       v-for="(note, string) in noteSpots"
       ref="noteContainers"
@@ -190,7 +191,7 @@ const cursor = computed(() =>
         tieable: tieable(note, string),
         collapse,
       }"
-      :style="{ cursor: cursor[string] }"
+      :style="{ cursor: cursor[string], gridRow: string + 1 }"
       @click="(e) => onNoteClick(e, string)"
       @mousedown="(e) => onMouseDown(e, string)"
       @mouseenter="cellHoverState.hover(string, props.position)"
@@ -228,8 +229,15 @@ const cursor = computed(() =>
   display: grid;
   grid-template-rows: subgrid;
 }
-
+.pos-line {
+  grid-row: 1 / -1;
+  grid-column: 1;
+  width: 1px;
+  background-color: lightgray;
+  justify-self: center;
+}
 .container {
+  grid-column: 1;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: var(--cell-height);
