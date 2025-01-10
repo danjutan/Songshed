@@ -35,10 +35,10 @@ export function provideTieAddState(
     return "right";
   });
 
-  props.cellHoverEvents.addHoverListener((row, position) =>
-    drag(row, position),
-  );
-  props.cellHoverEvents.addMouseUpListener(end);
+  // props.cellHoverEvents.addHoverListener((row, position) =>
+  //   drag(row, position),
+  // );
+  // props.cellHoverEvents.addMouseUpListener(end);
 
   function start(string: number, position: number, midi: Midi) {
     dragFrom.value = position;

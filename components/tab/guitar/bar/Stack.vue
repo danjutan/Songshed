@@ -6,6 +6,21 @@ import { injectSelectionState } from "../../providers/state/provide-selection-st
 import { injectEditingState } from "../../providers/state/provide-editing-state";
 import { injectStackResizeObserver } from "../../providers/events/provide-resize-observer";
 
+import {
+  draggable,
+  dropTargetForElements,
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import type { DragType } from "../../dnd/types";
+import {
+  getNoteInputDragData,
+  getNoteInputDropData,
+  isNoteInputDragData,
+} from "../../dnd/types";
+import type { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/types";
+import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
+import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { injectCellHoverEvents } from "../../providers/events/provide-cell-hover-events";
 const props = withDefaults(
   defineProps<{
     notes: NoteStack<GuitarNote>;
@@ -22,11 +37,12 @@ const emit = defineEmits<{
   noteChange: [string: number, note: GuitarNote];
 }>();
 
-const selecting = injectSelectionState();
 const editing = injectEditingState();
-const tieAdd = injectTieAddState();
-
 const resizeState = injectStackResizeObserver();
+const tieAddState = injectTieAddState();
+const cellHoverState = injectCellHoverEvents();
+
+const { isSelected, selectNote, clearSelections } = injectSelectionState();
 
 const noteSpots = computed(() => {
   const noteSpots = new Array<GuitarNote | undefined>(props.tuning.length);
@@ -37,24 +53,16 @@ const noteSpots = computed(() => {
   return noteSpots;
 });
 
-const selected = computed(() => selecting.isSelected(props.position));
-
-const backgroundColor = computed(() =>
-  selected.value ? "var(--highlight-color)" : "transparent",
-);
-
-const hovering = ref<number | undefined>();
-
-function onStackMouseDown() {
-  selecting.start(props.position);
-  console.log(props.position);
-}
-
-function onStackMouseMove() {
-  if (selecting.dragging) (document.activeElement as HTMLElement).blur();
-}
-
-const inputRefs = useTemplateRef("inputs");
+const hovering = computed<number | false>(() => {
+  const hoveredCell = cellHoverState.hoveredCell.value;
+  if (
+    hoveredCell?.position !== props.position ||
+    typeof hoveredCell?.row !== "number"
+  ) {
+    return false;
+  }
+  return hoveredCell.row;
+});
 
 const tieable = (
   note: GuitarNote | undefined,
@@ -62,50 +70,129 @@ const tieable = (
 ): note is { note: Midi } =>
   note !== undefined &&
   note.note !== "muted" &&
-  editing.editingNote?.string === string &&
-  editing.editingNote.position === props.position;
+  editing.isEditing({ string, position: props.position });
 
-function onSpotMouseDown(
-  e: MouseEvent,
-  string: number,
+const dragging = reactive<Array<"tie-add" | "select" | undefined>>(
+  new Array(props.tuning.length).fill(undefined),
+);
 
-  note: GuitarNote | undefined,
-) {
-  if (tieable(note, string)) {
-    tieAdd.start(string, props.position, note!.note);
-    e.preventDefault(); //prevents default drag-drop behavior
-    e.stopPropagation(); //prevents onStackMouseDown from triggering
+// currently unused, see below
+const dropping = reactive<Array<DragType | undefined>>(
+  new Array(props.tuning.length).fill(undefined),
+);
+
+const stackContainerRef = useTemplateRef("stack");
+const noteContainerRefs = useTemplateRef("noteContainers");
+const noteInputRefs = useTemplateRef("noteInputs");
+
+const dndCleanups: CleanupFn[] = [];
+onMounted(() => {
+  resizeState.registerStackRef(props.position, stackContainerRef.value);
+  for (const [string, container] of noteContainerRefs.value!.entries()) {
+    const notePosition = { position: props.position, string };
+    dndCleanups[string] = combine(
+      dropTargetForElements({
+        element: container,
+        getData: () => getNoteInputDropData(notePosition),
+        onDragEnter: (args) => {
+          if (isNoteInputDragData(args.source.data)) {
+            dropping[string] = args.source.data.dragType;
+          }
+        },
+        onDragLeave: () => {
+          dropping[string] = undefined;
+        },
+        // onDragEnter: focus,
+      }),
+      draggable({
+        element: container,
+        onGenerateDragPreview: ({ nativeSetDragImage, source }) => {
+          // if (source.data.selecting) {
+          disableNativeDragPreview({ nativeSetDragImage });
+          preventUnhandled.start();
+          // }
+        },
+        onDragStart: () => {
+          dragging[string] = tieable(noteSpots.value[string], string)
+            ? "tie-add"
+            : "select";
+          noteInputRefs.value![string]!.blur();
+        },
+        onDrop: () => {
+          dragging[string] = undefined;
+        },
+        getInitialData: () =>
+          getNoteInputDragData({
+            ...notePosition,
+            dragType: tieable(noteSpots.value[string], string)
+              ? "tie-add"
+              : "select",
+            data: noteSpots.value[string],
+          }),
+      }),
+    );
+  }
+});
+
+function onMouseDown(e: MouseEvent, string: number) {
+  if (!e.ctrlKey && !e.metaKey) {
+    clearSelections();
   }
 }
 
-let refRegistered: boolean;
+function onNoteClick(e: MouseEvent, string: number) {
+  selectNote({ string, position: props.position });
+  editing.setEditing({ string, position: props.position });
+  noteInputRefs.value![string]!.focus(); // For when you click at the edge, outside the input
+}
+
+onUnmounted(() => {
+  for (const cleanup of dndCleanups) {
+    cleanup?.();
+  }
+});
+
+const cursor = computed(() =>
+  props.tuning.map((_, string) => {
+    if (
+      tieable(noteSpots.value[string], string) ||
+      dragging[string] === "tie-add"
+    ) {
+      return "crosshair";
+    }
+    return "text";
+
+    // NOTE: the following will not work; the cursor won't change during the drag process. I believe this is a limitation of the platform.
+    // if (
+    //   tieable(noteSpots.value[string], string) ||
+    //   dropping[string] === "tie-add" ||
+    //   dragging[string] === "tie-add"
+    // ) {
+    //   return "crosshair";
+    // }
+    // if (dropping[string] === "select" || dragging[string] === "select") {
+    //   return "text";
+    // }
+    // return "text";
+  }),
+);
 </script>
 
 <template>
-  <div
-    :ref="
-      (el) => {
-        if (!refRegistered) {
-          resizeState.registerStackRef(position, el as HTMLDivElement | null);
-          refRegistered = true;
-        }
-      }
-    "
-    class="stack"
-    @mousedown="onStackMouseDown"
-    @mousemove="onStackMouseMove"
-  >
+  <div ref="stack" class="stack">
     <div
       v-for="(note, string) in noteSpots"
+      ref="noteContainers"
       class="container"
       :class="{
-        crosshair: tieable(note, string),
+        selected: isSelected({ string, position: props.position }),
+        tieable: tieable(note, string),
         collapse,
       }"
-      @click="/*inputRefs![string]?.focus()*/ () => {}"
-      @mousedown="(e) => onSpotMouseDown(e, string, note)"
-      @mouseenter="hovering = string"
-      @mouseleave="hovering = undefined"
+      :style="{ cursor: cursor[string] }"
+      @click="(e) => onNoteClick(e, string)"
+      @mousedown="(e) => onMouseDown(e, string)"
+      @mouseenter="cellHoverState.hover(string, props.position)"
     >
       <div
         v-if="collapse && note"
@@ -117,22 +204,20 @@ let refRegistered: boolean;
               : defaultColors[getChroma(note.note)],
         }"
       />
-      <div class="input">
-        <NoteInput
-          ref="inputs"
-          :data="note"
-          :string="string"
-          :position="position"
-          :tuning="props.tuning[string]"
-          :frets="props.frets"
-          :blocking-color="selected ? 'var(--highlight-blocking)' : undefined"
-          :hovering="hovering === string"
-          @note-delete="emit('noteDelete', string)"
-          @note-change="
-            (updated) => emit('noteChange', string, { ...note, ...updated })
-          "
-        />
-      </div>
+      <NoteInput
+        ref="noteInputs"
+        class="input"
+        :data="note"
+        :note-position="{ string, position: props.position }"
+        :tuning="props.tuning[string]"
+        :frets="props.frets"
+        :hovering="hovering === string"
+        :selected="isSelected({ string, position: props.position })"
+        @note-delete="emit('noteDelete', string)"
+        @note-change="
+          (updated) => emit('noteChange', string, { ...note, ...updated })
+        "
+      />
     </div>
   </div>
 </template>
@@ -141,29 +226,37 @@ let refRegistered: boolean;
 .stack {
   display: grid;
   grid-template-rows: subgrid;
-  background-color: v-bind(backgroundColor);
 }
 
 .container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: var(--cell-height);
+  width: 100%;
   height: var(--cell-height);
-  /* border: 1px solid red; */
-  justify-content: center;
+  justify-items: center;
   align-items: center;
-  cursor: text;
+
+  &.selected {
+    background-color: var(--highlight-color);
+  }
+
+  &.collapse {
+    /* All this does is allow the @container rules to work */
+    container-type: size;
+  }
+
+  &:not(.collapse) {
+    min-width: var(--cell-height);
+    justify-self: center;
+  }
 }
 
-.container.crosshair {
-  cursor: crosshair;
-}
-
-.container.collapse {
-  container-type: size;
-}
-
-.container:not(.collapse) {
-  width: var(--cell-height);
-  justify-self: center;
+.tie-add-dragger {
+  width: 100%;
+  height: 100%;
+  background-color: red;
+  grid-area: 1 / 1;
 }
 
 .square {

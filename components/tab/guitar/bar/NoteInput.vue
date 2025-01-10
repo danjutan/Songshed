@@ -1,26 +1,26 @@
 <script lang="ts" setup>
 import type { GuitarNote } from "~/model/data";
 
-import { useTemplateRef } from "vue";
+import { onWatcherCleanup, useTemplateRef } from "vue";
 import { injectEditingState } from "../../providers/state/provide-editing-state";
 import { injectCellHoverEvents } from "../../providers/events/provide-cell-hover-events";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
+import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { getNoteInputDragData, getNoteInputDropData } from "../../dnd/types";
+import { injectSelectionState } from "../../providers/state/provide-selection-state";
+import type { NotePosition } from "~/model/stores";
 
-const props = withDefaults(
-  defineProps<{
-    data?: GuitarNote;
-    string: number;
-    position: number;
-    tuning: Midi;
-    frets: number;
-    startFocused?: boolean;
-    blockingColor?: string;
-    hovering?: boolean;
-  }>(),
-  {
-    data: undefined,
-    blockingColor: "white",
-  },
-);
+const props = defineProps<{
+  data?: GuitarNote;
+  notePosition: NotePosition;
+  tuning: Midi;
+  frets: number;
+  startFocused?: boolean;
+  selected?: boolean;
+  hovering?: boolean;
+}>();
 
 const emit = defineEmits<{
   noteChange: [data: GuitarNote];
@@ -30,26 +30,29 @@ const emit = defineEmits<{
   blur: [];
 }>();
 
-const { editingNote, setEditing } = injectEditingState();
-const { hover } = injectCellHoverEvents();
-
 const input = useTemplateRef("input");
 
-function focus() {
+defineExpose({
+  blur: () => input.value!.blur(),
+  focus: () => input.value!.focus(),
+});
+
+function onClick() {
+  // input.value!.select();
+  // emit("focus");
   input.value!.focus();
-  input.value!.select();
-  setEditing(props.string, props.position);
-  emit("focus");
 }
 
-const isEditing = computed(
-  () =>
-    editingNote?.position === props.position &&
-    editingNote?.string === props.string,
-);
+function onMouseDown(e: MouseEvent) {
+  // input.value!.blur();
+}
 
-// TODO: I think we can get rid of this
-defineExpose({ focus });
+onMounted(() => {
+  if (props.startFocused) {
+    input.value!.focus();
+    onClick();
+  }
+});
 
 function onBlur(e: Event) {
   emit("blur");
@@ -88,29 +91,19 @@ function onInput(e: Event) {
   }
   target.value = `${noteText.value}`;
 }
-
-onMounted(() => {
-  if (props.startFocused) {
-    focus();
-  }
-});
-
-function onClick(e: MouseEvent) {
-  console.log("click handler");
-  focus();
-}
-
-// function onSideMouseDown(e: MouseEvent) {
-//   tieAdd.start(props.string, props.position, props.data!.midi!);
-//   e.stopImmediatePropagation();
-// }
 </script>
 
 <template>
   <div
+    ref="container"
     class="note-input"
-    :class="{ hovering, editing: isEditing, 'has-note': hasNote }"
-    @mouseover="hover(string, position)"
+    :class="{
+      hovering,
+      'has-note': hasNote,
+      selected,
+    }"
+    @click="onClick"
+    @mousedown="onMouseDown"
   >
     <span class="input-bg">{{ noteText }}</span>
     <!-- <div class="input-hover" /> -->
@@ -122,7 +115,6 @@ function onClick(e: MouseEvent) {
       pattern="[0-9]{1,2}"
       @input="onInput"
       @blur="onBlur"
-      @click="onClick"
       @keyup="(e) => e.stopPropagation()"
     />
   </div>
@@ -134,6 +126,9 @@ function onClick(e: MouseEvent) {
   display: grid;
   justify-items: center;
   align-items: center; /*comment this if you want other centering*/
+  &.moving {
+    opacity: 0.8;
+  }
 }
 
 input {
@@ -143,15 +138,20 @@ input {
 
 .input-bg,
 input,
-.input-hover {
+.input-hover,
+.tie-add-dragger {
   grid-area: 1 / 1;
   /* grid-area: 1 / 2; */
   /* font-size: var(--note-font-size); */
   text-align: center; /*comment this if you want other centering*/
 }
 
+.tie-add-dragger {
+  width: 100%;
+  height: 100%;
+}
+
 input {
-  /* width: var(--cell-height); */
   width: 100%;
   max-width: var(--cell-height);
 }
@@ -165,9 +165,12 @@ input {
   pointer-events: none;
   color: transparent;
   height: 3px;
-  background-color: v-bind(blockingColor);
+  background-color: white;
 }
 
+.note-input.selected .input-bg {
+  background-color: var(--highlight-blocking);
+}
 /* .hovering:not(.editing) > input,
 .hovering:not(.has-note) > input { */
 .hovering > input {

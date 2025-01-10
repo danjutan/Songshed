@@ -34,7 +34,7 @@ guitarNotes.forEach(([position, string, midiString]) => {
   const data: GuitarNote = {
     note: toMidi(midiString),
   };
-  guitar.setNote(position, string, data);
+  guitar.setNote({ position, string }, data);
 });
 
 const ties = guitar.ties;

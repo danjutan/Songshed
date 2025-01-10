@@ -3,6 +3,7 @@ import OverlaySelect from "../OverlaySelect.vue";
 import type { Tie } from "~/model/stores";
 import { injectEditTie } from "./provide-edit-tie";
 import { TieType } from "~/model/data";
+import { injectOverlayControlsTeleport } from "../provide-overlay-controls-teleport";
 
 const props = defineProps<{
   active: boolean;
@@ -12,6 +13,7 @@ const props = defineProps<{
 }>();
 
 const { updateType, deleteTie } = injectEditTie();
+const { overlayControlsSelector } = injectOverlayControlsTeleport();
 
 const options = computed<[TieType, string][]>(() => {
   const connected =
@@ -47,7 +49,7 @@ const emits = defineEmits<{
 </script>
 
 <template>
-  <Teleport to=".overlay-controls">
+  <Teleport :to="overlayControlsSelector">
     <foreignObject :x :y :width="55" :height="200">
       <OverlaySelect
         v-model="model"

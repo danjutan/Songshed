@@ -40,10 +40,10 @@ const selectHovered = ref(false);
 const selectActive = computed(() => {
   if (tieAddState.dragging) return false;
   if (selectHovered.value) return true;
-  if (editingNote?.string && editingNote?.position) {
+  if (editingNote.value) {
     if (
-      editingNote.string === props.tie.string &&
-      [props.tie.from, props.tie.to].includes(editingNote.position)
+      editingNote.value.string === props.tie.string &&
+      [props.tie.from, props.tie.to].includes(editingNote.value.position)
     )
       return true;
   }
@@ -80,6 +80,7 @@ const selectActive = computed(() => {
         :shift-label="overDivider"
       >
         <TieSelect
+          v-if="tie.to !== tie.from"
           :active="selectActive"
           :tie
           :x
@@ -96,11 +97,13 @@ const selectActive = computed(() => {
           :y2="slideRowEnd * cellHeight"
         />
         <TieSelect
-          v-if="selectActive"
+          v-if="tie.to !== tie.from && selectActive"
           active
           :x="(from.right + to.left) / 2 - 20"
           :y="slideRowEnd * cellHeight"
           :tie
+          @mouseenter="selectHovered = true"
+          @mouseleave="selectHovered = false"
         />
       </template>
     </svg>
