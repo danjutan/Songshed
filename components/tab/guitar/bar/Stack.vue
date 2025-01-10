@@ -42,7 +42,7 @@ const resizeState = injectStackResizeObserver();
 const tieAddState = injectTieAddState();
 const cellHoverState = injectCellHoverEvents();
 
-const { isSelected, selectNote, clearSelections } = injectSelectionState();
+const selectionState = injectSelectionState();
 
 const noteSpots = computed(() => {
   const noteSpots = new Array<GuitarNote | undefined>(props.tuning.length);
@@ -52,6 +52,9 @@ const noteSpots = computed(() => {
 
   return noteSpots;
 });
+
+const isSelected = (string: number) =>
+  selectionState.isSelected({ string, position: props.position });
 
 const hovering = computed<number | false>(() => {
   const hoveredCell = cellHoverState.hoveredCell.value;
@@ -72,14 +75,14 @@ const tieable = (
   note.note !== "muted" &&
   editing.isEditing({ string, position: props.position });
 
-const dragging = reactive<Array<"tie-add" | "select" | undefined>>(
-  new Array(props.tuning.length).fill(undefined),
-);
+// const dragging = reactive<Array<"tie-add" | "select" | undefined>>(
+//   new Array(props.tuning.length).fill(undefined),
+// );
 
 // currently unused, see below
-const dropping = reactive<Array<DragType | undefined>>(
-  new Array(props.tuning.length).fill(undefined),
-);
+// const dropping = reactive<Array<DragType | undefined>>(
+//   new Array(props.tuning.length).fill(undefined),
+// );
 
 const stackContainerRef = useTemplateRef("stack");
 const noteContainerRefs = useTemplateRef("noteContainers");
@@ -95,12 +98,12 @@ onMounted(() => {
         element: container,
         getData: () => getNoteInputDropData(notePosition),
         onDragEnter: (args) => {
-          if (isNoteInputDragData(args.source.data)) {
-            dropping[string] = args.source.data.dragType;
-          }
+          // if (isNoteInputDragData(args.source.data)) {
+          //   dropping[string] = args.source.data.dragType;
+          // }
         },
         onDragLeave: () => {
-          dropping[string] = undefined;
+          // dropping[string] = undefined;
         },
         // onDragEnter: focus,
       }),
@@ -113,22 +116,23 @@ onMounted(() => {
           // }
         },
         onDragStart: () => {
-          dragging[string] = tieable(noteSpots.value[string], string)
-            ? "tie-add"
-            : "select";
+          // dragging[string] = tieable(noteSpots.value[string], string)
+          //   ? "tie-add"
+          //   : "select";
           noteInputRefs.value![string]!.blur();
         },
         onDrop: () => {
-          dragging[string] = undefined;
+          // dragging[string] = undefined;
         },
-        getInitialData: () =>
-          getNoteInputDragData({
+        getInitialData: () => {
+          return getNoteInputDragData({
             ...notePosition,
             dragType: tieable(noteSpots.value[string], string)
               ? "tie-add"
               : "select",
             data: noteSpots.value[string],
-          }),
+          });
+        },
       }),
     );
   }
@@ -136,12 +140,12 @@ onMounted(() => {
 
 function onMouseDown(e: MouseEvent, string: number) {
   if (!e.ctrlKey && !e.metaKey) {
-    clearSelections();
+    selectionState.clearSelections();
   }
 }
 
 function onNoteClick(e: MouseEvent, string: number) {
-  selectNote({ string, position: props.position });
+  selectionState.selectNote({ string, position: props.position });
   editing.setEditing({ string, position: props.position });
   noteInputRefs.value![string]!.focus(); // For when you click at the edge, outside the input
 }
@@ -154,10 +158,7 @@ onUnmounted(() => {
 
 const cursor = computed(() =>
   props.tuning.map((_, string) => {
-    if (
-      tieable(noteSpots.value[string], string) ||
-      dragging[string] === "tie-add"
-    ) {
+    if (tieable(noteSpots.value[string], string)) {
       return "crosshair";
     }
     return "text";
@@ -185,7 +186,7 @@ const cursor = computed(() =>
       ref="noteContainers"
       class="container"
       :class="{
-        selected: isSelected({ string, position: props.position }),
+        selected: isSelected(string),
         tieable: tieable(note, string),
         collapse,
       }"
@@ -212,7 +213,7 @@ const cursor = computed(() =>
         :tuning="props.tuning[string]"
         :frets="props.frets"
         :hovering="hovering === string"
-        :selected="isSelected({ string, position: props.position })"
+        :selected="isSelected(string)"
         @note-delete="emit('noteDelete', string)"
         @note-change="
           (updated) => emit('noteChange', string, { ...note, ...updated })
