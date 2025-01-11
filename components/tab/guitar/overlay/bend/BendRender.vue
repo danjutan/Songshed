@@ -131,7 +131,13 @@ const releaseArrowHover = ref(false);
       </foreignObject>
 
       <Teleport :to="overlayControlsSelector">
-        <foreignObject :x="upswingTo.left" :y="-3" :width="65" :height="200">
+        <foreignObject
+          :x="upswingTo.left"
+          :y="-3"
+          :width="100"
+          :height="200"
+          overflow="visible"
+        >
           <div
             class="select-container"
             :style="{

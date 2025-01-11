@@ -50,7 +50,7 @@ const emits = defineEmits<{
 
 <template>
   <Teleport :to="overlayControlsSelector">
-    <foreignObject :x :y :width="55" :height="200">
+    <foreignObject :x="x" :y :width="55" :height="200" overflow="visible">
       <OverlaySelect
         v-model="model"
         class="select"

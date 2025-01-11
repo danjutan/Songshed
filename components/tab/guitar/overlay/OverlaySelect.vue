@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import VueSelect from "vue3-select-component";
+import { X, ChevronDown } from "lucide-vue-next";
 
 const props = defineProps<{
   options: Array<[value: string | number, label: string]>;
@@ -18,9 +19,8 @@ const options = computed(() => {
   return props.options.map(([value, label]) => ({ label, value }));
 });
 
-// watchEffect(() => {
-//   console.log(model.value);
-// });
+const iconSize = 16;
+const iconSizePx = `${iconSize}px`;
 </script>
 
 <template>
@@ -38,16 +38,10 @@ const options = computed(() => {
       <span v-html="option.label" />
     </template>
     <template #clear>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-        @click="$emit('deleteClicked')"
-      >
-        <path
-          d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z"
-        />
-      </svg>
+      <X :size="iconSize" @click="$emit('deleteClicked')" />
+    </template>
+    <template #dropdown>
+      <ChevronDown :size="iconSize" />
     </template>
   </VueSelect>
 </template>
@@ -64,6 +58,8 @@ const options = computed(() => {
   --vs-indicators-gap: 0px;
   --vs-menu-offset-top: 2px;
 
+  width: unset !important;
+
   &.inactive:not(.open) {
     --vs-input-bg: transparent;
     --vs-input-outline: transparent;
@@ -79,12 +75,19 @@ const options = computed(() => {
       /* width: 10px; */
     }
   }
+
+  &:not(.inactive) :deep(.control) {
+    padding-left: 2px;
+    margin-left: -2px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
 }
 
 .select :deep(.menu) {
   width: fit-content !important;
   left: 0 !important;
 }
+
 .select.open :deep(.single-value) {
   position: static !important;
 }
@@ -108,6 +111,11 @@ const options = computed(() => {
     min-height: 0px;
     /* height: fit-content; */
     padding: 0px;
+
+    & button {
+      width: v-bind(iconSizePx);
+      height: v-bind(iconSizePx);
+    }
   }
 }
 </style>
