@@ -218,7 +218,7 @@ const cursor = computed(() =>
         :tuning="props.tuning[string]"
         :frets="props.frets"
         :hovering="hovering === string"
-        :selected="isSelected(string)"
+        :selected="isSelected(string) && selectionState.action === 'none'"
         @note-delete="emit('noteDelete', string)"
         @note-change="
           (updated) => emit('noteChange', string, { ...note, ...updated })
