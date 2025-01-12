@@ -165,7 +165,7 @@ input {
   width: min-content;
   pointer-events: none;
   color: transparent;
-  height: 3px;
+  height: var(--note-font-size);
   background-color: white;
 }
 

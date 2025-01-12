@@ -61,7 +61,7 @@ const collapsed = computed<Set<number>>(() => {
     <Stack
       :style="{
         // borderTop: isNotch(column.position) && '1px solid maroon',
-        borderRight: i < stackData.size && '1px solid lightgray',
+        // borderRight: i < stackData.size && '1px solid lightgray',
         gridColumn: startColumn + i,
         gridRow: `${startRow} / span ${numStrings}`,
       }"
