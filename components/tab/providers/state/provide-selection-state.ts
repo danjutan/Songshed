@@ -48,6 +48,7 @@ export interface SelectionState {
   addSelection: (position: NotePosition) => void;
   clearSelections: () => void;
   isSelected: (position: NotePosition) => boolean;
+  isEmpty: () => boolean;
   selectNote: (position: NotePosition) => void;
   startMove: (origin: NotePosition) => void;
   endMove: (moveTo: NotePosition, copy?: boolean) => void;
@@ -84,7 +85,6 @@ export function provideSelectionState(
     const visited = new Set<NotePositionKey>();
     const outputRegions: RegionBounds[] = [];
 
-    // Helper to check adjacency
     function areAdjacent(note1: NotePosition, note2: NotePosition): boolean {
       return (
         Math.abs(note1.string - note2.string) <= 1 &&
@@ -92,14 +92,12 @@ export function provideSelectionState(
       );
     }
 
-    // Helper to check if two positions cross a bar line
     function isCrossingBar(position1: number, position2: number): boolean {
       const barIndex1 = Math.floor(position1 / props.barSize);
       const barIndex2 = Math.floor(position2 / props.barSize);
       return barIndex1 !== barIndex2;
     }
 
-    // Flood-fill algorithm to find regions
     function findRegion(start: NotePosition): NotePosition[] {
       const stack = [start];
       const region: NotePosition[] = [];
@@ -112,7 +110,6 @@ export function provideSelectionState(
         visited.add(key);
         region.push(current);
 
-        // Add adjacent positions
         for (const other of selected) {
           const otherKey = notePositionKey(other);
           if (
@@ -128,12 +125,10 @@ export function provideSelectionState(
       return region;
     }
 
-    // Process each selected note
     for (const note of selected) {
       const key = notePositionKey(note);
       if (visited.has(key)) continue;
 
-      // Find a region and compute its bounds
       const region = findRegion(note);
       const strings = region.map((n) => n.string);
       const positions = region.map((n) => n.position);
@@ -148,6 +143,13 @@ export function provideSelectionState(
 
     return outputRegions;
   });
+
+  function isEmpty(): boolean {
+    if (!props.guitar) return true;
+    return selectedPositions
+      .map(props.guitar.getNote)
+      .every((note) => note === undefined);
+  }
 
   function toggleNote(position: NotePosition) {
     if (selections.has(notePositionKey(position))) {
@@ -312,6 +314,7 @@ export function provideSelectionState(
     addSelection,
     clearSelections,
     isSelected,
+    isEmpty,
     startMove,
     endMove,
     deleteSelectedNotes,

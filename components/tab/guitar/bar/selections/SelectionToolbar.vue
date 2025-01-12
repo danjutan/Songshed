@@ -5,12 +5,13 @@ import { injectSelectionState } from "@/components/tab/providers/state/provide-s
 const selectionState = injectSelectionState();
 
 const isOneNote = computed(() => selectionState.selectedPositions.length === 1);
+const isEmpty = computed(() => selectionState.isEmpty());
 </script>
 
 <template>
   <div class="selection-toolbar">
     <button
-      v-if="!isOneNote"
+      v-if="!isOneNote && !isEmpty"
       class="selection-toolbar-button"
       @click="selectionState.deleteSelectedNotes"
       @mouseenter="selectionState.setAction('might-delete')"
@@ -18,7 +19,7 @@ const isOneNote = computed(() => selectionState.selectedPositions.length === 1);
     >
       <Delete class="delete-icon" :size="16" />
     </button>
-    <button class="selection-toolbar-button">
+    <button v-if="!isEmpty" class="selection-toolbar-button">
       <MoveDragger />
     </button>
   </div>

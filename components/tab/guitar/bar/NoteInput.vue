@@ -1,15 +1,7 @@
 <script lang="ts" setup>
 import type { GuitarNote } from "~/model/data";
 
-import { onWatcherCleanup, useTemplateRef } from "vue";
-import { injectEditingState } from "../../providers/state/provide-editing-state";
-import { injectCellHoverEvents } from "../../providers/events/provide-cell-hover-events";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
-import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
-import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { getNoteInputDragData, getNoteInputDropData } from "../../dnd/types";
-import { injectSelectionState } from "../../providers/state/provide-selection-state";
+import { useTemplateRef } from "vue";
 import type { NotePosition } from "~/model/stores";
 
 const props = defineProps<{
