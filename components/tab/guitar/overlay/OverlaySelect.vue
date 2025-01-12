@@ -58,7 +58,7 @@ const iconSizePx = `${iconSize}px`;
   --vs-indicators-gap: 0px;
   --vs-menu-offset-top: 2px;
 
-  width: unset !important;
+  width: fit-content !important;
 
   &.inactive:not(.open) {
     --vs-input-bg: transparent;
@@ -76,16 +76,16 @@ const iconSizePx = `${iconSize}px`;
     }
   }
 
-  &:not(.inactive) :deep(.control) {
+  &:not(.inactive) :deep(.control),
+  &.open :deep(.control) {
     padding-left: 2px;
-    margin-left: -2px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
-}
 
-.select :deep(.menu) {
-  width: fit-content !important;
-  left: 0 !important;
+  &:not(.inactive),
+  &.open {
+    margin-left: -2px;
+  }
 }
 
 .select.open :deep(.single-value) {

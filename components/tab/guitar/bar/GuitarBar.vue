@@ -5,6 +5,7 @@ import Stack from "./Stack.vue";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectEditingState } from "../../providers/state/provide-editing-state";
 import type { NotePosition } from "~/model/stores";
+import SelectionRegions from "./selections/SelectionRegions.vue";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
@@ -78,6 +79,7 @@ const collapsed = computed<Set<number>>(() => {
       "
     />
   </template>
+  <SelectionRegions />
 </template>
 
 <style></style>

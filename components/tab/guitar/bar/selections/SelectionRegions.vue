@@ -1,0 +1,26 @@
+<script lang="ts" setup>
+import {
+  injectSelectionState,
+  type RegionBounds,
+} from "../../../providers/state/provide-selection-state";
+import { injectTablineBounds } from "../../provide-tabline-bounds";
+import SelectionRegion from "./SelectionRegion.vue";
+
+const selectionState = injectSelectionState();
+const tablineBounds = injectTablineBounds();
+
+const inBounds = (region: RegionBounds) => {
+  return (
+    region.minPosition >= tablineBounds.start &&
+    region.maxPosition <= tablineBounds.last
+  );
+};
+</script>
+
+<template>
+  <SelectionRegion
+    v-for="region in selectionState.regions.filter(inBounds)"
+    :key="`${region.minString}-${region.minPosition}-${region.maxString}-${region.maxPosition}`"
+    :region="region"
+  />
+</template>

@@ -105,6 +105,7 @@ onMounted(() => {
         onDragLeave: () => {
           // dropping[string] = undefined;
         },
+        onDrop: (args) => {},
         // onDragEnter: focus,
       }),
       draggable({
@@ -145,7 +146,10 @@ function onMouseDown(e: MouseEvent, string: number) {
 }
 
 function onNoteClick(e: MouseEvent, string: number) {
+  // if (e.ctrlKey || e.metaKey) {
   selectionState.selectNote({ string, position: props.position });
+  //   return;
+  // }
   editing.setEditing({ string, position: props.position });
   noteInputRefs.value![string]!.focus(); // For when you click at the edge, outside the input
 }
@@ -186,7 +190,7 @@ const cursor = computed(() =>
       ref="noteContainers"
       class="container"
       :class="{
-        selected: isSelected(string),
+        selected: isSelected(string) && selectionState.action === 'none',
         tieable: tieable(note, string),
         collapse,
       }"
@@ -218,6 +222,15 @@ const cursor = computed(() =>
         @note-change="
           (updated) => emit('noteChange', string, { ...note, ...updated })
         "
+      />
+      <div
+        v-if="isSelected(string) && selectionState.action !== 'none'"
+        class="select-action-overlay"
+        :class="{
+          mightMove: selectionState.action === 'might-move',
+          moving: selectionState.action === 'moving',
+          mightDelete: selectionState.action === 'might-delete',
+        }"
       />
     </div>
   </div>
@@ -253,11 +266,27 @@ const cursor = computed(() =>
   }
 }
 
-.tie-add-dragger {
+.select-action-overlay {
   width: 100%;
   height: 100%;
-  background-color: red;
   grid-area: 1 / 1;
+  pointer-events: none;
+
+  &.mightMove {
+    background-color: var(--might-move-color);
+  }
+
+  &.moving {
+    background-color: var(--moving-color);
+  }
+
+  &.mightDelete {
+    background-color: var(--delete-overlay-bg);
+  }
+}
+
+.tie-add-dragger {
+  background-color: red;
 }
 
 .square {

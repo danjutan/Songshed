@@ -17,9 +17,10 @@ import { provideStackResizeObserver } from "./providers/events/provide-resize-ob
 import { provideColumnsMap } from "./providers/provide-columns-map";
 
 import { useTieAddMonitor } from "./dnd/use-tie-add-monitor";
+import { useSelectMonitor } from "./dnd/use-select-monitor";
+import { useMoveMonitor } from "./dnd/use-move-monitor";
 
 import { injectSettingsState } from "./providers/state/provide-settings-state";
-import { useSelectMonitor } from "./dnd/use-select-monitor";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -67,6 +68,7 @@ provideBendEditState(
 onMounted(() => {
   useTieAddMonitor(tieAddState);
   useSelectMonitor(selectionState);
+  useMoveMonitor(selectionState);
 });
 
 export type Bar = {
@@ -329,7 +331,7 @@ const overlayedBarStart = ref<number | undefined>();
   --note-font-size: calc(var(--cell-height) * 0.8);
   --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);
-  --delete-overlay-bg: rgba(255, 0, 0, 0.15);
+  --delete-overlay-bg: rgba(255, 0, 0, 0.3);
   --string-width: 1px;
   --string-color: gray;
   --note-hover-color: rgba(172, 206, 247, 0.8);
@@ -338,6 +340,8 @@ const overlayedBarStart = ref<number | undefined>();
   --h-g: 206;
   --h-b: 247;
   --h-a: 0.4;
+  --might-move-color: rgba(4, 196, 87, 0.3);
+  --moving-color: rgba(1, 148, 65, 0.3);
   /*
     https://graphicdesign.stackexchange.com/a/113050
     TODO: can we do all this with relative colors? (Does it have wide browser support yet?)

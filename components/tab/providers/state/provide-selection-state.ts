@@ -1,20 +1,28 @@
-import type { GuitarStore } from "~/model/stores";
-
-interface NotePosition {
-  position: number;
-  string: number;
-}
+import type { GuitarNote } from "~/model/data";
+import type { GuitarStore, NotePosition } from "~/model/stores";
 
 type NotePositionKey = `${number}-${number}`;
 export const notePositionKey = (position: NotePosition): NotePositionKey =>
   `${position.string}-${position.position}`;
 
 // The rectangular boundary of a contiguous set of selected notes.
-interface RegionBounds {
+export interface RegionBounds {
   minPosition: number;
   maxPosition: number;
   minString: number;
   maxString: number;
+}
+
+export function isWithinRegion(
+  position: NotePosition,
+  region: RegionBounds,
+): boolean {
+  return (
+    position.string >= region.minString &&
+    position.string <= region.maxString &&
+    position.position >= region.minPosition &&
+    position.position <= region.maxPosition
+  );
 }
 
 // type RegionBoundsKey = `${number}-${number}-${number}-${number}`;
@@ -30,15 +38,24 @@ function getRegionBounds(start: NotePosition, end: NotePosition): RegionBounds {
   };
 }
 
+type SelectionAction = "might-delete" | "might-move" | "moving" | "none";
+
 export interface SelectionState {
+  selectedPositions: NotePosition[];
   toggleNote: (position: NotePosition) => void;
   startSelection: (position: NotePosition) => void;
   endSelection: () => void;
   addSelection: (position: NotePosition) => void;
   clearSelections: () => void;
   isSelected: (position: NotePosition) => boolean;
-  moveSelectionsIfValid: (anchor: NotePosition, moveTo: NotePosition) => void;
   selectNote: (position: NotePosition) => void;
+  startMove: (origin: NotePosition) => void;
+  endMove: (moveTo: NotePosition, copy?: boolean) => void;
+  // moveSelectionsIfValid: (moveTo: NotePosition) => void;
+  deleteSelectedNotes: () => void;
+  setAction: (action: SelectionAction) => void;
+  action: SelectionAction;
+  regions: RegionBounds[];
 }
 
 export function provideSelectionState(
@@ -48,16 +65,22 @@ export function provideSelectionState(
     barSize: number;
   }>,
 ): SelectionState {
+  let currentSelectionStart: NotePosition | undefined;
+  let currentSelectionEnd: NotePosition | undefined;
+
+  const action = ref<SelectionAction>("none");
+  let moveAnchor: NotePosition | undefined;
+
   const selections = reactive<Set<NotePositionKey>>(new Set());
-  const selectedPositions = computed<NotePosition[]>(() => {
+  const selectedPositions = reactiveComputed<NotePosition[]>(() => {
     return Array.from(selections).map((key) => {
       const [string, position] = key.split("-").map(Number);
       return { string, position };
     });
   });
 
-  const regions = computed<RegionBounds[]>(() => {
-    const selected = selectedPositions.value; // Get all selected positions
+  const regions = reactiveComputed<RegionBounds[]>(() => {
+    const selected = selectedPositions; // Get all selected positions
     const visited = new Set<NotePositionKey>();
     const outputRegions: RegionBounds[] = [];
 
@@ -126,9 +149,6 @@ export function provideSelectionState(
     return outputRegions;
   });
 
-  let currentSelectionStart: NotePosition | undefined;
-  let currentSelectionEnd: NotePosition | undefined;
-
   function toggleNote(position: NotePosition) {
     if (selections.has(notePositionKey(position))) {
       selections.delete(notePositionKey(position));
@@ -186,85 +206,105 @@ export function provideSelectionState(
     selections.clear();
   }
 
-  // function inSelection(position: NotePosition, selection: Selection): boolean {
-  //   const minString = Math.min(selection.start.string, selection.end.string);
-  //   const maxString = Math.max(selection.start.string, selection.end.string);
-  //   const minPosition = Math.min(
-  //     selection.start.position,
-  //     selection.end.position,
-  //   );
-  //   const maxPosition = Math.max(
-  //     selection.start.position,
-  //     selection.end.position,
-  //   );
-
-  //   return (
-  //     position.string >= minString &&
-  //     position.string <= maxString &&
-  //     position.position >= minPosition &&
-  //     position.position <= maxPosition
-  //   );
-  // }
-
   function isSelected(position: NotePosition): boolean {
     return selections.has(notePositionKey(position));
   }
 
-  function moveSelectionsIfValid(
-    anchor: NotePosition,
-    moveTo: NotePosition,
-  ): void {
+  function startMove(origin: NotePosition): void {
+    moveAnchor = origin;
+  }
+
+  // function endMove(): void {
+  //   moveAnchor = undefined;
+  //   action.value = "none";
+  // }
+
+  function endMove(moveTo: NotePosition, copy?: boolean): void {
+    action.value = "none";
     const guitar = props.guitar;
-    if (!guitar) return;
-    const stringDiff = moveTo.string - anchor.string;
-    const positionDiff = moveTo.position - anchor.position;
+    if (!guitar || !moveAnchor) return;
+
+    const stringDiff = moveTo.string - moveAnchor.string;
+    const positionDiff = moveTo.position - moveAnchor.position;
 
     if (stringDiff < 0) {
-      const minString = Math.min(
-        ...selectedPositions.value.map((p) => p.string),
-      );
+      const minString = Math.min(...selectedPositions.map((p) => p.string));
       if (minString + stringDiff < 0) {
         return;
       }
     }
 
     if (stringDiff > 0) {
-      const maxString = Math.max(
-        ...selectedPositions.value.map((p) => p.string),
-      );
-      if (maxString + stringDiff > guitar.strings) {
+      const maxString = Math.max(...selectedPositions.map((p) => p.string));
+      if (maxString + stringDiff >= guitar.strings) {
         return;
       }
     }
 
     if (positionDiff < 0) {
-      const minPosition = Math.min(
-        ...selectedPositions.value.map((p) => p.position),
-      );
+      const minPosition = Math.min(...selectedPositions.map((p) => p.position));
       if (minPosition + positionDiff < 0) {
         return;
       }
     }
 
-    // Clear current selections
-    selections.clear();
+    const selectedNotes = selectedPositions
+      .map((pos) => ({
+        notePosition: pos,
+        note: guitar.getNote(pos),
+      }))
+      .filter(
+        (item): item is { notePosition: NotePosition; note: GuitarNote } =>
+          item.note !== undefined,
+      );
 
-    // Add new shifted positions
-    for (const pos of selectedPositions.value) {
-      guitar.moveNote(pos, {
-        string: pos.string + stringDiff,
-        position: pos.position + positionDiff,
-      });
+    if (!copy) {
+      selectedNotes
+        .map(({ notePosition }) => notePosition)
+        .forEach(guitar.deleteNote);
+    }
+
+    for (const { notePosition, note } of selectedNotes) {
+      const newPos = {
+        string: notePosition.string + stringDiff,
+        position: notePosition.position + positionDiff,
+      };
+      if (note.note === "muted") {
+        guitar.setNote(newPos, { note: "muted" });
+        continue;
+      }
+      const newMidi = (note.note +
+        (guitar.tuning[newPos.string] -
+          guitar.tuning[notePosition.string])) as Midi;
+      guitar.setNote(newPos, { note: newMidi });
+    }
+
+    clearSelections();
+    for (const { notePosition } of selectedNotes) {
       selections.add(
         notePositionKey({
-          string: pos.string + stringDiff,
-          position: pos.position + positionDiff,
+          string: notePosition.string + stringDiff,
+          position: notePosition.position + positionDiff,
         }),
       );
     }
+    moveAnchor = moveTo;
+  }
+
+  function deleteSelectedNotes(): void {
+    const guitar = props.guitar;
+    if (!guitar) return;
+
+    for (const position of selectedPositions) {
+      guitar.deleteNote(position);
+    }
+
+    clearSelections();
+    action.value = "none";
   }
 
   const selectionState: SelectionState = {
+    selectedPositions,
     toggleNote,
     selectNote,
     startSelection,
@@ -272,7 +312,16 @@ export function provideSelectionState(
     addSelection,
     clearSelections,
     isSelected,
-    moveSelectionsIfValid,
+    startMove,
+    endMove,
+    deleteSelectedNotes,
+    regions,
+    get action() {
+      return action.value;
+    },
+    setAction: (value: SelectionAction) => {
+      action.value = value;
+    },
   };
 
   provide(SelectionInjectionKey, selectionState);

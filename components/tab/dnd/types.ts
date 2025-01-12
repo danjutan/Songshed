@@ -8,13 +8,16 @@ const noteInputDragDataPrivateKey = Symbol("NoteInput drag data");
 const noteInputDropDataPrivateKey = Symbol("NoteInput drop data");
 const bendBarDropDataPrivateKey = Symbol("Bend bar drop data");
 
-type NoteInputDragData = {
-  [noteInputDragDataPrivateKey]: true;
+type NoteInputDragDataProps = {
   position: number;
   string: number;
   dragType: DragType;
   data?: GuitarNote;
 };
+
+type NoteInputDragData = {
+  [noteInputDragDataPrivateKey]: true;
+} & NoteInputDragDataProps;
 
 type NoteInputDropData = {
   [noteInputDropDataPrivateKey]: true;
@@ -27,23 +30,10 @@ type BendBarDropData = {
   position: number;
 };
 
-export function getNoteInputDragData({
-  position,
-  string,
-  dragType,
-  data,
-}: {
-  position: number;
-  string: number;
-  dragType: DragType;
-  data?: GuitarNote;
-}): NoteInputDragData {
+export function getNoteInputDragData(params: NoteInputDragDataProps) {
   return {
     [noteInputDragDataPrivateKey]: true,
-    position,
-    string,
-    dragType,
-    data,
+    ...params,
   };
 }
 

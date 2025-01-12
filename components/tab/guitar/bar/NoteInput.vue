@@ -38,7 +38,7 @@ defineExpose({
 });
 
 function onClick() {
-  // input.value!.select();
+  input.value!.select();
   // emit("focus");
   input.value!.focus();
 }
@@ -123,6 +123,7 @@ function onInput(e: Event) {
 <style scoped>
 .note-input {
   /* Font size set by parent, Stack */
+  grid-area: 1 / 1;
   display: grid;
   justify-items: center;
   align-items: center; /*comment this if you want other centering*/

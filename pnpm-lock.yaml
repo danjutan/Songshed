@@ -23,6 +23,9 @@ dependencies:
   bind-event-listener:
     specifier: ^3.0.0
     version: 3.0.0
+  lucide-vue-next:
+    specifier: ^0.471.0
+    version: 0.471.0(vue@3.5.13)
   nuxi:
     specifier: ^3.10.1
     version: 3.17.2
@@ -5590,6 +5593,14 @@ packages:
     dependencies:
       yallist: 3.1.1
     dev: true
+
+  /lucide-vue-next@0.471.0(vue@3.5.13):
+    resolution: {integrity: sha512-ZJyImsuBOR91VF5auILuo1U0m93sSjYs+i/m5ISx8oG4FWMXX7hzuotx24/dTMRp+e8pMWUeVmPBKsNcNSrUzg==}
+    peerDependencies:
+      vue: '>=3.0.1'
+    dependencies:
+      vue: 3.5.13(typescript@5.7.2)
+    dev: false
 
   /magic-string-ast@0.6.3:
     resolution: {integrity: sha512-C9sgUzVZtUtzCBoMdYtwrIRQ4IucGRFGgdhkjL7PXsVfPYmTuWtewqzk7dlipaCMWH/gOYehW9rgMoa4Oebtpw==}

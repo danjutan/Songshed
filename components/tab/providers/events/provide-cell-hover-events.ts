@@ -1,3 +1,5 @@
+import type { NotePosition } from "~/model/stores";
+
 export type HoveredRow = number | "bend" | "annotation";
 
 type HoverListener = (row: HoveredRow, position: number) => void;
@@ -11,6 +13,15 @@ function createCellHoverEvents() {
       }
     | undefined
   >();
+
+  const hoveredNote = computed<NotePosition | undefined>(() => {
+    if (!hoveredCell.value || typeof hoveredCell.value.row !== "number")
+      return undefined;
+    return {
+      position: hoveredCell.value.position,
+      string: hoveredCell.value.row,
+    };
+  });
 
   const hoverListeners = new Set<HoverListener>();
   const mouseupListeners = new Set<ReleaseListener>();
@@ -47,6 +58,7 @@ function createCellHoverEvents() {
 
   return {
     hoveredCell,
+    hoveredNote,
     hover,
     mouseup,
     leaveTab,

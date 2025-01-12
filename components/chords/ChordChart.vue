@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ChordNote, NoteStack } from "~/model/data";
+import { X } from "lucide-vue-next";
 
 const props = withDefaults(
   defineProps<{
@@ -227,14 +228,18 @@ function onInputClick(e: Event) {
         </template>
       </template>
       <g v-else class="muted-group" @click="setFret(string, 0)">
-        <text
+        <!-- <text
           class="muted"
           text-anchor="middle"
           :x="gridStartX + (strings - +string - 1) * cellWidth"
           :y="gridStartY - cellHeight / 2"
         >
           &Cross;
-        </text>
+        </text> -->
+        <X
+          :size="16"
+          :x="gridStartX + (strings - string - 1.33) * cellWidth"
+          :y="gridStartY - cellHeight * 0.85"
         />
         <rect
           :x="gridStartX + (strings - string - 1.5) * cellWidth"

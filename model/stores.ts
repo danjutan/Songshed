@@ -395,6 +395,7 @@ export interface NotePosition {
 
 export interface GuitarStore
   extends Omit<StackStore<GuitarNote> & GuitarTabData, "getStacks" | "ties"> {
+  getNote: (notePosition: NotePosition) => GuitarNote | undefined;
   setNote: (notePosition: NotePosition, data: GuitarNote) => void;
   deleteNote: (notePosition: NotePosition) => void;
   moveNote: (from: NotePosition, to: NotePosition) => void;
@@ -410,6 +411,10 @@ export interface GuitarStore
 function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
   const noteStore = createStackStore(guitarData.stacks);
   const tieStore = createTieStore(guitarData);
+
+  function getNote({ position, string }: NotePosition): GuitarNote | undefined {
+    return guitarData.stacks.get(position)?.get(string);
+  }
 
   function setNote({ position, string }: NotePosition, data: GuitarNote): void {
     if (position >= 0 && string >= 0 && string < guitarData.strings) {
@@ -436,10 +441,17 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
 
   function moveNote(from: NotePosition, to: NotePosition) {
     const note = guitarData.stacks.get(from.position)?.get(from.string);
-    if (note) {
-      deleteNote(from);
-      setNote(to, note);
+    if (!note) return;
+    // Convert note's midi to the right value for the new string's tuning
+    let newNote: Midi | "muted" = note.note;
+    if (note.note !== undefined && note.note !== "muted") {
+      const fromTuning = guitarData.tuning[from.string];
+      const toTuning = guitarData.tuning[to.string];
+      const tuningDiff = toTuning - fromTuning;
+      newNote = (note.note - tuningDiff) as Midi;
     }
+    deleteNote(from);
+    setNote(to, { ...note, note: newNote });
   }
 
   function deleteStacks(start: number, end: number) {
@@ -479,6 +491,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
 
   return {
     ...noteStore,
+    getNote,
     getStacks,
     setNote,
     deleteNote,
