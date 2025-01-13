@@ -40,6 +40,10 @@ watch(
     }
   },
 );
+
+onMounted(() => {
+  console.log("AnnotationRender mounted");
+});
 </script>
 
 <template>

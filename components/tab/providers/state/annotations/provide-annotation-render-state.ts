@@ -1,23 +1,26 @@
 import type { AnnotationStore } from "~/model/stores";
-import type { NewAnnotation } from "./annotation-add-state";
+import type { NewAnnotation } from "./provide-annotation-add-state";
 import type { Annotation } from "~/model/data";
-import type { AnnotationRenderProps } from "../AnnotationRender.vue";
-import { type ColumnsMap } from "../../providers/provide-columns-map";
+import type { AnnotationRenderProps } from "../../../annotations/AnnotationRender.vue";
+import type { ColumnsMap } from "../../provide-columns-map";
+import type { InjectionKey } from "vue";
 
-export function createAnnotationRenderState(
+export interface AnnotationRenderState {
+  annotationRenders: Map<number, Array<AnnotationRenderProps>>;
+  annotationRows: number;
+}
+
+export function provideAnnotationRenderState(
   props: ReactiveComputed<{
     store: AnnotationStore;
     subUnit: number;
     newAnnotation: NewAnnotation;
     columnsMap: ColumnsMap;
   }>,
-) {
-  return computed(() => {
+): AnnotationRenderState {
+  const annotationRenders = computed(() => {
     const { store, subUnit, newAnnotation, columnsMap } = props;
-    const annotationRenders: Map<
-      number, // tabline index
-      Array<AnnotationRenderProps>
-    > = new Map();
+    const renders: Map<number, Array<AnnotationRenderProps>> = new Map();
 
     function push(
       tablineIndex: number,
@@ -26,7 +29,7 @@ export function createAnnotationRenderState(
       endColumn: number,
       annotation?: Annotation,
     ) {
-      const atTabline = annotationRenders.get(tablineIndex) || [];
+      const atTabline = renders.get(tablineIndex) || [];
       const columnSpan = endColumn - startColumn;
       atTabline.push({
         row,
@@ -34,13 +37,12 @@ export function createAnnotationRenderState(
         columnSpan,
         annotation,
       });
-      annotationRenders.set(tablineIndex, atTabline);
+      renders.set(tablineIndex, atTabline);
     }
 
-    const annotationRows = Math.max(store.getRows().length, 1);
     store.getRows().forEach((rowIndex) => {
       const annotations = store.getAnnotations(rowIndex);
-      const row = annotationRows - rowIndex;
+      const row = rowIndex + 1;
       for (const annotation of annotations) {
         const start = columnsMap[annotation.start];
         const end = columnsMap[annotation.end];
@@ -62,7 +64,7 @@ export function createAnnotationRenderState(
     });
 
     if (newAnnotation.startPos !== undefined) {
-      const row = annotationRows - newAnnotation.row!;
+      const row = newAnnotation.rowIndex! + 1;
       const start = newAnnotation.startPos;
       const end = newAnnotation.endPos ?? start;
       const first = columnsMap[Math.min(start, end)];
@@ -75,6 +77,21 @@ export function createAnnotationRenderState(
       }
     }
 
-    return annotationRenders;
+    return renders;
   });
+
+  const state = reactiveComputed(() => ({
+    annotationRenders,
+    annotationRows: computed(() => props.store.getRows().length),
+  }));
+
+  provide(AnnotationRenderStateInjectionKey, state);
+  return state;
+}
+
+const AnnotationRenderStateInjectionKey =
+  Symbol() as InjectionKey<AnnotationRenderState>;
+
+export function injectAnnotationRenderState() {
+  return inject(AnnotationRenderStateInjectionKey) as AnnotationRenderState;
 }

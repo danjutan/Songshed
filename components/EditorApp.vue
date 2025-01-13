@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { TabStore } from "~/model/stores";
-import Toolbar from "./tab/toolbar/Toolbar.vue";
+import Toolbar from "./tab/settings/SettingsBar.vue";
 import Tab from "./tab/Tab.vue";
 import ChordGroup from "./chords/ChordGroup.vue";
 import { provideSettingsState } from "./tab/providers/state/provide-settings-state";

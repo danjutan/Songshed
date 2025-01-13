@@ -1,25 +1,25 @@
 <script lang="ts" setup>
-import type { AnnotationAddState } from "./state/annotation-add-state";
 import { injectCellHoverEvents } from "../providers/events/provide-cell-hover-events";
+import { injectAnnotationAddState } from "../providers/state/annotations/provide-annotation-add-state";
+import { injectAnnotationRenderState } from "../providers/state/annotations/provide-annotation-render-state";
 
 const props = defineProps<{
-  // startRow: number;
   startColumn: number;
   barPositions: number[];
-  annotationRows: number;
-  addState: AnnotationAddState;
 }>();
 
 const cellHoverState = injectCellHoverEvents();
+const addState = injectAnnotationAddState();
+const renderState = injectAnnotationRenderState();
 </script>
 
 <template>
-  <template v-for="(_, rowIndex) in annotationRows">
+  <template v-for="(_, rowIndex) in renderState.annotationRows">
     <div
       class="drag-start between"
       :style="{
         gridColumn: startColumn,
-        gridRow: annotationRows - rowIndex,
+        gridRow: rowIndex,
       }"
       @mousedown="addState.start(rowIndex, barPositions[0])"
     />
@@ -28,15 +28,11 @@ const cellHoverState = injectCellHoverEvents();
       class="drag-start"
       :style="{
         gridColumn: startColumn + 1 + i,
-        gridRow: annotationRows - rowIndex,
+        gridRow: rowIndex + 1,
       }"
       @mousedown="addState.start(rowIndex, position)"
       @mouseover="cellHoverState.hover('annotation', position)"
     />
   </template>
 </template>
-<style scoped>
-div {
-  border-bottom: 1px solid lightgray;
-}
-</style>
+<style scoped></style>

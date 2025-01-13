@@ -2,11 +2,7 @@
 import type { GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
 import GuitarTabLine from "./guitar/GuitarTabLine.vue";
-import AnnotationRender from "./annotations/AnnotationRender.vue";
-import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
-
-import { createAnnotationAddState } from "./annotations/state/annotation-add-state";
-import { createAnnotationRenderState } from "./annotations/state/annotation-render-state";
+import Toolbar from "./Toolbar.vue";
 
 import { provideSelectionState } from "./providers/state/provide-selection-state";
 import { provideEditingState } from "./providers/state/provide-editing-state";
@@ -21,6 +17,9 @@ import { useSelectMonitor } from "./dnd/use-select-monitor";
 import { useMoveMonitor } from "./dnd/use-move-monitor";
 
 import { injectSettingsState } from "./providers/state/provide-settings-state";
+
+import { provideAnnotationAddState } from "./providers/state/annotations/provide-annotation-add-state";
+import { provideAnnotationRenderState } from "./providers/state/annotations/provide-annotation-render-state";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -131,34 +130,22 @@ const gridTemplateColumns = computed<string>(() => {
   return `var(--note-font-size) ${bars}`;
 });
 
-const annotationAddState = createAnnotationAddState(
-  props.tabStore.annotations,
-  subUnit,
-  cellHoverEvents,
-);
-
-const annotationRenders = createAnnotationRenderState(
+const annotationAddState = provideAnnotationAddState(
   reactiveComputed(() => ({
     store: props.tabStore.annotations,
-    subUnit,
+    subUnit: subUnit.value,
+    cellHoverEvents,
+  })),
+);
+
+const annotationRenders = provideAnnotationRenderState(
+  reactiveComputed(() => ({
+    store: props.tabStore.annotations,
+    subUnit: subUnit.value,
     newAnnotation: annotationAddState.newAnnotation,
     columnsMap,
   })),
 );
-
-const annotationRows = computed(() =>
-  Math.max(props.tabStore.annotations.getRows().length, 1),
-);
-
-function newAnnotationRow() {
-  if (
-    props.tabStore.annotations.getRows().length ===
-    annotationRows.value - 1
-  ) {
-    props.tabStore.annotations.createNextRow();
-  }
-  props.tabStore.annotations.createNextRow();
-}
 
 function onMouseUp() {
   cellHoverEvents.mouseup();
@@ -224,103 +211,88 @@ const overlayedBarStart = ref<number | undefined>();
 <template>
   <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
     <div v-for="(tabLine, tabLineIndex) in tablines" class="tab-line">
-      <template v-for="(bar, i) in tabLine" :key="bar.start">
-        <AnnotationDragBar
-          :start-column="i * (columnsPerBar + 1) + 1"
-          :bar-positions="[...bar.stacks.keys()]"
-          :annotation-rows="annotationRows"
-          :add-state="annotationAddState"
+      <template v-for="bar in tabLine" :key="bar.start">
+        <Toolbar
+          :tabline="tabLine"
+          :tab-line-index="tabLineIndex"
+          @new-annotation-row-clicked="tabStore.annotations.createNextRow"
+          @delete-annotation-clicked="
+            (row, annotation) =>
+              tabStore.annotations.deleteAnnotation(row, annotation)
+          "
         />
-
-        <div class="new-row-box" @click="newAnnotationRow">
-          <span>+</span>
-        </div>
-      </template>
-
-      <AnnotationRender
-        v-for="render in annotationRenders.get(tabLineIndex)"
-        :key="render.startColumn"
-        v-bind="render"
-        @update-title="(title) => (render.annotation!.title = title)"
-        @delete="
-          tabStore.annotations.deleteAnnotation(
-            annotationRows - render.row,
-            render.annotation!,
-          )
-        "
-      />
-
-      <GuitarTabLine
-        v-if="tabStore.guitar"
-        v-slot="{ bar, barIndex, notesRow, numStrings, bendRow }"
-        :tab-line-index
-        :guitar-store="tabStore.guitar"
-        :bars="tabLine"
-        :start-row="annotationRows + 1"
-        :beat-size="tabStore.beatSize"
-        :sub-unit
-        :columns-per-bar
-      >
-        <div
-          class="divider hoverable"
-          :style="{
-            gridColumn: barIndex * (columnsPerBar + 1) + 1,
-            gridRow: `${notesRow} / span ${numStrings}`,
-          }"
+        <GuitarTabLine
+          v-if="tabStore.guitar"
+          v-slot="{ bar, barIndex, notesRow, numStrings, bendRow }"
+          :tab-line-index
+          :guitar-store="tabStore.guitar"
+          :bars="tabLine"
+          :start-row="annotationRenders.annotationRows + 1"
+          :beat-size="tabStore.beatSize"
+          :sub-unit
+          :columns-per-bar
         >
-          <div class="buttons">
-            <div class="dummy">+</div>
-            <div class="dummy">+</div>
-            <div class="insert" @click="insertBar(bar.start)">+</div>
-            <div
-              class="delete"
-              @mouseover="overlayedBarStart = bar.start"
-              @mouseleave="overlayedBarStart = undefined"
-              @click="deleteBar(bar.start)"
-            >
-              &#x2326;
-            </div>
-            <template v-if="barIndex === 0">
+          <div
+            class="divider hoverable"
+            :style="{
+              gridColumn: barIndex * (columnsPerBar + 1) + 1,
+              gridRow: `${notesRow} / span ${numStrings}`,
+            }"
+          >
+            <div class="buttons">
+              <div class="dummy">+</div>
+              <div class="dummy">+</div>
+              <div class="insert" @click="insertBar(bar.start)">+</div>
               <div
-                v-if="tabStore.lineBreaks.has(bar.start)"
-                class="join"
-                @click="joinBreak(bar.start)"
+                class="delete"
+                @mouseover="overlayedBarStart = bar.start"
+                @mouseleave="overlayedBarStart = undefined"
+                @click="deleteBar(bar.start)"
               >
-                &#x2B11;
+                &#x2326;
               </div>
-              <div v-else class="dummy">+</div>
-            </template>
-            <div v-else class="break" @click="insertBreak(bar.start)">
-              &#x21B5;
+              <template v-if="barIndex === 0">
+                <div
+                  v-if="tabStore.lineBreaks.has(bar.start)"
+                  class="join"
+                  @click="joinBreak(bar.start)"
+                >
+                  &#x2B11;
+                </div>
+                <div v-else class="dummy">+</div>
+              </template>
+              <div v-else class="break" @click="insertBreak(bar.start)">
+                &#x21B5;
+              </div>
             </div>
           </div>
-        </div>
 
-        <div
-          v-if="overlayedBarStart === bar.start"
-          class="bar-overlay"
-          :style="{
-            gridColumnStart: barIndex * (columnsPerBar + 1) + 2,
-            gridColumnEnd: (barIndex + 1) * (columnsPerBar + 1) + 2,
-            gridRow: `${bendRow ?? notesRow} / span ${bendRow ? numStrings + 1 : numStrings}`,
-          }"
-        />
+          <div
+            v-if="overlayedBarStart === bar.start"
+            class="bar-overlay"
+            :style="{
+              gridColumnStart: barIndex * (columnsPerBar + 1) + 2,
+              gridColumnEnd: (barIndex + 1) * (columnsPerBar + 1) + 2,
+              gridRow: `${bendRow ?? notesRow} / span ${bendRow ? numStrings + 1 : numStrings}`,
+            }"
+          />
 
-        <div
-          v-if="
-            tabLineIndex === tablines.length - 1 &&
-            barIndex === tabLine.length - 1
-          "
-          class="divider"
-          :style="{
-            gridColumn: tabLine.length * (columnsPerBar + 1) + 1,
-            gridRow: `${notesRow} / span ${numStrings}`,
-          }"
-          @click="newBarClick()"
-        >
-          <div class="new-button">+</div>
-        </div>
-      </GuitarTabLine>
+          <div
+            v-if="
+              tabLineIndex === tablines.length - 1 &&
+              barIndex === tabLine.length - 1
+            "
+            class="divider"
+            :style="{
+              gridColumn: tabLine.length * (columnsPerBar + 1) + 1,
+              gridRow: `${notesRow} / span ${numStrings}`,
+            }"
+            @click="newBarClick()"
+          >
+            <div class="new-button">+</div>
+          </div>
+        </GuitarTabLine>
+      </template>
     </div>
   </div>
 </template>
@@ -340,8 +312,8 @@ const overlayedBarStart = ref<number | undefined>();
   --h-g: 206;
   --h-b: 247;
   --h-a: 0.4;
-  --might-move-color: rgba(4, 196, 87, 0.3);
-  --moving-color: rgba(1, 148, 65, 0.3);
+  --might-move-color: rgba(40, 204, 113, 0.15);
+  --moving-color: rgba(40, 204, 113, 0.3);
   /*
     https://graphicdesign.stackexchange.com/a/113050
     TODO: can we do all this with relative colors? (Does it have wide browser support yet?)
@@ -357,27 +329,11 @@ const overlayedBarStart = ref<number | undefined>();
 .tab-line {
   display: grid;
   grid-template-columns: v-bind(gridTemplateColumns);
+  grid-template-rows: max-content;
   grid-auto-rows: var(--cell-height);
   /* grid-template-rows:
     repeat(calc(v-bind(notesRow) - 1 + v-bind(numStrings)), var(--cell-height))
     calc(var(--cell-height) * 0.8); */
-}
-
-.new-row-box {
-  grid-row: 1;
-  grid-column: 1;
-  font-size: var(--cell-height);
-  border-right: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-
-  &:hover {
-    font-weight: bold;
-    background-color: lightcoral;
-    color: white;
-  }
 }
 
 .drag-start {
