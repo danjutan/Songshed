@@ -300,26 +300,30 @@ const overlayedBarStart = ref<number | undefined>();
   --context-menu-height: v-bind(contextMenuHeightPx);
   --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);
-  --delete-overlay-bg: rgba(255, 0, 0, 0.3);
   --string-width: 1px;
   --string-color: gray;
-  --note-hover-color: rgba(172, 206, 247, 0.8);
-  --highlight-color: rgba(var(--h-r), var(--h-g), var(--h-b), var(--h-a));
+  --note-hover-color: rgb(172, 206, 247);
+
+  --select-alpha: 0.3;
+  --select-color: rgb(173, 206, 247);
+  --might-move-color: rgb(70, 212, 134);
+  --moving-color: rgb(35, 174, 98);
+  --delete-color: rgba(255, 0, 0);
+  /* --highlight-color: rgba(var(--h-r), var(--h-g), var(--h-b), var(--h-a));
   --h-r: 172.8;
   --h-g: 206;
   --h-b: 247;
-  --h-a: 0.4;
-  --might-move-color: rgba(40, 204, 113, 0.15);
-  --moving-color: rgba(40, 204, 113, 0.3);
+  --h-a: 0.4; */
+
   /*
     https://graphicdesign.stackexchange.com/a/113050
     TODO: can we do all this with relative colors? (Does it have wide browser support yet?)
   */
-  --highlight-blocking: rgb(
+  /* --highlight-blocking: rgb(
     calc(255 - var(--h-a) * (255 - var(--h-r))),
     calc(255 - var(--h-a) * (255 - var(--h-g))),
     calc(255 - var(--h-a) * (255 - var(--h-b)))
-  );
+  ); */
   user-select: none;
 }
 
@@ -404,6 +408,7 @@ const overlayedBarStart = ref<number | undefined>();
 
 .bar-overlay {
   z-index: 1;
-  background-color: var(--delete-overlay-bg);
+  opacity: var(--select-alpha);
+  background-color: var(--delete-color);
 }
 </style>

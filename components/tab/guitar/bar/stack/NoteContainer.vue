@@ -101,6 +101,7 @@ function onNoteClick(e: MouseEvent) {
     class="container"
     :class="{
       selected: isSelected && selectionState.action === 'none',
+      hovering,
       tieable,
     }"
     :style="{ cursor, gridRow: string + 1 }"
@@ -152,7 +153,7 @@ function onNoteClick(e: MouseEvent) {
   align-items: center;
 
   &.selected {
-    background-color: var(--highlight-color);
+    background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
   }
 
   /* &.collapse {
@@ -170,6 +171,7 @@ function onNoteClick(e: MouseEvent) {
   height: 100%;
   grid-area: 1 / 1;
   pointer-events: none;
+  opacity: var(--select-alpha);
 
   &.mightMove {
     background-color: var(--might-move-color);
@@ -180,7 +182,7 @@ function onNoteClick(e: MouseEvent) {
   }
 
   &.mightDelete {
-    background-color: var(--delete-overlay-bg);
+    background-color: var(--delete-color);
   }
 }
 

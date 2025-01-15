@@ -12,6 +12,7 @@ const props = defineProps<{
   startFocused?: boolean;
   selected?: boolean;
   hovering?: boolean;
+  backgroundColor?: string;
 }>();
 
 const emit = defineEmits<{
@@ -60,7 +61,7 @@ const noteText = computed(() => {
   return "";
 });
 
-const hasNote = computed(() => noteText.value !== "");
+// const hasNote = computed(() => noteText.value !== "");
 
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement;
@@ -91,14 +92,15 @@ function onInput(e: Event) {
     class="note-input"
     :class="{
       hovering,
-      'has-note': hasNote,
+      // 'has-note': hasNote,
       selected,
     }"
     @click="onClick"
     @mousedown="onMouseDown"
   >
-    <span class="input-bg">{{ noteText }}</span>
+    <span class="bg-blocker">{{ noteText }}</span>
     <!-- <div class="input-hover" /> -->
+    <!-- <span class="bg-color">{{ noteText }}</span> -->
     <input
       ref="input"
       :value="noteText"
@@ -119,54 +121,64 @@ function onInput(e: Event) {
   display: grid;
   justify-items: center;
   align-items: center; /*comment this if you want other centering*/
-  &.moving {
+  /* &.moving {
     opacity: 0.8;
-  }
+  } */
 }
 
 input {
   all: unset;
   height: var(--cell-height);
-}
-
-.input-bg,
-input,
-.input-hover,
-.tie-add-dragger {
-  grid-area: 1 / 1;
-  /* grid-area: 1 / 2; */
-  /* font-size: var(--note-font-size); */
-  text-align: center; /*comment this if you want other centering*/
-}
-
-.tie-add-dragger {
-  width: 100%;
-  height: 100%;
-}
-
-input {
   width: 100%;
   max-width: var(--cell-height);
 }
 
-/* .editing input {
-  width: var(--cell-height);
-} */
+input,
+.bg-blocker,
+.bg-color {
+  grid-area: 1 / 1;
+  text-align: center;
+}
 
-.input-bg {
+.bg-blocker,
+.bg-color {
   width: min-content;
   pointer-events: none;
   color: transparent;
-  height: var(--note-font-size);
-  background-color: white;
 }
 
-.note-input.selected .input-bg {
-  background-color: var(--highlight-blocking);
+.bg-blocker {
+  background-color: white;
+  height: var(--note-font-size);
 }
-/* .hovering:not(.editing) > input,
-.hovering:not(.has-note) > input { */
+
+.bg-color {
+}
+
+.selected /*.bg-color*/ .bg-blocker {
+  /* If you set explicit z-indices for
+     bg-blocker -> bg-color -> input, the normal opacity approach works for Chrome but not Safari.
+     The solution below (adding 0.2 to the alpha) is the only cross-platform solution.
+     TODO: don't use a color-based blocker at all. 
+  */
+
+  background-color: rgb(
+    from var(--select-color) calc(255 - (0.2 + var(--select-alpha)) * (255 - r))
+      calc(255 - (0.2 + var(--select-alpha)) * (255 - g))
+      calc(255 - (0.2 + var(--select-alpha)) * (255 - b))
+  );
+
+  /* TODO: Why the fuck does this work??? */
+  /* background-color: rgba(
+    from var(--select-color) r g b / calc(0.2 + var(--select-alpha))
+  ); */
+
+  height: var(--note-font-size);
+}
+
 .hovering > input {
-  background-color: var(--note-hover-color);
+  background-color: rgba(
+    from var(--note-hover-color) r g b / var(--select-alpha)
+  );
 }
 </style>
