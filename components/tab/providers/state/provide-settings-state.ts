@@ -5,7 +5,9 @@ export function provideSettingsState() {
     collapseSubdivisions: false,
     collapseEmpty: false,
     collapseAll: true,
-    cellHeight: "24px",
+    // pixels:
+    cellHeight: 24,
+    contextMenuHeight: 18,
   });
 
   provide(SettingsInjectionKey, settings);

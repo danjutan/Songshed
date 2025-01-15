@@ -19,7 +19,7 @@ const renderState = injectAnnotationRenderState();
       class="drag-start between"
       :style="{
         gridColumn: startColumn,
-        gridRow: rowIndex,
+        gridRow: rowIndex + 1,
       }"
       @mousedown="addState.start(rowIndex, barPositions[0])"
     />
@@ -35,4 +35,8 @@ const renderState = injectAnnotationRenderState();
     />
   </template>
 </template>
-<style scoped></style>
+<style scoped>
+.drag-start {
+  border-bottom: 1px solid var(--string-color);
+}
+</style>

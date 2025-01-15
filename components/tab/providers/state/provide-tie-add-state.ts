@@ -146,6 +146,11 @@ export function provideTieAddState(
         };
       }
     },
+    get hasTiesOrTieing() {
+      return (
+        dragFrom.value || (props.store && props.store.ties.getTies().length > 0)
+      );
+    },
     start,
     drag,
     end,

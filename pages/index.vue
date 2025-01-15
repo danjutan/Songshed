@@ -55,7 +55,7 @@ ties.setTie(5, Spacing.Quarter * 5 - Spacing.Eighth, {
   to: Spacing.Quarter * 6,
 });
 
-ties.setTie(2, Spacing.Quarter * 3 - Spacing.Eighth, {
+ties.setTie(0, Spacing.Quarter * 3 - Spacing.Eighth, {
   type: "bend",
   releaseType: "hold",
   bend: 1,

@@ -29,7 +29,7 @@ const isEmpty = computed(() => selectionState.isEmpty());
 .selection-toolbar {
   pointer-events: auto;
   display: flex;
-  height: 75%;
+  height: var(--context-menu-height);
   transform: translateY(40%);
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);

@@ -6,6 +6,8 @@ import type { Bar } from "./Tab.vue";
 import type { Annotation } from "~/model/data";
 import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
+import { injectTieAddState } from "./providers/state/provide-tie-add-state";
+import BendTopBar from "./guitar/overlay/bend/BendTopBar.vue";
 
 const props = defineProps<{
   tabline: Bar[];
@@ -17,7 +19,18 @@ const emits = defineEmits<{
   deleteAnnotationClicked: [row: number, data: Annotation];
 }>();
 
+const tieAddState = injectTieAddState();
 const renderState = injectAnnotationRenderState();
+
+const gridTemplateRows = computed(() => {
+  const rows = [
+    renderState.annotationRows &&
+      `repeat(${renderState.annotationRows}, var(--cell-height))`,
+    tieAddState.hasTiesOrTieing && "var(--cell-height)",
+    "var(--context-menu-height)",
+  ];
+  return rows.filter(Boolean).join(" ");
+});
 </script>
 
 <template>
@@ -28,6 +41,11 @@ const renderState = injectAnnotationRenderState();
 
     <template v-for="(bar, i) in tabline" :key="bar.start">
       <AnnotationDragBar
+        :start-column="i * (bar.stacks.size + 1) + 1"
+        :bar-positions="[...bar.stacks.keys()]"
+      />
+      <BendTopBar
+        v-if="tieAddState.hasTiesOrTieing"
         :start-column="i * (bar.stacks.size + 1) + 1"
         :bar-positions="[...bar.stacks.keys()]"
       />
@@ -43,6 +61,8 @@ const renderState = injectAnnotationRenderState();
         emits('deleteAnnotationClicked', render.row - 1, render.annotation!)
       "
     />
+
+    <div class="context-row" />
   </div>
 </template>
 
@@ -67,6 +87,11 @@ const renderState = injectAnnotationRenderState();
   grid-row: 1;
   display: grid;
   grid-template-columns: subgrid;
-  grid-template-rows: var(--cell-height);
+  grid-template-rows: v-bind(gridTemplateRows);
+}
+
+.context-row {
+  grid-row: -2 / -1;
+  grid-column: 1 / -1;
 }
 </style>

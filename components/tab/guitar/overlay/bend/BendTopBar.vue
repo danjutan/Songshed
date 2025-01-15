@@ -4,7 +4,6 @@ import { injectCellHoverEvents } from "../../../providers/events/provide-cell-ho
 const props = defineProps<{
   // startRow: number;
   startColumn: number;
-  bendRow: number;
   barPositions: number[];
 }>();
 
@@ -18,18 +17,13 @@ const cellHoverState = injectCellHoverEvents();
     class="bend-cell"
     :style="{
       gridColumn: startColumn + 1 + i,
-      gridRow: bendRow,
     }"
     @mouseover="cellHoverState.hover('bend', position)"
   />
 </template>
 
 <style scoped>
-/* .teleport-bend-labels {
-  display: grid;
-  grid-column: 1 / -1;
-  grid-row: v-bind(bendRow);
-  grid-template-columns: subgrid;
-  grid-template-rows: 1fr;
-} */
+.bend-cell {
+  grid-row: -3 / -2; /* second to last row */
+}
 </style>

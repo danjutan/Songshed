@@ -10,7 +10,6 @@ import { injectTieAddState } from "~/components/tab/providers/state/provide-tie-
 
 const props = defineProps<{
   tie: Tie;
-  firstRow: number;
   overDivider: boolean;
 }>();
 
@@ -25,7 +24,7 @@ const connected = computed(
 const ascending = computed(
   () => !connected.value || props.tie.midiFrom! < props.tie.midiTo!,
 );
-const row = computed(() => props.firstRow + props.tie.string);
+const row = computed(() => props.tie.string + 1);
 
 const slideRowStart = computed(() =>
   ascending.value ? row.value + -0.2 : row.value - 0.8,
@@ -76,7 +75,7 @@ const selectActive = computed(() => {
         :close="tie.type === TieType.TieSlide"
         :x1="from.center"
         :x2="to.center"
-        :y="(firstRow + tie.string - 0.2) * cellHeight"
+        :y="(row - 0.2) * cellHeight"
         :shift-label="overDivider"
       >
         <TieSelect

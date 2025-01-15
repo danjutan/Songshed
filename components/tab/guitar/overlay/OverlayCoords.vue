@@ -18,7 +18,7 @@ const bounds = injectTablineBounds();
 const resizeObserver = injectStackResizeObserver();
 const settingState = injectSettingsState();
 
-const cellHeight = computed(() => parseInt(settingState.cellHeight));
+const cellHeight = computed(() => settingState.cellHeight);
 
 const { getStackCoords, getPreviousStackPos, getNextStackPos } = resizeObserver;
 

@@ -26,10 +26,6 @@ const tablineBounds = provideTablineBounds(props);
 const overlayControlsId = provideOverlayControlsTeleport();
 provideEditTie(props.guitarStore.ties);
 
-const notesRow = computed(() =>
-  bendRow.value ? bendRow.value + 1 : props.startRow,
-);
-
 const numStrings = computed(() => props.guitarStore.strings);
 
 const inBounds = (position: number) =>
@@ -47,12 +43,9 @@ const ties = computed(() => {
   return withNew.filter((tie) => inBounds(tie.from) || inBounds(tie.to));
 });
 
-const bendRow = computed(() =>
-  bends.value.length ? props.startRow : undefined,
-);
-
 const barStarts = computed(() => props.bars.map((bar) => bar.start));
 
+// If a tie is centered over a divider, we need to shift it
 const centeredOverDivider = (from: number, to: number) => {
   const dividerBetween = barStarts.value.find(
     (start) => start > from && start <= to,
@@ -68,25 +61,24 @@ const columnEnd = computed(
 <template>
   <template v-for="(bar, i) in bars" :key="bar.start">
     <slot
-      :notes-row
+      name="divider"
       :num-strings="guitarStore.strings"
       :bar
       :bar-index="i"
-      :bend-row
     />
-    <BendDragBar
+    <!-- <BendDragBar
       v-if="bendRow"
       :bend-row
       :start-column="i * (columnsPerBar + 1) + 1"
       :bar-positions="[...bar.stacks.keys()]"
-    />
+    /> -->
 
     <GuitarBar
       :stack-data="bar.stacks"
       :sub-unit
       :beat-size
       :start-column="i * (columnsPerBar + 1) + 2"
-      :start-row="notesRow"
+      :start-row="2"
       :tuning="guitarStore.tuning"
       :frets="guitarStore.frets"
       :num-strings="numStrings"
@@ -108,7 +100,6 @@ const columnEnd = computed(
         v-for="tie in ties"
         :key="`${tie.from}-${tie.string}`"
         :tie
-        :first-row="bends.length ? 2 : 1"
         :over-divider="centeredOverDivider(tie.from, tie.to)"
       />
     </svg>
@@ -137,14 +128,14 @@ const columnEnd = computed(
   z-index: 2;
   position: relative; /* somehow makes the VueSelect hover events work right */
   height: calc(100% + var(--cell-height) / 2 + 100px);
-  overflow: visible;
 }
 
 .overlay,
 .overlay-controls {
+  overflow: visible;
   pointer-events: none;
   grid-column: 2 / v-bind(columnEnd);
-  grid-row: v-bind(bendRow) / span calc(v-bind(numStrings) + 1);
+  grid-row: 2 / span calc(v-bind(numStrings) + 1);
   width: 100%;
 }
 </style>

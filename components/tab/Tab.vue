@@ -26,7 +26,9 @@ const props = defineProps<{
 }>();
 
 const settings = injectSettingsState();
-const cellHeight = computed(() => settings.cellHeight);
+const cellHeightPx = computed(() => `${settings.cellHeight}px`);
+const contextMenuHeightPx = computed(() => `${settings.contextMenuHeight}px`);
+
 const barSize = computed(
   () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
 );
@@ -119,8 +121,6 @@ const columnsMap = provideColumnsMap(
   reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
 );
 
-// console.log("map", columnsMap);
-
 const gridTemplateColumns = computed<string>(() => {
   const barTemplateColumns = `repeat(${columnsPerBar.value}, 1fr)`;
   const bars = Array.from(
@@ -188,12 +188,7 @@ function joinBreak(start: number) {
 
 function onKeyUp(e: KeyboardEvent) {
   if (e.key === "Backspace") {
-    // if (props.tabStore.guitar && selectionState.selectedRange) {
-    //   props.tabStore.guitar?.deleteStacks(
-    //     selectionState.selectedRange.start,
-    //     selectionState.selectedRange.end,
-    //   );
-    // }
+    selectionState.deleteSelectedNotes();
   }
 }
 
@@ -223,7 +218,6 @@ const overlayedBarStart = ref<number | undefined>();
         />
         <GuitarTabLine
           v-if="tabStore.guitar"
-          v-slot="{ bar, barIndex, notesRow, numStrings, bendRow }"
           :tab-line-index
           :guitar-store="tabStore.guitar"
           :bars="tabLine"
@@ -232,65 +226,67 @@ const overlayedBarStart = ref<number | undefined>();
           :sub-unit
           :columns-per-bar
         >
-          <div
-            class="divider hoverable"
-            :style="{
-              gridColumn: barIndex * (columnsPerBar + 1) + 1,
-              gridRow: `${notesRow} / span ${numStrings}`,
-            }"
-          >
-            <div class="buttons">
-              <div class="dummy">+</div>
-              <div class="dummy">+</div>
-              <div class="insert" @click="insertBar(bar.start)">+</div>
-              <div
-                class="delete"
-                @mouseover="overlayedBarStart = bar.start"
-                @mouseleave="overlayedBarStart = undefined"
-                @click="deleteBar(bar.start)"
-              >
-                &#x2326;
-              </div>
-              <template v-if="barIndex === 0">
+          <template #divider="{ bar, barIndex, numStrings }">
+            <div
+              class="divider hoverable"
+              :style="{
+                gridColumn: barIndex * (columnsPerBar + 1) + 1,
+                gridRow: `2 / span ${numStrings}`,
+              }"
+            >
+              <div class="buttons">
+                <div class="dummy">+</div>
+                <div class="dummy">+</div>
+                <div class="insert" @click="insertBar(bar.start)">+</div>
                 <div
-                  v-if="tabStore.lineBreaks.has(bar.start)"
-                  class="join"
-                  @click="joinBreak(bar.start)"
+                  class="delete"
+                  @mouseover="overlayedBarStart = bar.start"
+                  @mouseleave="overlayedBarStart = undefined"
+                  @click="deleteBar(bar.start)"
                 >
-                  &#x2B11;
+                  &#x2326;
                 </div>
-                <div v-else class="dummy">+</div>
-              </template>
-              <div v-else class="break" @click="insertBreak(bar.start)">
-                &#x21B5;
+                <template v-if="barIndex === 0">
+                  <div
+                    v-if="tabStore.lineBreaks.has(bar.start)"
+                    class="join"
+                    @click="joinBreak(bar.start)"
+                  >
+                    &#x2B11;
+                  </div>
+                  <div v-else class="dummy">+</div>
+                </template>
+                <div v-else class="break" @click="insertBreak(bar.start)">
+                  &#x21B5;
+                </div>
               </div>
             </div>
-          </div>
 
-          <div
-            v-if="overlayedBarStart === bar.start"
-            class="bar-overlay"
-            :style="{
-              gridColumnStart: barIndex * (columnsPerBar + 1) + 2,
-              gridColumnEnd: (barIndex + 1) * (columnsPerBar + 1) + 2,
-              gridRow: `${bendRow ?? notesRow} / span ${bendRow ? numStrings + 1 : numStrings}`,
-            }"
-          />
+            <div
+              v-if="overlayedBarStart === bar.start"
+              class="bar-overlay"
+              :style="{
+                gridColumnStart: barIndex * (columnsPerBar + 1) + 2,
+                gridColumnEnd: (barIndex + 1) * (columnsPerBar + 1) + 2,
+                gridRow: `1 / span ${numStrings + 1}`,
+              }"
+            />
 
-          <div
-            v-if="
-              tabLineIndex === tablines.length - 1 &&
-              barIndex === tabLine.length - 1
-            "
-            class="divider"
-            :style="{
-              gridColumn: tabLine.length * (columnsPerBar + 1) + 1,
-              gridRow: `${notesRow} / span ${numStrings}`,
-            }"
-            @click="newBarClick()"
-          >
-            <div class="new-button">+</div>
-          </div>
+            <div
+              v-if="
+                tabLineIndex === tablines.length - 1 &&
+                barIndex === tabLine.length - 1
+              "
+              class="divider"
+              :style="{
+                gridColumn: tabLine.length * (columnsPerBar + 1) + 1,
+                gridRow: `1 / span ${numStrings}`,
+              }"
+              @click="newBarClick()"
+            >
+              <div class="new-button">+</div>
+            </div>
+          </template>
         </GuitarTabLine>
       </template>
     </div>
@@ -299,8 +295,9 @@ const overlayedBarStart = ref<number | undefined>();
 
 <style scoped>
 .tab {
-  --cell-height: v-bind(cellHeight);
+  --cell-height: v-bind(cellHeightPx);
   --note-font-size: calc(var(--cell-height) * 0.8);
+  --context-menu-height: v-bind(contextMenuHeightPx);
   --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);
   --delete-overlay-bg: rgba(255, 0, 0, 0.3);

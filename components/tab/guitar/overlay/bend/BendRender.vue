@@ -7,6 +7,7 @@ import OverlaySelect from "../OverlaySelect.vue";
 import { injectOverlayControlsTeleport } from "../provide-overlay-controls-teleport";
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
+import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 
 export interface BendRenderProps {
   bend: Bend;
@@ -16,10 +17,10 @@ const props = defineProps<BendRenderProps>();
 const bendEditState = injectBendEditState();
 const { overlayControlsSelector } = injectOverlayControlsTeleport();
 const { editingNote } = injectEditingState();
-
 const { getNextStackPos } = injectStackResizeObserver();
+const settings = injectSettingsState();
 
-const startRow = computed(() => props.bend.string + 2);
+const startRow = computed(() => props.bend.string + 1);
 
 const hasThrough = computed(() => !!props.bend.through?.length);
 const throughPos = computed(() =>
@@ -58,6 +59,9 @@ const selectActive = computed(() => {
   return false;
 });
 
+const bendRowTop = computed(
+  () => -1 * (settings.contextMenuHeight + settings.cellHeight),
+);
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
 </script>
@@ -133,7 +137,7 @@ const releaseArrowHover = ref(false);
       <Teleport :to="overlayControlsSelector">
         <foreignObject
           :x="upswingTo.left"
-          :y="-3"
+          :y="bendRowTop - 3"
           :width="100"
           :height="200"
           overflow="visible"
@@ -163,9 +167,9 @@ const releaseArrowHover = ref(false);
         class="upswing-curve"
         :d="
           isPrebend
-            ? `M ${from.center} ${(startRow - 0.85) * cellHeight} V ${cellHeight * 0.75}`
+            ? `M ${from.center} ${(startRow - 0.85) * cellHeight} V ${bendRowTop + cellHeight * 0.83}`
             : `M ${(from.right + from.center) / 2} ${(startRow - 0.6) * cellHeight} 
-               Q ${upswingTo.center} ${(startRow - 0.55) * cellHeight} ${upswingTo.center} ${cellHeight * 0.75}`
+               Q ${upswingTo.center} ${(startRow - 0.55) * cellHeight} ${upswingTo.center} ${bendRowTop + cellHeight * 0.83}`
         "
         :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
@@ -174,8 +178,8 @@ const releaseArrowHover = ref(false);
         <path
           v-if="bend.releaseType === 'connect'"
           class="downswing-curve"
-          :d="`M ${through.right} ${cellHeight * 0.35}
-               Q ${to.center} ${cellHeight * 0.35} ${to.center} ${(startRow - 0.95) * cellHeight}`"
+          :d="`M ${through.right} ${bendRowTop + cellHeight * 0.35}
+               Q ${to.center} ${bendRowTop + cellHeight * 0.35} ${to.center} ${(startRow - 0.95) * cellHeight}`"
           :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
         />
         <line
@@ -183,8 +187,8 @@ const releaseArrowHover = ref(false);
           class="hold-line"
           :x1="through.right"
           :x2="to.center"
-          :y1="cellHeight * 0.35"
-          :y2="cellHeight * 0.35"
+          :y1="bendRowTop + cellHeight * 0.35"
+          :y2="bendRowTop + cellHeight * 0.35"
           :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : undefined"
         />
       </g>
