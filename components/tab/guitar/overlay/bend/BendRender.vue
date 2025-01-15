@@ -108,7 +108,7 @@ const releaseArrowHover = ref(false);
       <rect
         class="upswing-dragger"
         :x="upswingTo.left"
-        :y="0"
+        :y="bendRowTop"
         :width="upswingTo.right - upswingTo.left"
         :height="cellHeight * 1.5"
         opacity="0"
@@ -116,23 +116,6 @@ const releaseArrowHover = ref(false);
         @mouseover="upswingArrowHover = true"
         @mouseleave="upswingArrowHover = false"
       />
-
-      <foreignObject
-        v-if="!through || through.left <= to.left"
-        @mouseover="bendEditState.onLabelHover"
-      >
-        <!-- <select ref="select" @input="onSelectInput">
-            <option
-              v-for="[bendBy, label] in Object.entries(bendLabels).sort(
-                (a, b) => +a[0] - +b[0],
-              )"
-              :value="bendBy"
-              :selected="props.bend.bend === +bendBy"
-              v-html="label"
-            />
-            <option value="delete">&Cross;</option>
-          </select> -->
-      </foreignObject>
 
       <Teleport :to="overlayControlsSelector">
         <foreignObject
@@ -200,16 +183,16 @@ const releaseArrowHover = ref(false);
           :y="
             hasThrough && bend.releaseType === 'connect'
               ? (startRow - 1.5) * cellHeight
-              : 0
+              : bendRowTop
           "
           :width="to.right - to.left"
           :height="cellHeight"
           opacity="0"
-          @mousedown="bendEditState.start('release', props.bend)"
+          @mousedown.prevent="bendEditState.start('release', props.bend)"
           @click="
             bendEditState.onReleaseGrabberClick(getNextStackPos(bend.to)!)
           "
-          @mouseover="releaseArrowHover = true"
+          @mouseover.prevent="releaseArrowHover = true"
           @mouseleave="releaseArrowHover = false"
         />
         <line

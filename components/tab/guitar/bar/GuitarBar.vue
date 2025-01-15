@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
 import Strings from "./Strings.vue";
-import Stack from "./Stack.vue";
+import Stack from "./stack/Stack.vue";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectEditingState } from "../../providers/state/provide-editing-state";
 import type { NotePosition } from "~/model/stores";

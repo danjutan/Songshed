@@ -66,12 +66,6 @@ const columnEnd = computed(
       :bar
       :bar-index="i"
     />
-    <!-- <BendDragBar
-      v-if="bendRow"
-      :bend-row
-      :start-column="i * (columnsPerBar + 1) + 1"
-      :bar-positions="[...bar.stacks.keys()]"
-    /> -->
 
     <GuitarBar
       :stack-data="bar.stacks"

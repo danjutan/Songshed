@@ -26,7 +26,7 @@ const endColumn = computed(
   () =>
     columnsMap[props.region.maxPosition].column + oneColumnAdjustment.value + 1,
 );
-const startRow = computed(() => props.region.minString + 2);
+const startRow = computed(() => props.region.minString + 1);
 
 const hoverRegion = computed(() => {
   const { minPosition, maxPosition, minString, maxString } = props.region;
