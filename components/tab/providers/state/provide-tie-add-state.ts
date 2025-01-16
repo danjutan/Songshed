@@ -9,140 +9,134 @@ import { TieType } from "~/model/data";
 export function provideTieAddState(
   props: ReactiveComputed<{
     cellHoverEvents: CellHoverEvents;
-    store: GuitarStore | undefined;
+    store: GuitarStore;
     subUnit: number;
   }>,
 ) {
   const mode = ref<"tie" | "bend" | undefined>();
-  const dragFrom = ref<number>();
-  const dragFromString = ref<number>(0);
-  const from = ref<number>(0);
-  const to = ref<number>(0);
-  const midiFrom = ref<Midi>();
-  const midiTo = ref<Midi>();
+  const dragString = ref<number>(0);
+  const rawFrom = ref<number>(0);
+  const rawTo = ref<number>(0);
   const defaultTieType = TieType.Hammer;
 
-  const dragDirection = computed<"right" | "left" | undefined>(() => {
-    if (!dragFrom.value) {
-      return undefined;
-    }
-    const leftMost = Math.min(from.value, to.value);
-    if (leftMost < dragFrom.value!) {
-      return "left";
-    }
-    return "right";
-  });
-
-  function start(
-    string: number,
-    position: number,
-    midi: Midi,
-    type: "tie" | "bend",
-  ) {
-    mode.value = type;
-    dragFrom.value = position;
-    dragFromString.value = string;
-    to.value = position;
-    from.value = position;
-    midiFrom.value = midi;
-  }
-
-  function drag(row: HoveredRow, position: number) {
-    if (dragFrom.value === undefined) return;
+  // Compute the valid positions based on raw drag coordinates
+  const validPositions = computed(() => {
+    const string = dragString.value;
+    const from = rawFrom.value;
+    let to = rawTo.value;
 
     // For bends, only allow dragging to the right
-    if (mode.value === "bend" && position < dragFrom.value) {
-      position = dragFrom.value;
+    if (mode.value === "bend" && to < from) {
+      to = from;
     }
 
-    if (position === dragFrom.value) {
-      from.value = position;
-      to.value = position;
-      return;
-    }
+    // Find valid note positions
+    if (to !== from) {
+      const direction = to < from ? -1 : 1;
+      const start = from + direction * props.subUnit;
+      const end = to;
 
-    if (position < dragFrom.value) {
       for (
-        let i = dragFrom.value - props.subUnit;
-        i > position;
-        i -= props.subUnit
+        let i = start;
+        direction > 0 ? i <= end : i >= end;
+        i += direction * props.subUnit
       ) {
-        const stack = props.store?.stacks.get(i);
-        if (stack?.get(dragFromString.value)) {
-          position = i;
+        const stack = props.store.stacks.get(i);
+        if (stack?.get(string)) {
+          to = i;
           break;
         }
       }
-      from.value = position;
-      to.value = dragFrom.value;
-      const stack = props.store?.stacks.get(position);
-      const noteData = stack?.get(dragFromString.value);
-      if (noteData && noteData.note !== "muted") midiFrom.value = noteData.note;
-    } else {
-      for (
-        let i = dragFrom.value + props.subUnit;
-        i < position;
-        i += props.subUnit
-      ) {
-        const stack = props.store?.stacks.get(i);
-        if (stack?.get(dragFromString.value)) {
-          position = i;
-          break;
-        }
-      }
-
-      to.value = position;
-      from.value = dragFrom.value;
-      const stack = props.store?.stacks.get(position);
-      const noteData = stack?.get(dragFromString.value);
-      if (noteData && noteData.note !== "muted") midiTo.value = noteData.note;
     }
+
+    return { from, to };
+  });
+
+  const midiValues = computed(() => {
+    const { from, to } = validPositions.value;
+    const string = dragString.value;
+
+    const fromStack = props.store.stacks.get(from);
+    const toStack = props.store.stacks.get(to);
+
+    const fromNote = fromStack?.get(string);
+    const toNote = toStack?.get(string);
+
+    return {
+      from: fromNote?.note !== "muted" ? fromNote?.note : undefined,
+      to: toNote?.note !== "muted" ? toNote?.note : undefined,
+    };
+  });
+
+  const dragDirection = computed<"right" | "left" | undefined>(() => {
+    if (!mode.value) return undefined;
+    const { from, to } = validPositions.value;
+    return from > to ? "left" : "right";
+  });
+
+  function start(string: number, position: number, type: "tie" | "bend") {
+    mode.value = type;
+    dragString.value = string;
+    rawFrom.value = position;
+    rawTo.value = position;
+  }
+
+  function drag(position: number) {
+    if (!mode.value) return;
+    rawTo.value = position;
   }
 
   function end() {
-    if (!props.store || dragFrom.value === undefined) return;
+    if (!props.store || !mode.value) return;
+
+    const { from, to } = validPositions.value;
+    const string = dragString.value;
+
     if (mode.value === "bend") {
-      props.store.ties.setTie(dragFromString.value, dragFrom.value, {
+      props.store.ties.setTie(string, from, {
         type: "bend",
-        to: to.value,
+        to,
         releaseType: "connect",
         bend: 1,
       });
-    } else if (to.value !== from.value) {
-      props.store.ties.setTie(dragFromString.value, from.value, {
+    } else if (to !== from) {
+      props.store.ties.setTie(string, from, {
         type: defaultTieType,
-        to: to.value,
+        to,
       });
     }
-    dragFrom.value = undefined;
+
     mode.value = undefined;
   }
 
   const tieAddState = {
     get dragging() {
-      return dragFrom.value !== undefined;
+      return mode.value !== undefined;
     },
     get dragDirection() {
       return dragDirection.value;
     },
     get newTie(): Tie | undefined {
-      if (dragFrom.value !== undefined && mode.value === "tie") {
+      if (mode.value === "tie") {
+        const { from, to } = validPositions.value;
+        const { from: midiFrom, to: midiTo } = midiValues.value;
         return {
-          string: dragFromString.value,
-          from: from.value,
-          to: to.value,
+          string: dragString.value,
+          from,
+          to,
           type: defaultTieType,
-          midiFrom: midiFrom.value,
-          midiTo: midiTo.value,
+          midiFrom,
+          midiTo,
         };
       }
     },
     get newBend(): Bend | undefined {
-      if (dragFrom.value !== undefined && mode.value === "bend") {
+      if (mode.value === "bend") {
+        const { from, to } = validPositions.value;
         return {
-          string: dragFromString.value,
-          from: from.value,
-          to: to.value,
+          string: dragString.value,
+          from,
+          to,
           type: "bend",
           releaseType: "connect",
           bend: 1,
@@ -151,7 +145,7 @@ export function provideTieAddState(
     },
     get hasTiesOrTieing() {
       return (
-        dragFrom.value || (props.store && props.store.ties.getTies().length > 0)
+        mode.value || (props.store && props.store.ties.getTies().length > 0)
       );
     },
     start,

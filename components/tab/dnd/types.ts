@@ -20,7 +20,7 @@ export type TieAddDragDataProps = {
   position: number;
   string: number;
   data: GuitarNote;
-  type: "tie" | "bend";
+  mode: "tie" | "bend";
 };
 
 type TieAddDragData = {

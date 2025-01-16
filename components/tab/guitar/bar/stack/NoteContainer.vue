@@ -141,6 +141,7 @@ function onNoteClick(e: MouseEvent) {
     @mousedown="onMouseDown"
     @mouseenter="cellHoverState.hover(string, position)"
   >
+    <div class="selected-bg" />
     <!-- <div
       v-if="note"
       class="square"
@@ -172,8 +173,8 @@ function onNoteClick(e: MouseEvent) {
     />
 
     <template v-if="tieable && tieableDragData">
-      <NoteTieDragger type="tie" :drag-props="tieableDragData" />
-      <NoteTieDragger type="bend" :drag-props="tieableDragData" />
+      <NoteTieDragger mode="tie" :drag-props="tieableDragData" />
+      <NoteTieDragger mode="bend" :drag-props="tieableDragData" />
     </template>
 
     <div
@@ -211,10 +212,13 @@ function onNoteClick(e: MouseEvent) {
       min-width: calc(var(--cell-height) + 12px);
     }
   }
+}
 
-  &.selected {
-    background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
-  }
+.selected .selected-bg {
+  width: 100%;
+  height: 100%;
+  grid-area: 1 / 1 / -1 / -1;
+  background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
 }
 
 .input {

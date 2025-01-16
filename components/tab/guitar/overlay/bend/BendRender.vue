@@ -151,7 +151,7 @@ const releaseArrowHover = ref(false);
         :d="
           isPrebend
             ? `M ${from.center} ${(startRow - 0.85) * cellHeight} V ${bendRowTop + cellHeight * 0.83}`
-            : `M ${(from.right + from.center) / 2} ${(startRow - 0.6) * cellHeight} 
+            : `M ${from.right} ${(startRow - 0.6) * cellHeight} 
                Q ${upswingTo.center} ${(startRow - 0.55) * cellHeight} ${upswingTo.center} ${bendRowTop + cellHeight * 0.83}`
         "
         :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"

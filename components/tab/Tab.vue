@@ -53,7 +53,7 @@ provideStackResizeObserver();
 const tieAddState = provideTieAddState(
   reactiveComputed(() => ({
     cellHoverEvents,
-    store: props.tabStore.guitar,
+    store: props.tabStore.guitar!,
     subUnit,
   })),
 );
@@ -280,7 +280,7 @@ const overlayedBarStart = ref<number | undefined>();
               class="divider"
               :style="{
                 gridColumn: tabLine.length * (columnsPerBar + 1) + 1,
-                gridRow: `1 / span ${numStrings}`,
+                gridRow: `2 / span ${numStrings}`,
               }"
               @click="newBarClick()"
             >
@@ -312,6 +312,9 @@ const overlayedBarStart = ref<number | undefined>();
   --delete-color: rgba(255, 0, 0);
 
   --tie-dragger-color: #1e3a8a;
+
+  /* To allow for tie-dragging on the bottommost notes */
+  --bottom-note-padding: var(--cell-height);
   /* --highlight-color: rgba(var(--h-r), var(--h-g), var(--h-b), var(--h-a));
   --h-r: 172.8;
   --h-g: 206;

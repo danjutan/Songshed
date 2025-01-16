@@ -10,7 +10,7 @@ import {
 } from "~/components/tab/dnd/types";
 
 const props = defineProps<{
-  type: "tie" | "bend";
+  mode: "tie" | "bend";
   dragProps: Omit<TieAddDragDataProps, "type">;
 }>();
 
@@ -26,7 +26,7 @@ onMounted(() => {
     getInitialData: () => {
       return getTieAddDragData({
         ...props.dragProps,
-        type: props.type,
+        mode: props.mode,
       });
     },
   });
@@ -37,7 +37,7 @@ onMounted(() => {
   <div
     ref="draggerRef"
     class="tie-dragger"
-    :class="{ tie: props.type === 'tie', bend: props.type === 'bend' }"
+    :class="{ tie: props.mode === 'tie', bend: props.mode === 'bend' }"
   />
 </template>
 

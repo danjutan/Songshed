@@ -16,19 +16,14 @@ export function useTieAddMonitor(tieAddState: TieAddState) {
         onDragStart(args) {
           const data = args.source.data;
           if (isTieAddDragData(data) && data.data.note !== "muted") {
-            tieAddState.start(
-              data.string,
-              data.position,
-              data.data.note,
-              data.type,
-            );
+            tieAddState.start(data.string, data.position, data.mode);
           }
         },
         onDropTargetChange(args) {
           if (args.location.current.dropTargets.length > 0) {
             const dropData = args.location.current.dropTargets[0].data;
             if (isNoteInputDropData(dropData)) {
-              tieAddState.drag(dropData.string, dropData.position);
+              tieAddState.drag(dropData.position);
             }
           }
         },
