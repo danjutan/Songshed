@@ -11,7 +11,12 @@ import {
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
-import { getNoteInputDragData, getNoteInputDropData } from "../../../dnd/types";
+import {
+  getNoteInputDragData,
+  getNoteInputDropData,
+  type TieAddDragDataProps,
+} from "../../../dnd/types";
+import NoteTieDragger from "./NoteTieDragger.vue";
 
 const props = defineProps<{
   note: GuitarNote | undefined;
@@ -53,33 +58,58 @@ const tieable = computed(
     editing.isEditing({ string: props.string, position: props.position }),
 );
 
-const cursor = computed(() => (tieable.value ? "crosshair" : "text"));
+const dragData = computed(() => {
+  return {
+    position: props.position,
+    string: props.string,
+    data: props.note,
+  };
+});
+
+const tieableDragData = computed<Omit<TieAddDragDataProps, "type"> | undefined>(
+  () => {
+    if (!props.note) {
+      return undefined;
+    }
+    return {
+      position: props.position,
+      string: props.string,
+      data: props.note,
+    };
+  },
+);
 
 onMounted(() => {
-  const notePosition = { position: props.position, string: props.string };
-  return combine(
-    dropTargetForElements({
-      element: containerRef.value!,
-      getData: () => getNoteInputDropData(notePosition),
-      onDrop: () => {},
-    }),
-    draggable({
-      element: containerRef.value!,
-      onGenerateDragPreview: ({ nativeSetDragImage }) => {
-        disableNativeDragPreview({ nativeSetDragImage });
-        preventUnhandled.start();
-      },
-      onDragStart: () => {
-        noteInputRef.value?.blur();
-      },
-      getInitialData: () => {
-        return getNoteInputDragData({
-          ...notePosition,
-          dragType: "select",
-          data: props.note,
-        });
-      },
-    }),
+  watchEffect((cleanup) =>
+    cleanup(
+      combine(
+        dropTargetForElements({
+          element: containerRef.value!,
+          getData: () =>
+            getNoteInputDropData({
+              position: props.position,
+              string: props.string,
+            }),
+          onDrop: () => {},
+        }),
+        draggable({
+          element: containerRef.value!,
+          onGenerateDragPreview: ({ nativeSetDragImage }) => {
+            disableNativeDragPreview({ nativeSetDragImage });
+            preventUnhandled.start();
+          },
+          onDragStart: () => {
+            noteInputRef.value?.blur();
+          },
+          getInitialData: () => {
+            return getNoteInputDragData({
+              ...dragData.value,
+              dragType: "select",
+            });
+          },
+        }),
+      ),
+    ),
   );
 });
 
@@ -106,7 +136,7 @@ function onNoteClick(e: MouseEvent) {
       tieable,
       collapse,
     }"
-    :style="{ cursor, gridRow: string + 1 }"
+    :style="{ gridRow: string + 1 }"
     @click="onNoteClick"
     @mousedown="onMouseDown"
     @mouseenter="cellHoverState.hover(string, position)"
@@ -140,6 +170,12 @@ function onNoteClick(e: MouseEvent) {
       @note-delete="emit('noteDelete')"
       @note-change="(updated) => emit('noteChange', { ...note, ...updated })"
     />
+
+    <template v-if="tieable && tieableDragData">
+      <NoteTieDragger type="tie" :drag-props="tieableDragData" />
+      <NoteTieDragger type="bend" :drag-props="tieableDragData" />
+    </template>
+
     <div
       v-if="selectionState.action !== 'none' && isSelected"
       class="select-action-overlay"
@@ -171,6 +207,9 @@ function onNoteClick(e: MouseEvent) {
   &:not(.collapse) {
     min-width: var(--cell-height);
     justify-self: center;
+    &.tieable {
+      min-width: calc(var(--cell-height) + 12px);
+    }
   }
 
   &.selected {
@@ -184,7 +223,7 @@ function onNoteClick(e: MouseEvent) {
 
 .note-block {
   grid-area: 2 / 2;
-  color: white;
+  color: transparent;
 }
 
 .string {

@@ -1,20 +1,31 @@
 import type { GuitarNote } from "~/model/data";
 
-export type DragType = "select" | "tie-add" | "move";
+export type DragType = "select" | /*"tie-add" |*/ "move";
 
 // https://atlassian.design/components/pragmatic-drag-and-drop/core-package/recipes/typing-data/
 
 const noteInputDragDataPrivateKey = Symbol("NoteInput drag data");
 const noteInputDropDataPrivateKey = Symbol("NoteInput drop data");
 const bendBarDropDataPrivateKey = Symbol("Bend bar drop data");
+const tieAddDragDataPrivateKey = Symbol("Tie add drag data");
 
-type NoteInputDragDataProps = {
+export type NoteInputDragDataProps = {
   position: number;
   string: number;
-  dragType: DragType;
   data?: GuitarNote;
+  dragType: DragType;
 };
 
+export type TieAddDragDataProps = {
+  position: number;
+  string: number;
+  data: GuitarNote;
+  type: "tie" | "bend";
+};
+
+type TieAddDragData = {
+  [tieAddDragDataPrivateKey]: true;
+} & TieAddDragDataProps;
 type NoteInputDragData = {
   [noteInputDragDataPrivateKey]: true;
 } & NoteInputDragDataProps;
@@ -59,10 +70,23 @@ export function getBendBarDropData({
   return { [bendBarDropDataPrivateKey]: true, position };
 }
 
+export function getTieAddDragData(params: TieAddDragDataProps): TieAddDragData {
+  return {
+    [tieAddDragDataPrivateKey]: true,
+    ...params,
+  };
+}
+
 export function isNoteInputDragData(
   data: Record<string | symbol, unknown>,
 ): data is NoteInputDragData {
   return !!data[noteInputDragDataPrivateKey];
+}
+
+export function isTieAddDragData(
+  data: Record<string | symbol, unknown>,
+): data is TieAddDragData {
+  return !!data[tieAddDragDataPrivateKey];
 }
 
 export function isNoteInputDropData(

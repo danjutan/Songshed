@@ -186,7 +186,7 @@ const releaseArrowHover = ref(false);
               : bendRowTop
           "
           :width="to.right - to.left"
-          :height="cellHeight"
+          :height="settings.contextMenuHeight"
           opacity="0"
           @mousedown.prevent="bendEditState.start('release', props.bend)"
           @click="

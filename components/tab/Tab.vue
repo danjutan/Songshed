@@ -307,9 +307,11 @@ const overlayedBarStart = ref<number | undefined>();
 
   --select-alpha: 0.3;
   --select-color: rgb(173, 206, 247);
-  --might-move-color: rgb(70, 212, 134);
-  --moving-color: rgb(35, 174, 98);
+  --might-move-color: rgb(72, 187, 120);
+  --moving-color: rgb(56, 161, 105);
   --delete-color: rgba(255, 0, 0);
+
+  --tie-dragger-color: #1e3a8a;
   /* --highlight-color: rgba(var(--h-r), var(--h-g), var(--h-b), var(--h-a));
   --h-r: 172.8;
   --h-g: 206;
