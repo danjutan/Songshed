@@ -302,6 +302,7 @@ const overlayedBarStart = ref<number | undefined>();
   --substack-bg: rgba(255, 0, 0, 0.1);
   --string-width: 1px;
   --string-color: gray;
+  --pos-line-color: lightgray;
   --note-hover-color: rgb(172, 206, 247);
 
   --select-alpha: 0.3;

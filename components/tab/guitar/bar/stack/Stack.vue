@@ -37,7 +37,6 @@ onMounted(() => {
 
 <template>
   <div ref="stack" class="stack" :class="{ collapse }">
-    <div class="pos-line" />
     <NoteContainer
       v-for="(note, string) in noteSpots"
       :key="string"
@@ -47,6 +46,7 @@ onMounted(() => {
       :position="position"
       :tuning="tuning[string]"
       :frets="frets"
+      :collapse
       @note-delete="emit('noteDelete', string)"
       @note-change="(updated) => emit('noteChange', string, updated)"
     />
@@ -57,22 +57,5 @@ onMounted(() => {
 .stack {
   display: grid;
   grid-template-rows: subgrid;
-
-  &.collapse .note-container {
-    container-type: size;
-  }
-
-  &:not(.collapse) {
-    min-width: var(--cell-height);
-    justify-self: center;
-  }
-}
-
-.pos-line {
-  grid-row: 1 / -1;
-  grid-column: 1;
-  width: 1px;
-  background-color: lightgray;
-  justify-self: center;
 }
 </style>

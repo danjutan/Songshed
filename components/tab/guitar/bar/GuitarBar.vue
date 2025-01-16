@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
-import Strings from "./Strings.vue";
 import Stack from "./stack/Stack.vue";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectEditingState } from "../../providers/state/provide-editing-state";
@@ -48,20 +47,12 @@ const collapsed = computed<Set<number>>(() => {
 </script>
 
 <template>
-  <Strings
-    :start-column
-    :start-row
-    :columns="stackData.size"
-    :num-strings="numStrings"
-  />
   <template
     v-for="([position, stack], i) in stackData.entries()"
     :key="position"
   >
     <Stack
       :style="{
-        // borderTop: isNotch(column.position) && '1px solid maroon',
-        // borderRight: i < stackData.size && '1px solid lightgray',
         gridColumn: startColumn + i,
         gridRow: `${startRow} / span ${numStrings}`,
       }"

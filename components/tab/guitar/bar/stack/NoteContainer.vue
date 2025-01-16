@@ -19,6 +19,7 @@ const props = defineProps<{
   position: number;
   tuning: Midi;
   frets: number;
+  collapse?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -103,6 +104,7 @@ function onNoteClick(e: MouseEvent) {
       selected: isSelected && selectionState.action === 'none',
       hovering,
       tieable,
+      collapse,
     }"
     :style="{ cursor, gridRow: string + 1 }"
     @click="onNoteClick"
@@ -117,6 +119,15 @@ function onNoteClick(e: MouseEvent) {
           note.note === 'muted' ? 'gray' : defaultColors[getChroma(note.note)],
       }"
     /> -->
+    <div v-if="note" class="note-block">{{ noteInputRef?.noteText }}</div>
+    <div v-else class="fill-intersection" />
+
+    <div class="string left" />
+    <div class="string right" />
+
+    <div class="pos-line top" />
+    <div class="pos-line bottom" />
+
     <NoteInput
       ref="noteInputRef"
       class="input"
@@ -130,7 +141,7 @@ function onNoteClick(e: MouseEvent) {
       @note-change="(updated) => emit('noteChange', { ...note, ...updated })"
     />
     <div
-      v-if="isSelected && selectionState.action !== 'none'"
+      v-if="selectionState.action !== 'none' && isSelected"
       class="select-action-overlay"
       :class="{
         mightMove: selectionState.action === 'might-move',
@@ -145,31 +156,78 @@ function onNoteClick(e: MouseEvent) {
 .container {
   grid-column: 1;
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: var(--cell-height);
+  grid-template-columns: 1fr min-content 1fr;
+  grid-template-rows: 1fr min-content 1fr;
   width: 100%;
   height: var(--cell-height);
   justify-items: center;
   align-items: center;
+  font-size: var(--note-font-size);
 
-  &.selected {
-    background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
-  }
-
-  /* &.collapse {
+  &.collapse {
     container-type: size;
   }
 
   &:not(.collapse) {
     min-width: var(--cell-height);
     justify-self: center;
-  } */
+  }
+
+  &.selected {
+    background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
+  }
+}
+
+.input {
+  grid-area: 1 / 1 / -1 / -1;
+}
+
+.note-block {
+  grid-area: 2 / 2;
+  color: white;
+}
+
+.string {
+  height: 1px;
+  width: 100%;
+  background-color: var(--string-color);
+  align-self: center;
+
+  &.left {
+    grid-area: 2 / 1;
+  }
+
+  &.right {
+    grid-area: 2 / 3;
+  }
+}
+
+.pos-line {
+  width: 1px;
+  height: 100%;
+  background-color: var(--pos-line-color);
+  justify-self: center;
+
+  &.top {
+    grid-area: 1 / 2;
+  }
+
+  &.bottom {
+    grid-area: 3 / 2;
+  }
+}
+
+.fill-intersection {
+  grid-area: 2 / 2;
+  background-color: var(--string-color);
+  width: 1px;
+  height: 1px;
 }
 
 .select-action-overlay {
   width: 100%;
   height: 100%;
-  grid-area: 1 / 1;
+  grid-area: 1 / 1 / -1 / -1;
   pointer-events: none;
   opacity: var(--select-alpha);
 
@@ -194,16 +252,13 @@ function onNoteClick(e: MouseEvent) {
   display: none;
 } */
 
-.input {
-  font-size: var(--note-font-size);
-}
-
 /* TODO: make hammer/pull off labels (shrink and) disappear at some point */
 
 /* Variables don't work in queries, so we use aspect-ratio to figure out if it's too narrow relative to var(--cell-height).
    That's why this component is the container and not Stack */
 @container (aspect-ratio < 0.8) {
-  .input {
+  .input,
+  .note-block {
     font-size: 100cqi;
   }
 }

@@ -25,11 +25,6 @@ const emit = defineEmits<{
 
 const input = useTemplateRef("input");
 
-defineExpose({
-  blur: () => input.value!.blur(),
-  focus: () => input.value!.focus(),
-});
-
 function onClick() {
   input.value!.select();
   // emit("focus");
@@ -84,6 +79,12 @@ function onInput(e: Event) {
   }
   target.value = `${noteText.value}`;
 }
+
+defineExpose({
+  blur: () => input.value!.blur(),
+  focus: () => input.value!.focus(),
+  noteText,
+});
 </script>
 
 <template>
@@ -92,15 +93,11 @@ function onInput(e: Event) {
     class="note-input"
     :class="{
       hovering,
-      // 'has-note': hasNote,
       selected,
     }"
     @click="onClick"
     @mousedown="onMouseDown"
   >
-    <span class="bg-blocker">{{ noteText }}</span>
-    <!-- <div class="input-hover" /> -->
-    <!-- <span class="bg-color">{{ noteText }}</span> -->
     <input
       ref="input"
       :value="noteText"
@@ -115,70 +112,11 @@ function onInput(e: Event) {
 </template>
 
 <style scoped>
-.note-input {
-  /* Font size set by parent, Stack */
-  grid-area: 1 / 1;
-  display: grid;
-  justify-items: center;
-  align-items: center; /*comment this if you want other centering*/
-  /* &.moving {
-    opacity: 0.8;
-  } */
-}
-
 input {
   all: unset;
   height: var(--cell-height);
-  width: 100%;
   max-width: var(--cell-height);
-}
-
-input,
-.bg-blocker,
-.bg-color {
-  grid-area: 1 / 1;
   text-align: center;
-}
-
-.bg-blocker,
-.bg-color {
-  width: min-content;
-  pointer-events: none;
-  color: transparent;
-}
-
-.bg-blocker {
-  background-color: white;
-  height: var(--note-font-size);
-}
-
-.bg-color {
-}
-
-.selected /*.bg-color*/ .bg-blocker {
-  /* If you set explicit z-indices for
-     bg-blocker -> bg-color -> input, the normal opacity approach works for Chrome but not Safari.
-     The solution below (adding 0.2 to the alpha) is the only cross-platform solution.
-     TODO: don't use a color-based blocker at all. 
-  */
-
-  background-color: rgb(
-    from var(--select-color) calc(255 - (0.2 + var(--select-alpha)) * (255 - r))
-      calc(255 - (0.2 + var(--select-alpha)) * (255 - g))
-      calc(255 - (0.2 + var(--select-alpha)) * (255 - b))
-  );
-
-  /* TODO: Why the fuck does this work??? */
-  /* background-color: rgba(
-    from var(--select-color) r g b / calc(0.2 + var(--select-alpha))
-  ); */
-
-  height: var(--note-font-size);
-}
-
-.hovering > input {
-  background-color: rgba(
-    from var(--note-hover-color) r g b / var(--select-alpha)
-  );
+  /* width: min-content; */
 }
 </style>
