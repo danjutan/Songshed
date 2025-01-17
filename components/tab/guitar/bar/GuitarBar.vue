@@ -5,6 +5,7 @@ import { injectSettingsState } from "~/components/tab/providers/state/provide-se
 import { injectEditingState } from "../../providers/state/provide-editing-state";
 import type { NotePosition } from "~/model/stores";
 import SelectionRegions from "./selections/SelectionRegions.vue";
+import { injectCollapsedState } from "../../providers/state/provide-collapsed-state";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
@@ -22,28 +23,7 @@ const emit = defineEmits<{
   noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
 
-const settings = injectSettingsState();
-const editing = injectEditingState();
-
-const isSubdivision = (position: number) => position % props.beatSize !== 0;
-
-// const expanded = reactive<Set<number>>(new Set());
-
-const collapsed = computed<Set<number>>(() => {
-  const positions = new Set<number>(
-    [...props.stackData]
-      .filter(([position, stack]) => {
-        // if (expanded.has(position)) return false;
-        if (editing.editingNote.value?.position === position) return false;
-        if (settings.collapseAll) return true;
-        if (settings.collapseEmpty && stack.size === 0) return true;
-        if (settings.collapseSubdivisions && isSubdivision(position))
-          return true;
-      })
-      .map(([position, _]) => position),
-  );
-  return positions;
-});
+const { collapsed } = injectCollapsedState();
 </script>
 
 <template>

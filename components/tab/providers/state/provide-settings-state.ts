@@ -14,9 +14,9 @@ export function provideSettingsState() {
   return settings;
 }
 
-type Settings = ReturnType<typeof provideSettingsState>;
-const SettingsInjectionKey = Symbol() as InjectionKey<Settings>;
+export type SettingsState = ReturnType<typeof provideSettingsState>;
+const SettingsInjectionKey = Symbol() as InjectionKey<SettingsState>;
 
 export function injectSettingsState() {
-  return inject(SettingsInjectionKey) as Settings;
+  return inject(SettingsInjectionKey) as SettingsState;
 }

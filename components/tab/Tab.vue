@@ -21,6 +21,7 @@ import { injectSettingsState } from "./providers/state/provide-settings-state";
 
 import { provideAnnotationAddState } from "./providers/state/annotations/provide-annotation-add-state";
 import { provideAnnotationRenderState } from "./providers/state/annotations/provide-annotation-render-state";
+import { provideCollapsedState } from "./providers/state/provide-collapsed-state";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -122,6 +123,19 @@ const columnsMap = provideColumnsMap(
   reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
 );
 
+const collapsed = provideCollapsedState(
+  reactiveComputed(() => ({
+    editing: editingState,
+    settings,
+    stackData: props.tabStore.guitar!.getStacks(
+      0,
+      barSize.value * bars.value.length,
+      subUnit.value,
+    ),
+    beatSize: props.tabStore.beatSize,
+  })),
+);
+
 // Holds fractional (fr) values for each bar
 const frValues = ref<number[]>([]);
 
@@ -132,12 +146,22 @@ onMounted(() => {
   frValues.value = Array(bars.value.length).fill(1); // Initialize all bars to 1fr
 });
 
+watchEffect(() => {
+  console.log(collapsed.value);
+});
+
 function getGridTemplateColumns(tabLine: Bar[]): string {
-  const barTemplateColumns = (fr: number) =>
-    `repeat(${columnsPerBar.value}, ${fr}fr)`;
+  const barTemplateColumns = (bar: Bar, fr: number) =>
+    Array.from(bar.stacks.entries())
+      .map(([position]) =>
+        collapsed.value.has(position)
+          ? `${fr}fr`
+          : `minmax(var(--cell-height), 1fr)`,
+      )
+      .join(" ");
 
   const guitarline = tabLine
-    .map((bar, i) => barTemplateColumns(frValues.value[i]))
+    .map((bar, i) => barTemplateColumns(bar, frValues.value[i]))
     .join(" min-content ");
 
   return `min-content ${guitarline}`;

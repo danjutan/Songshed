@@ -32,6 +32,8 @@ const emit = defineEmits<{
   noteChange: [note: GuitarNote];
 }>();
 
+console.log(props.collapse);
+
 const editing = injectEditingState();
 const selectionState = injectSelectionState();
 const cellHoverState = injectCellHoverEvents();
@@ -207,7 +209,7 @@ function onNoteClick(e: MouseEvent) {
 
   &:not(.collapse) {
     /* min-width: var(--cell-height); */
-    justify-self: center;
+    /* justify-self: center; */
     &.tieable {
       min-width: calc(var(--cell-height) + 12px);
     }
