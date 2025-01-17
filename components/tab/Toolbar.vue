@@ -36,7 +36,7 @@ const gridTemplateRows = computed(() => {
 <template>
   <div class="toolbar">
     <div class="new-row-box" @click="emits('newAnnotationRowClicked')">
-      <span>+</span>
+      <!-- <span>+</span> -->
     </div>
 
     <template v-for="(bar, i) in tabline" :key="bar.start">

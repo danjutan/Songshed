@@ -206,7 +206,7 @@ function onNoteClick(e: MouseEvent) {
   }
 
   &:not(.collapse) {
-    min-width: var(--cell-height);
+    /* min-width: var(--cell-height); */
     justify-self: center;
     &.tieable {
       min-width: calc(var(--cell-height) + 12px);

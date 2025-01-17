@@ -46,11 +46,10 @@ onMounted(() => {
 <style scoped>
 .divider {
   /* width: 20px; */
-  width: 4px;
+  width: 10px;
   background: black;
   padding: 0;
   cursor: ew-resize;
-  flex: 0 0 auto;
 }
 /* .divider::before {
   content: "";

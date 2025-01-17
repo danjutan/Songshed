@@ -3,6 +3,7 @@ import type { GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
 import GuitarTabLine from "./guitar/GuitarTabLine.vue";
 import Toolbar from "./Toolbar.vue";
+import ResizeDragger from "./dnd/ResizeDragger.vue";
 
 import { provideSelectionState } from "./providers/state/provide-selection-state";
 import { provideEditingState } from "./providers/state/provide-editing-state";
@@ -121,14 +122,48 @@ const columnsMap = provideColumnsMap(
   reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
 );
 
-const gridTemplateColumns = computed<string>(() => {
-  const barTemplateColumns = `repeat(${columnsPerBar.value}, 1fr)`;
-  const bars = Array.from(
-    { length: settings.barsPerLine },
-    () => barTemplateColumns,
-  ).join(" min-content ");
-  return `var(--note-font-size) ${bars}`;
+// Holds fractional (fr) values for each bar
+const frValues = ref<number[]>([]);
+
+// Local state to track drag changes
+let lastDiffX = 0; // Tracks the last diffX value during a drag
+
+onMounted(() => {
+  frValues.value = Array(bars.value.length).fill(1); // Initialize all bars to 1fr
 });
+
+function getGridTemplateColumns(tabLine: Bar[]): string {
+  const barTemplateColumns = (fr: number) =>
+    `repeat(${columnsPerBar.value}, ${fr}fr)`;
+
+  const guitarline = tabLine
+    .map((bar, i) => barTemplateColumns(frValues.value[i]))
+    .join(" min-content ");
+
+  return `min-content ${guitarline}`;
+}
+
+function handleResize(barIndex: number, diffX: number, gridWidth: number) {
+  const deltaX = diffX - lastDiffX; // Calculate the incremental change in diffX
+  lastDiffX = diffX; // Update the last recorded diffX value
+
+  const totalFr = frValues.value.reduce((sum, fr) => sum + fr, 0); // Total fraction units
+  const pxPerFr = gridWidth / totalFr; // Pixels per 1fr unit
+
+  const deltaFr = deltaX / pxPerFr; // Convert the incremental drag distance to fractional units
+
+  // Adjust the `fr` values of the affected bars
+  const newFrLeft = Math.max(0.1, frValues.value[barIndex] + deltaFr); // Prevent collapsing
+  const newFrRight = Math.max(0.1, frValues.value[barIndex + 1] - deltaFr);
+
+  // Update the specific bars being resized
+  frValues.value[barIndex] = newFrLeft;
+  frValues.value[barIndex + 1] = newFrRight;
+}
+
+function resetDrag() {
+  lastDiffX = 0; // Reset drag tracking
+}
 
 const annotationAddState = provideAnnotationAddState(
   reactiveComputed(() => ({
@@ -205,7 +240,11 @@ const overlayedBarStart = ref<number | undefined>();
 
 <template>
   <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
-    <div v-for="(tabLine, tabLineIndex) in tablines" class="tab-line">
+    <div
+      v-for="(tabLine, tabLineIndex) in tablines"
+      class="tab-line"
+      :style="{ gridTemplateColumns: getGridTemplateColumns(tabLine) }"
+    >
       <template v-for="bar in tabLine" :key="bar.start">
         <Toolbar
           :tabline="tabLine"
@@ -227,7 +266,22 @@ const overlayedBarStart = ref<number | undefined>();
           :columns-per-bar
         >
           <template #divider="{ bar, barIndex, numStrings }">
-            <div
+            <ResizeDragger
+              :style="{
+                gridColumn: barIndex * (columnsPerBar + 1) + 1,
+                gridRow: `2 / span ${numStrings}`,
+              }"
+              @start-drag="resetDrag"
+              @resize="
+                (diffX: number) => {
+                  const gridWidth = $el.getBoundingClientRect().width; // Get grid width dynamically
+                  handleResize(barIndex - 1, diffX, gridWidth);
+                }
+              "
+              @end-drag="resetDrag"
+            />
+
+            <!-- <div
               class="divider hoverable"
               :style="{
                 gridColumn: barIndex * (columnsPerBar + 1) + 1,
@@ -260,7 +314,7 @@ const overlayedBarStart = ref<number | undefined>();
                   &#x21B5;
                 </div>
               </div>
-            </div>
+            </div> -->
 
             <div
               v-if="overlayedBarStart === bar.start"
@@ -335,7 +389,7 @@ const overlayedBarStart = ref<number | undefined>();
 
 .tab-line {
   display: grid;
-  grid-template-columns: v-bind(gridTemplateColumns);
+  /* grid-template-columns: v-bind(gridTemplateColumns); */
   grid-template-rows: max-content;
   grid-auto-rows: var(--cell-height);
   /* grid-template-rows:
@@ -347,7 +401,7 @@ const overlayedBarStart = ref<number | undefined>();
   cursor: crosshair;
 }
 
-.divider {
+/* .divider {
   width: var(--divider-width);
   padding: 0px 1px;
   height: 100%;
@@ -390,11 +444,9 @@ const overlayedBarStart = ref<number | undefined>();
         visibility: visible;
       }
     }
-    /* &:hover::before {
-      content: "+";
-    } */
+
   }
-}
+}*/
 
 /* We don't want this last divider to take up extra space in the grid and throw it off */
 .divider .new-button {
