@@ -11,7 +11,7 @@ import {
 
 const props = defineProps<{
   mode: "tie" | "bend";
-  dragProps: Omit<TieAddDragDataProps, "type">;
+  dragProps: Omit<TieAddDragDataProps, "mode">;
 }>();
 
 const draggerRef = ref<HTMLElement>();

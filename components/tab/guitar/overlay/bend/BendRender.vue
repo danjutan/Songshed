@@ -198,9 +198,9 @@ const releaseArrowHover = ref(false);
         <line
           v-if="!hasThrough && afterTo"
           :x1="to.right"
-          :y1="cellHeight * 0.35"
+          :y1="bendRowTop + cellHeight * 0.35"
           :x2="afterTo.center"
-          :y2="cellHeight * 0.35"
+          :y2="bendRowTop + cellHeight * 0.35"
           stroke="black"
           opacity="0.4"
           :marker-end="'url(#arrow)'"

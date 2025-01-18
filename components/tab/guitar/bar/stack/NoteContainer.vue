@@ -66,7 +66,7 @@ const dragData = computed(() => {
   };
 });
 
-const tieableDragData = computed<Omit<TieAddDragDataProps, "type"> | undefined>(
+const tieableDragData = computed<Omit<TieAddDragDataProps, "mode"> | undefined>(
   () => {
     if (!props.note) {
       return undefined;
@@ -306,6 +306,11 @@ function onNoteClick(e: MouseEvent) {
   }
 }
 
+@container (aspect-ratio < 0.45) {
+  .pos-line {
+    display: none;
+  }
+}
 /* @container (aspect-ratio < 0.45) {
   .square {
     display: block;

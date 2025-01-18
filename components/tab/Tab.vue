@@ -52,8 +52,6 @@ const selectionState = provideSelectionState(
 );
 const editingState = provideEditingState();
 
-provideStackResizeObserver();
-
 const tieAddState = provideTieAddState(
   reactiveComputed(() => ({
     cellHoverEvents,
@@ -138,9 +136,13 @@ const collapsed = provideCollapsedState(
   })),
 );
 
+const resizeObserver = provideStackResizeObserver();
+
 const { getGridTemplateColumns, handleResize, resetDrag } = useTemplateColumns(
   bars,
   collapsed,
+  resizeObserver,
+  settings,
 );
 
 const annotationAddState = provideAnnotationAddState(
