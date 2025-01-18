@@ -4,7 +4,7 @@ import {
   isNoteInputDropData,
   isTieAddDragData,
 } from "./types";
-import type { TieAddState } from "../providers/state/provide-tie-add-state";
+import type { TieAddState } from "../../providers/state/provide-tie-add-state";
 
 export function useTieAddMonitor(tieAddState: TieAddState) {
   watchEffect((cleanup) => {

@@ -15,7 +15,7 @@ import {
   getNoteInputDragData,
   getNoteInputDropData,
   type TieAddDragDataProps,
-} from "../../../dnd/types";
+} from "../../../hooks/dnd/types";
 import NoteTieDragger from "./NoteTieDragger.vue";
 
 const props = defineProps<{
@@ -31,8 +31,6 @@ const emit = defineEmits<{
   noteDelete: [];
   noteChange: [note: GuitarNote];
 }>();
-
-console.log(props.collapse);
 
 const editing = injectEditingState();
 const selectionState = injectSelectionState();

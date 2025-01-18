@@ -3,7 +3,7 @@ import type { GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
 import GuitarTabLine from "./guitar/GuitarTabLine.vue";
 import Toolbar from "./Toolbar.vue";
-import ResizeDragger from "./dnd/ResizeDragger.vue";
+import ResizeDragger from "./ResizeDragger.vue";
 
 import { provideSelectionState } from "./providers/state/provide-selection-state";
 import { provideEditingState } from "./providers/state/provide-editing-state";
@@ -13,15 +13,17 @@ import { provideBendEditState } from "./providers/state/provide-bend-edit-state"
 import { provideStackResizeObserver } from "./providers/events/provide-resize-observer";
 import { provideColumnsMap } from "./providers/provide-columns-map";
 
-import { useTieAddMonitor } from "./dnd/use-tie-add-monitor";
-import { useSelectMonitor } from "./dnd/use-select-monitor";
-import { useMoveMonitor } from "./dnd/use-move-monitor";
+import { useTieAddMonitor } from "./hooks/dnd/use-tie-add-monitor";
+import { useSelectMonitor } from "./hooks/dnd/use-select-monitor";
+import { useMoveMonitor } from "./hooks/dnd/use-move-monitor";
 
 import { injectSettingsState } from "./providers/state/provide-settings-state";
 
 import { provideAnnotationAddState } from "./providers/state/annotations/provide-annotation-add-state";
 import { provideAnnotationRenderState } from "./providers/state/annotations/provide-annotation-render-state";
 import { provideCollapsedState } from "./providers/state/provide-collapsed-state";
+
+import { useTemplateColumns } from "./hooks/use-tabline-columns";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -136,58 +138,10 @@ const collapsed = provideCollapsedState(
   })),
 );
 
-// Holds fractional (fr) values for each bar
-const frValues = ref<number[]>([]);
-
-// Local state to track drag changes
-let lastDiffX = 0; // Tracks the last diffX value during a drag
-
-onMounted(() => {
-  frValues.value = Array(bars.value.length).fill(1); // Initialize all bars to 1fr
-});
-
-watchEffect(() => {
-  console.log(collapsed.value);
-});
-
-function getGridTemplateColumns(tabLine: Bar[]): string {
-  const barTemplateColumns = (bar: Bar, fr: number) =>
-    Array.from(bar.stacks.entries())
-      .map(([position]) =>
-        collapsed.value.has(position)
-          ? `${fr}fr`
-          : `minmax(var(--cell-height), 1fr)`,
-      )
-      .join(" ");
-
-  const guitarline = tabLine
-    .map((bar, i) => barTemplateColumns(bar, frValues.value[i]))
-    .join(" min-content ");
-
-  return `min-content ${guitarline}`;
-}
-
-function handleResize(barIndex: number, diffX: number, gridWidth: number) {
-  const deltaX = diffX - lastDiffX; // Calculate the incremental change in diffX
-  lastDiffX = diffX; // Update the last recorded diffX value
-
-  const totalFr = frValues.value.reduce((sum, fr) => sum + fr, 0); // Total fraction units
-  const pxPerFr = gridWidth / totalFr; // Pixels per 1fr unit
-
-  const deltaFr = deltaX / pxPerFr; // Convert the incremental drag distance to fractional units
-
-  // Adjust the `fr` values of the affected bars
-  const newFrLeft = Math.max(0.1, frValues.value[barIndex] + deltaFr); // Prevent collapsing
-  const newFrRight = Math.max(0.1, frValues.value[barIndex + 1] - deltaFr);
-
-  // Update the specific bars being resized
-  frValues.value[barIndex] = newFrLeft;
-  frValues.value[barIndex + 1] = newFrRight;
-}
-
-function resetDrag() {
-  lastDiffX = 0; // Reset drag tracking
-}
+const { getGridTemplateColumns, handleResize, resetDrag } = useTemplateColumns(
+  bars,
+  collapsed,
+);
 
 const annotationAddState = provideAnnotationAddState(
   reactiveComputed(() => ({
