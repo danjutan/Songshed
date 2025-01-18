@@ -4,21 +4,19 @@ import type { StackResizeObserver } from "../providers/events/provide-resize-obs
 import type { SettingsState } from "../providers/state/provide-settings-state";
 
 export function useTemplateColumns(
-  bars: ComputedRef<Bar[]>,
+  tabline: ComputedRef<Bar[]>,
   collapsed: ComputedRef<Set<number>>,
   resizeObserver: StackResizeObserver,
   settings: SettingsState,
 ) {
   const collapsedMinWidth = settings.collapsedMinWidth;
   const expandedMinWidth = settings.expandedMinWidth;
-  const frValues = ref<number[]>([]);
+  const frValues = ref<number[]>(
+    Array.from({ length: tabline.value.length }, () => 1),
+  );
   let lastDiffX = 0;
 
-  onMounted(() => {
-    frValues.value = Array(bars.value.length).fill(1);
-  });
-
-  function getGridTemplateColumns(tabLine: Bar[]): string {
+  const gridTemplateColumns = computed(() => {
     const barTemplateColumns = (bar: Bar, fr: number) =>
       Array.from(bar.stacks.entries())
         .map(([position]) =>
@@ -28,15 +26,15 @@ export function useTemplateColumns(
         )
         .join(" ");
 
-    const guitarline = tabLine
+    const guitarline = tabline.value
       .map((bar, i) => barTemplateColumns(bar, frValues.value[i]))
       .join(" min-content ");
 
     return `min-content ${guitarline}`;
-  }
+  });
 
   function isBarTooSmall(barIndex: number, deltaX: number): boolean {
-    const bar = bars.value[barIndex]!;
+    const bar = tabline.value[barIndex]!;
     const barMinWidth = Array.from(bar.stacks.entries()).reduce(
       (total, [position]) => {
         const width = collapsed.value.has(position)
@@ -78,6 +76,8 @@ export function useTemplateColumns(
 
     frValues.value[barIndex] = newFrLeft;
     frValues.value[barIndex + 1] = newFrRight;
+
+    console.log(frValues.value);
   }
 
   function resetDrag() {
@@ -85,7 +85,7 @@ export function useTemplateColumns(
   }
 
   return {
-    getGridTemplateColumns,
+    gridTemplateColumns,
     handleResize,
     resetDrag,
   };

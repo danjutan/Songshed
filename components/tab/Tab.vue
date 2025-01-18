@@ -138,13 +138,6 @@ const collapsed = provideCollapsedState(
 
 const resizeObserver = provideStackResizeObserver();
 
-const { getGridTemplateColumns, handleResize, resetDrag } = useTemplateColumns(
-  bars,
-  collapsed,
-  resizeObserver,
-  settings,
-);
-
 const annotationAddState = provideAnnotationAddState(
   reactiveComputed(() => ({
     store: props.tabStore.annotations,
@@ -216,6 +209,18 @@ onBeforeUnmount(() => {
 });
 
 const overlayedBarStart = ref<number | undefined>();
+
+// TODO: clean this up (extract tab-line div)
+const tablineHooks = computed(() => {
+  return tablines.value.map((tabline) => {
+    return useTemplateColumns(
+      computed(() => tabline),
+      collapsed,
+      resizeObserver,
+      settings,
+    );
+  });
+});
 </script>
 
 <template>
@@ -223,7 +228,10 @@ const overlayedBarStart = ref<number | undefined>();
     <div
       v-for="(tabLine, tabLineIndex) in tablines"
       class="tab-line"
-      :style="{ gridTemplateColumns: getGridTemplateColumns(tabLine) }"
+      :style="{
+        gridTemplateColumns:
+          tablineHooks[tabLineIndex].gridTemplateColumns.value,
+      }"
     >
       <template v-for="bar in tabLine" :key="bar.start">
         <Toolbar
@@ -251,14 +259,18 @@ const overlayedBarStart = ref<number | undefined>();
                 gridColumn: barIndex * (columnsPerBar + 1) + 1,
                 gridRow: `2 / span ${numStrings}`,
               }"
-              @start-drag="resetDrag"
+              @start-drag="tablineHooks[tabLineIndex].resetDrag"
               @resize="
                 (diffX: number) => {
                   const gridWidth = $el.getBoundingClientRect().width; // Get grid width dynamically
-                  handleResize(barIndex - 1, diffX, gridWidth);
+                  tablineHooks[tabLineIndex].handleResize(
+                    barIndex - 1,
+                    diffX,
+                    gridWidth,
+                  );
                 }
               "
-              @end-drag="resetDrag"
+              @end-drag="tablineHooks[tabLineIndex].resetDrag"
             />
 
             <!-- <div
