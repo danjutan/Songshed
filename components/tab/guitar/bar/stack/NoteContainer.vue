@@ -17,6 +17,8 @@ import {
   type TieAddDragDataProps,
 } from "../../../hooks/dnd/types";
 import NoteTieDragger from "./NoteTieDragger.vue";
+import { useWindowSize } from "@vueuse/core";
+import { useWindowResizing } from "~/components/tab/hooks/use-window-resizing";
 
 const props = defineProps<{
   note: GuitarNote | undefined;

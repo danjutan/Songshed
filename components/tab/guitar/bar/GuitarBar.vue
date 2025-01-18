@@ -6,6 +6,7 @@ import { injectEditingState } from "../../providers/state/provide-editing-state"
 import type { NotePosition } from "~/model/stores";
 import SelectionRegions from "./selections/SelectionRegions.vue";
 import { injectCollapsedState } from "../../providers/state/provide-collapsed-state";
+import { useWindowResizing } from "../../hooks/use-window-resizing";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
