@@ -1,9 +1,10 @@
-import type { StackMap, GuitarNote } from "~/model/data";
+import type { StackMap, GuitarNote, NoteStack } from "~/model/data";
 import type { EditingState } from "./provide-editing-state";
 import type { SettingsState } from "./provide-settings-state";
 
 export type CollapsedState = {
   collapsed: ComputedRef<Set<number>>;
+  isCollapsed: (position: number, stack: NoteStack<GuitarNote>) => boolean;
 };
 
 const CollapsedStateInjectionKey = Symbol() as InjectionKey<CollapsedState>;
@@ -17,6 +18,15 @@ export function provideCollapsedState(
   }>,
 ) {
   const isSubdivision = (position: number) => position % props.beatSize !== 0;
+
+  const isCollapsed = (position: number, stack: NoteStack<GuitarNote>) => {
+    if (props.editing.editingNote?.position === position) return false;
+    if (props.settings.collapseAll) return true;
+    if (props.settings.collapseEmpty && stack.size === 0) return true;
+    if (props.settings.collapseSubdivisions && isSubdivision(position))
+      return true;
+    return false;
+  };
 
   const collapsed = computed<Set<number>>(() => {
     const positions = new Set<number>(
@@ -34,7 +44,7 @@ export function provideCollapsedState(
     return positions;
   });
 
-  provide(CollapsedStateInjectionKey, { collapsed });
+  provide(CollapsedStateInjectionKey, { collapsed, isCollapsed });
   return collapsed;
 }
 

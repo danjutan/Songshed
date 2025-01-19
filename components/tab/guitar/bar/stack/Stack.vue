@@ -33,6 +33,10 @@ const noteSpots = computed(() => {
 onMounted(() => {
   resizeState.registerStackRef(props.position, stackRef.value);
 });
+
+onBeforeUpdate(() => {
+  console.log("updated stack");
+});
 </script>
 
 <template>

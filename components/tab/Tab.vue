@@ -24,6 +24,7 @@ import { provideAnnotationRenderState } from "./providers/state/annotations/prov
 import { provideCollapsedState } from "./providers/state/provide-collapsed-state";
 
 import { useTemplateColumns } from "./hooks/use-tabline-columns";
+import { useWindowResizing } from "./hooks/use-window-resizing";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -79,7 +80,6 @@ export type Bar = {
   stacks: StackMap<GuitarNote>;
 };
 
-// TODO: swap out the view that's determining the bars / use the longest view
 const bars = computed<Bar[]>(() => {
   if (!props.tabStore.guitar) return [];
   const bars: Bar[] = [];
@@ -103,10 +103,18 @@ const bars = computed<Bar[]>(() => {
 const tablines = computed<Array<Bar[]>>(() => {
   const tablineBars: Array<Bar[]> = [];
   let currTabLine: Bar[] = [];
+  // const barMaxWidth =
+  //   settings.collapseRatio * settings.collapsedMinWidth * columnsPerBar.value +
+  //   (1 - settings.collapseRatio) *
+  //     settings.expandedMinWidth *
+  //     columnsPerBar.value;
+  // console.log(barMaxWidth);
+  // const barsPerLine = Math.floor(width.value / barMaxWidth);
+  const barsPerLine = 3;
   bars.value.forEach((bar, i) => {
     currTabLine.push(bar);
     if (
-      currTabLine.length === settings.barsPerLine ||
+      currTabLine.length === barsPerLine ||
       props.tabStore.lineBreaks.has((i + 1) * barSize.value)
     ) {
       tablineBars.push(currTabLine);
@@ -221,10 +229,17 @@ const tablineHooks = computed(() => {
     );
   });
 });
+
+const isResizing = useWindowResizing();
 </script>
 
 <template>
-  <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
+  <div
+    v-if="!isResizing"
+    class="tab"
+    @mouseup="onMouseUp"
+    @mouseleave="onLeaveTab"
+  >
     <div
       v-for="(tabLine, tabLineIndex) in tablines"
       class="tab-line"

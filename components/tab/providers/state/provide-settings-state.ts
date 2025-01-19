@@ -1,10 +1,11 @@
 export function provideSettingsState() {
   const settings = reactive({
-    barsPerLine: 4,
+    // barsPerLine: 4,
     subdivisions: 4, // per beat
     collapseSubdivisions: false,
     collapseEmpty: false,
     collapseAll: true,
+    collapseRatio: 0.25, // for resizing,
     // pixels:
     cellHeight: 24,
     contextMenuHeight: 18,

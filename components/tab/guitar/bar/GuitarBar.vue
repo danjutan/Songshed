@@ -6,6 +6,7 @@ import { injectEditingState } from "../../providers/state/provide-editing-state"
 import type { NotePosition } from "~/model/stores";
 import SelectionRegions from "./selections/SelectionRegions.vue";
 import { injectCollapsedState } from "../../providers/state/provide-collapsed-state";
+import { useWindowResizing } from "../../hooks/use-window-resizing";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
@@ -23,7 +24,11 @@ const emit = defineEmits<{
   noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
 
-const { collapsed } = injectCollapsedState();
+const { isCollapsed } = injectCollapsedState();
+
+onBeforeUpdate(() => {
+  console.log("updated bar");
+});
 </script>
 
 <template>
@@ -38,7 +43,7 @@ const { collapsed } = injectCollapsedState();
       }"
       :notes="stack"
       :position="position"
-      :collapse="collapsed.has(position)"
+      :collapse="true"
       :tuning
       :frets
       @note-change="

@@ -56,6 +56,18 @@ const centeredOverDivider = (from: number, to: number) => {
 const columnEnd = computed(
   () => props.columnsPerBar * props.bars.length + props.bars.length + 1,
 );
+
+onBeforeUpdate(() => {
+  console.log("updated line", props.tabLineIndex);
+});
+
+// onRenderTriggered(() => {
+//   console.log("line render triggered");
+// });
+
+// onRenderTracked((e) => {
+//   console.log("line render tracked");
+// });
 </script>
 
 <template>
@@ -85,7 +97,7 @@ const columnEnd = computed(
       <!--Teleport-->
     </svg>
     <svg class="overlay">
-      <BendRender
+      <!-- <BendRender
         v-for="bend in bends"
         :key="`${bend.from}-${bend.string}`"
         :bend
@@ -95,7 +107,7 @@ const columnEnd = computed(
         :key="`${tie.from}-${tie.string}`"
         :tie
         :over-divider="centeredOverDivider(tie.from, tie.to)"
-      />
+      /> -->
     </svg>
   </ClientOnly>
 </template>

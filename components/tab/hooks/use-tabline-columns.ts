@@ -76,8 +76,6 @@ export function useTemplateColumns(
 
     frValues.value[barIndex] = newFrLeft;
     frValues.value[barIndex + 1] = newFrRight;
-
-    console.log(frValues.value);
   }
 
   function resetDrag() {
