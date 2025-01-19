@@ -2,12 +2,14 @@
 import type { GuitarNote, NoteStack } from "~/model/data";
 import NoteContainer from "./NoteContainer.vue";
 import { injectStackResizeObserver } from "~/components/tab/providers/events/provide-resize-observer";
+import { useIsCollapsed } from "~/components/tab/hooks/use-collapsed";
 
 const props = withDefaults(
   defineProps<{
     notes: NoteStack<GuitarNote>;
     position: number;
     frets: number;
+    onBeat: boolean;
     tuning: Midi[];
   }>(),
   {},
@@ -36,6 +38,8 @@ onMounted(() => {
 onBeforeUpdate(() => {
   console.log("updated stack");
 });
+
+const isCollapsed = useIsCollapsed(props.notes, props.onBeat);
 </script>
 
 <template>
@@ -49,6 +53,7 @@ onBeforeUpdate(() => {
       :position="position"
       :tuning="tuning[string]"
       :frets="frets"
+      :collapsed="isCollapsed"
       @note-delete="emit('noteDelete', string)"
       @note-change="(updated) => emit('noteChange', string, updated)"
     />

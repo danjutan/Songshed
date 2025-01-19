@@ -33,7 +33,7 @@ const props = defineProps<{
 const settings = injectSettingsState();
 const cellHeightPx = computed(() => `${settings.cellHeight}px`);
 const contextMenuHeightPx = computed(() => `${settings.contextMenuHeight}px`);
-
+const collapsedMinWidthPx = computed(() => `${settings.collapsedMinWidth}px`);
 const barSize = computed(
   () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
 );
@@ -131,18 +131,18 @@ const columnsMap = provideColumnsMap(
   reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
 );
 
-const collapsed = provideCollapsedState(
-  reactiveComputed(() => ({
-    editing: editingState,
-    settings,
-    stackData: props.tabStore.guitar!.getStacks(
-      0,
-      barSize.value * bars.value.length,
-      subUnit.value,
-    ),
-    beatSize: props.tabStore.beatSize,
-  })),
-);
+// const collapsed = provideCollapsedState(
+//   reactiveComputed(() => ({
+//     editing: editingState,
+//     settings,
+//     stackData: props.tabStore.guitar!.getStacks(
+//       0,
+//       barSize.value * bars.value.length,
+//       subUnit.value,
+//     ),
+//     beatSize: props.tabStore.beatSize,
+//   })),
+// );
 
 const resizeObserver = provideStackResizeObserver();
 
@@ -222,10 +222,12 @@ const overlayedBarStart = ref<number | undefined>();
 const tablineHooks = computed(() => {
   return tablines.value.map((tabline) => {
     return useTemplateColumns(
-      computed(() => tabline),
-      collapsed,
-      resizeObserver,
-      settings,
+      reactiveComputed(() => ({
+        tabline,
+        beatSize: props.tabStore.beatSize,
+        resizeObserver,
+        settings,
+      })),
     );
   });
 });
@@ -352,8 +354,9 @@ const isResizing = useWindowResizing();
 <style scoped>
 .tab {
   --cell-height: v-bind(cellHeightPx);
-  --note-font-size: calc(var(--cell-height) * 0.8);
   --context-menu-height: v-bind(contextMenuHeightPx);
+  --collapsed-min-width: v-bind(collapsedMinWidthPx);
+  --note-font-size: calc(var(--cell-height) * 0.8);
   --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);
   --string-width: 1px;

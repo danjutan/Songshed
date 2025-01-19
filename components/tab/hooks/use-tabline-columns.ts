@@ -2,42 +2,53 @@ import { ref, type Ref } from "vue";
 import type { Bar } from "../Tab.vue";
 import type { StackResizeObserver } from "../providers/events/provide-resize-observer";
 import type { SettingsState } from "../providers/state/provide-settings-state";
+import { isCollapsed } from "./use-collapsed";
 
 export function useTemplateColumns(
-  tabline: ComputedRef<Bar[]>,
-  collapsed: ComputedRef<Set<number>>,
-  resizeObserver: StackResizeObserver,
-  settings: SettingsState,
+  props: ReactiveComputed<{
+    tabline: Bar[];
+    beatSize: number;
+    resizeObserver: StackResizeObserver;
+    settings: SettingsState;
+  }>,
 ) {
-  const collapsedMinWidth = settings.collapsedMinWidth;
-  const expandedMinWidth = settings.expandedMinWidth;
   const frValues = ref<number[]>(
-    Array.from({ length: tabline.value.length }, () => 1),
+    Array.from({ length: props.tabline.length }, () => 1),
   );
   let lastDiffX = 0;
 
   const gridTemplateColumns = computed(() => {
+    console.log("recalculating gridTemplateColumns");
     const barTemplateColumns = (bar: Bar, fr: number) =>
-      Array.from(bar.stacks.entries())
-        .map(([position]) =>
-          collapsed.value.has(position)
-            ? `minmax(${collapsedMinWidth}px, ${fr}fr)`
-            : `minmax(${expandedMinWidth}px, ${fr}fr)`,
-        )
-        .join(" ");
+      `repeat(${bar.stacks.size}, minmax(min-content, ${fr}fr))`;
+    // Array.from(bar.stacks.entries())
+    //   .map(([position]) =>
+    //     collapsed.value.has(position)
+    //       ? `max(${collapsedMinWidth}px, min(${fr}fr, min-content))`
+    //       : `max(${expandedMinWidth}px, min(${fr}fr, min-content))`,
+    //   )
+    //   .join(" ");
 
-    const guitarline = tabline.value
+    const guitarline = props.tabline
       .map((bar, i) => barTemplateColumns(bar, frValues.value[i]))
       .join(" min-content ");
 
     return `min-content ${guitarline}`;
   });
 
+  const collapsedMinWidth = props.settings.collapsedMinWidth;
+  const expandedMinWidth = props.settings.cellHeight;
+
   function isBarTooSmall(barIndex: number, deltaX: number): boolean {
-    const bar = tabline.value[barIndex]!;
+    const bar = props.tabline[barIndex]!;
+
     const barMinWidth = Array.from(bar.stacks.entries()).reduce(
       (total, [position]) => {
-        const width = collapsed.value.has(position)
+        const width = isCollapsed(
+          props.settings,
+          bar.stacks.get(position)!,
+          position % props.beatSize === 0,
+        )
           ? collapsedMinWidth
           : expandedMinWidth;
         return total + width;
@@ -48,8 +59,8 @@ export function useTemplateColumns(
     const barActualWidth = Array.from(bar.stacks.entries()).reduce(
       (total, [position]) => {
         const width =
-          resizeObserver.getStackCoords(position)!.right -
-          resizeObserver.getStackCoords(position)!.left;
+          props.resizeObserver.getStackCoords(position)!.right -
+          props.resizeObserver.getStackCoords(position)!.left;
         return total + width;
       },
       0,

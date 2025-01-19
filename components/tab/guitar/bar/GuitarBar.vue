@@ -39,6 +39,7 @@ onBeforeUpdate(() => {
         gridColumn: startColumn + i,
         gridRow: `${startRow} / span ${numStrings}`,
       }"
+      :on-beat="position % beatSize === 0"
       :notes="stack"
       :position="position"
       :tuning
