@@ -24,8 +24,6 @@ const emit = defineEmits<{
   noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
 
-const { isCollapsed } = injectCollapsedState();
-
 onBeforeUpdate(() => {
   console.log("updated bar");
 });
@@ -43,7 +41,6 @@ onBeforeUpdate(() => {
       }"
       :notes="stack"
       :position="position"
-      :collapse="true"
       :tuning
       :frets
       @note-change="

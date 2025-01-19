@@ -9,7 +9,6 @@ const props = withDefaults(
     position: number;
     frets: number;
     tuning: Midi[];
-    collapse?: boolean;
   }>(),
   {},
 );
@@ -40,7 +39,7 @@ onBeforeUpdate(() => {
 </script>
 
 <template>
-  <div ref="stack" class="stack" :class="{ collapse }">
+  <div ref="stack" class="stack">
     <NoteContainer
       v-for="(note, string) in noteSpots"
       :key="string"
@@ -50,7 +49,6 @@ onBeforeUpdate(() => {
       :position="position"
       :tuning="tuning[string]"
       :frets="frets"
-      :collapse
       @note-delete="emit('noteDelete', string)"
       @note-change="(updated) => emit('noteChange', string, updated)"
     />

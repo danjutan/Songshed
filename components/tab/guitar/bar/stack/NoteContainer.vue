@@ -26,7 +26,6 @@ const props = defineProps<{
   position: number;
   tuning: Midi;
   frets: number;
-  collapse?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -142,7 +141,6 @@ function onNoteClick(e: MouseEvent) {
     :class="{
       selected: isSelected && selectionState.action === 'none',
       tieable,
-      collapse,
     }"
     :style="{ gridRow: string + 1 }"
     @click="onNoteClick"
@@ -209,9 +207,7 @@ function onNoteClick(e: MouseEvent) {
   align-items: center;
   font-size: var(--note-font-size);
 
-  &.collapse {
-    container-type: size;
-  }
+  container-type: size;
 
   &:hover .input {
     background-color: rgb(
