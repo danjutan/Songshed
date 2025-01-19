@@ -234,12 +234,7 @@ const isResizing = useWindowResizing();
 </script>
 
 <template>
-  <div
-    v-if="!isResizing"
-    class="tab"
-    @mouseup="onMouseUp"
-    @mouseleave="onLeaveTab"
-  >
+  <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
     <div
       v-for="(tabLine, tabLineIndex) in tablines"
       class="tab-line"

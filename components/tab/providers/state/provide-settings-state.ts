@@ -10,7 +10,7 @@ export function provideSettingsState() {
     cellHeight: 24,
     contextMenuHeight: 18,
     collapsedMinWidth: 5,
-    expandedMinWidth: 24,
+    expandedMinWidth: 36,
   });
 
   provide(SettingsInjectionKey, settings);

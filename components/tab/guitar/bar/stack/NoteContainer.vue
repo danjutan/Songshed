@@ -213,14 +213,6 @@ function onNoteClick(e: MouseEvent) {
     container-type: size;
   }
 
-  &:not(.collapse) {
-    /* min-width: var(--cell-height); */
-    /* justify-self: center; */
-    &.tieable {
-      min-width: calc(var(--cell-height) + 12px);
-    }
-  }
-
   &:hover .input {
     background-color: rgb(
       from var(--note-hover-color) r g b / var(--select-alpha)
