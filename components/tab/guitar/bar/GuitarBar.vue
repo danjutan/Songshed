@@ -1,12 +1,8 @@
 <script setup lang="ts">
 import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
 import Stack from "./stack/Stack.vue";
-import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
-import { injectEditingState } from "../../providers/state/provide-editing-state";
 import type { NotePosition } from "~/model/stores";
 import SelectionRegions from "./selections/SelectionRegions.vue";
-import { injectCollapsedState } from "../../providers/state/provide-collapsed-state";
-import { useWindowResizing } from "../../hooks/use-window-resizing";
 
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
@@ -24,7 +20,9 @@ const emit = defineEmits<{
   noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
 
-const { collapsed } = injectCollapsedState();
+onBeforeUpdate(() => {
+  console.log("updated bar");
+});
 </script>
 
 <template>
@@ -37,9 +35,9 @@ const { collapsed } = injectCollapsedState();
         gridColumn: startColumn + i,
         gridRow: `${startRow} / span ${numStrings}`,
       }"
+      :on-beat="position % beatSize === 0"
       :notes="stack"
       :position="position"
-      :collapse="collapsed.has(position)"
       :tuning
       :frets
       @note-change="

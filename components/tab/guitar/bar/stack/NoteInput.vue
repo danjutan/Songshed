@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { GuitarNote } from "~/model/data";
-
 import { useTemplateRef } from "vue";
 import type { NotePosition } from "~/model/stores";
 
@@ -11,8 +10,6 @@ const props = defineProps<{
   frets: number;
   startFocused?: boolean;
   selected?: boolean;
-  hovering?: boolean;
-  backgroundColor?: string;
 }>();
 
 const emit = defineEmits<{
@@ -27,12 +24,6 @@ const input = useTemplateRef("input");
 
 function onClick() {
   input.value!.select();
-  // emit("focus");
-  input.value!.focus();
-}
-
-function onMouseDown(e: MouseEvent) {
-  // input.value!.blur();
 }
 
 onMounted(() => {
@@ -92,11 +83,9 @@ defineExpose({
     ref="container"
     class="note-input"
     :class="{
-      hovering,
       selected,
     }"
     @click="onClick"
-    @mousedown="onMouseDown"
   >
     <input
       ref="input"

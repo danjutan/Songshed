@@ -42,12 +42,11 @@ type SelectionAction = "might-delete" | "might-move" | "moving" | "none";
 
 export interface SelectionState {
   selectedPositions: NotePosition[];
-  toggleNote: (position: NotePosition) => void;
   startSelection: (position: NotePosition) => void;
   endSelection: () => void;
   addSelection: (position: NotePosition) => void;
   clearSelections: () => void;
-  isSelected: (position: NotePosition) => boolean;
+  isSelectedPosition: (position: NotePosition) => boolean;
   isEmpty: () => boolean;
   selectNote: (position: NotePosition) => void;
   startMove: (origin: NotePosition) => void;
@@ -55,6 +54,10 @@ export interface SelectionState {
   // moveSelectionsIfValid: (moveTo: NotePosition) => void;
   deleteSelectedNotes: () => void;
   setAction: (action: SelectionAction) => void;
+  addPositionListener: (
+    position: NotePosition,
+    listener: (selected: boolean) => void,
+  ) => void;
   action: SelectionAction;
   regions: RegionBounds[];
 }
@@ -69,6 +72,8 @@ export function provideSelectionState(
   let currentSelectionStart: NotePosition | undefined;
   let currentSelectionEnd: NotePosition | undefined;
 
+  const listeners = new Map<NotePositionKey, (selected: boolean) => void>();
+
   const action = ref<SelectionAction>("none");
   let moveAnchor: NotePosition | undefined;
 
@@ -79,6 +84,13 @@ export function provideSelectionState(
       return { string, position };
     });
   });
+
+  function addPositionListener(
+    position: NotePosition,
+    listener: (selected: boolean) => void,
+  ) {
+    listeners.set(notePositionKey(position), listener);
+  }
 
   const regions = reactiveComputed<RegionBounds[]>(() => {
     const selected = selectedPositions; // Get all selected positions
@@ -151,16 +163,14 @@ export function provideSelectionState(
       .every((note) => note === undefined);
   }
 
-  function toggleNote(position: NotePosition) {
-    if (selections.has(notePositionKey(position))) {
-      selections.delete(notePositionKey(position));
-      return;
-    }
-    selections.add(notePositionKey(position));
-  }
-
   function selectNote(position: NotePosition) {
     selections.add(notePositionKey(position));
+    listeners.get(notePositionKey(position))?.(true);
+  }
+
+  function unselectNote(position: NotePosition) {
+    selections.delete(notePositionKey(position));
+    listeners.get(notePositionKey(position))?.(false);
   }
 
   function startSelection(position: NotePosition): void {
@@ -186,7 +196,7 @@ export function provideSelectionState(
         position <= bounds.maxPosition;
         position += props.subUnit
       ) {
-        selections.add(notePositionKey({ string, position }));
+        selectNote({ string, position });
       }
     }
     currentSelectionEnd = position;
@@ -199,16 +209,18 @@ export function provideSelectionState(
         position <= bounds.maxPosition;
         position += props.subUnit
       ) {
-        selections.delete(notePositionKey({ string, position }));
+        unselectNote({ string, position });
       }
     }
   }
 
   function clearSelections(): void {
-    selections.clear();
+    for (const position of [...selectedPositions]) {
+      unselectNote(position);
+    }
   }
 
-  function isSelected(position: NotePosition): boolean {
+  function isSelectedPosition(position: NotePosition): boolean {
     return selections.has(notePositionKey(position));
   }
 
@@ -307,18 +319,18 @@ export function provideSelectionState(
 
   const selectionState: SelectionState = {
     selectedPositions,
-    toggleNote,
     selectNote,
     startSelection,
     endSelection,
     addSelection,
     clearSelections,
-    isSelected,
+    isSelectedPosition,
     isEmpty,
     startMove,
     endMove,
     deleteSelectedNotes,
     regions,
+    addPositionListener,
     get action() {
       return action.value;
     },

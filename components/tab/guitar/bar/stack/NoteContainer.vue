@@ -26,7 +26,7 @@ const props = defineProps<{
   position: number;
   tuning: Midi;
   frets: number;
-  collapse?: boolean;
+  collapsed: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -41,23 +41,18 @@ const cellHoverState = injectCellHoverEvents();
 const noteInputRef = ref<InstanceType<typeof NoteInput>>();
 const containerRef = ref<HTMLElement>();
 
-const isSelected = computed(() =>
-  selectionState.isSelected({ string: props.string, position: props.position }),
+const isSelected = ref(false);
+selectionState.addPositionListener(
+  { string: props.string, position: props.position },
+  (selected) => {
+    isSelected.value = selected;
+  },
 );
 
-const hovering = computed<boolean>(() => {
-  const hoveredCell = cellHoverState.hoveredCell.value;
-  return (
-    hoveredCell?.position === props.position &&
-    hoveredCell?.row === props.string
-  );
-});
-
+const isEditing = ref(false);
 const tieable = computed(
   () =>
-    props.note !== undefined &&
-    props.note.note !== "muted" &&
-    editing.isEditing({ string: props.string, position: props.position }),
+    props.note !== undefined && props.note.note !== "muted" && isEditing.value,
 );
 
 const dragData = computed(() => {
@@ -92,7 +87,6 @@ onMounted(() => {
               position: props.position,
               string: props.string,
             }),
-          onDrop: () => {},
         }),
         draggable({
           element: containerRef.value!,
@@ -124,8 +118,21 @@ function onMouseDown(e: MouseEvent) {
 function onNoteClick(e: MouseEvent) {
   selectionState.selectNote({ string: props.string, position: props.position });
   editing.setEditing({ string: props.string, position: props.position });
+  isEditing.value = true;
   noteInputRef.value?.focus();
 }
+
+// onBeforeUpdate(() => {
+//   console.log("updated", props.position, props.string);
+// });
+
+// onRenderTriggered((e) => {
+//   console.log("render", props.position, props.string);
+// });
+
+// onRenderTracked((e) => {
+//   console.log("tracked", props.position, props.string, e);
+// });
 </script>
 
 <template>
@@ -134,9 +141,8 @@ function onNoteClick(e: MouseEvent) {
     class="container"
     :class="{
       selected: isSelected && selectionState.action === 'none',
-      hovering,
       tieable,
-      collapse,
+      collapsed,
     }"
     :style="{ gridRow: string + 1 }"
     @click="onNoteClick"
@@ -168,8 +174,8 @@ function onNoteClick(e: MouseEvent) {
       :note-position="{ string, position }"
       :tuning="tuning"
       :frets="frets"
-      :hovering="hovering"
       :selected="isSelected && selectionState.action === 'none'"
+      @blur="isEditing = false"
       @note-delete="emit('noteDelete')"
       @note-change="(updated) => emit('noteChange', { ...note, ...updated })"
     />
@@ -203,16 +209,21 @@ function onNoteClick(e: MouseEvent) {
   align-items: center;
   font-size: var(--note-font-size);
 
-  &.collapse {
-    container-type: size;
+  container-type: size;
+
+  min-width: var(--cell-height);
+  &.collapsed {
+    min-width: var(--collapsed-min-width);
   }
 
-  &:not(.collapse) {
-    /* min-width: var(--cell-height); */
-    /* justify-self: center; */
-    &.tieable {
-      min-width: calc(var(--cell-height) + 12px);
-    }
+  &.tieable {
+    min-width: calc(var(--cell-height) + 12px);
+  }
+
+  &:hover .input {
+    background-color: rgb(
+      from var(--note-hover-color) r g b / var(--select-alpha)
+    );
   }
 }
 

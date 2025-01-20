@@ -2,7 +2,6 @@
 import type { GuitarStore } from "~/model/stores";
 import type { Bar } from "@/components/tab/Tab.vue";
 import GuitarBar from "./bar/GuitarBar.vue";
-import BendDragBar from "./overlay/bend/BendTopBar.vue";
 import BendRender from "./overlay/bend/BendRender.vue";
 import TieRender from "./overlay/tie/TieRender.vue";
 import { injectTieAddState } from "../providers/state/provide-tie-add-state";
@@ -56,6 +55,18 @@ const centeredOverDivider = (from: number, to: number) => {
 const columnEnd = computed(
   () => props.columnsPerBar * props.bars.length + props.bars.length + 1,
 );
+
+onBeforeUpdate(() => {
+  console.log("updated line", props.tabLineIndex);
+});
+
+// onRenderTriggered(() => {
+//   console.log("line render triggered");
+// });
+
+// onRenderTracked((e) => {
+//   console.log("line render tracked");
+// });
 </script>
 
 <template>
