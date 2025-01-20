@@ -53,7 +53,6 @@ const emits = defineEmits<{
     <foreignObject :x="x" :y :width="55" :height="200" overflow="visible">
       <OverlaySelect
         v-model="model"
-        class="select"
         :active
         :options
         :override-display="{ [TieType.Slide]: '', [TieType.TieSlide]: '' }"
@@ -66,6 +65,10 @@ const emits = defineEmits<{
 </template>
 
 <style scoped>
+foreignObject {
+  /* uncomment this and try hovering from below */
+  /* opacity: 0.8; */
+}
 .select :deep(.tie-slide) {
   display: grid;
   grid-template-rows: 1fr;

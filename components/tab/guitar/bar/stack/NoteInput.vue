@@ -16,25 +16,25 @@ const emit = defineEmits<{
   noteChange: [data: GuitarNote];
   noteDelete: [];
   // TODO: remove if unused
-  focus: [];
-  blur: [];
+  focus: [e: FocusEvent];
+  blur: [e: FocusEvent];
 }>();
 
 const input = useTemplateRef("input");
 
-function onClick() {
-  input.value!.select();
-}
-
 onMounted(() => {
   if (props.startFocused) {
     input.value!.focus();
-    onClick();
   }
 });
 
-function onBlur(e: Event) {
-  emit("blur");
+function onFocus(e: FocusEvent) {
+  input.value!.select();
+  emit("focus", e);
+}
+
+function onBlur(e: FocusEvent) {
+  emit("blur", e);
 }
 
 const noteText = computed(() => {
@@ -85,7 +85,6 @@ defineExpose({
     :class="{
       selected,
     }"
-    @click="onClick"
   >
     <input
       ref="input"
@@ -95,6 +94,7 @@ defineExpose({
       pattern="[0-9]{1,2}"
       @input="onInput"
       @blur="onBlur"
+      @focus="onFocus"
       @keyup="(e) => e.stopPropagation()"
     />
   </div>

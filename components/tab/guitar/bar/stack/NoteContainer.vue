@@ -17,8 +17,6 @@ import {
   type TieAddDragDataProps,
 } from "../../../hooks/dnd/types";
 import NoteTieDragger from "./NoteTieDragger.vue";
-import { useWindowSize } from "@vueuse/core";
-import { useWindowResizing } from "~/components/tab/hooks/use-window-resizing";
 
 const props = defineProps<{
   note: GuitarNote | undefined;
@@ -52,7 +50,7 @@ selectionState.addPositionListener(
 const isEditing = ref(false);
 const tieable = computed(
   () =>
-    props.note !== undefined && props.note.note !== "muted" && isEditing.value,
+    props.note !== undefined && props.note.note !== "muted" && isSelected.value,
 );
 
 const dragData = computed(() => {
@@ -109,17 +107,20 @@ onMounted(() => {
   );
 });
 
-function onMouseDown(e: MouseEvent) {
-  if (!e.ctrlKey && !e.metaKey) {
-    selectionState.clearSelections();
-  }
+function onNoteClick(e: MouseEvent) {
+  noteInputRef.value?.focus();
 }
 
-function onNoteClick(e: MouseEvent) {
+// TODO: extract into a provider
+const ctrlState = useKeyModifier("Control");
+const metaState = useKeyModifier("Meta");
+function onNoteFocus() {
+  if (!ctrlState.value && !metaState.value) {
+    selectionState.clearSelections();
+  }
   selectionState.selectNote({ string: props.string, position: props.position });
   editing.setEditing({ string: props.string, position: props.position });
   isEditing.value = true;
-  noteInputRef.value?.focus();
 }
 
 // onBeforeUpdate(() => {
@@ -146,7 +147,6 @@ function onNoteClick(e: MouseEvent) {
     }"
     :style="{ gridRow: string + 1 }"
     @click="onNoteClick"
-    @mousedown="onMouseDown"
     @mouseenter="cellHoverState.hover(string, position)"
   >
     <div class="selected-bg" />
@@ -175,11 +175,13 @@ function onNoteClick(e: MouseEvent) {
       :tuning="tuning"
       :frets="frets"
       :selected="isSelected && selectionState.action === 'none'"
+      @focus="onNoteFocus"
       @blur="isEditing = false"
       @note-delete="emit('noteDelete')"
       @note-change="(updated) => emit('noteChange', { ...note, ...updated })"
     />
 
+    <!-- TODO: don't show dragger if already connected -->
     <template v-if="tieable && tieableDragData">
       <NoteTieDragger mode="tie" :drag-props="tieableDragData" />
       <NoteTieDragger mode="bend" :drag-props="tieableDragData" />

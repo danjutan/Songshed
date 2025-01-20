@@ -20,7 +20,7 @@ onMounted(() => {
         getInitialData: (args) => {
           const hoveredPosition = cellHoverEvents.hoveredNote.value!;
           // TODO: this is a little hacky; maybe the anchor should be (one of the) midpoints of the current selection region
-          const anchor: NotePosition = selectionState.isSelected(
+          const anchor: NotePosition = selectionState.isSelectedPosition(
             hoveredPosition,
           )
             ? hoveredPosition

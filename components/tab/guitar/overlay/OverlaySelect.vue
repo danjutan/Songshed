@@ -51,7 +51,8 @@ const iconSizePx = `${iconSize}px`;
 
 .select {
   pointer-events: all;
-  --vs-input-bg: rgba(255, 255, 255, 0.8);
+  /* Weird inconsistencies when trying to set opacity and box-shadow. TODO: revisit. See TieSelect*/
+  /* --vs-input-bg: rgba(255, 255, 255, 0.8); */
   --vs-input-placeholder-color: black;
   --vs-font-size: calc(var(--note-font-size) * 0.75);
   --vs-option-padding: 1px 2px;
@@ -79,7 +80,7 @@ const iconSizePx = `${iconSize}px`;
   &:not(.inactive) :deep(.control),
   &.open :deep(.control) {
     padding-left: 2px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    /* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); */
   }
 
   &:not(.inactive),

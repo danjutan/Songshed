@@ -132,7 +132,7 @@ onBeforeUpdate(() => {
 }
 
 .overlay-controls {
-  z-index: 2;
+  z-index: var(--overlay-controls-z-index);
   position: relative; /* somehow makes the VueSelect hover events work right */
   height: calc(100% + var(--cell-height) / 2 + 100px);
 }

@@ -40,17 +40,30 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="dragger" class="divider" />
+  <div ref="dragger" class="divider">
+    <div class="thicc" />
+  </div>
 </template>
 
 <style scoped>
 .divider {
-  /* width: 20px; */
-  width: 10px;
+  width: var(--divider-width);
+  height: 100%;
   background: black;
   padding: 0;
   cursor: ew-resize;
+  position: relative;
 }
+
+.divider:hover .thicc {
+  height: 100%;
+  position: absolute;
+  background: red;
+  width: var(--note-font-size);
+  transform: translateX(-25%);
+  z-index: var(--divider-z-index);
+}
+
 /* .divider::before {
   content: "";
   display: block;

@@ -228,21 +228,11 @@ const overlayedBarStart = ref<number | undefined>();
 
   /* To allow for tie-dragging on the bottommost notes */
   --bottom-note-padding: var(--cell-height);
-  /* --highlight-color: rgba(var(--h-r), var(--h-g), var(--h-b), var(--h-a));
-  --h-r: 172.8;
-  --h-g: 206;
-  --h-b: 247;
-  --h-a: 0.4; */
 
-  /*
-    https://graphicdesign.stackexchange.com/a/113050
-    TODO: can we do all this with relative colors? (Does it have wide browser support yet?)
-  */
-  /* --highlight-blocking: rgb(
-    calc(255 - var(--h-a) * (255 - var(--h-r))),
-    calc(255 - var(--h-a) * (255 - var(--h-g))),
-    calc(255 - var(--h-a) * (255 - var(--h-b)))
-  ); */
+  --bar-overlay-z-index: 1;
+  --overlay-controls-z-index: 1;
+  --divider-z-index: 3;
+
   user-select: none;
 }
 
@@ -311,11 +301,5 @@ const overlayedBarStart = ref<number | undefined>();
   &:hover {
     font-weight: bold;
   }
-}
-
-.bar-overlay {
-  z-index: 1;
-  opacity: var(--select-alpha);
-  background-color: var(--delete-color);
 }
 </style>
