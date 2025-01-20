@@ -8,6 +8,7 @@ import { injectTieAddState } from "../providers/state/provide-tie-add-state";
 import { provideTablineBounds } from "./provide-tabline-bounds";
 import { provideEditTie } from "./overlay/tie/provide-edit-tie";
 import { provideOverlayControlsTeleport } from "./overlay/provide-overlay-controls-teleport";
+import { useWindowResizing } from "../hooks/use-window-resizing";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -20,6 +21,7 @@ const props = defineProps<{
 }>();
 
 const tieAddState = injectTieAddState();
+const { isResizing } = useWindowResizing();
 
 const tablineBounds = provideTablineBounds(props);
 const overlayControlsId = provideOverlayControlsTeleport();
@@ -91,7 +93,7 @@ onBeforeUpdate(() => {
       @note-delete="guitarStore.deleteNote"
     />
   </template>
-  <ClientOnly>
+  <ClientOnly v-if="!isResizing">
     <svg :id="overlayControlsId" class="overlay-controls">
       <!--Teleport-->
     </svg>

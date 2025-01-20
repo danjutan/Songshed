@@ -15,7 +15,16 @@ export function useTemplateColumns(
   const frValues = ref<number[]>(
     Array.from({ length: props.tabline.length }, () => 1),
   );
+
   let lastDiffX = 0;
+
+  watch(
+    () => props.tabline.length,
+    () => {
+      // TODO: smarter joins than this?
+      frValues.value = Array.from({ length: props.tabline.length }, () => 1);
+    },
+  );
 
   const gridTemplateColumns = computed(() => {
     const barTemplateColumns = (bar: Bar, fr: number) =>

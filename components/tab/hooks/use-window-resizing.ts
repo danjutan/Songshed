@@ -36,5 +36,8 @@ export function useWindowResizing() {
     }
   });
 
-  return computed(() => isResizing.value);
+  return {
+    isResizing,
+    lastWidth,
+  };
 }

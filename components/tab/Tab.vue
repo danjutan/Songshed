@@ -96,17 +96,16 @@ const bars = computed<Bar[]>(() => {
   return bars;
 });
 
+const { lastWidth } = useWindowResizing();
 const tablines = computed<Array<Bar[]>>(() => {
   const tablineBars: Array<Bar[]> = [];
   let currTabLine: Bar[] = [];
-  // const barMaxWidth =
-  //   settings.collapseRatio * settings.collapsedMinWidth * columnsPerBar.value +
-  //   (1 - settings.collapseRatio) *
-  //     settings.expandedMinWidth *
-  //     columnsPerBar.value;
-  // console.log(barMaxWidth);
-  // const barsPerLine = Math.floor(width.value / barMaxWidth);
-  const barsPerLine = 3;
+  const barMaxWidth =
+    settings.collapseRatio * settings.collapsedMinWidth * columnsPerBar.value +
+    (1 - settings.collapseRatio) * settings.cellHeight * columnsPerBar.value;
+  const barsPerLine = lastWidth.value
+    ? Math.floor(lastWidth.value / barMaxWidth)
+    : 3;
   bars.value.forEach((bar, i) => {
     currTabLine.push(bar);
     if (

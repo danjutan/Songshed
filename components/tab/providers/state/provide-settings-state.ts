@@ -5,7 +5,7 @@ export function provideSettingsState() {
     collapseSubdivisions: false,
     collapseEmpty: false,
     collapseAll: true,
-    collapseRatio: 0.25, // for resizing,
+    collapseRatio: 0.1, // for resizing,
     // pixels:
     cellHeight: 24,
     contextMenuHeight: 18,
