@@ -3,7 +3,7 @@ import type { Bar } from "./Tab.vue";
 import type { TabStore } from "~/model/stores";
 import GuitarTabLine from "./guitar/GuitarTabLine.vue";
 import Toolbar from "./Toolbar.vue";
-import Divider from "./Divider.vue";
+import Divider from "./BarDivider.vue";
 import { useTemplateColumns } from "./hooks/use-tabline-columns";
 import { injectStackResizeObserver } from "./providers/events/provide-resize-observer";
 import { injectSettingsState } from "./providers/state/provide-settings-state";
@@ -93,6 +93,8 @@ function joinBreak(start: number) {
       >
         <template #divider="{ bar, barIndex, numStrings }">
           <Divider
+            :bar-index="barIndex"
+            :joinable="tabStore.lineBreaks.has(bar.start)"
             :style="{
               gridColumn: barIndex * (columnsPerBar + 1) + 1,
               gridRow: `2 / span ${numStrings}`,
@@ -105,6 +107,10 @@ function joinBreak(start: number) {
               }
             "
             @end-drag="tablineHook.resetDrag"
+            @insert="insertBar(bar.start)"
+            @delete="deleteBar(bar.start)"
+            @join="joinBreak(bar.start)"
+            @break="insertBreak(bar.start)"
           />
 
           <div
