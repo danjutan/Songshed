@@ -2,7 +2,6 @@
 import type { GuitarStore } from "~/model/stores";
 import type { Bar } from "@/components/tab/Tab.vue";
 import GuitarBar from "./bar/GuitarBar.vue";
-import BendDragBar from "./overlay/bend/BendTopBar.vue";
 import BendRender from "./overlay/bend/BendRender.vue";
 import TieRender from "./overlay/tie/TieRender.vue";
 import { injectTieAddState } from "../providers/state/provide-tie-add-state";
@@ -97,7 +96,7 @@ onBeforeUpdate(() => {
       <!--Teleport-->
     </svg>
     <svg class="overlay">
-      <!-- <BendRender
+      <BendRender
         v-for="bend in bends"
         :key="`${bend.from}-${bend.string}`"
         :bend
@@ -107,7 +106,7 @@ onBeforeUpdate(() => {
         :key="`${tie.from}-${tie.string}`"
         :tie
         :over-divider="centeredOverDivider(tie.from, tie.to)"
-      /> -->
+      />
     </svg>
   </ClientOnly>
 </template>

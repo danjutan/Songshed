@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { GuitarNote } from "~/model/data";
-
 import { useTemplateRef } from "vue";
 import type { NotePosition } from "~/model/stores";
 

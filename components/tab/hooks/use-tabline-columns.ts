@@ -18,16 +18,8 @@ export function useTemplateColumns(
   let lastDiffX = 0;
 
   const gridTemplateColumns = computed(() => {
-    console.log("recalculating gridTemplateColumns");
     const barTemplateColumns = (bar: Bar, fr: number) =>
       `repeat(${bar.stacks.size}, minmax(min-content, ${fr}fr))`;
-    // Array.from(bar.stacks.entries())
-    //   .map(([position]) =>
-    //     collapsed.value.has(position)
-    //       ? `max(${collapsedMinWidth}px, min(${fr}fr, min-content))`
-    //       : `max(${expandedMinWidth}px, min(${fr}fr, min-content))`,
-    //   )
-    //   .join(" ");
 
     const guitarline = props.tabline
       .map((bar, i) => barTemplateColumns(bar, frValues.value[i]))

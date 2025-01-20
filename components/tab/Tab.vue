@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import type { GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
-import GuitarTabLine from "./guitar/GuitarTabLine.vue";
-import Toolbar from "./Toolbar.vue";
-import ResizeDragger from "./ResizeDragger.vue";
+import Tabline from "./Tabline.vue";
 
 import { provideSelectionState } from "./providers/state/provide-selection-state";
 import { provideEditingState } from "./providers/state/provide-editing-state";
@@ -21,9 +19,7 @@ import { injectSettingsState } from "./providers/state/provide-settings-state";
 
 import { provideAnnotationAddState } from "./providers/state/annotations/provide-annotation-add-state";
 import { provideAnnotationRenderState } from "./providers/state/annotations/provide-annotation-render-state";
-import { provideCollapsedState } from "./providers/state/provide-collapsed-state";
 
-import { useTemplateColumns } from "./hooks/use-tabline-columns";
 import { useWindowResizing } from "./hooks/use-window-resizing";
 
 const props = defineProps<{
@@ -178,30 +174,6 @@ function newBarClick() {
   newBarStart.value = lastBarStart + barSize.value;
 }
 
-function deleteBar(start: number) {
-  props.tabStore.guitar!.deleteStacks(start, start + barSize.value);
-  props.tabStore.guitar!.shiftFrom(start, -barSize.value);
-  overlayedBarStart.value = undefined;
-  if (start > props.tabStore.guitar!.getLastPosition()) {
-    newBarStart.value -= barSize.value;
-  }
-}
-
-function insertBar(start: number) {
-  props.tabStore.guitar!.shiftFrom(start, barSize.value);
-  if (start > props.tabStore.guitar!.getLastPosition()) {
-    newBarStart.value += barSize.value;
-  }
-}
-
-function insertBreak(start: number) {
-  props.tabStore.lineBreaks.add(start);
-}
-
-function joinBreak(start: number) {
-  props.tabStore.lineBreaks.delete(start);
-}
-
 function onKeyUp(e: KeyboardEvent) {
   if (e.key === "Backspace") {
     selectionState.deleteSelectedNotes();
@@ -217,137 +189,20 @@ onBeforeUnmount(() => {
 });
 
 const overlayedBarStart = ref<number | undefined>();
-
-// TODO: clean this up (extract tab-line div)
-const tablineHooks = computed(() => {
-  return tablines.value.map((tabline) => {
-    return useTemplateColumns(
-      reactiveComputed(() => ({
-        tabline,
-        beatSize: props.tabStore.beatSize,
-        resizeObserver,
-        settings,
-      })),
-    );
-  });
-});
-
-const isResizing = useWindowResizing();
 </script>
 
 <template>
   <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
-    <div
+    <Tabline
       v-for="(tabLine, tabLineIndex) in tablines"
-      class="tab-line"
-      :style="{
-        gridTemplateColumns:
-          tablineHooks[tabLineIndex].gridTemplateColumns.value,
-      }"
-    >
-      <template v-for="bar in tabLine" :key="bar.start">
-        <Toolbar
-          :tabline="tabLine"
-          :tab-line-index="tabLineIndex"
-          @new-annotation-row-clicked="tabStore.annotations.createNextRow"
-          @delete-annotation-clicked="
-            (row, annotation) =>
-              tabStore.annotations.deleteAnnotation(row, annotation)
-          "
-        />
-        <GuitarTabLine
-          v-if="tabStore.guitar"
-          :tab-line-index
-          :guitar-store="tabStore.guitar"
-          :bars="tabLine"
-          :start-row="annotationRenders.annotationRows + 1"
-          :beat-size="tabStore.beatSize"
-          :sub-unit
-          :columns-per-bar
-        >
-          <template #divider="{ bar, barIndex, numStrings }">
-            <ResizeDragger
-              :style="{
-                gridColumn: barIndex * (columnsPerBar + 1) + 1,
-                gridRow: `2 / span ${numStrings}`,
-              }"
-              @start-drag="tablineHooks[tabLineIndex].resetDrag"
-              @resize="
-                (diffX: number) => {
-                  const gridWidth = $el.getBoundingClientRect().width; // Get grid width dynamically
-                  tablineHooks[tabLineIndex].handleResize(
-                    barIndex - 1,
-                    diffX,
-                    gridWidth,
-                  );
-                }
-              "
-              @end-drag="tablineHooks[tabLineIndex].resetDrag"
-            />
-
-            <!-- <div
-              class="divider hoverable"
-              :style="{
-                gridColumn: barIndex * (columnsPerBar + 1) + 1,
-                gridRow: `2 / span ${numStrings}`,
-              }"
-            >
-              <div class="buttons">
-                <div class="dummy">+</div>
-                <div class="dummy">+</div>
-                <div class="insert" @click="insertBar(bar.start)">+</div>
-                <div
-                  class="delete"
-                  @mouseover="overlayedBarStart = bar.start"
-                  @mouseleave="overlayedBarStart = undefined"
-                  @click="deleteBar(bar.start)"
-                >
-                  &#x2326;
-                </div>
-                <template v-if="barIndex === 0">
-                  <div
-                    v-if="tabStore.lineBreaks.has(bar.start)"
-                    class="join"
-                    @click="joinBreak(bar.start)"
-                  >
-                    &#x2B11;
-                  </div>
-                  <div v-else class="dummy">+</div>
-                </template>
-                <div v-else class="break" @click="insertBreak(bar.start)">
-                  &#x21B5;
-                </div>
-              </div>
-            </div> -->
-
-            <div
-              v-if="overlayedBarStart === bar.start"
-              class="bar-overlay"
-              :style="{
-                gridColumnStart: barIndex * (columnsPerBar + 1) + 2,
-                gridColumnEnd: (barIndex + 1) * (columnsPerBar + 1) + 2,
-                gridRow: `1 / span ${numStrings + 1}`,
-              }"
-            />
-
-            <div
-              v-if="
-                tabLineIndex === tablines.length - 1 &&
-                barIndex === tabLine.length - 1
-              "
-              class="divider"
-              :style="{
-                gridColumn: tabLine.length * (columnsPerBar + 1) + 1,
-                gridRow: `2 / span ${numStrings}`,
-              }"
-              @click="newBarClick()"
-            >
-              <div class="new-button">+</div>
-            </div>
-          </template>
-        </GuitarTabLine>
-      </template>
-    </div>
+      :key="tabLineIndex"
+      :tab-line="tabLine"
+      :tab-line-index="tabLineIndex"
+      :tab-store="tabStore"
+      :columns-per-bar="columnsPerBar"
+      :sub-unit="subUnit"
+      @new-bar-click="newBarClick"
+    />
   </div>
 </template>
 
@@ -390,16 +245,6 @@ const isResizing = useWindowResizing();
     calc(255 - var(--h-a) * (255 - var(--h-b)))
   ); */
   user-select: none;
-}
-
-.tab-line {
-  display: grid;
-  /* grid-template-columns: v-bind(gridTemplateColumns); */
-  grid-template-rows: max-content;
-  grid-auto-rows: var(--cell-height);
-  /* grid-template-rows:
-    repeat(calc(v-bind(notesRow) - 1 + v-bind(numStrings)), var(--cell-height))
-    calc(var(--cell-height) * 0.8); */
 }
 
 .drag-start {
