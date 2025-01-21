@@ -20,6 +20,15 @@ const { editingNote } = injectEditingState();
 const { getNextStackPos } = injectStackResizeObserver();
 const settings = injectSettingsState();
 
+const bendRowTop = computed(
+  // () => -1 * (settings.contextMenuHeight + settings.cellHeight),
+  () => 0,
+);
+
+const startRowTop = computed(
+  () => settings.contextMenuHeight + settings.cellHeight,
+);
+
 const startRow = computed(() => props.bend.string + 1);
 
 const hasThrough = computed(() => !!props.bend.through?.length);
@@ -59,9 +68,6 @@ const selectActive = computed(() => {
   return false;
 });
 
-const bendRowTop = computed(
-  () => -1 * (settings.contextMenuHeight + settings.cellHeight),
-);
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
 
@@ -124,7 +130,7 @@ onUnmounted(() => {
       <Teleport :to="overlayControlsSelector">
         <foreignObject
           :x="upswingTo.left"
-          :y="bendRowTop - 3"
+          :y="0"
           :width="100"
           :height="200"
           overflow="visible"
@@ -154,9 +160,9 @@ onUnmounted(() => {
         class="upswing-curve"
         :d="
           isPrebend
-            ? `M ${from.center} ${(startRow - 0.85) * cellHeight} V ${bendRowTop + cellHeight * 0.83}`
-            : `M ${from.right} ${(startRow - 0.6) * cellHeight} 
-               Q ${upswingTo.center} ${(startRow - 0.55) * cellHeight} ${upswingTo.center} ${bendRowTop + cellHeight * 0.83}`
+            ? `M ${from.center} ${startRowTop + (startRow - 0.85) * cellHeight} V ${bendRowTop + cellHeight * 0.83}`
+            : `M ${from.right} ${startRowTop + (startRow - 0.6) * cellHeight} 
+               Q ${upswingTo.center} ${startRowTop + (startRow - 0.55) * cellHeight} ${upswingTo.center} ${bendRowTop + cellHeight * 0.83}`
         "
         :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
@@ -166,7 +172,7 @@ onUnmounted(() => {
           v-if="bend.releaseType === 'connect'"
           class="downswing-curve"
           :d="`M ${through.right} ${bendRowTop + cellHeight * 0.35}
-               Q ${to.center} ${bendRowTop + cellHeight * 0.35} ${to.center} ${(startRow - 0.95) * cellHeight}`"
+               Q ${to.center} ${bendRowTop + cellHeight * 0.35} ${to.center} ${startRowTop + (startRow - 0.95) * cellHeight}`"
           :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
         />
         <line

@@ -32,7 +32,7 @@ const noteSpots = computed(() => {
 });
 
 onMounted(() => {
-  resizeState.registerStackRef(props.position, stackRef.value);
+  resizeState.registerStackRef(props.position, stackRef.value!);
 });
 
 // onUnmounted(() => {

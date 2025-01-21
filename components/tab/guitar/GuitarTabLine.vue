@@ -100,7 +100,7 @@ onMounted(() => {
       @note-delete="guitarStore.deleteNote"
     />
   </template>
-  <ClientOnly v-if="!isResizing">
+  <ClientOnly>
     <svg :id="overlayControlsId" class="overlay-controls">
       <!--Teleport-->
     </svg>
@@ -134,22 +134,21 @@ onMounted(() => {
   text-orientation: upright; */
 }
 
-.overlay {
-  height: calc(100% + var(--cell-height) / 2);
-}
-
 .overlay-controls {
   z-index: var(--overlay-controls-z-index);
   position: relative; /* somehow makes the VueSelect hover events work right */
-  height: calc(100% + var(--cell-height) / 2 + 100px);
 }
 
 .overlay,
 .overlay-controls {
-  overflow: visible;
   pointer-events: none;
   grid-column: 2 / v-bind(columnEnd);
   grid-row: 2 / span calc(v-bind(numStrings) + 1);
   width: 100%;
+  height: calc(
+    100% + var(--cell-height) / 2 + var(--context-menu-height) +
+      var(--cell-height)
+  );
+  margin-top: calc(-1 * (var(--cell-height) + var(--context-menu-height)));
 }
 </style>
