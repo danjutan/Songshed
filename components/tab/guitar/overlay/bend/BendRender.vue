@@ -64,6 +64,10 @@ const bendRowTop = computed(
 );
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
+
+onUnmounted(() => {
+  console.log("bend unmounted");
+});
 </script>
 
 <template>

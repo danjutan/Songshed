@@ -62,6 +62,13 @@ onBeforeUpdate(() => {
   console.log("updated line", props.tabLineIndex);
 });
 
+onUnmounted(() => {
+  console.log("unmounted line", props.tabLineIndex);
+});
+
+onMounted(() => {
+  console.log("mounted guitar line", props.tabLineIndex);
+});
 // onRenderTriggered(() => {
 //   console.log("line render triggered");
 // });

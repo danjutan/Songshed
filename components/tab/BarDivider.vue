@@ -23,6 +23,8 @@ const emit = defineEmits<{
   endDrag: [];
   insert: [];
   delete: [];
+  deleteHoverStart: [];
+  deleteHoverEnd: [];
   join: [];
   break: [];
 }>();
@@ -57,11 +59,18 @@ onMounted(() => {
 <template>
   <div ref="dragger" class="divider">
     <div class="thicc">
-      <GripVertical />
+      <div class="grip">
+        <GripVertical />
+      </div>
       <div class="button insert" @click="emit('insert')">
         <Plus />
       </div>
-      <div class="button delete" @click="emit('delete')">
+      <div
+        class="button delete"
+        @click="emit('delete')"
+        @mouseover="emit('deleteHoverStart')"
+        @mouseleave="emit('deleteHoverEnd')"
+      >
         <Delete />
       </div>
       <template v-if="barIndex === 0">
@@ -101,16 +110,21 @@ onMounted(() => {
   display: none;
 }
 
+.grip {
+  grid-area: 1 / 1;
+}
+
 .button {
   cursor: pointer;
+  grid-column: 1;
   &:hover svg {
     stroke-width: 3;
   }
 }
 
 .insert {
-  grid-row: -4;
-  transform: translateY(-50%);
+  grid-row: 1 / -1;
+  align-self: center;
 }
 .delete {
   grid-row: -3;

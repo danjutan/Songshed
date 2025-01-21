@@ -31,6 +31,7 @@ onBeforeUpdate(() => {
     :key="position"
   >
     <Stack
+      ref="stacks"
       :style="{
         gridColumn: startColumn + i,
         gridRow: `${startRow} / span ${numStrings}`,

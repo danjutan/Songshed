@@ -32,13 +32,12 @@ const noteSpots = computed(() => {
 });
 
 onMounted(() => {
-  console.log("stack mounted", props.position);
   resizeState.registerStackRef(props.position, stackRef.value);
 });
 
-onUnmounted(() => {
-  console.log("stack unmounted", props.position);
-});
+// onUnmounted(() => {
+//   console.log("stack unmounted", props.position);
+// });
 
 onBeforeUpdate(() => {
   console.log("updated stack");
@@ -59,6 +58,7 @@ const isCollapsed = useIsCollapsed(props.notes, props.onBeat);
       :tuning="tuning[string]"
       :frets="frets"
       :collapsed="isCollapsed"
+      @click="console.log(position)"
       @note-delete="emit('noteDelete', string)"
       @note-change="(updated) => emit('noteChange', string, updated)"
     />

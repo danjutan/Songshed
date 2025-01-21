@@ -65,6 +65,8 @@ provideBendEditState(
   })),
 );
 
+provideStackResizeObserver();
+
 onMounted(() => {
   useTieAddMonitor(tieAddState);
   useSelectMonitor(selectionState);
@@ -138,8 +140,6 @@ const columnsMap = provideColumnsMap(
 //     beatSize: props.tabStore.beatSize,
 //   })),
 // );
-
-const resizeObserver = provideStackResizeObserver();
 
 const annotationAddState = provideAnnotationAddState(
   reactiveComputed(() => ({
