@@ -8,6 +8,7 @@ import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 import { injectTieAddState } from "./providers/state/provide-tie-add-state";
 import BendTopBar from "./guitar/overlay/bend/BendTopBar.vue";
+import { Plus } from "lucide-vue-next";
 
 const props = defineProps<{
   tabline: Bar[];
@@ -36,7 +37,8 @@ const gridTemplateRows = computed(() => {
 <template>
   <div class="toolbar">
     <div class="new-row-box" @click="emits('newAnnotationRowClicked')">
-      <!-- <span>+</span> -->
+      <Plus :size="20" class="plus" />
+      <div class="diagonal" />
     </div>
 
     <template v-for="(bar, i) in tabline" :key="bar.start">
@@ -68,11 +70,16 @@ const gridTemplateRows = computed(() => {
 
 <style scoped>
 .new-row-box {
+  grid-row: 1;
+  grid-column: 1 / 3;
   font-size: var(--cell-height);
+  width: calc(var(--cell-height) / 2);
   border-right: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
+  display: grid;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
+
   cursor: pointer;
 
   &:hover {
@@ -80,6 +87,27 @@ const gridTemplateRows = computed(() => {
     background-color: lightcoral;
     color: white;
   }
+}
+
+.plus {
+  grid-row: 1;
+  grid-column: 1;
+  transform: translateX(calc(-1 * var(--cell-height) / 4));
+}
+
+.diagonal {
+  grid-row: 2;
+  grid-column: 1;
+  width: calc(var(--cell-height) / 2);
+  /* height: calc(var(--cell-height) / 2); */
+  background: linear-gradient(
+    to top left,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) calc(50% - 0.8px),
+    rgba(0, 0, 0, 1) 50%,
+    rgba(0, 0, 0, 0) calc(50% + 0.8px),
+    rgba(0, 0, 0, 0) 100%
+  );
 }
 
 .toolbar {
