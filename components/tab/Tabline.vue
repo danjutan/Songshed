@@ -62,6 +62,10 @@ function insertBreak(start: number) {
 function joinBreak(start: number) {
   props.tabStore.lineBreaks.delete(start);
 }
+
+onMounted(() => {
+  console.log("mounted tabline", props.tabLineIndex);
+});
 </script>
 
 <template>
@@ -71,59 +75,60 @@ function joinBreak(start: number) {
       gridTemplateColumns: tablineHook.gridTemplateColumns.value,
     }"
   >
-    <template v-for="bar in tabLine" :key="bar.start">
-      <Toolbar
-        :tabline="tabLine"
-        :tab-line-index="tabLineIndex"
-        @new-annotation-row-clicked="tabStore.annotations.createNextRow"
-        @delete-annotation-clicked="
-          (row, annotation) =>
-            tabStore.annotations.deleteAnnotation(row, annotation)
-        "
-      />
-      <GuitarTabLine
-        v-if="tabStore.guitar"
-        :tab-line-index="tabLineIndex"
-        :guitar-store="tabStore.guitar"
-        :bars="tabLine"
-        :start-row="annotationRenders.annotationRows + 1"
-        :beat-size="tabStore.beatSize"
-        :sub-unit="subUnit"
-        :columns-per-bar="columnsPerBar"
-      >
-        <template #divider="{ bar, barIndex, numStrings }">
-          <Divider
-            :bar-index="barIndex"
-            :joinable="tabStore.lineBreaks.has(bar.start)"
-            :style="{
-              gridColumn: barIndex * (columnsPerBar + 1) + 1,
-              gridRow: `2 / span ${numStrings}`,
-            }"
-            @start-drag="tablineHook.resetDrag"
-            @resize="
-              (diffX: number) => {
-                const gridWidth = $el.getBoundingClientRect().width;
-                tablineHook.handleResize(barIndex - 1, diffX, gridWidth);
-              }
-            "
-            @end-drag="tablineHook.resetDrag"
-            @insert="insertBar(bar.start)"
-            @delete="deleteBar(bar.start)"
-            @join="joinBreak(bar.start)"
-            @break="insertBreak(bar.start)"
-          />
+    <Toolbar
+      :tabline="tabLine"
+      :tab-line-index="tabLineIndex"
+      @new-annotation-row-clicked="tabStore.annotations.createNextRow"
+      @delete-annotation-clicked="
+        (row, annotation) =>
+          tabStore.annotations.deleteAnnotation(row, annotation)
+      "
+    />
+    <GuitarTabLine
+      v-if="tabStore.guitar"
+      :tab-line-index="tabLineIndex"
+      :guitar-store="tabStore.guitar"
+      :bars="tabLine"
+      :start-row="annotationRenders.annotationRows + 1"
+      :beat-size="tabStore.beatSize"
+      :sub-unit="subUnit"
+      :columns-per-bar="columnsPerBar"
+    >
+      <template #divider="{ bar, barIndex, numStrings }">
+        <Divider
+          :bar-index="barIndex"
+          :joinable="tabStore.lineBreaks.has(bar.start)"
+          :style="{
+            gridColumn: barIndex * (columnsPerBar + 1) + 1,
+            gridRow: `2 / span ${numStrings}`,
+          }"
+          @start-drag="tablineHook.resetDrag"
+          @resize="
+            (diffX: number) => {
+              const gridWidth = $el.getBoundingClientRect().width;
+              tablineHook.handleResize(barIndex - 1, diffX, gridWidth);
+            }
+          "
+          @end-drag="tablineHook.resetDrag"
+          @insert="insertBar(bar.start)"
+          @delete="deleteBar(bar.start)"
+          @join="joinBreak(bar.start)"
+          @break="insertBreak(bar.start)"
+          @delete-hover-start="overlayedBarStart = bar.start"
+          @delete-hover-end="overlayedBarStart = undefined"
+        />
 
-          <div
-            v-if="overlayedBarStart === bar.start"
-            class="bar-overlay"
-            :style="{
-              gridColumnStart: barIndex * (columnsPerBar + 1) + 2,
-              gridColumnEnd: (barIndex + 1) * (columnsPerBar + 1) + 2,
-              gridRow: `1 / span ${numStrings + 1}`,
-            }"
-          />
+        <div
+          v-if="overlayedBarStart === bar.start"
+          class="bar-overlay"
+          :style="{
+            gridColumnStart: barIndex * (columnsPerBar + 1) + 2,
+            gridColumnEnd: (barIndex + 1) * (columnsPerBar + 1) + 2,
+            gridRow: `1 / span ${numStrings + 1}`,
+          }"
+        />
 
-          <!-- <div
+        <!-- <div
             v-if="
               tabLineIndex === tabStore.lineBreaks.size &&
               barIndex === tabLine.length - 1
@@ -137,9 +142,8 @@ function joinBreak(start: number) {
           >
             <div class="new-button">+</div>
           </div> -->
-        </template>
-      </GuitarTabLine>
-    </template>
+      </template>
+    </GuitarTabLine>
   </div>
 </template>
 
