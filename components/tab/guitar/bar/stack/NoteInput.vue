@@ -5,6 +5,7 @@ import type { NotePosition } from "~/model/stores";
 
 const props = defineProps<{
   data?: GuitarNote;
+  noteText: string;
   notePosition: NotePosition;
   tuning: Midi;
   frets: number;
@@ -37,16 +38,6 @@ function onBlur(e: FocusEvent) {
   emit("blur", e);
 }
 
-const noteText = computed(() => {
-  if (props.data) {
-    if (props.data.note === "muted") {
-      return "⨯";
-    }
-    return (props.data.note - props.tuning) as Midi;
-  }
-  return "";
-});
-
 // const hasNote = computed(() => noteText.value !== "");
 
 function onInput(e: Event) {
@@ -62,19 +53,18 @@ function onInput(e: Event) {
   const num = parseInt(target.value);
   if (Number.isInteger(num)) {
     if (num < 1 || num > props.frets) {
-      target.value = `${noteText.value}`;
+      target.value = `${props.noteText}`;
       return;
     }
     emit("noteChange", { note: (props.tuning + num) as Midi });
     return;
   }
-  target.value = `${noteText.value}`;
+  target.value = `${props.noteText}`;
 }
 
 defineExpose({
   blur: () => input.value!.blur(),
   focus: () => input.value!.focus(),
-  noteText,
 });
 </script>
 

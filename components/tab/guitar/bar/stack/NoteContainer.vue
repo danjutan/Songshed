@@ -17,6 +17,7 @@ import {
   type TieAddDragDataProps,
 } from "../../../hooks/dnd/types";
 import NoteTieDragger from "./NoteTieDragger.vue";
+import { X } from "lucide-vue-next";
 
 const props = defineProps<{
   note: GuitarNote | undefined;
@@ -134,6 +135,15 @@ function onNoteFocus() {
 // onRenderTracked((e) => {
 //   console.log("tracked", props.position, props.string, e);
 // });
+const noteText = computed(() => {
+  if (props.note) {
+    if (props.note.note === "muted") {
+      return "X";
+    }
+    return "" + (props.note.note - props.tuning);
+  }
+  return "";
+});
 </script>
 
 <template>
@@ -158,7 +168,7 @@ function onNoteFocus() {
           note.note === 'muted' ? 'gray' : defaultColors[getChroma(note.note)],
       }"
     /> -->
-    <div v-if="note" class="note-block">{{ noteInputRef?.noteText }}</div>
+    <div v-if="note" class="note-block">{{ noteText }}</div>
     <div v-else class="fill-intersection" />
 
     <div class="string left" />
@@ -170,16 +180,22 @@ function onNoteFocus() {
     <NoteInput
       ref="noteInputRef"
       class="input"
+      :class="{
+        muted: note?.note === 'muted',
+      }"
       :data="note"
       :note-position="{ string, position }"
       :tuning="tuning"
       :frets="frets"
+      :note-text="noteText"
       :selected="isSelected && selectionState.action === 'none'"
       @focus="onNoteFocus"
       @blur="isEditing = false"
       @note-delete="emit('noteDelete')"
       @note-change="(updated) => emit('noteChange', { ...note, ...updated })"
     />
+
+    <X v-if="note?.note === 'muted'" :size="20" class="muted-icon" />
 
     <!-- TODO: don't show dragger if already connected -->
     <template v-if="tieable && tieableDragData">
@@ -238,11 +254,18 @@ function onNoteFocus() {
 
 .input {
   grid-area: 1 / 1 / -1 / -1;
+  &.muted {
+    color: transparent;
+  }
 }
 
 .note-block {
   grid-area: 2 / 2;
   color: transparent;
+}
+
+.muted-icon {
+  grid-area: 1 / 1 / -1 / -1;
 }
 
 .string {
