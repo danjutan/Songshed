@@ -52,7 +52,7 @@ function onInput(e: Event) {
   }
   const num = parseInt(target.value);
   if (Number.isInteger(num)) {
-    if (num < 1 || num > props.frets) {
+    if (num < 0 || num > props.frets) {
       target.value = `${props.noteText}`;
       return;
     }
