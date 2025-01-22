@@ -51,8 +51,6 @@ function createStackResizeObserver(): StackResizeObserver {
     return resizeObserver;
   };
 
-  let stopFn: () => void;
-
   function registerStackRef(startPos: number, stack: HTMLDivElement) {
     stack.dataset.position = startPos.toString();
     createResizeObserver().observe(stack);
@@ -115,10 +113,6 @@ function createStackResizeObserver(): StackResizeObserver {
     posToX.set(startPos, newStack);
 
     if (startPos < firstPos) firstPos = startPos;
-
-    console.log(
-      Array.from(posToX.entries()).map(([pos, stack]) => [pos, stack.x.left]),
-    );
   }
 
   function getStackCoords(startPos: number) {

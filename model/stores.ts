@@ -284,6 +284,7 @@ export interface TieStore {
   getTies: () => Tie[];
   getBends: () => Bend[];
   shiftFrom: (position: number, shiftBy: number) => void;
+  getStartsAt: (notePosition: NotePosition) => TieData | BendData | undefined;
 }
 
 function createTieStore(guitarData: GuitarTabData): TieStore {
@@ -358,6 +359,22 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
     return bends;
   }
 
+  // function isConnected({ string, position }: NotePosition): boolean {
+  //   const stringTies = guitarData.ties.get(string);
+  //   if (!stringTies) return false;
+  //   const tie = stringTies.get(position);
+  //   return tie !== undefined;
+  // }
+
+  function getStartsAt({
+    position,
+    string,
+  }: NotePosition): TieData | BendData | undefined {
+    const stringTies = guitarData.ties.get(string);
+    if (!stringTies) return undefined;
+    return stringTies.get(position);
+  }
+
   function shiftFrom(position: number, shiftBy: number) {
     for (const [string, ties] of guitarData.ties) {
       const newTies = new Map<number, TieData | BendData>();
@@ -384,6 +401,7 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
     deleteAt,
     getTies,
     getBends,
+    getStartsAt,
     shiftFrom,
   };
 }

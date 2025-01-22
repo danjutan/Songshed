@@ -23,10 +23,6 @@ function createCellHoverEvents() {
     };
   });
 
-  watchEffect(() => {
-    console.log(hoveredCell.value);
-  });
-
   const hoverListeners = new Set<HoverListener>();
   const mouseupListeners = new Set<ReleaseListener>();
 

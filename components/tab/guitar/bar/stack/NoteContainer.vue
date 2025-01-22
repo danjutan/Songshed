@@ -18,11 +18,11 @@ import {
 } from "../../../hooks/dnd/types";
 import NoteTieDragger from "./NoteTieDragger.vue";
 import { X } from "lucide-vue-next";
-
+import { injectTieAddState } from "@/components/tab/providers/state/provide-tie-add-state";
+import type { NotePosition } from "~/model/stores";
 const props = defineProps<{
   note: GuitarNote | undefined;
-  string: number;
-  position: number;
+  notePosition: NotePosition;
   tuning: Midi;
   frets: number;
   collapsed: boolean;
@@ -36,13 +36,14 @@ const emit = defineEmits<{
 const editing = injectEditingState();
 const selectionState = injectSelectionState();
 const cellHoverState = injectCellHoverEvents();
+const { hasTieBothSides, hasBend } = injectTieAddState();
 
 const noteInputRef = ref<InstanceType<typeof NoteInput>>();
 const containerRef = ref<HTMLElement>();
 
 const isSelected = ref(false);
 selectionState.addPositionListener(
-  { string: props.string, position: props.position },
+  { string: props.notePosition.string, position: props.notePosition.position },
   (selected) => {
     isSelected.value = selected;
   },
@@ -57,8 +58,8 @@ const tieing = ref(false);
 
 const dragData = computed(() => {
   return {
-    position: props.position,
-    string: props.string,
+    position: props.notePosition.position,
+    string: props.notePosition.string,
     data: props.note,
   };
 });
@@ -69,8 +70,8 @@ const tieableDragData = computed<Omit<TieAddDragDataProps, "mode"> | undefined>(
       return undefined;
     }
     return {
-      position: props.position,
-      string: props.string,
+      position: props.notePosition.position,
+      string: props.notePosition.string,
       data: props.note,
     };
   },
@@ -84,8 +85,8 @@ onMounted(() => {
           element: containerRef.value!,
           getData: () =>
             getNoteInputDropData({
-              position: props.position,
-              string: props.string,
+              position: props.notePosition.position,
+              string: props.notePosition.string,
             }),
         }),
         draggable({
@@ -120,8 +121,14 @@ function onNoteFocus() {
   if (!ctrlState.value && !metaState.value) {
     selectionState.clearSelections();
   }
-  selectionState.selectNote({ string: props.string, position: props.position });
-  editing.setEditing({ string: props.string, position: props.position });
+  selectionState.selectNote({
+    string: props.notePosition.string,
+    position: props.notePosition.position,
+  });
+  editing.setEditing({
+    string: props.notePosition.string,
+    position: props.notePosition.position,
+  });
   isEditing.value = true;
 }
 
@@ -161,9 +168,11 @@ const noteText = computed(() => {
       tieing,
       collapsed,
     }"
-    :style="{ gridRow: string + 1 }"
+    :style="{ gridRow: notePosition.string + 1 }"
     @click="onNoteClick"
-    @mouseenter="cellHoverState.hover(string, position)"
+    @mouseenter="
+      cellHoverState.hover(notePosition.string, notePosition.position)
+    "
   >
     <div class="selected-bg" />
     <!-- <div
@@ -190,7 +199,7 @@ const noteText = computed(() => {
         muted: note?.note === 'muted',
       }"
       :data="note"
-      :note-position="{ string, position }"
+      :note-position="notePosition"
       :tuning="tuning"
       :frets="frets"
       :note-text="noteText"
@@ -203,15 +212,16 @@ const noteText = computed(() => {
 
     <X v-if="note?.note === 'muted'" :size="20" class="muted-icon" />
 
-    <!-- TODO: don't show dragger if already connected -->
     <template v-if="(tieable || tieing) && tieableDragData">
       <NoteTieDragger
+        v-if="!hasTieBothSides(notePosition)"
         mode="tie"
         :drag-props="tieableDragData"
         @mousedown="tieing = true"
         @drag-end="tieing = false"
       />
       <NoteTieDragger
+        v-if="!hasBend(notePosition)"
         mode="bend"
         :drag-props="tieableDragData"
         @mousedown="tieing = true"

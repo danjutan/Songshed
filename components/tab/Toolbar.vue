@@ -27,7 +27,7 @@ const gridTemplateRows = computed(() => {
   const rows = [
     renderState.annotationRows &&
       `repeat(${renderState.annotationRows}, var(--cell-height))`,
-    tieAddState.hasTiesOrTieing && "var(--cell-height)",
+    tieAddState.hasBends && "var(--cell-height)",
     "var(--context-menu-height)",
   ];
   return rows.filter(Boolean).join(" ");
@@ -39,8 +39,7 @@ const gridTemplateRows = computed(() => {
     <div
       class="new-row-box"
       :class="{
-        'with-bends':
-          renderState.annotationRows === 0 && tieAddState.hasTiesOrTieing,
+        'with-bends': renderState.annotationRows === 0 && tieAddState.hasBends,
       }"
       @click="emits('newAnnotationRowClicked')"
     >

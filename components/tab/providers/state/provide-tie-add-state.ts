@@ -1,5 +1,11 @@
 import type { InjectionKey } from "vue";
-import type { Bend, GuitarStore, Tie, TieStore } from "~/model/stores";
+import type {
+  Bend,
+  GuitarStore,
+  NotePosition,
+  Tie,
+  TieStore,
+} from "~/model/stores";
 import type {
   CellHoverEvents,
   HoveredRow,
@@ -19,7 +25,6 @@ export function provideTieAddState(
   const rawTo = ref<number>(0);
   const defaultTieType = TieType.Hammer;
 
-  // Compute the valid positions based on raw drag coordinates
   const validPositions = computed(() => {
     const string = dragString.value;
     const from = rawFrom.value;
@@ -30,7 +35,7 @@ export function provideTieAddState(
       to = from;
     }
 
-    // Find valid note positions
+    // "Collisions"
     if (to !== from) {
       const direction = to < from ? -1 : 1;
       const start = from + direction * props.subUnit;
@@ -109,6 +114,27 @@ export function provideTieAddState(
     mode.value = undefined;
   }
 
+  function hasBend(notePosition: NotePosition): boolean {
+    return props.store.ties.getStartsAt(notePosition)?.type === "bend";
+  }
+
+  function hasTieBothSides(notePosition: NotePosition): boolean {
+    const tieOut = props.store.ties.getStartsAt(notePosition);
+    if (!tieOut || tieOut.type === "bend") return false;
+    const tieIn = props.store.ties
+      .getTies()
+      .find((tie) => tie.to === notePosition.position);
+    return !!tieIn;
+  }
+
+  // function hasTieOrBend(
+  //   notePosition: NotePosition,
+  // ): "tie" | "bend" | undefined {
+  //   const data = props.store.ties.getStartsAt(notePosition);
+  //   if (!data) return undefined;
+  //   return data.type === "bend" ? "bend" : "tie";
+  // }
+
   const tieAddState = {
     get dragging() {
       return mode.value !== undefined;
@@ -143,14 +169,17 @@ export function provideTieAddState(
         };
       }
     },
-    get hasTiesOrTieing() {
+    get hasBends() {
       return (
-        mode.value || (props.store && props.store.ties.getTies().length > 0)
+        mode.value === "bend" ||
+        (props.store && props.store.ties.getBends().length > 0)
       );
     },
     start,
     drag,
     end,
+    hasTieBothSides,
+    hasBend,
   };
 
   provide(TieAddInjectionKey, tieAddState);
