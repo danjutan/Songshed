@@ -34,7 +34,7 @@ export function useTemplateColumns(
       .map((bar, i) => barTemplateColumns(bar, frValues.value[i]))
       .join(" min-content ");
 
-    return `min-content ${guitarline}`;
+    return `var(--note-font-size) ${guitarline}`;
   });
 
   const collapsedMinWidth = props.settings.collapsedMinWidth;

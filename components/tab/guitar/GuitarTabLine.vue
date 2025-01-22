@@ -121,24 +121,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.bend-row-label {
-  /* 
-    Using :style instead, in case we want to show the bend label all the time.
-    For some reason, this refuses to update for the first tabline, after save/loading. 
-  */
-  /* grid-row: v-bind(bendRow); */
-  grid-column: 1;
-  font-size: calc(var(--note-font-size) * 0.75);
-  align-self: center;
-  /* writing-mode: vertical-rl;
-  text-orientation: upright; */
-}
-
 .overlay-controls {
   z-index: var(--overlay-controls-z-index);
   position: relative; /* somehow makes the VueSelect hover events work right */
+  overflow: visible;
 }
-
 .overlay,
 .overlay-controls {
   pointer-events: none;

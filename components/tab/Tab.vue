@@ -186,8 +186,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener("keyup", onKeyUp);
 });
-
-const overlayedBarStart = ref<number | undefined>();
 </script>
 
 <template>

@@ -23,6 +23,10 @@ function createCellHoverEvents() {
     };
   });
 
+  watchEffect(() => {
+    console.log(hoveredCell.value);
+  });
+
   const hoverListeners = new Set<HoverListener>();
   const mouseupListeners = new Set<ReleaseListener>();
 
@@ -41,7 +45,6 @@ function createCellHoverEvents() {
 
   function leaveTab() {
     leaveTabListeners.forEach((listener) => listener());
-    hoveredCell.value = undefined;
   }
 
   function addHoverListener(listener: HoverListener) {

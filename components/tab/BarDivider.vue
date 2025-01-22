@@ -57,7 +57,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="dragger" class="divider">
+  <div ref="dragger" class="divider" :class="{ first: barIndex === 0 }">
     <div class="thicc">
       <div class="grip">
         <GripVertical />
@@ -104,6 +104,13 @@ onMounted(() => {
   width: var(--note-font-size);
   transform: translateX(-25%);
   z-index: var(--divider-z-index);
+}
+
+.divider.first {
+  justify-self: end;
+  & .thicc {
+    transform: translateX(-50%);
+  }
 }
 
 .divider:not(:hover) .thicc {

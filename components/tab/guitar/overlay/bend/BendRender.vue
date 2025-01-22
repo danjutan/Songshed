@@ -20,11 +20,6 @@ const { editingNote } = injectEditingState();
 const { getNextStackPos } = injectStackResizeObserver();
 const settings = injectSettingsState();
 
-const bendRowTop = computed(
-  // () => -1 * (settings.contextMenuHeight + settings.cellHeight),
-  () => 0,
-);
-
 const startRowTop = computed(
   () => settings.contextMenuHeight + settings.cellHeight,
 );
@@ -37,6 +32,7 @@ const throughPos = computed(() =>
 );
 
 const upswingToPos = computed(() => throughPos.value ?? props.bend.to);
+const upswingToY = settings.contextMenuHeight / 3;
 
 const isPrebend = computed(() => props.bend.from === props.bend.to);
 
@@ -118,7 +114,7 @@ onUnmounted(() => {
       <rect
         class="upswing-dragger"
         :x="upswingTo.left"
-        :y="bendRowTop"
+        :y="upswingToY"
         :width="upswingTo.right - upswingTo.left"
         :height="cellHeight * 1.5"
         opacity="0"
@@ -130,7 +126,7 @@ onUnmounted(() => {
       <Teleport :to="overlayControlsSelector">
         <foreignObject
           :x="upswingTo.left"
-          :y="0"
+          :y="upswingToY - 2"
           :width="100"
           :height="200"
           overflow="visible"
@@ -160,9 +156,9 @@ onUnmounted(() => {
         class="upswing-curve"
         :d="
           isPrebend
-            ? `M ${from.center} ${startRowTop + (startRow - 0.85) * cellHeight} V ${bendRowTop + cellHeight * 0.83}`
+            ? `M ${from.center} ${startRowTop + (startRow - 0.85) * cellHeight} V ${upswingToY + cellHeight * 0.83}`
             : `M ${from.right} ${startRowTop + (startRow - 0.6) * cellHeight} 
-               Q ${upswingTo.center} ${startRowTop + (startRow - 0.55) * cellHeight} ${upswingTo.center} ${bendRowTop + cellHeight * 0.83}`
+               Q ${upswingTo.center} ${startRowTop + (startRow - 0.55) * cellHeight} ${upswingTo.center} ${upswingToY + cellHeight * 0.83}`
         "
         :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
@@ -171,8 +167,8 @@ onUnmounted(() => {
         <path
           v-if="bend.releaseType === 'connect'"
           class="downswing-curve"
-          :d="`M ${through.right} ${bendRowTop + cellHeight * 0.35}
-               Q ${to.center} ${bendRowTop + cellHeight * 0.35} ${to.center} ${startRowTop + (startRow - 0.95) * cellHeight}`"
+          :d="`M ${through.right} ${upswingToY + cellHeight * 0.35}
+               Q ${to.center} ${upswingToY + cellHeight * 0.35} ${to.center} ${startRowTop + (startRow - 0.95) * cellHeight}`"
           :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
         />
         <line
@@ -180,8 +176,8 @@ onUnmounted(() => {
           class="hold-line"
           :x1="through.right"
           :x2="to.center"
-          :y1="bendRowTop + cellHeight * 0.35"
-          :y2="bendRowTop + cellHeight * 0.35"
+          :y1="upswingToY + cellHeight * 0.35"
+          :y2="upswingToY + cellHeight * 0.35"
           :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : undefined"
         />
       </g>
@@ -193,7 +189,7 @@ onUnmounted(() => {
           :y="
             hasThrough && bend.releaseType === 'connect'
               ? (startRow - 1.5) * cellHeight
-              : bendRowTop
+              : upswingToY
           "
           :width="to.right - to.left"
           :height="settings.contextMenuHeight"
@@ -208,9 +204,9 @@ onUnmounted(() => {
         <line
           v-if="!hasThrough && afterTo"
           :x1="to.right"
-          :y1="bendRowTop + cellHeight * 0.35"
+          :y1="upswingToY + cellHeight * 0.35"
           :x2="afterTo.center"
-          :y2="bendRowTop + cellHeight * 0.35"
+          :y2="upswingToY + cellHeight * 0.35"
           stroke="black"
           opacity="0.4"
           :marker-end="'url(#arrow)'"

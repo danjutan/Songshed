@@ -8,7 +8,7 @@ import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 import { injectTieAddState } from "./providers/state/provide-tie-add-state";
 import BendTopBar from "./guitar/overlay/bend/BendTopBar.vue";
-import { Plus } from "lucide-vue-next";
+import { Pencil, Plus } from "lucide-vue-next";
 
 const props = defineProps<{
   tabline: Bar[];
@@ -36,9 +36,13 @@ const gridTemplateRows = computed(() => {
 
 <template>
   <div class="toolbar">
-    <div class="new-row-box" @click="emits('newAnnotationRowClicked')">
-      <Plus :size="20" class="plus" />
-      <div class="diagonal" />
+    <div
+      class="new-row-box"
+      :class="{ first: renderState.annotationRows === 0 }"
+      @click="emits('newAnnotationRowClicked')"
+    >
+      <Pencil :size="16" class="pencil" />
+      <Plus :size="11" class="plus" />
     </div>
 
     <template v-for="(bar, i) in tabline" :key="bar.start">
@@ -71,43 +75,41 @@ const gridTemplateRows = computed(() => {
 <style scoped>
 .new-row-box {
   grid-row: 1;
-  grid-column: 1 / 3;
+  grid-column: 1;
   font-size: var(--cell-height);
-  width: calc(var(--cell-height) / 2);
   border-right: none;
-
-  display: grid;
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-  grid-template-columns: 1fr;
-
+  width: min-content;
+  transform: translateX(25%);
   cursor: pointer;
 
-  &:hover {
-    font-weight: bold;
-    background-color: lightcoral;
-    color: white;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+
+  &.first {
+    margin-bottom: -4px;
   }
-}
 
-.plus {
-  grid-row: 1;
-  grid-column: 1;
-  transform: translateX(calc(-1 * var(--cell-height) / 4));
-}
+  &:hover {
+    & svg {
+      stroke-width: 2.5;
+    }
+  }
 
-.diagonal {
-  grid-row: 2;
-  grid-column: 1;
-  width: calc(var(--cell-height) / 2);
-  /* height: calc(var(--cell-height) / 2); */
-  background: linear-gradient(
-    to top left,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0) calc(50% - 0.8px),
-    rgba(0, 0, 0, 1) 50%,
-    rgba(0, 0, 0, 0) calc(50% + 0.8px),
-    rgba(0, 0, 0, 0) 100%
-  );
+  & .pencil {
+    grid-area: 1 / 1;
+    align-self: center;
+  }
+
+  & .plus {
+    grid-area: 1 / 1;
+    align-self: center;
+    justify-self: end;
+    transform: translateX(20%) translateY(40%);
+    /* align-self: center;
+    justify-self: start;
+    transform: translateX(-25%) translateY(-10%); */
+  }
 }
 
 .toolbar {
@@ -119,6 +121,7 @@ const gridTemplateRows = computed(() => {
 }
 
 .context-row {
+  pointer-events: none;
   grid-row: -2 / -1;
   grid-column: 1 / -1;
 }

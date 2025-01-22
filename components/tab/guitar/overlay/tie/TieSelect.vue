@@ -65,10 +65,6 @@ const emits = defineEmits<{
 </template>
 
 <style scoped>
-foreignObject {
-  /* uncomment this and try hovering from below */
-  /* opacity: 0.8; */
-}
 .select :deep(.tie-slide) {
   display: grid;
   grid-template-rows: 1fr;

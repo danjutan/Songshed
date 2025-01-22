@@ -51,8 +51,7 @@ const iconSizePx = `${iconSize}px`;
 
 .select {
   pointer-events: all;
-  /* Weird inconsistencies when trying to set opacity and box-shadow. TODO: revisit. See TieSelect*/
-  /* --vs-input-bg: rgba(255, 255, 255, 0.8); */
+  --vs-input-bg: rgba(255, 255, 255, 0.8);
   --vs-input-placeholder-color: black;
   --vs-font-size: calc(var(--note-font-size) * 0.75);
   --vs-option-padding: 1px 2px;
@@ -116,6 +115,9 @@ const iconSizePx = `${iconSize}px`;
     & button {
       width: v-bind(iconSizePx);
       height: v-bind(iconSizePx);
+      &:hover svg {
+        stroke-width: 2.5;
+      }
     }
   }
 }

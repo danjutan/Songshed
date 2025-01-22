@@ -19,11 +19,12 @@ const cellHoverState = injectCellHoverEvents();
       gridColumn: startColumn + 1 + i,
     }"
     @mouseover="cellHoverState.hover('bend', position)"
+    @click="console.log('clicked')"
   />
 </template>
 
 <style scoped>
 .bend-cell {
-  grid-row: -3 / -2; /* second to last row */
+  grid-row: -3 / -1;
 }
 </style>
