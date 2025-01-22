@@ -41,7 +41,6 @@ export function useTemplateColumns(
   const expandedMinWidth = props.settings.cellHeight;
 
   function isBarTooSmall(barIndex: number, deltaX: number): boolean {
-    return false;
     const bar = props.tabline[barIndex]!;
 
     const barMinWidth = Array.from(bar.stacks.entries()).reduce(
