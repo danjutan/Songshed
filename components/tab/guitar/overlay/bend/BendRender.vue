@@ -74,7 +74,11 @@ onUnmounted(() => {
 
 <template>
   <OverlayCoords
-    v-slot="{ coords: [from, to, upswingTo, through, afterTo], cellHeight }"
+    v-slot="{
+      coords: [from, to, upswingTo, through, afterTo],
+      cellHeight,
+      rightEdge,
+    }"
     :positions="[
       props.bend.from,
       props.bend.to,
@@ -125,6 +129,7 @@ onUnmounted(() => {
 
       <Teleport :to="overlayControlsSelector">
         <foreignObject
+          v-if="upswingTo.right < rightEdge"
           :x="upswingTo.left"
           :y="upswingToY - 2"
           :width="100"
