@@ -14,6 +14,11 @@ const props = defineProps<{
   dragProps: Omit<TieAddDragDataProps, "mode">;
 }>();
 
+const emit = defineEmits<{
+  "drag-start": [];
+  "drag-end": [];
+}>();
+
 const draggerRef = ref<HTMLElement>();
 
 onMounted(() => {
@@ -22,6 +27,12 @@ onMounted(() => {
     onGenerateDragPreview: ({ nativeSetDragImage }) => {
       disableNativeDragPreview({ nativeSetDragImage });
       preventUnhandled.start();
+    },
+    onDragStart: () => {
+      emit("drag-start");
+    },
+    onDrop: () => {
+      emit("drag-end");
     },
     getInitialData: () => {
       return getTieAddDragData({
@@ -50,6 +61,7 @@ onMounted(() => {
   cursor: crosshair;
   justify-self: center;
   align-self: end;
+  z-index: var(--overlay-controls-z-index);
 
   &.tie {
     grid-row: 2 / 3;

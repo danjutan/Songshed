@@ -51,8 +51,9 @@ selectionState.addPositionListener(
 const isEditing = ref(false);
 const tieable = computed(
   () =>
-    props.note !== undefined && props.note.note !== "muted" && isSelected.value,
+    props.note !== undefined && props.note.note !== "muted" && isEditing.value,
 );
+const tieing = ref(false);
 
 const dragData = computed(() => {
   return {
@@ -124,6 +125,10 @@ function onNoteFocus() {
   isEditing.value = true;
 }
 
+function onNoteBlur() {
+  isEditing.value = false;
+}
+
 // onBeforeUpdate(() => {
 //   console.log("updated", props.position, props.string);
 // });
@@ -153,6 +158,7 @@ const noteText = computed(() => {
     :class="{
       selected: isSelected && selectionState.action === 'none',
       tieable,
+      tieing,
       collapsed,
     }"
     :style="{ gridRow: string + 1 }"
@@ -190,7 +196,7 @@ const noteText = computed(() => {
       :note-text="noteText"
       :selected="isSelected && selectionState.action === 'none'"
       @focus="onNoteFocus"
-      @blur="isEditing = false"
+      @blur="onNoteBlur"
       @note-delete="emit('noteDelete')"
       @note-change="(updated) => emit('noteChange', { ...note, ...updated })"
     />
@@ -198,9 +204,19 @@ const noteText = computed(() => {
     <X v-if="note?.note === 'muted'" :size="20" class="muted-icon" />
 
     <!-- TODO: don't show dragger if already connected -->
-    <template v-if="tieable && tieableDragData">
-      <NoteTieDragger mode="tie" :drag-props="tieableDragData" />
-      <NoteTieDragger mode="bend" :drag-props="tieableDragData" />
+    <template v-if="(tieable || tieing) && tieableDragData">
+      <NoteTieDragger
+        mode="tie"
+        :drag-props="tieableDragData"
+        @mousedown="tieing = true"
+        @drag-end="tieing = false"
+      />
+      <NoteTieDragger
+        mode="bend"
+        :drag-props="tieableDragData"
+        @mousedown="tieing = true"
+        @drag-end="tieing = false"
+      />
     </template>
 
     <div
@@ -234,7 +250,8 @@ const noteText = computed(() => {
     min-width: var(--collapsed-min-width);
   }
 
-  &.tieable {
+  &.tieable,
+  &.tieing {
     min-width: calc(var(--cell-height) + 12px);
   }
 

@@ -38,7 +38,10 @@ const gridTemplateRows = computed(() => {
   <div class="toolbar">
     <div
       class="new-row-box"
-      :class="{ first: renderState.annotationRows === 0 }"
+      :class="{
+        'with-bends':
+          renderState.annotationRows === 0 && tieAddState.hasTiesOrTieing,
+      }"
       @click="emits('newAnnotationRowClicked')"
     >
       <Pencil :size="16" class="pencil" />
@@ -86,7 +89,8 @@ const gridTemplateRows = computed(() => {
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
 
-  &.first {
+  margin-bottom: 2px;
+  &.with-bends {
     margin-bottom: -4px;
   }
 
