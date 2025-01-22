@@ -30,7 +30,8 @@ const emit = defineEmits<{
 }>();
 
 onMounted(() => {
-  watchEffect((cleanup) =>
+  watchEffect((cleanup) => {
+    if (props.barIndex === 0) return;
     cleanup(
       draggable({
         element: draggerRef.value!,
@@ -51,15 +52,15 @@ onMounted(() => {
           emit("endDrag");
         },
       }),
-    ),
-  );
+    );
+  });
 });
 </script>
 
 <template>
   <div ref="dragger" class="divider" :class="{ first: barIndex === 0 }">
     <div class="thicc">
-      <div class="grip">
+      <div v-if="barIndex !== 0" class="grip">
         <GripVertical />
       </div>
       <div class="button insert" @click="emit('insert')">
@@ -91,8 +92,10 @@ onMounted(() => {
   height: 100%;
   background: black;
   padding: 0;
-  cursor: ew-resize;
   position: relative;
+  &:not(.first) {
+    cursor: ew-resize;
+  }
 }
 
 .thicc {
