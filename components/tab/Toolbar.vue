@@ -23,11 +23,17 @@ const emits = defineEmits<{
 const tieAddState = injectTieAddState();
 const renderState = injectAnnotationRenderState();
 
+const hasBends = computed(() => {
+  const tablineStart = props.tabline[0].start;
+  const tablineEnd = props.tabline[props.tabline.length - 1].end;
+  return tieAddState.hasBendsWithin(tablineStart, tablineEnd);
+});
+
 const gridTemplateRows = computed(() => {
   const rows = [
     renderState.annotationRows &&
       `repeat(${renderState.annotationRows}, var(--cell-height))`,
-    tieAddState.hasBends && "var(--cell-height)",
+    hasBends.value && "var(--cell-height)",
     "var(--context-menu-height)",
   ];
   return rows.filter(Boolean).join(" ");
@@ -39,7 +45,8 @@ const gridTemplateRows = computed(() => {
     <div
       class="new-row-box"
       :class="{
-        'with-bends': renderState.annotationRows === 0 && tieAddState.hasBends,
+        'with-bends': renderState.annotationRows === 0 && hasBends,
+        'last-row': renderState.annotationRows === 0 && !hasBends,
       }"
       @click="emits('newAnnotationRowClicked')"
     >
@@ -53,7 +60,7 @@ const gridTemplateRows = computed(() => {
         :bar-positions="[...bar.stacks.keys()]"
       />
       <BendTopBar
-        v-if="tieAddState.hasTiesOrTieing"
+        v-if="hasBends"
         :start-column="i * (bar.stacks.size + 1) + 1"
         :bar-positions="[...bar.stacks.keys()]"
       />
@@ -88,9 +95,12 @@ const gridTemplateRows = computed(() => {
   grid-template-columns: 1fr;
   grid-template-rows: 1fr;
 
-  margin-bottom: 2px;
   &.with-bends {
-    margin-bottom: -4px;
+    margin-bottom: -6px;
+  }
+
+  &.last-row {
+    margin-top: -4px;
   }
 
   &:hover {

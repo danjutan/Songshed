@@ -1,15 +1,6 @@
 import type { InjectionKey } from "vue";
-import type {
-  Bend,
-  GuitarStore,
-  NotePosition,
-  Tie,
-  TieStore,
-} from "~/model/stores";
-import type {
-  CellHoverEvents,
-  HoveredRow,
-} from "../events/provide-cell-hover-events";
+import type { Bend, GuitarStore, NotePosition, Tie } from "~/model/stores";
+import type { CellHoverEvents } from "../events/provide-cell-hover-events";
 import { TieType } from "~/model/data";
 
 export function provideTieAddState(
@@ -135,6 +126,19 @@ export function provideTieAddState(
   //   return data.type === "bend" ? "bend" : "tie";
   // }
 
+  function hasBendsWithin(start: number, end: number): boolean {
+    const within = (pos: number) => pos >= start && pos <= end;
+    const adding =
+      mode.value === "bend" &&
+      (within(validPositions.value.from) || within(validPositions.value.to));
+    return (
+      adding ||
+      props.store.ties
+        .getBends()
+        .some((bend) => within(bend.from) || within(bend.to))
+    );
+  }
+
   const tieAddState = {
     get dragging() {
       return mode.value !== undefined;
@@ -169,17 +173,12 @@ export function provideTieAddState(
         };
       }
     },
-    get hasBends() {
-      return (
-        mode.value === "bend" ||
-        (props.store && props.store.ties.getBends().length > 0)
-      );
-    },
     start,
     drag,
     end,
-    hasTieBothSides,
     hasBend,
+    hasTieBothSides,
+    hasBendsWithin,
   };
 
   provide(TieAddInjectionKey, tieAddState);

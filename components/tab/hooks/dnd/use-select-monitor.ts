@@ -1,6 +1,6 @@
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { isNoteInputDragData, isNoteInputDropData } from "./types";
-import type { SelectionState } from "../providers/state/provide-selection-state";
+import type { SelectionState } from "../../providers/state/provide-selection-state";
 
 export function useSelectMonitor(selectionState: SelectionState) {
   watchEffect((cleanup) => {

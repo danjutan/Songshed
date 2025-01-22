@@ -75,6 +75,7 @@ onMounted(() => {
 
 export type Bar = {
   start: number;
+  end: number;
   stacks: StackMap<GuitarNote>;
 };
 
@@ -88,6 +89,7 @@ const bars = computed<Bar[]>(() => {
   ) {
     bars.push({
       start: i,
+      end: i + barSize.value,
       stacks: props.tabStore.guitar.getStacks(
         i,
         i + barSize.value,

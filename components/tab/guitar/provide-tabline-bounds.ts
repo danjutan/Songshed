@@ -13,6 +13,7 @@ export function provideTablineBounds(
 ) {
   const tablineBounds = reactiveComputed(() => ({
     start: props.bars[0].start,
+    // the start of the last column
     last:
       props.bars[0].start +
       props.bars.length * props.columnsPerBar * props.subUnit -
