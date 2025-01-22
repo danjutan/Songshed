@@ -103,7 +103,7 @@ const bars = computed<Bar[]>(() => {
 const { lastWidth } = useWindowResizing();
 const tablines = computed<Array<Bar[]>>(() => {
   const tablineBars: Array<Bar[]> = [];
-  let currTabLine: Bar[] = [];
+  let currTabline: Bar[] = [];
   const barMaxWidth =
     settings.collapseRatio * settings.collapsedMinWidth * columnsPerBar.value +
     (1 - settings.collapseRatio) * settings.cellHeight * columnsPerBar.value;
@@ -111,17 +111,17 @@ const tablines = computed<Array<Bar[]>>(() => {
     ? Math.floor(lastWidth.value / barMaxWidth)
     : 3;
   bars.value.forEach((bar, i) => {
-    currTabLine.push(bar);
+    currTabline.push(bar);
     if (
-      currTabLine.length === barsPerLine ||
+      currTabline.length === barsPerLine ||
       props.tabStore.lineBreaks.has((i + 1) * barSize.value)
     ) {
-      tablineBars.push(currTabLine);
-      currTabLine = [];
+      tablineBars.push(currTabline);
+      currTabline = [];
     }
   });
-  if (currTabLine.length) {
-    tablineBars.push(currTabLine);
+  if (currTabline.length) {
+    tablineBars.push(currTabline);
   }
   return tablineBars;
 });
@@ -193,10 +193,11 @@ onBeforeUnmount(() => {
 <template>
   <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
     <Tabline
-      v-for="(tabLine, tabLineIndex) in tablines"
-      :key="tabLineIndex"
-      :tab-line="tabLine"
-      :tab-line-index="tabLineIndex"
+      v-for="(tabline, tablineIndex) in tablines"
+      :key="tablineIndex"
+      :tabline="tabline"
+      :tabline-index="tablineIndex"
+      :is-last-tabline="tablineIndex === tablines.length - 1"
       :tab-store="tabStore"
       :columns-per-bar="columnsPerBar"
       :sub-unit="subUnit"

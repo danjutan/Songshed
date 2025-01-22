@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import type { Bar } from "./Tab.vue";
 import type { TabStore } from "~/model/stores";
-import GuitarTabLine from "./guitar/GuitarTabLine.vue";
 import Toolbar from "./Toolbar.vue";
 import Divider from "./BarDivider.vue";
+import GuitarTabline from "./guitar/GuitarTabline.vue";
 import { useTemplateColumns } from "./hooks/use-tabline-columns";
 import { injectStackResizeObserver } from "./providers/events/provide-resize-observer";
 import { injectSettingsState } from "./providers/state/provide-settings-state";
 import { injectAnnotationRenderState } from "./providers/state/annotations/provide-annotation-render-state";
+import { Plus } from "lucide-vue-next";
 
 const props = defineProps<{
-  tabLine: Bar[];
-  tabLineIndex: number;
+  tabline: Bar[];
+  tablineIndex: number;
+  isLastTabline: boolean;
   tabStore: TabStore;
   columnsPerBar: number;
   subUnit: number;
@@ -24,17 +26,17 @@ const emit = defineEmits<{
 const resizeObserver = injectStackResizeObserver();
 const settings = injectSettingsState();
 const annotationRenders = injectAnnotationRenderState();
-const overlayedBarStart = ref<number | undefined>();
 
-// Move tabline hook into component
-const tablineHook = useTemplateColumns(
+const templateColumns = useTemplateColumns(
   reactiveComputed(() => ({
-    tabline: props.tabLine,
+    tabline: props.tabline,
     beatSize: props.tabStore.beatSize,
     resizeObserver,
     settings,
   })),
 );
+
+const overlayedBarStart = ref<number | undefined>();
 
 function deleteBar(start: number) {
   props.tabStore.guitar!.deleteStacks(
@@ -64,7 +66,7 @@ function joinBreak(start: number) {
 }
 
 onMounted(() => {
-  console.log("mounted tabline", props.tabLineIndex);
+  console.log("mounted tabline", props.tablineIndex);
 });
 </script>
 
@@ -72,23 +74,23 @@ onMounted(() => {
   <div
     class="tab-line"
     :style="{
-      gridTemplateColumns: tablineHook.gridTemplateColumns.value,
+      gridTemplateColumns: templateColumns.gridTemplateColumns.value,
     }"
   >
     <Toolbar
-      :tabline="tabLine"
-      :tab-line-index="tabLineIndex"
+      :tabline="tabline"
+      :tabline-index="tablineIndex"
       @new-annotation-row-clicked="tabStore.annotations.createNextRow"
       @delete-annotation-clicked="
         (row, annotation) =>
           tabStore.annotations.deleteAnnotation(row, annotation)
       "
     />
-    <GuitarTabLine
+    <GuitarTabline
       v-if="tabStore.guitar"
-      :tab-line-index="tabLineIndex"
+      :tabline-index="tablineIndex"
       :guitar-store="tabStore.guitar"
-      :bars="tabLine"
+      :bars="tabline"
       :start-row="annotationRenders.annotationRows + 1"
       :beat-size="tabStore.beatSize"
       :sub-unit="subUnit"
@@ -102,14 +104,14 @@ onMounted(() => {
             gridColumn: barIndex * (columnsPerBar + 1) + 1,
             gridRow: `2 / span ${numStrings}`,
           }"
-          @start-drag="tablineHook.resetDrag"
+          @start-drag="templateColumns.resetDrag"
           @resize="
             (diffX: number) => {
               const gridWidth = $el.getBoundingClientRect().width;
-              tablineHook.handleResize(barIndex - 1, diffX, gridWidth);
+              templateColumns.handleResize(barIndex - 1, diffX, gridWidth);
             }
           "
-          @end-drag="tablineHook.resetDrag"
+          @end-drag="templateColumns.resetDrag"
           @insert="insertBar(bar.start)"
           @delete="deleteBar(bar.start)"
           @join="joinBreak(bar.start)"
@@ -128,22 +130,19 @@ onMounted(() => {
           }"
         />
 
-        <!-- <div
-            v-if="
-              tabLineIndex === tabStore.lineBreaks.size &&
-              barIndex === tabLine.length - 1
-            "
-            class="divider"
-            :style="{
-              gridColumn: tabLine.length * (columnsPerBar + 1) + 1,
-              gridRow: `2 / span ${numStrings}`,
-            }"
-            @click="$emit('new-bar-click')"
-          >
-            <div class="new-button">+</div>
-          </div> -->
+        <div
+          v-if="isLastTabline && barIndex === tabline.length - 1"
+          class="endcap"
+          :style="{
+            gridColumn: tabline.length * (columnsPerBar + 1) + 1,
+            gridRow: `2 / span ${numStrings}`,
+          }"
+          @click="$emit('new-bar-click')"
+        >
+          <div class="new-button"><Plus color="white" /></div>
+        </div>
       </template>
-    </GuitarTabLine>
+    </GuitarTabline>
   </div>
 </template>
 
@@ -154,10 +153,12 @@ onMounted(() => {
   grid-auto-rows: var(--cell-height);
 }
 
-.divider .new-button {
-  margin-left: calc(var(--cell-height) * 0.4);
-  padding-right: calc(var(--cell-height) * 0.1);
+.endcap {
+  height: 100%;
   background: black;
+  width: var(--note-font-size);
+}
+.endcap .new-button {
   height: 100%;
   display: flex;
   align-items: center;

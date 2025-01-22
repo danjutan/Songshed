@@ -11,7 +11,7 @@ import { provideOverlayControlsTeleport } from "./overlay/provide-overlay-contro
 import { useWindowResizing } from "../hooks/use-window-resizing";
 
 const props = defineProps<{
-  tabLineIndex: number;
+  tablineIndex: number;
   guitarStore: GuitarStore;
   bars: Bar[];
   startRow: number;
@@ -59,15 +59,15 @@ const columnEnd = computed(
 );
 
 onBeforeUpdate(() => {
-  console.log("updated line", props.tabLineIndex);
+  console.log("updated line", props.tablineIndex);
 });
 
 onUnmounted(() => {
-  console.log("unmounted line", props.tabLineIndex);
+  console.log("unmounted line", props.tablineIndex);
 });
 
 onMounted(() => {
-  console.log("mounted guitar line", props.tabLineIndex);
+  console.log("mounted guitar line", props.tablineIndex);
 });
 // onRenderTriggered(() => {
 //   console.log("line render triggered");

@@ -12,7 +12,7 @@ import { Pencil, Plus } from "lucide-vue-next";
 
 const props = defineProps<{
   tabline: Bar[];
-  tabLineIndex: number;
+  tablineIndex: number;
 }>();
 
 const emits = defineEmits<{
@@ -67,7 +67,7 @@ const gridTemplateRows = computed(() => {
     </template>
 
     <AnnotationRender
-      v-for="render in renderState.annotationRenders.get(tabLineIndex)"
+      v-for="render in renderState.annotationRenders.get(tablineIndex)"
       :key="render.startColumn"
       v-bind="render"
       @update-title="(title: string) => (render.annotation!.title = title)"
