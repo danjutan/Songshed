@@ -204,7 +204,8 @@ interface StackStore<N extends NoteData> {
 function createStackStore<N extends NoteData>(
   stacks: StackMap<N>,
 ): StackStore<N> {
-  const getLastPosition = () => [...stacks.keys()].sort((a, b) => b - a)[0];
+  const getLastPosition = () =>
+    [...stacks.keys()].sort((a, b) => b - a)[0] || 0;
 
   function getStacks(start = 0, end?: number) {
     const subset: StackMap<N> = new Map();
