@@ -7,11 +7,11 @@ import {
   getTieAddDragData,
   type NoteInputDragDataProps,
   type TieAddDragDataProps,
-} from "~/components/tab/dnd/types";
+} from "~/components/tab/hooks/dnd/types";
 
 const props = defineProps<{
   mode: "tie" | "bend";
-  dragProps: Omit<TieAddDragDataProps, "type">;
+  dragProps: Omit<TieAddDragDataProps, "mode">;
 }>();
 
 const draggerRef = ref<HTMLElement>();

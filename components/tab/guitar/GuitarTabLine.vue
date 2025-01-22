@@ -2,13 +2,13 @@
 import type { GuitarStore } from "~/model/stores";
 import type { Bar } from "@/components/tab/Tab.vue";
 import GuitarBar from "./bar/GuitarBar.vue";
-import BendDragBar from "./overlay/bend/BendTopBar.vue";
 import BendRender from "./overlay/bend/BendRender.vue";
 import TieRender from "./overlay/tie/TieRender.vue";
 import { injectTieAddState } from "../providers/state/provide-tie-add-state";
 import { provideTablineBounds } from "./provide-tabline-bounds";
 import { provideEditTie } from "./overlay/tie/provide-edit-tie";
 import { provideOverlayControlsTeleport } from "./overlay/provide-overlay-controls-teleport";
+import { useWindowResizing } from "../hooks/use-window-resizing";
 
 const props = defineProps<{
   tabLineIndex: number;
@@ -21,6 +21,7 @@ const props = defineProps<{
 }>();
 
 const tieAddState = injectTieAddState();
+const { isResizing } = useWindowResizing();
 
 const tablineBounds = provideTablineBounds(props);
 const overlayControlsId = provideOverlayControlsTeleport();
@@ -56,6 +57,25 @@ const centeredOverDivider = (from: number, to: number) => {
 const columnEnd = computed(
   () => props.columnsPerBar * props.bars.length + props.bars.length + 1,
 );
+
+onBeforeUpdate(() => {
+  console.log("updated line", props.tabLineIndex);
+});
+
+onUnmounted(() => {
+  console.log("unmounted line", props.tabLineIndex);
+});
+
+onMounted(() => {
+  console.log("mounted guitar line", props.tabLineIndex);
+});
+// onRenderTriggered(() => {
+//   console.log("line render triggered");
+// });
+
+// onRenderTracked((e) => {
+//   console.log("line render tracked");
+// });
 </script>
 
 <template>
@@ -101,35 +121,21 @@ const columnEnd = computed(
 </template>
 
 <style scoped>
-.bend-row-label {
-  /* 
-    Using :style instead, in case we want to show the bend label all the time.
-    For some reason, this refuses to update for the first tabline, after save/loading. 
-  */
-  /* grid-row: v-bind(bendRow); */
-  grid-column: 1;
-  font-size: calc(var(--note-font-size) * 0.75);
-  align-self: center;
-  /* writing-mode: vertical-rl;
-  text-orientation: upright; */
-}
-
-.overlay {
-  height: calc(100% + var(--cell-height) / 2);
-}
-
 .overlay-controls {
-  z-index: 2;
+  z-index: var(--overlay-controls-z-index);
   position: relative; /* somehow makes the VueSelect hover events work right */
-  height: calc(100% + var(--cell-height) / 2 + 100px);
+  overflow: visible;
 }
-
 .overlay,
 .overlay-controls {
-  overflow: visible;
   pointer-events: none;
   grid-column: 2 / v-bind(columnEnd);
   grid-row: 2 / span calc(v-bind(numStrings) + 1);
   width: 100%;
+  height: calc(
+    100% + var(--cell-height) / 2 + var(--context-menu-height) +
+      var(--cell-height)
+  );
+  margin-top: calc(-1 * (var(--cell-height) + var(--context-menu-height)));
 }
 </style>

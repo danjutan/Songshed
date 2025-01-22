@@ -79,7 +79,7 @@ const iconSizePx = `${iconSize}px`;
   &:not(.inactive) :deep(.control),
   &.open :deep(.control) {
     padding-left: 2px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    /* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); */
   }
 
   &:not(.inactive),
@@ -115,6 +115,9 @@ const iconSizePx = `${iconSize}px`;
     & button {
       width: v-bind(iconSizePx);
       height: v-bind(iconSizePx);
+      &:hover svg {
+        stroke-width: 2.5;
+      }
     }
   }
 }

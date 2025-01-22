@@ -10,6 +10,7 @@ const guitarNotes: Array<[number, number, string]> = [
   [0, 0, "B4"],
   [Spacing.Quarter * 2, 2, "B4"],
   [Spacing.Quarter * 2 + Spacing.Sixteenth, 2, "D4"],
+  [Spacing.Quarter * 3 - Spacing.Eighth, 0, "G4"],
   [Spacing.Quarter * 3, 4, "B3"],
   [Spacing.Quarter * 3 + Spacing.Sixteenth, 1, "B3"],
   [Spacing.Quarter * 4, 5, "A3"],
@@ -17,6 +18,7 @@ const guitarNotes: Array<[number, number, string]> = [
   [Spacing.Quarter * 4 + Spacing.Sixteenth, 1, "A4"],
   [Spacing.Quarter * 5, 5, "C3"],
   [Spacing.Quarter * 6, 5, "G3"],
+  [Spacing.Quarter * 7, 2, "G3"],
   [Spacing.Quarter * 8 - Spacing.Sixteenth, 2, "A3"],
   [Spacing.Quarter * 8, 2, "B3"],
   [Spacing.Quarter * 8, 5, "F3"],
@@ -28,6 +30,7 @@ const guitarNotes: Array<[number, number, string]> = [
   [Spacing.Quarter * 12 - Spacing.Eighth, 2, "G4"],
   [Spacing.Quarter * 12, 2, "F4"],
   [Spacing.Quarter * 12 + Spacing.Sixteenth, 0, "F4"],
+  [Spacing.Quarter * 17 + Spacing.Sixteenth, 0, "F4"],
 ];
 
 guitarNotes.forEach(([position, string, midiString]) => {

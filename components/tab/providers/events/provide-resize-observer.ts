@@ -1,5 +1,5 @@
-import { useElementBounding } from "@vueuse/core";
 import type { InjectionKey, Reactive } from "vue";
+import { useResizeObserver } from "@vueuse/core";
 
 export interface StackCoords {
   left: number;
@@ -8,7 +8,7 @@ export interface StackCoords {
 }
 
 export interface StackResizeObserver {
-  registerStackRef: (startPos: number, stack: HTMLDivElement | null) => void;
+  registerStackRef: (startPos: number, stack: HTMLDivElement) => void;
   getStackCoords: (startPos: number) => StackCoords | undefined;
   getPreviousStackPos: (startPosition: number) => number | undefined;
   getNextStackPos: (startPosition: number) => number | undefined;
@@ -24,15 +24,39 @@ export function withOffset(coords: StackCoords, offset: number): StackCoords {
 
 function createStackResizeObserver(): StackResizeObserver {
   interface Stack {
-    x: ReactiveComputed<StackCoords>;
+    x: Reactive<StackCoords>;
     prev?: number;
     next?: number;
   }
-  const posToX = new Map<number, Stack>();
+  const posToX = reactive(new Map<number, Stack>());
 
   let firstPos = Infinity;
 
-  function registerStackRef(startPos: number, stack: HTMLDivElement | null) {
+  let resizeObserver: ResizeObserver;
+
+  const createResizeObserver = () => {
+    if (resizeObserver) return resizeObserver;
+    resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const position = +(entry.target as HTMLElement).dataset.position!;
+        const rect = (entry.target as HTMLElement).getBoundingClientRect();
+        const coords: StackCoords = {
+          left: rect.left,
+          center: rect.left + rect.width / 2,
+          right: rect.right,
+        };
+        posToX.get(position)!.x = coords;
+      }
+    });
+    return resizeObserver;
+  };
+
+  let stopFn: () => void;
+
+  function registerStackRef(startPos: number, stack: HTMLDivElement) {
+    stack.dataset.position = startPos.toString();
+    createResizeObserver().observe(stack);
+
     // if (!stack) {
     //   const current = posToX.get(startPos);
     //   if (current) {
@@ -53,14 +77,15 @@ function createStackResizeObserver(): StackResizeObserver {
     //   return;
     // }
 
-    const { x, width } = useElementBounding(stack);
+    // const { x, width } = useElementBounding(stack);
 
+    const rect = stack.getBoundingClientRect();
     const newStack: Stack = {
-      x: reactiveComputed(() => ({
-        left: x.value,
-        right: x.value + width.value,
-        center: x.value + width.value / 2,
-      })),
+      x: {
+        left: rect.left,
+        center: rect.left + rect.width / 2,
+        right: rect.right,
+      },
     };
 
     // Find the correct position for insertion
@@ -90,6 +115,10 @@ function createStackResizeObserver(): StackResizeObserver {
     posToX.set(startPos, newStack);
 
     if (startPos < firstPos) firstPos = startPos;
+
+    console.log(
+      Array.from(posToX.entries()).map(([pos, stack]) => [pos, stack.x.left]),
+    );
   }
 
   function getStackCoords(startPos: number) {

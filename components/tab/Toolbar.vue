@@ -8,6 +8,7 @@ import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 import { injectTieAddState } from "./providers/state/provide-tie-add-state";
 import BendTopBar from "./guitar/overlay/bend/BendTopBar.vue";
+import { Pencil, Plus } from "lucide-vue-next";
 
 const props = defineProps<{
   tabline: Bar[];
@@ -35,8 +36,13 @@ const gridTemplateRows = computed(() => {
 
 <template>
   <div class="toolbar">
-    <div class="new-row-box" @click="emits('newAnnotationRowClicked')">
-      <span>+</span>
+    <div
+      class="new-row-box"
+      :class="{ first: renderState.annotationRows === 0 }"
+      @click="emits('newAnnotationRowClicked')"
+    >
+      <Pencil :size="16" class="pencil" />
+      <Plus :size="11" class="plus" />
     </div>
 
     <template v-for="(bar, i) in tabline" :key="bar.start">
@@ -68,17 +74,41 @@ const gridTemplateRows = computed(() => {
 
 <style scoped>
 .new-row-box {
+  grid-row: 1;
+  grid-column: 1;
   font-size: var(--cell-height);
   border-right: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: min-content;
+  transform: translateX(25%);
   cursor: pointer;
 
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+
+  &.first {
+    margin-bottom: -4px;
+  }
+
   &:hover {
-    font-weight: bold;
-    background-color: lightcoral;
-    color: white;
+    & svg {
+      stroke-width: 2.5;
+    }
+  }
+
+  & .pencil {
+    grid-area: 1 / 1;
+    align-self: center;
+  }
+
+  & .plus {
+    grid-area: 1 / 1;
+    align-self: center;
+    justify-self: end;
+    transform: translateX(20%) translateY(40%);
+    /* align-self: center;
+    justify-self: start;
+    transform: translateX(-25%) translateY(-10%); */
   }
 }
 
@@ -91,6 +121,7 @@ const gridTemplateRows = computed(() => {
 }
 
 .context-row {
+  pointer-events: none;
   grid-row: -2 / -1;
   grid-column: 1 / -1;
 }

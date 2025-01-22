@@ -53,7 +53,6 @@ const emits = defineEmits<{
     <foreignObject :x="x" :y :width="55" :height="200" overflow="visible">
       <OverlaySelect
         v-model="model"
-        class="select"
         :active
         :options
         :override-display="{ [TieType.Slide]: '', [TieType.TieSlide]: '' }"

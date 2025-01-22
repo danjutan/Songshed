@@ -15,16 +15,14 @@ const cellHoverEvents = injectCellHoverEvents();
 
 const columnsMap = injectColumnsMap();
 
+// TODO: might need this for "option 1"
 const oneColumnAdjustment = computed(() => {
   return props.region.minPosition === props.region.maxPosition ? 1 : 0;
 });
 
-const startColumn = computed(
-  () => columnsMap[props.region.minPosition].column - oneColumnAdjustment.value,
-);
+const startColumn = computed(() => columnsMap[props.region.minPosition].column);
 const endColumn = computed(
-  () =>
-    columnsMap[props.region.maxPosition].column + oneColumnAdjustment.value + 1,
+  () => columnsMap[props.region.maxPosition].column + 1,
 );
 const startRow = computed(() => props.region.minString + 1);
 

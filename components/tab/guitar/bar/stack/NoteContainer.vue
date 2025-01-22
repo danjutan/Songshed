@@ -15,8 +15,9 @@ import {
   getNoteInputDragData,
   getNoteInputDropData,
   type TieAddDragDataProps,
-} from "../../../dnd/types";
+} from "../../../hooks/dnd/types";
 import NoteTieDragger from "./NoteTieDragger.vue";
+import { X } from "lucide-vue-next";
 
 const props = defineProps<{
   note: GuitarNote | undefined;
@@ -24,7 +25,7 @@ const props = defineProps<{
   position: number;
   tuning: Midi;
   frets: number;
-  collapse?: boolean;
+  collapsed: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -39,23 +40,18 @@ const cellHoverState = injectCellHoverEvents();
 const noteInputRef = ref<InstanceType<typeof NoteInput>>();
 const containerRef = ref<HTMLElement>();
 
-const isSelected = computed(() =>
-  selectionState.isSelected({ string: props.string, position: props.position }),
+const isSelected = ref(false);
+selectionState.addPositionListener(
+  { string: props.string, position: props.position },
+  (selected) => {
+    isSelected.value = selected;
+  },
 );
 
-const hovering = computed<boolean>(() => {
-  const hoveredCell = cellHoverState.hoveredCell.value;
-  return (
-    hoveredCell?.position === props.position &&
-    hoveredCell?.row === props.string
-  );
-});
-
+const isEditing = ref(false);
 const tieable = computed(
   () =>
-    props.note !== undefined &&
-    props.note.note !== "muted" &&
-    editing.isEditing({ string: props.string, position: props.position }),
+    props.note !== undefined && props.note.note !== "muted" && isSelected.value,
 );
 
 const dragData = computed(() => {
@@ -66,7 +62,7 @@ const dragData = computed(() => {
   };
 });
 
-const tieableDragData = computed<Omit<TieAddDragDataProps, "type"> | undefined>(
+const tieableDragData = computed<Omit<TieAddDragDataProps, "mode"> | undefined>(
   () => {
     if (!props.note) {
       return undefined;
@@ -90,7 +86,6 @@ onMounted(() => {
               position: props.position,
               string: props.string,
             }),
-          onDrop: () => {},
         }),
         draggable({
           element: containerRef.value!,
@@ -113,17 +108,42 @@ onMounted(() => {
   );
 });
 
-function onMouseDown(e: MouseEvent) {
-  if (!e.ctrlKey && !e.metaKey) {
-    selectionState.clearSelections();
-  }
-}
-
 function onNoteClick(e: MouseEvent) {
-  selectionState.selectNote({ string: props.string, position: props.position });
-  editing.setEditing({ string: props.string, position: props.position });
   noteInputRef.value?.focus();
 }
+
+// TODO: extract into a provider
+const ctrlState = useKeyModifier("Control");
+const metaState = useKeyModifier("Meta");
+function onNoteFocus() {
+  if (!ctrlState.value && !metaState.value) {
+    selectionState.clearSelections();
+  }
+  selectionState.selectNote({ string: props.string, position: props.position });
+  editing.setEditing({ string: props.string, position: props.position });
+  isEditing.value = true;
+}
+
+// onBeforeUpdate(() => {
+//   console.log("updated", props.position, props.string);
+// });
+
+// onRenderTriggered((e) => {
+//   console.log("render", props.position, props.string);
+// });
+
+// onRenderTracked((e) => {
+//   console.log("tracked", props.position, props.string, e);
+// });
+const noteText = computed(() => {
+  if (props.note) {
+    if (props.note.note === "muted") {
+      return "X";
+    }
+    return "" + (props.note.note - props.tuning);
+  }
+  return "";
+});
 </script>
 
 <template>
@@ -132,13 +152,11 @@ function onNoteClick(e: MouseEvent) {
     class="container"
     :class="{
       selected: isSelected && selectionState.action === 'none',
-      hovering,
       tieable,
-      collapse,
+      collapsed,
     }"
     :style="{ gridRow: string + 1 }"
     @click="onNoteClick"
-    @mousedown="onMouseDown"
     @mouseenter="cellHoverState.hover(string, position)"
   >
     <div class="selected-bg" />
@@ -150,7 +168,7 @@ function onNoteClick(e: MouseEvent) {
           note.note === 'muted' ? 'gray' : defaultColors[getChroma(note.note)],
       }"
     /> -->
-    <div v-if="note" class="note-block">{{ noteInputRef?.noteText }}</div>
+    <div v-if="note" class="note-block">{{ noteText }}</div>
     <div v-else class="fill-intersection" />
 
     <div class="string left" />
@@ -162,16 +180,24 @@ function onNoteClick(e: MouseEvent) {
     <NoteInput
       ref="noteInputRef"
       class="input"
+      :class="{
+        muted: note?.note === 'muted',
+      }"
       :data="note"
       :note-position="{ string, position }"
       :tuning="tuning"
       :frets="frets"
-      :hovering="hovering"
+      :note-text="noteText"
       :selected="isSelected && selectionState.action === 'none'"
+      @focus="onNoteFocus"
+      @blur="isEditing = false"
       @note-delete="emit('noteDelete')"
       @note-change="(updated) => emit('noteChange', { ...note, ...updated })"
     />
 
+    <X v-if="note?.note === 'muted'" :size="20" class="muted-icon" />
+
+    <!-- TODO: don't show dragger if already connected -->
     <template v-if="tieable && tieableDragData">
       <NoteTieDragger mode="tie" :drag-props="tieableDragData" />
       <NoteTieDragger mode="bend" :drag-props="tieableDragData" />
@@ -201,16 +227,21 @@ function onNoteClick(e: MouseEvent) {
   align-items: center;
   font-size: var(--note-font-size);
 
-  &.collapse {
-    container-type: size;
+  container-type: size;
+
+  min-width: var(--cell-height);
+  &.collapsed {
+    min-width: var(--collapsed-min-width);
   }
 
-  &:not(.collapse) {
-    min-width: var(--cell-height);
-    justify-self: center;
-    &.tieable {
-      min-width: calc(var(--cell-height) + 12px);
-    }
+  &.tieable {
+    min-width: calc(var(--cell-height) + 12px);
+  }
+
+  &:hover .input {
+    background-color: rgb(
+      from var(--note-hover-color) r g b / var(--select-alpha)
+    );
   }
 }
 
@@ -223,11 +254,18 @@ function onNoteClick(e: MouseEvent) {
 
 .input {
   grid-area: 1 / 1 / -1 / -1;
+  &.muted {
+    color: transparent;
+  }
 }
 
 .note-block {
   grid-area: 2 / 2;
   color: transparent;
+}
+
+.muted-icon {
+  grid-area: 1 / 1 / -1 / -1;
 }
 
 .string {
@@ -306,6 +344,11 @@ function onNoteClick(e: MouseEvent) {
   }
 }
 
+@container (aspect-ratio < 0.45) {
+  .pos-line {
+    display: none;
+  }
+}
 /* @container (aspect-ratio < 0.45) {
   .square {
     display: block;

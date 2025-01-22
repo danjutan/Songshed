@@ -7,6 +7,7 @@ import { injectEditingState } from "~/components/tab/providers/state/provide-edi
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import { TieType } from "~/model/data";
 import { injectTieAddState } from "~/components/tab/providers/state/provide-tie-add-state";
+import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 
 const props = defineProps<{
   tie: Tie;
@@ -15,6 +16,7 @@ const props = defineProps<{
 
 const { editingNote } = injectEditingState();
 const { hoveredCell } = injectCellHoverEvents();
+const settings = injectSettingsState();
 const tieAddState = injectTieAddState();
 
 const connected = computed(
@@ -59,6 +61,10 @@ const selectActive = computed(() => {
 
   return false;
 });
+
+const startRowTop = computed(
+  () => settings.contextMenuHeight + settings.cellHeight,
+);
 </script>
 
 <template>
@@ -75,7 +81,7 @@ const selectActive = computed(() => {
         :close="tie.type === TieType.TieSlide"
         :x1="from.center"
         :x2="to.center"
-        :y="(row - 0.2) * cellHeight"
+        :y="startRowTop + (row - 0.2) * cellHeight"
         :shift-label="overDivider"
       >
         <TieSelect
@@ -92,14 +98,14 @@ const selectActive = computed(() => {
         <line
           :x1="from.center + (from.right - from.left) * 0.4"
           :x2="to.center - (to.right - to.left) * 0.4"
-          :y1="slideRowStart * cellHeight"
-          :y2="slideRowEnd * cellHeight"
+          :y1="startRowTop + slideRowStart * cellHeight"
+          :y2="startRowTop + slideRowEnd * cellHeight"
         />
         <TieSelect
           v-if="tie.to !== tie.from && selectActive"
           active
           :x="(from.right + to.left) / 2 - 20"
-          :y="slideRowEnd * cellHeight"
+          :y="startRowTop + slideRowEnd * cellHeight"
           :tie
           @mouseenter="selectHovered = true"
           @mouseleave="selectHovered = false"

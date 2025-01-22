@@ -1,10 +1,6 @@
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import {
-  isNoteInputDragData,
-  isNoteInputDropData,
-  isTieAddDragData,
-} from "./types";
-import type { TieAddState } from "../providers/state/provide-tie-add-state";
+import { isNoteInputDropData, isTieAddDragData } from "./types";
+import type { TieAddState } from "../../providers/state/provide-tie-add-state";
 
 export function useTieAddMonitor(tieAddState: TieAddState) {
   watchEffect((cleanup) => {

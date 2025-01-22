@@ -1,60 +1,42 @@
 <script lang="ts" setup>
 import type { GuitarNote } from "~/model/data";
-
 import { useTemplateRef } from "vue";
 import type { NotePosition } from "~/model/stores";
 
 const props = defineProps<{
   data?: GuitarNote;
+  noteText: string;
   notePosition: NotePosition;
   tuning: Midi;
   frets: number;
   startFocused?: boolean;
   selected?: boolean;
-  hovering?: boolean;
-  backgroundColor?: string;
 }>();
 
 const emit = defineEmits<{
   noteChange: [data: GuitarNote];
   noteDelete: [];
   // TODO: remove if unused
-  focus: [];
-  blur: [];
+  focus: [e: FocusEvent];
+  blur: [e: FocusEvent];
 }>();
 
 const input = useTemplateRef("input");
 
-function onClick() {
-  input.value!.select();
-  // emit("focus");
-  input.value!.focus();
-}
-
-function onMouseDown(e: MouseEvent) {
-  // input.value!.blur();
-}
-
 onMounted(() => {
   if (props.startFocused) {
     input.value!.focus();
-    onClick();
   }
 });
 
-function onBlur(e: Event) {
-  emit("blur");
+function onFocus(e: FocusEvent) {
+  input.value!.select();
+  emit("focus", e);
 }
 
-const noteText = computed(() => {
-  if (props.data) {
-    if (props.data.note === "muted") {
-      return "⨯";
-    }
-    return (props.data.note - props.tuning) as Midi;
-  }
-  return "";
-});
+function onBlur(e: FocusEvent) {
+  emit("blur", e);
+}
 
 // const hasNote = computed(() => noteText.value !== "");
 
@@ -71,19 +53,18 @@ function onInput(e: Event) {
   const num = parseInt(target.value);
   if (Number.isInteger(num)) {
     if (num < 1 || num > props.frets) {
-      target.value = `${noteText.value}`;
+      target.value = `${props.noteText}`;
       return;
     }
     emit("noteChange", { note: (props.tuning + num) as Midi });
     return;
   }
-  target.value = `${noteText.value}`;
+  target.value = `${props.noteText}`;
 }
 
 defineExpose({
   blur: () => input.value!.blur(),
   focus: () => input.value!.focus(),
-  noteText,
 });
 </script>
 
@@ -92,11 +73,8 @@ defineExpose({
     ref="container"
     class="note-input"
     :class="{
-      hovering,
       selected,
     }"
-    @click="onClick"
-    @mousedown="onMouseDown"
   >
     <input
       ref="input"
@@ -106,6 +84,7 @@ defineExpose({
       pattern="[0-9]{1,2}"
       @input="onInput"
       @blur="onBlur"
+      @focus="onFocus"
       @keyup="(e) => e.stopPropagation()"
     />
   </div>

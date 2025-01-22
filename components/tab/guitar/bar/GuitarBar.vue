@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
 import Stack from "./stack/Stack.vue";
-import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
-import { injectEditingState } from "../../providers/state/provide-editing-state";
 import type { NotePosition } from "~/model/stores";
 import SelectionRegions from "./selections/SelectionRegions.vue";
 
@@ -22,27 +20,8 @@ const emit = defineEmits<{
   noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
 
-const settings = injectSettingsState();
-const editing = injectEditingState();
-
-const isSubdivision = (position: number) => position % props.beatSize !== 0;
-
-// const expanded = reactive<Set<number>>(new Set());
-
-const collapsed = computed<Set<number>>(() => {
-  const positions = new Set<number>(
-    [...props.stackData]
-      .filter(([position, stack]) => {
-        // if (expanded.has(position)) return false;
-        if (editing.editingNote.value?.position === position) return false;
-        if (settings.collapseAll) return true;
-        if (settings.collapseEmpty && stack.size === 0) return true;
-        if (settings.collapseSubdivisions && isSubdivision(position))
-          return true;
-      })
-      .map(([position, _]) => position),
-  );
-  return positions;
+onBeforeUpdate(() => {
+  console.log("updated bar");
 });
 </script>
 
@@ -52,13 +31,14 @@ const collapsed = computed<Set<number>>(() => {
     :key="position"
   >
     <Stack
+      ref="stacks"
       :style="{
         gridColumn: startColumn + i,
         gridRow: `${startRow} / span ${numStrings}`,
       }"
+      :on-beat="position % beatSize === 0"
       :notes="stack"
       :position="position"
-      :collapse="collapsed.has(position)"
       :tuning
       :frets
       @note-change="

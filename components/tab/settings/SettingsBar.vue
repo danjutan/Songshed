@@ -48,8 +48,8 @@ const saveId = ref(props.id);
         </option>
       </select>
     </div>
-    Bars per line:
-    <input v-model="settings.barsPerLine" type="number" />
+    <!-- Bars per line:
+    <input v-model="settings.barsPerLine" type="number" /> -->
     Subdivisions:
     <input v-model="settings.subdivisions" type="number" />
     <label for="collapse-subdivisions">Collapse subdivisions</label>

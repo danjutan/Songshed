@@ -1,22 +1,24 @@
 export function provideSettingsState() {
   const settings = reactive({
-    barsPerLine: 2,
+    // barsPerLine: 4,
     subdivisions: 4, // per beat
     collapseSubdivisions: false,
     collapseEmpty: false,
     collapseAll: true,
+    collapseRatio: 0.1, // for resizing,
     // pixels:
     cellHeight: 24,
     contextMenuHeight: 18,
+    collapsedMinWidth: 5,
   });
 
   provide(SettingsInjectionKey, settings);
   return settings;
 }
 
-type Settings = ReturnType<typeof provideSettingsState>;
-const SettingsInjectionKey = Symbol() as InjectionKey<Settings>;
+export type SettingsState = ReturnType<typeof provideSettingsState>;
+const SettingsInjectionKey = Symbol() as InjectionKey<SettingsState>;
 
 export function injectSettingsState() {
-  return inject(SettingsInjectionKey) as Settings;
+  return inject(SettingsInjectionKey) as SettingsState;
 }
