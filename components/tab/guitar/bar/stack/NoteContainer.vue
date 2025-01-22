@@ -20,6 +20,7 @@ import NoteTieDragger from "./NoteTieDragger.vue";
 import { X } from "lucide-vue-next";
 import { injectTieAddState } from "@/components/tab/providers/state/provide-tie-add-state";
 import type { NotePosition } from "~/model/stores";
+import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 const props = defineProps<{
   note: GuitarNote | undefined;
   notePosition: NotePosition;
@@ -37,6 +38,7 @@ const editing = injectEditingState();
 const selectionState = injectSelectionState();
 const cellHoverState = injectCellHoverEvents();
 const { hasTieBothSides, hasBend } = injectTieAddState();
+const settings = injectSettingsState();
 
 const noteInputRef = ref<InstanceType<typeof NoteInput>>();
 const containerRef = ref<HTMLElement>();
@@ -181,6 +183,7 @@ const noteText = computed(() => {
       tieable,
       tieing,
       collapsed,
+      'pos-line-center': settings.posLineCenter,
     }"
     :style="{ gridRow: notePosition.string + 1 }"
     @click="onClick"
@@ -204,8 +207,10 @@ const noteText = computed(() => {
     <div class="string left" />
     <div class="string right" />
 
-    <div class="pos-line top" />
-    <div class="pos-line bottom" />
+    <template v-if="settings.posLineCenter">
+      <div class="pos-line top" />
+      <div class="pos-line bottom" />
+    </template>
 
     <NoteInput
       ref="noteInputRef"
@@ -327,10 +332,11 @@ const noteText = computed(() => {
 }
 
 .pos-line {
-  width: 1px;
+  width: var(--pos-line-width);
   height: 100%;
   background-color: var(--pos-line-color);
-  justify-self: center;
+  /* justify-self: center; */
+  justify-self: end;
 
   &.top {
     grid-area: 1 / 2;

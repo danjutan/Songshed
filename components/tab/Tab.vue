@@ -214,9 +214,10 @@ onBeforeUnmount(() => {
   --note-font-size: calc(var(--cell-height) * 0.8);
   --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);
+  --pos-line-width: 1px;
   --string-width: 1px;
-  --string-color: gray;
   --pos-line-color: lightgray;
+  --string-color: gray;
   --note-hover-color: rgb(172, 206, 247);
 
   --select-alpha: 0.3;

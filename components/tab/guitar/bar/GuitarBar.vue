@@ -4,6 +4,10 @@ import Stack from "./stack/Stack.vue";
 import type { NotePosition } from "~/model/stores";
 import SelectionRegions from "./selections/SelectionRegions.vue";
 
+import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
+
+const settings = injectSettingsState();
+
 const props = defineProps<{
   stackData: StackMap<GuitarNote>;
   subUnit: number;
@@ -35,6 +39,10 @@ onBeforeUpdate(() => {
       :style="{
         gridColumn: startColumn + i,
         gridRow: `${startRow} / span ${numStrings}`,
+        ...(!settings.posLineCenter &&
+          i < stackData.size - 1 && {
+            borderRight: `var(--pos-line-width) solid var(--pos-line-color)`,
+          }),
       }"
       :on-beat="position % beatSize === 0"
       :notes="stack"

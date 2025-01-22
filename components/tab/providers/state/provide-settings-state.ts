@@ -1,6 +1,5 @@
 export function provideSettingsState() {
   const settings = reactive({
-    // barsPerLine: 4,
     subdivisions: 4, // per beat
     collapseSubdivisions: false,
     collapseEmpty: false,
@@ -10,6 +9,8 @@ export function provideSettingsState() {
     cellHeight: 24,
     contextMenuHeight: 18,
     collapsedMinWidth: 5,
+    // flags
+    posLineCenter: true,
   });
 
   provide(SettingsInjectionKey, settings);
