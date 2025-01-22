@@ -136,6 +136,10 @@ function onNoteBlur() {
   isEditing.value = false;
 }
 
+// Handles the case where the user drags the text of the note input itself, rather than the `draggable`
+function onNoteDragStart() {
+  isEditing.value = false;
+}
 // onBeforeUpdate(() => {
 //   console.log("updated", props.position, props.string);
 // });
@@ -204,6 +208,7 @@ const noteText = computed(() => {
       :frets="frets"
       :note-text="noteText"
       :selected="isSelected && selectionState.action === 'none'"
+      @dragstart="onNoteDragStart"
       @focus="onNoteFocus"
       @blur="onNoteBlur"
       @note-delete="emit('noteDelete')"

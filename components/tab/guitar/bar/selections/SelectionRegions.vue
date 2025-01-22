@@ -15,12 +15,16 @@ const inBounds = (region: RegionBounds) => {
     region.maxPosition <= tablineBounds.last
   );
 };
+
+const oneNote = computed(() => selectionState.selectedPositions.length === 1);
 </script>
 
 <template>
-  <SelectionRegion
-    v-for="region in selectionState.regions.filter(inBounds)"
-    :key="`${region.minString}-${region.minPosition}-${region.maxString}-${region.maxPosition}`"
-    :region="region"
-  />
+  <template v-if="!oneNote">
+    <SelectionRegion
+      v-for="region in selectionState.regions.filter(inBounds)"
+      :key="`${region.minString}-${region.minPosition}-${region.maxString}-${region.maxPosition}`"
+      :region="region"
+    />
+  </template>
 </template>

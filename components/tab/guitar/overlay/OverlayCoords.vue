@@ -51,6 +51,6 @@ const toCoords = (position: number): StackCoords | undefined => {
       positions.map((pos) => (pos !== undefined ? toCoords(pos) : undefined))
     "
     :cell-height
-    :right-edge="getStackCoords(bounds.last)?.right"
+    :right-edge="getStackCoords(bounds.last)?.right || Infinity"
   />
 </template>

@@ -82,6 +82,7 @@ defineExpose({
       type="text"
       inputmode="numeric"
       pattern="[0-9]{1,2}"
+      @dragstart="console.log('drag start')"
       @input="onInput"
       @blur="onBlur"
       @focus="onFocus"
