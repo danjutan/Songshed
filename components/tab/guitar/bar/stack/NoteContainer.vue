@@ -77,6 +77,10 @@ const tieableDragData = computed<Omit<TieAddDragDataProps, "mode"> | undefined>(
   },
 );
 
+// TODO: extract into a provider
+const ctrlState = useKeyModifier("Control");
+const metaState = useKeyModifier("Meta");
+
 onMounted(() => {
   watchEffect((cleanup) =>
     cleanup(
@@ -110,13 +114,19 @@ onMounted(() => {
   );
 });
 
-function onNoteClick(e: MouseEvent) {
+function onClick(e: MouseEvent) {
   noteInputRef.value?.focus();
 }
 
-// TODO: extract into a provider
-const ctrlState = useKeyModifier("Control");
-const metaState = useKeyModifier("Meta");
+// Makes sure we clear the selection when we start draggging.
+// We want this to happen early - this isn't in onDragStart because if it was, if the note was dragged from the input,
+// it would select itself, then visibly unselect itself before selecting again
+function onMouseDown(e: MouseEvent) {
+  if (!ctrlState.value && !metaState.value) {
+    selectionState.clearSelections();
+  }
+}
+
 function onNoteFocus() {
   if (!ctrlState.value && !metaState.value) {
     selectionState.clearSelections();
@@ -173,7 +183,8 @@ const noteText = computed(() => {
       collapsed,
     }"
     :style="{ gridRow: notePosition.string + 1 }"
-    @click="onNoteClick"
+    @click="onClick"
+    @mousedown="onMouseDown"
     @mouseenter="
       cellHoverState.hover(notePosition.string, notePosition.position)
     "
