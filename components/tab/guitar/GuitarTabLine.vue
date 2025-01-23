@@ -58,7 +58,7 @@ const centeredOverDivider = (from: number, to: number) => {
   const dividerBetween = barStarts.value.find(
     (start) => start > from && start <= to,
   )!;
-  return to + props.subUnit - dividerBetween === dividerBetween - from;
+  return to + subUnit.value - dividerBetween === dividerBetween - from;
 };
 
 const columnEnd = computed(

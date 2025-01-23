@@ -3,7 +3,7 @@ import type { Bar } from "./Tab.vue";
 import type { TabStore } from "~/model/stores";
 import Toolbar from "./Toolbar.vue";
 import Divider from "./BarDivider.vue";
-import GuitarTabline from "./guitar/GuitarTabline.vue";
+import GuitarTabline from "@/components/tab/guitar/GuitarTabLine.vue";
 import { useTemplateColumns } from "./hooks/use-tabline-columns";
 import { injectStackResizeObserver } from "./providers/events/provide-resize-observer";
 import { injectSettingsState } from "./providers/state/provide-settings-state";
@@ -80,10 +80,7 @@ onMounted(() => {
       :tabline="tabline"
       :tabline-index="tablineIndex"
       @new-annotation-row-clicked="tabStore.annotations.createNextRow"
-      @delete-annotation-clicked="
-        (row, annotation) =>
-          tabStore.annotations.deleteAnnotation(row, annotation)
-      "
+      @delete-annotation-clicked="tabStore.annotations.deleteAnnotation"
     />
     <GuitarTabline
       v-if="tabStore.guitar"
