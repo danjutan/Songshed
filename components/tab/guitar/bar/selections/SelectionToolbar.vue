@@ -4,7 +4,7 @@ import { Delete } from "lucide-vue-next";
 import { injectSelectionState } from "@/components/tab/providers/state/provide-selection-state";
 const selectionState = injectSelectionState();
 
-const isOneNote = computed(() => selectionState.selectedPositions.length === 1);
+const isOneNote = computed(() => selectionState.selections.size === 1);
 const isEmpty = computed(() => selectionState.isEmpty());
 </script>
 

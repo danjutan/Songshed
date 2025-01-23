@@ -21,6 +21,7 @@ import { provideAnnotationAddState } from "./providers/state/annotations/provide
 import { provideAnnotationRenderState } from "./providers/state/annotations/provide-annotation-render-state";
 
 import { useWindowResizing } from "./hooks/use-window-resizing";
+import { provideNotePreviewState } from "./providers/state/provide-note-preview-state";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -47,6 +48,7 @@ const selectionState = provideSelectionState(
     barSize,
   })),
 );
+provideNotePreviewState(selectionState, props.tabStore.guitar!);
 const editingState = provideEditingState();
 
 const tieAddState = provideTieAddState(

@@ -1,10 +1,13 @@
 import type { GuitarNote } from "~/model/data";
 import type { GuitarStore, NotePosition } from "~/model/stores";
 
-type NotePositionKey = `${number}-${number}`;
+export type NotePositionKey = `${number}-${number}`;
 export const notePositionKey = (position: NotePosition): NotePositionKey =>
   `${position.string}-${position.position}`;
-
+export const notePositionKeyFromKey = (key: NotePositionKey): NotePosition => {
+  const [string, position] = key.split("-").map(Number);
+  return { string, position };
+};
 // The rectangular boundary of a contiguous set of selected notes.
 export interface RegionBounds {
   minPosition: number;
@@ -41,7 +44,7 @@ function getRegionBounds(start: NotePosition, end: NotePosition): RegionBounds {
 type SelectionAction = "might-delete" | "might-move" | "moving" | "none";
 
 export interface SelectionState {
-  selectedPositions: NotePosition[];
+  selections: Set<NotePositionKey>;
   startSelection: (position: NotePosition) => void;
   endSelection: () => void;
   addSelection: (position: NotePosition) => void;
@@ -80,8 +83,7 @@ export function provideSelectionState(
   const selections = reactive<Set<NotePositionKey>>(new Set());
   const selectedPositions = reactiveComputed<NotePosition[]>(() => {
     return Array.from(selections).map((key) => {
-      const [string, position] = key.split("-").map(Number);
-      return { string, position };
+      return notePositionKeyFromKey(key);
     });
   });
 
@@ -300,6 +302,7 @@ export function provideSelectionState(
     }
 
     for (const { notePosition, note } of selectedNotes) {
+      // TODO: extract this logic (combine with logic in provide-note-preview-state)
       const newPos = {
         string: notePosition.string + stringDiff,
         position: notePosition.position + positionDiff,
@@ -308,6 +311,7 @@ export function provideSelectionState(
         guitar.setNote(newPos, { note: "muted" });
         continue;
       }
+
       const newMidi = (note.note +
         (guitar.tuning[newPos.string] -
           guitar.tuning[notePosition.string])) as Midi;
@@ -340,7 +344,7 @@ export function provideSelectionState(
   }
 
   const selectionState: SelectionState = {
-    selectedPositions,
+    selections,
     selectNote,
     startSelection,
     endSelection,

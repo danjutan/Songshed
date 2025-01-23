@@ -16,7 +16,7 @@ const inBounds = (region: RegionBounds) => {
   );
 };
 
-const oneNote = computed(() => selectionState.selectedPositions.length === 1);
+const oneNote = computed(() => selectionState.selections.size === 1);
 </script>
 
 <template>
