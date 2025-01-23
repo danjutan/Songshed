@@ -1,10 +1,13 @@
 import type { GuitarNote } from "~/model/data";
 import type { GuitarStore, NotePosition } from "~/model/stores";
 
-type NotePositionKey = `${number}-${number}`;
+export type NotePositionKey = `${number}-${number}`;
 export const notePositionKey = (position: NotePosition): NotePositionKey =>
   `${position.string}-${position.position}`;
-
+export const notePositionKeyFromKey = (key: NotePositionKey): NotePosition => {
+  const [string, position] = key.split("-").map(Number);
+  return { string, position };
+};
 // The rectangular boundary of a contiguous set of selected notes.
 export interface RegionBounds {
   minPosition: number;
@@ -41,7 +44,7 @@ function getRegionBounds(start: NotePosition, end: NotePosition): RegionBounds {
 type SelectionAction = "might-delete" | "might-move" | "moving" | "none";
 
 export interface SelectionState {
-  selectedPositions: NotePosition[];
+  selections: Set<NotePositionKey>;
   startSelection: (position: NotePosition) => void;
   endSelection: () => void;
   addSelection: (position: NotePosition) => void;
@@ -50,7 +53,9 @@ export interface SelectionState {
   isEmpty: () => boolean;
   selectNote: (position: NotePosition) => void;
   startMove: (origin: NotePosition) => void;
-  endMove: (moveTo: NotePosition, copy?: boolean) => void;
+  moveOver: (moveTo: NotePosition) => void;
+  cancelMove: () => void;
+  endMove: (copy?: boolean) => void;
   // moveSelectionsIfValid: (moveTo: NotePosition) => void;
   deleteSelectedNotes: () => void;
   setAction: (action: SelectionAction) => void;
@@ -60,11 +65,13 @@ export interface SelectionState {
   ) => void;
   action: SelectionAction;
   regions: RegionBounds[];
+  movingOffset: Ref<{ deltaString: number; deltaPosition: number } | undefined>;
+  getFilledBounds: () => RegionBounds | undefined;
 }
 
 export function provideSelectionState(
   props: ReactiveComputed<{
-    guitar: GuitarStore | undefined;
+    guitar: GuitarStore;
     subUnit: number;
     barSize: number;
   }>,
@@ -74,16 +81,14 @@ export function provideSelectionState(
 
   const listeners = new Map<NotePositionKey, (selected: boolean) => void>();
 
-  const action = ref<SelectionAction>("none");
-  let moveAnchor: NotePosition | undefined;
-
   const selections = reactive<Set<NotePositionKey>>(new Set());
   const selectedPositions = reactiveComputed<NotePosition[]>(() => {
     return Array.from(selections).map((key) => {
-      const [string, position] = key.split("-").map(Number);
-      return { string, position };
+      return notePositionKeyFromKey(key);
     });
   });
+
+  const action = ref<SelectionAction>("none");
 
   function addPositionListener(
     position: NotePosition,
@@ -224,48 +229,78 @@ export function provideSelectionState(
     return selections.has(notePositionKey(position));
   }
 
+  const movingOffset = ref<
+    { deltaString: number; deltaPosition: number } | undefined
+  >();
+  let lastMoveTo: NotePosition;
+
   function startMove(origin: NotePosition): void {
-    moveAnchor = origin;
+    const bounds = getFilledBounds();
+    if (!bounds) return;
+
+    movingOffset.value = {
+      deltaString: origin.string - bounds.minString,
+      deltaPosition: 0,
+    };
+
+    lastMoveTo = origin;
+    action.value = "moving";
   }
 
-  // function endMove(): void {
-  //   moveAnchor = undefined;
-  //   action.value = "none";
-  // }
+  // watchEffect(() => {
+  //   console.log(movingOffset.value);
+  // });
 
-  function endMove(moveTo: NotePosition, copy?: boolean): void {
+  function isMoveOutOfBounds(moveTo: NotePosition): boolean {
+    const stringDiff = moveTo.string - lastMoveTo.string;
+    const positionDiff = moveTo.position - lastMoveTo.position;
+
+    const bounds = getFilledBounds();
+    if (!bounds) return false;
+
+    if (bounds.minString + stringDiff < 0) {
+      return true;
+    }
+    if (bounds.maxString + stringDiff >= props.guitar!.strings) {
+      return true;
+    }
+
+    if (bounds.minPosition + positionDiff < 0) {
+      return true;
+    }
+
+    return false;
+  }
+
+  function moveOver(moveTo: NotePosition): void {
+    if (!movingOffset.value || isMoveOutOfBounds(moveTo)) return;
+    console.log("moveOver", moveTo, lastMoveTo);
+    movingOffset.value = {
+      deltaString:
+        movingOffset.value.deltaString + moveTo.string - lastMoveTo.string,
+      deltaPosition:
+        movingOffset.value.deltaPosition +
+        moveTo.position -
+        lastMoveTo.position,
+    };
+    lastMoveTo = moveTo;
+  }
+
+  function cancelMove(): void {
     action.value = "none";
-    const guitar = props.guitar;
-    if (!guitar || !moveAnchor) return;
+  }
 
-    const stringDiff = moveTo.string - moveAnchor.string;
-    const positionDiff = moveTo.position - moveAnchor.position;
+  function endMove(copy?: boolean): void {
+    action.value = "none";
+    if (!movingOffset.value) return;
 
-    if (stringDiff < 0) {
-      const minString = Math.min(...selectedPositions.map((p) => p.string));
-      if (minString + stringDiff < 0) {
-        return;
-      }
-    }
-
-    if (stringDiff > 0) {
-      const maxString = Math.max(...selectedPositions.map((p) => p.string));
-      if (maxString + stringDiff >= guitar.strings) {
-        return;
-      }
-    }
-
-    if (positionDiff < 0) {
-      const minPosition = Math.min(...selectedPositions.map((p) => p.position));
-      if (minPosition + positionDiff < 0) {
-        return;
-      }
-    }
+    const stringDiff = movingOffset.value.deltaString;
+    const positionDiff = movingOffset.value.deltaPosition;
 
     const selectedNotes = selectedPositions
       .map((pos) => ({
         notePosition: pos,
-        note: guitar.getNote(pos),
+        note: props.guitar.getNote(pos),
       }))
       .filter(
         (item): item is { notePosition: NotePosition; note: GuitarNote } =>
@@ -275,22 +310,24 @@ export function provideSelectionState(
     if (!copy) {
       selectedNotes
         .map(({ notePosition }) => notePosition)
-        .forEach(guitar.deleteNote);
+        .forEach(props.guitar!.deleteNote);
     }
 
     for (const { notePosition, note } of selectedNotes) {
+      // TODO: extract this logic (combine with logic in provide-note-preview-state)
       const newPos = {
         string: notePosition.string + stringDiff,
         position: notePosition.position + positionDiff,
       };
       if (note.note === "muted") {
-        guitar.setNote(newPos, { note: "muted" });
+        props.guitar.setNote(newPos, { note: "muted" });
         continue;
       }
+
       const newMidi = (note.note +
-        (guitar.tuning[newPos.string] -
-          guitar.tuning[notePosition.string])) as Midi;
-      guitar.setNote(newPos, { note: newMidi });
+        (props.guitar.tuning[newPos.string] -
+          props.guitar.tuning[notePosition.string])) as Midi;
+      props.guitar.setNote(newPos, { note: newMidi });
     }
 
     clearSelections();
@@ -302,7 +339,7 @@ export function provideSelectionState(
         }),
       );
     }
-    moveAnchor = moveTo;
+    // moveAnchor = moveTo;
   }
 
   function deleteSelectedNotes(): void {
@@ -317,8 +354,26 @@ export function provideSelectionState(
     action.value = "none";
   }
 
+  function getFilledBounds(): RegionBounds | undefined {
+    if (selectedPositions.length === 0) return;
+
+    const selectedWithNotes = selectedPositions
+      .filter((pos) => props.guitar.getNote(pos))
+      .map((pos) => ({
+        string: pos.string,
+        position: pos.position,
+      }));
+
+    return {
+      minString: Math.min(...selectedWithNotes.map((p) => p.string)),
+      maxString: Math.max(...selectedWithNotes.map((p) => p.string)),
+      minPosition: Math.min(...selectedWithNotes.map((p) => p.position)),
+      maxPosition: Math.max(...selectedWithNotes.map((p) => p.position)),
+    };
+  }
+
   const selectionState: SelectionState = {
-    selectedPositions,
+    selections,
     selectNote,
     startSelection,
     endSelection,
@@ -331,12 +386,16 @@ export function provideSelectionState(
     deleteSelectedNotes,
     regions,
     addPositionListener,
+    moveOver,
+    cancelMove,
+    movingOffset,
     get action() {
       return action.value;
     },
     setAction: (value: SelectionAction) => {
       action.value = value;
     },
+    getFilledBounds,
   };
 
   provide(SelectionInjectionKey, selectionState);

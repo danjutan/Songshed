@@ -4,30 +4,42 @@ import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
 import { getNoteInputDragData } from "../../../hooks/dnd/types";
-import { injectSelectionState } from "../../../providers/state/provide-selection-state";
+import {
+  injectSelectionState,
+  type RegionBounds,
+} from "../../../providers/state/provide-selection-state";
 import { injectCellHoverEvents } from "../../../providers/events/provide-cell-hover-events";
 import type { NotePosition } from "~/model/stores";
+import { injectSubUnit } from "~/components/tab/providers/provide-subunit";
 
 const draggableRef = useTemplateRef("dragger");
 const selectionState = injectSelectionState();
-const cellHoverEvents = injectCellHoverEvents();
+const subUnit = injectSubUnit();
+const props = defineProps<{
+  region: RegionBounds;
+}>();
 
 onMounted(() => {
   watchEffect((cleanup) => {
     cleanup(
       draggable({
         element: draggableRef.value!,
+        onGenerateDragPreview: ({ nativeSetDragImage }) => {
+          disableNativeDragPreview({ nativeSetDragImage });
+          preventUnhandled.start();
+        },
         getInitialData: (args) => {
-          const hoveredPosition = cellHoverEvents.hoveredNote.value!;
-          // TODO: this is a little hacky; maybe the anchor should be (one of the) midpoints of the current selection region
-          const anchor: NotePosition = selectionState.isSelectedPosition(
-            hoveredPosition,
-          )
-            ? hoveredPosition
-            : {
-                position: hoveredPosition.position,
-                string: hoveredPosition.string + 1,
-              };
+          const midPosition =
+            Math.round(
+              (props.region.minPosition + props.region.maxPosition) /
+                2 /
+                subUnit.value,
+            ) * subUnit.value;
+
+          const anchor: NotePosition = {
+            string: props.region.minString,
+            position: midPosition,
+          };
 
           return getNoteInputDragData({
             ...anchor,
@@ -38,14 +50,20 @@ onMounted(() => {
     );
   });
 });
+
+function onMouseEnter() {
+  selectionState.setAction("might-move");
+}
+
+function onMouseLeave() {
+  if (selectionState.action === "might-move") {
+    selectionState.setAction("none");
+  }
+}
 </script>
 
 <template>
-  <div
-    ref="dragger"
-    @mouseenter="selectionState.setAction('might-move')"
-    @mouseleave="selectionState.setAction('none')"
-  >
+  <div ref="dragger" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
     <Grip :size="16" />
   </div>
 </template>

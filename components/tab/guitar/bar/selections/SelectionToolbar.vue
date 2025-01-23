@@ -1,11 +1,16 @@
 <script lang="ts" setup>
 import MoveDragger from "./MoveDragger.vue";
 import { Delete } from "lucide-vue-next";
-import { injectSelectionState } from "@/components/tab/providers/state/provide-selection-state";
+import {
+  injectSelectionState,
+  type RegionBounds,
+} from "@/components/tab/providers/state/provide-selection-state";
 const selectionState = injectSelectionState();
-
-const isOneNote = computed(() => selectionState.selectedPositions.length === 1);
+const isOneNote = computed(() => selectionState.selections.size === 1);
 const isEmpty = computed(() => selectionState.isEmpty());
+const props = defineProps<{
+  region: RegionBounds;
+}>();
 </script>
 
 <template>
@@ -20,7 +25,7 @@ const isEmpty = computed(() => selectionState.isEmpty());
       <Delete class="delete-icon" :size="16" />
     </button>
     <button v-if="!isEmpty" class="selection-toolbar-button">
-      <MoveDragger />
+      <MoveDragger :region="region" />
     </button>
   </div>
 </template>

@@ -46,7 +46,7 @@ const isHovering = computed(() => {
 
 <template>
   <div class="selection-region">
-    <SelectionToolbar v-show="isHovering" />
+    <SelectionToolbar v-show="isHovering" :region />
   </div>
 </template>
 

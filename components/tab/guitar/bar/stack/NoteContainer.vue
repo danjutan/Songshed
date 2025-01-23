@@ -21,6 +21,7 @@ import { X } from "lucide-vue-next";
 import { injectTieAddState } from "@/components/tab/providers/state/provide-tie-add-state";
 import type { NotePosition } from "~/model/stores";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
+import { injectNotePreviewState } from "~/components/tab/providers/state/provide-note-preview-state";
 const props = defineProps<{
   note: GuitarNote | undefined;
   notePosition: NotePosition;
@@ -39,10 +40,14 @@ const selectionState = injectSelectionState();
 const cellHoverState = injectCellHoverEvents();
 const { hasTieBothSides, hasBend } = injectTieAddState();
 const settings = injectSettingsState();
+const { useNotePreview } = injectNotePreviewState();
 
 const noteInputRef = ref<InstanceType<typeof NoteInput>>();
 const containerRef = ref<HTMLElement>();
 
+const notePreview = useNotePreview(props.notePosition);
+
+// TODO: investigate whether we really need this for performance (vs. a reactive useIsSelected hook)
 const isSelected = ref(false);
 selectionState.addPositionListener(
   { string: props.notePosition.string, position: props.notePosition.position },
@@ -164,11 +169,12 @@ function onNoteDragStart() {
 //   console.log("tracked", props.position, props.string, e);
 // });
 const noteText = computed(() => {
-  if (props.note) {
-    if (props.note.note === "muted") {
+  const sourceData = notePreview.value ?? props.note;
+  if (sourceData) {
+    if (sourceData.note === "muted") {
       return "X";
     }
-    return "" + (props.note.note - props.tuning);
+    return "" + (sourceData.note - props.tuning);
   }
   return "";
 });
@@ -201,7 +207,13 @@ const noteText = computed(() => {
           note.note === 'muted' ? 'gray' : defaultColors[getChroma(note.note)],
       }"
     /> -->
-    <div v-if="note" class="note-block">{{ noteText }}</div>
+    <div
+      v-if="note || notePreview"
+      class="note-block"
+      :class="{ preview: notePreview }"
+    >
+      {{ noteText }}
+    </div>
     <div v-else class="fill-intersection" />
 
     <div class="string left" />
@@ -213,6 +225,7 @@ const noteText = computed(() => {
     </template>
 
     <NoteInput
+      v-if="!notePreview"
       ref="noteInputRef"
       class="input"
       :class="{
@@ -310,6 +323,10 @@ const noteText = computed(() => {
 .note-block {
   grid-area: 2 / 2;
   color: transparent;
+  &.preview {
+    color: black;
+    opacity: 0.5;
+  }
 }
 
 .muted-icon {
@@ -335,8 +352,7 @@ const noteText = computed(() => {
   width: var(--pos-line-width);
   height: 100%;
   background-color: var(--pos-line-color);
-  /* justify-self: center; */
-  justify-self: end;
+  justify-self: center;
 
   &.top {
     grid-area: 1 / 2;

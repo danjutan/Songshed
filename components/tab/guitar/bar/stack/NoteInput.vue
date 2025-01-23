@@ -95,6 +95,7 @@ input {
   all: unset;
   max-width: var(--cell-height);
   text-align: center;
+  height: var(--cell-height);
   /* width: min-content; */
 }
 </style>
