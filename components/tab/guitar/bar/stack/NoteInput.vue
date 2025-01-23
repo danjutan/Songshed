@@ -93,7 +93,6 @@ defineExpose({
 <style scoped>
 input {
   all: unset;
-  height: var(--cell-height);
   max-width: var(--cell-height);
   text-align: center;
   /* width: min-content; */

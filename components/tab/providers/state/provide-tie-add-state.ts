@@ -86,19 +86,20 @@ export function provideTieAddState(
     if (!props.store || !mode.value) return;
 
     const { from, to } = validPositions.value;
+    const [start, end] = [from, to].sort((a, b) => a - b);
     const string = dragString.value;
 
     if (mode.value === "bend") {
-      props.store.ties.setTie(string, from, {
+      props.store.ties.setTie(string, start, {
         type: "bend",
-        to,
+        to: end,
         releaseType: "connect",
         bend: 1,
       });
     } else if (to !== from) {
-      props.store.ties.setTie(string, from, {
+      props.store.ties.setTie(string, start, {
         type: defaultTieType,
-        to,
+        to: end,
       });
     }
 
@@ -114,7 +115,11 @@ export function provideTieAddState(
     if (!tieOut || tieOut.type === "bend") return false;
     const tieIn = props.store.ties
       .getTies()
-      .find((tie) => tie.to === notePosition.position);
+      .find(
+        (tie) =>
+          tie.string === notePosition.string &&
+          tie.to === notePosition.position,
+      );
     return !!tieIn;
   }
 

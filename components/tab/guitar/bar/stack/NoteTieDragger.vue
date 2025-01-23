@@ -68,7 +68,7 @@ onMounted(() => {
     grid-column: 2;
     justify-self: center;
     align-self: end;
-    transform: translateY(calc(var(--context-menu-height) / 4));
+    transform: translateY(4px);
   }
 
   &.bend {

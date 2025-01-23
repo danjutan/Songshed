@@ -81,7 +81,7 @@ const startRowTop = computed(
         :close="tie.type === TieType.TieSlide"
         :x1="from.center"
         :x2="to.center"
-        :y="startRowTop + (row - 0.2) * cellHeight"
+        :y="startRowTop + row * cellHeight - 1"
         :shift-label="overDivider"
       >
         <TieSelect
