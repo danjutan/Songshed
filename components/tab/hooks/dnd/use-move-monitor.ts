@@ -28,16 +28,18 @@ export function useMoveMonitor(selectionState: SelectionState) {
           }
         },
         onDrop(args) {
-          if (args.location.current.dropTargets.length > 0) {
-            const dropData = args.location.current.dropTargets[0].data;
-            if (isNoteInputDropData(dropData)) {
-              // copy modifier only works on Safari :( TODO: Workaround on Chrome, which cancels the drag altogether
-              const { metaKey, ctrlKey } = args.location.current.input;
-              selectionState.endMove(dropData, metaKey || ctrlKey);
-            }
-            return;
-          }
-          selectionState.cancelMove();
+          // if (args.location.current.dropTargets.length > 0) {
+          //   const dropData = args.location.current.dropTargets[0].data;
+          //   if (isNoteInputDropData(dropData)) {
+          //     // copy modifier only works on Safari :( TODO: Workaround on Chrome, which cancels the drag altogether
+          //     const { metaKey, ctrlKey } = args.location.current.input;
+          //     selectionState.endMove(metaKey || ctrlKey);
+          //   }
+          //   return;
+          // }
+          // TODO: what behavior do we want when the pointer goes off tab?
+          // selectionState.cancelMove();
+          selectionState.endMove();
         },
       }),
     );

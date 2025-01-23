@@ -55,7 +55,7 @@ export interface SelectionState {
   startMove: (origin: NotePosition) => void;
   moveOver: (moveTo: NotePosition) => void;
   cancelMove: () => void;
-  endMove: (moveTo: NotePosition, copy?: boolean) => void;
+  endMove: (copy?: boolean) => void;
   // moveSelectionsIfValid: (moveTo: NotePosition) => void;
   deleteSelectedNotes: () => void;
   setAction: (action: SelectionAction) => void;
@@ -70,7 +70,7 @@ export interface SelectionState {
 
 export function provideSelectionState(
   props: ReactiveComputed<{
-    guitar: GuitarStore | undefined;
+    guitar: GuitarStore;
     subUnit: number;
     barSize: number;
   }>,
@@ -280,18 +280,17 @@ export function provideSelectionState(
     action.value = "none";
   }
 
-  function endMove(moveTo: NotePosition, copy?: boolean): void {
+  function endMove(copy?: boolean): void {
     action.value = "none";
-    const guitar = props.guitar;
-    if (!guitar || !moveAnchor || isMoveOutOfBounds(moveTo)) return;
+    if (!movingOffset.value) return;
 
-    const stringDiff = moveTo.string - moveAnchor.string;
-    const positionDiff = moveTo.position - moveAnchor.position;
+    const stringDiff = movingOffset.value.deltaString;
+    const positionDiff = movingOffset.value.deltaPosition;
 
     const selectedNotes = selectedPositions
       .map((pos) => ({
         notePosition: pos,
-        note: guitar.getNote(pos),
+        note: props.guitar.getNote(pos),
       }))
       .filter(
         (item): item is { notePosition: NotePosition; note: GuitarNote } =>
@@ -301,7 +300,7 @@ export function provideSelectionState(
     if (!copy) {
       selectedNotes
         .map(({ notePosition }) => notePosition)
-        .forEach(guitar.deleteNote);
+        .forEach(props.guitar!.deleteNote);
     }
 
     for (const { notePosition, note } of selectedNotes) {
@@ -311,14 +310,14 @@ export function provideSelectionState(
         position: notePosition.position + positionDiff,
       };
       if (note.note === "muted") {
-        guitar.setNote(newPos, { note: "muted" });
+        props.guitar.setNote(newPos, { note: "muted" });
         continue;
       }
 
       const newMidi = (note.note +
-        (guitar.tuning[newPos.string] -
-          guitar.tuning[notePosition.string])) as Midi;
-      guitar.setNote(newPos, { note: newMidi });
+        (props.guitar.tuning[newPos.string] -
+          props.guitar.tuning[notePosition.string])) as Midi;
+      props.guitar.setNote(newPos, { note: newMidi });
     }
 
     clearSelections();
