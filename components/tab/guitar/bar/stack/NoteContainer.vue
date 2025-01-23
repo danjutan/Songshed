@@ -100,22 +100,24 @@ onMounted(() => {
               string: props.notePosition.string,
             }),
         }),
-        draggable({
-          element: containerRef.value!,
-          onGenerateDragPreview: ({ nativeSetDragImage }) => {
-            disableNativeDragPreview({ nativeSetDragImage });
-            preventUnhandled.start();
-          },
-          onDragStart: () => {
-            noteInputRef.value?.blur();
-          },
-          getInitialData: () => {
-            return getNoteInputDragData({
-              ...dragData.value,
-              dragType: "select",
-            });
-          },
-        }),
+        ...[containerRef.value!, noteInputRef.value!.el].map((el) =>
+          draggable({
+            element: el,
+            onGenerateDragPreview: ({ nativeSetDragImage }) => {
+              disableNativeDragPreview({ nativeSetDragImage });
+              preventUnhandled.start();
+            },
+            onDragStart: () => {
+              noteInputRef.value?.blur();
+            },
+            getInitialData: () => {
+              return getNoteInputDragData({
+                ...dragData.value,
+                dragType: "select",
+              });
+            },
+          }),
+        ),
       ),
     ),
   );
@@ -154,7 +156,7 @@ function onNoteBlur() {
 }
 
 // Handles the case where the user drags the text of the note input itself, rather than the `draggable`
-function onNoteDragStart() {
+function onNoteDragStart(e: DragEvent) {
   isEditing.value = false;
 }
 // onBeforeUpdate(() => {

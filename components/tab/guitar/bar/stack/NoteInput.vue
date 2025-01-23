@@ -65,6 +65,7 @@ function onInput(e: Event) {
 defineExpose({
   blur: () => input.value!.blur(),
   focus: () => input.value!.focus(),
+  el: input,
 });
 </script>
 
