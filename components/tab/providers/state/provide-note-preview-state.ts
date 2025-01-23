@@ -23,7 +23,10 @@ export function provideNotePreviewState(
   const notePreviews = computed(() => {
     const previews: Record<NotePositionKey, GuitarNote> = {};
 
-    if (!selectionState.movingOffset.value) {
+    if (
+      selectionState.action !== "moving" ||
+      !selectionState.movingOffset.value
+    ) {
       return previews;
     }
 

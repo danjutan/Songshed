@@ -17,6 +17,10 @@ onMounted(() => {
     cleanup(
       draggable({
         element: draggableRef.value!,
+        onGenerateDragPreview: ({ nativeSetDragImage }) => {
+          disableNativeDragPreview({ nativeSetDragImage });
+          preventUnhandled.start();
+        },
         getInitialData: (args) => {
           const hoveredPosition = cellHoverEvents.hoveredNote.value!;
           // TODO: this is a little hacky; maybe the anchor should be (one of the) midpoints of the current selection region
@@ -38,14 +42,20 @@ onMounted(() => {
     );
   });
 });
+
+function onMouseEnter() {
+  selectionState.setAction("might-move");
+}
+
+function onMouseLeave() {
+  if (selectionState.action === "might-move") {
+    selectionState.setAction("none");
+  }
+}
 </script>
 
 <template>
-  <div
-    ref="dragger"
-    @mouseenter="selectionState.setAction('might-move')"
-    @mouseleave="selectionState.setAction('none')"
-  >
+  <div ref="dragger" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
     <Grip :size="16" />
   </div>
 </template>

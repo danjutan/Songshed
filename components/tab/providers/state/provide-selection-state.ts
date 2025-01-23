@@ -88,6 +88,7 @@ export function provideSelectionState(
   });
 
   const action = ref<SelectionAction>("none");
+
   let moveAnchor: NotePosition | undefined;
   const movingOffset = ref<
     { deltaString: number; deltaPosition: number } | undefined
@@ -233,7 +234,9 @@ export function provideSelectionState(
   }
 
   function startMove(origin: NotePosition): void {
+    movingOffset.value = { deltaString: 0, deltaPosition: 0 };
     moveAnchor = origin;
+    action.value = "moving";
   }
 
   function isMoveOutOfBounds(moveTo: NotePosition): boolean {
@@ -274,7 +277,7 @@ export function provideSelectionState(
   }
 
   function cancelMove(): void {
-    movingOffset.value = undefined;
+    action.value = "none";
   }
 
   function endMove(moveTo: NotePosition, copy?: boolean): void {
@@ -327,7 +330,6 @@ export function provideSelectionState(
         }),
       );
     }
-    movingOffset.value = undefined;
     // moveAnchor = moveTo;
   }
 
