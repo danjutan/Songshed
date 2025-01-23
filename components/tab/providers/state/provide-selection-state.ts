@@ -50,6 +50,8 @@ export interface SelectionState {
   isEmpty: () => boolean;
   selectNote: (position: NotePosition) => void;
   startMove: (origin: NotePosition) => void;
+  moveOver: (moveTo: NotePosition) => void;
+  cancelMove: () => void;
   endMove: (moveTo: NotePosition, copy?: boolean) => void;
   // moveSelectionsIfValid: (moveTo: NotePosition) => void;
   deleteSelectedNotes: () => void;
@@ -60,6 +62,7 @@ export interface SelectionState {
   ) => void;
   action: SelectionAction;
   regions: RegionBounds[];
+  movingOffset: Ref<{ deltaString: number; deltaPosition: number } | undefined>;
 }
 
 export function provideSelectionState(
@@ -74,9 +77,6 @@ export function provideSelectionState(
 
   const listeners = new Map<NotePositionKey, (selected: boolean) => void>();
 
-  const action = ref<SelectionAction>("none");
-  let moveAnchor: NotePosition | undefined;
-
   const selections = reactive<Set<NotePositionKey>>(new Set());
   const selectedPositions = reactiveComputed<NotePosition[]>(() => {
     return Array.from(selections).map((key) => {
@@ -84,6 +84,12 @@ export function provideSelectionState(
       return { string, position };
     });
   });
+
+  const action = ref<SelectionAction>("none");
+  let moveAnchor: NotePosition | undefined;
+  const movingOffset = ref<
+    { deltaString: number; deltaPosition: number } | undefined
+  >();
 
   function addPositionListener(
     position: NotePosition,
@@ -228,39 +234,54 @@ export function provideSelectionState(
     moveAnchor = origin;
   }
 
-  // function endMove(): void {
-  //   moveAnchor = undefined;
-  //   action.value = "none";
-  // }
-
-  function endMove(moveTo: NotePosition, copy?: boolean): void {
-    action.value = "none";
-    const guitar = props.guitar;
-    if (!guitar || !moveAnchor) return;
-
+  function isMoveOutOfBounds(moveTo: NotePosition): boolean {
+    if (!moveAnchor) return false;
     const stringDiff = moveTo.string - moveAnchor.string;
     const positionDiff = moveTo.position - moveAnchor.position;
 
     if (stringDiff < 0) {
       const minString = Math.min(...selectedPositions.map((p) => p.string));
       if (minString + stringDiff < 0) {
-        return;
+        return true;
       }
     }
 
     if (stringDiff > 0) {
       const maxString = Math.max(...selectedPositions.map((p) => p.string));
-      if (maxString + stringDiff >= guitar.strings) {
-        return;
+      if (maxString + stringDiff >= props.guitar!.strings) {
+        return true;
       }
     }
 
     if (positionDiff < 0) {
       const minPosition = Math.min(...selectedPositions.map((p) => p.position));
       if (minPosition + positionDiff < 0) {
-        return;
+        return true;
       }
     }
+
+    return false;
+  }
+
+  function moveOver(moveTo: NotePosition): void {
+    if (!moveAnchor || isMoveOutOfBounds(moveTo)) return;
+    movingOffset.value = {
+      deltaString: moveTo.string - moveAnchor.string,
+      deltaPosition: moveTo.position - moveAnchor.position,
+    };
+  }
+
+  function cancelMove(): void {
+    movingOffset.value = undefined;
+  }
+
+  function endMove(moveTo: NotePosition, copy?: boolean): void {
+    action.value = "none";
+    const guitar = props.guitar;
+    if (!guitar || !moveAnchor || isMoveOutOfBounds(moveTo)) return;
+
+    const stringDiff = moveTo.string - moveAnchor.string;
+    const positionDiff = moveTo.position - moveAnchor.position;
 
     const selectedNotes = selectedPositions
       .map((pos) => ({
@@ -302,7 +323,8 @@ export function provideSelectionState(
         }),
       );
     }
-    moveAnchor = moveTo;
+    movingOffset.value = undefined;
+    // moveAnchor = moveTo;
   }
 
   function deleteSelectedNotes(): void {
@@ -331,6 +353,9 @@ export function provideSelectionState(
     deleteSelectedNotes,
     regions,
     addPositionListener,
+    moveOver,
+    cancelMove,
+    movingOffset,
     get action() {
       return action.value;
     },
