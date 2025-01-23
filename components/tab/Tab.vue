@@ -68,8 +68,6 @@ provideBendEditState(
   })),
 );
 
-provideStackResizeObserver();
-
 onMounted(() => {
   useTieAddMonitor(tieAddState);
   useSelectMonitor(selectionState);
@@ -133,6 +131,7 @@ const columnsMap = provideColumnsMap(
   reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
 );
 
+provideStackResizeObserver(columnsMap);
 // const collapsed = provideCollapsedState(
 //   reactiveComputed(() => ({
 //     editing: editingState,

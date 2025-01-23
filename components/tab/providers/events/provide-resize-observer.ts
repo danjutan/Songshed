@@ -1,5 +1,6 @@
 import type { InjectionKey, Reactive } from "vue";
 import { useResizeObserver } from "@vueuse/core";
+import type { ColumnsMap } from "../provide-columns-map";
 
 export interface StackCoords {
   left: number;
@@ -22,30 +23,53 @@ export function withOffset(coords: StackCoords, offset: number): StackCoords {
   };
 }
 
-function createStackResizeObserver(): StackResizeObserver {
+const StackResizeObserverInjectionKey =
+  Symbol() as InjectionKey<StackResizeObserver>;
+
+export function provideStackResizeObserver(columnsMap: ColumnsMap) {
   interface Stack {
     x: Reactive<StackCoords>;
+    ref: HTMLDivElement;
     prev?: number;
     next?: number;
   }
+
   const posToX = reactive(new Map<number, Stack>());
 
   let firstPos = Infinity;
 
   let resizeObserver: ResizeObserver;
 
+  function updateStackCoords(el: HTMLElement, position: number) {
+    const rect = el.getBoundingClientRect();
+    const coords: StackCoords = {
+      left: rect.left,
+      center: rect.left + rect.width / 2,
+      right: rect.right,
+    };
+    posToX.get(position)!.x = coords;
+  }
+
   const createResizeObserver = () => {
     if (resizeObserver) return resizeObserver;
     resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const position = +(entry.target as HTMLElement).dataset.position!;
-        const rect = (entry.target as HTMLElement).getBoundingClientRect();
-        const coords: StackCoords = {
-          left: rect.left,
-          center: rect.left + rect.width / 2,
-          right: rect.right,
-        };
-        posToX.get(position)!.x = coords;
+      const startEntry = entries[0].target as HTMLElement;
+      const endEntry = entries[entries.length - 1].target as HTMLElement;
+
+      const startPos = +startEntry.dataset.position!;
+      const endPos = +endEntry.dataset.position!;
+
+      if (!(startPos in columnsMap) || !(endPos in columnsMap)) return;
+
+      const startTabline = columnsMap[startPos].tabline;
+      const endTabline = columnsMap[endPos].tabline;
+
+      for (const [pos, stack] of posToX) {
+        const tabline = columnsMap[pos]?.tabline;
+        if (tabline === undefined) continue;
+        if (tabline >= startTabline && tabline <= endTabline) {
+          updateStackCoords(stack.ref, pos);
+        }
       }
     });
     return resizeObserver;
@@ -55,30 +79,9 @@ function createStackResizeObserver(): StackResizeObserver {
     stack.dataset.position = startPos.toString();
     createResizeObserver().observe(stack);
 
-    // if (!stack) {
-    //   const current = posToX.get(startPos);
-    //   if (current) {
-    //     const { prev, next } = current;
-
-    //     if (prev !== undefined) {
-    //       const prevNode = posToX.get(prev);
-    //       if (prevNode) prevNode.next = next;
-    //     }
-
-    //     if (next !== undefined) {
-    //       const nextNode = posToX.get(next);
-    //       if (nextNode) nextNode.prev = prev;
-    //     }
-
-    //     posToX.delete(startPos);
-    //   }
-    //   return;
-    // }
-
-    // const { x, width } = useElementBounding(stack);
-
     const rect = stack.getBoundingClientRect();
     const newStack: Stack = {
+      ref: stack,
       x: {
         left: rect.left,
         center: rect.left + rect.width / 2,
@@ -130,19 +133,13 @@ function createStackResizeObserver(): StackResizeObserver {
     return posToX.get(startPosition)?.prev;
   }
 
-  return {
+  const stackResizeObserver: StackResizeObserver = {
     registerStackRef,
     getStackCoords,
     getPreviousStackPos,
     getNextStackPos,
   };
-}
 
-const StackResizeObserverInjectionKey =
-  Symbol() as InjectionKey<StackResizeObserver>;
-
-export function provideStackResizeObserver() {
-  const stackResizeObserver = createStackResizeObserver();
   provide(StackResizeObserverInjectionKey, stackResizeObserver);
   return stackResizeObserver;
 }
