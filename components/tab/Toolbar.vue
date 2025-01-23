@@ -88,7 +88,6 @@ const gridTemplateRows = computed(() => {
   font-size: var(--cell-height);
   border-right: none;
   width: min-content;
-
   cursor: pointer;
 
   display: grid;
