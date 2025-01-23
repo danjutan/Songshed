@@ -59,7 +59,9 @@ const isCollapsed = useIsCollapsed(props.notes, props.onBeat);
       :collapsed="isCollapsed"
       @click="console.log(position)"
       @note-delete="emit('noteDelete', string)"
-      @note-change="(updated) => emit('noteChange', string, updated)"
+      @note-change="
+        (updated: GuitarNote) => emit('noteChange', string, updated)
+      "
     />
   </div>
 </template>

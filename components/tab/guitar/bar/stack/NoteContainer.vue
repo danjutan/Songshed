@@ -241,7 +241,9 @@ const noteText = computed(() => {
       @focus="onNoteFocus"
       @blur="onNoteBlur"
       @note-delete="emit('noteDelete')"
-      @note-change="(updated) => emit('noteChange', { ...note, ...updated })"
+      @note-change="
+        (updated: GuitarNote) => emit('noteChange', { ...note, ...updated })
+      "
     />
 
     <X v-if="note?.note === 'muted'" :size="20" class="muted-icon" />
