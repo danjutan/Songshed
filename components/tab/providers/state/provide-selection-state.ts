@@ -66,6 +66,7 @@ export interface SelectionState {
   action: SelectionAction;
   regions: RegionBounds[];
   movingOffset: Ref<{ deltaString: number; deltaPosition: number } | undefined>;
+  getFilledBounds: () => RegionBounds | undefined;
 }
 
 export function provideSelectionState(
@@ -88,11 +89,6 @@ export function provideSelectionState(
   });
 
   const action = ref<SelectionAction>("none");
-
-  let moveAnchor: NotePosition | undefined;
-  const movingOffset = ref<
-    { deltaString: number; deltaPosition: number } | undefined
-  >();
 
   function addPositionListener(
     position: NotePosition,
@@ -233,47 +229,61 @@ export function provideSelectionState(
     return selections.has(notePositionKey(position));
   }
 
+  const movingOffset = ref<
+    { deltaString: number; deltaPosition: number } | undefined
+  >();
+  let lastMoveTo: NotePosition;
+
   function startMove(origin: NotePosition): void {
-    movingOffset.value = { deltaString: 0, deltaPosition: 0 };
-    moveAnchor = origin;
+    const bounds = getFilledBounds();
+    if (!bounds) return;
+
+    movingOffset.value = {
+      deltaString: origin.string - bounds.minString,
+      deltaPosition: 0,
+    };
+
+    lastMoveTo = origin;
     action.value = "moving";
   }
 
+  // watchEffect(() => {
+  //   console.log(movingOffset.value);
+  // });
+
   function isMoveOutOfBounds(moveTo: NotePosition): boolean {
-    if (!moveAnchor) return false;
-    const stringDiff = moveTo.string - moveAnchor.string;
-    const positionDiff = moveTo.position - moveAnchor.position;
+    const stringDiff = moveTo.string - lastMoveTo.string;
+    const positionDiff = moveTo.position - lastMoveTo.position;
 
-    if (stringDiff < 0) {
-      const minString = Math.min(...selectedPositions.map((p) => p.string));
-      if (minString + stringDiff < 0) {
-        return true;
-      }
+    const bounds = getFilledBounds();
+    if (!bounds) return false;
+
+    if (bounds.minString + stringDiff < 0) {
+      return true;
+    }
+    if (bounds.maxString + stringDiff >= props.guitar!.strings) {
+      return true;
     }
 
-    if (stringDiff > 0) {
-      const maxString = Math.max(...selectedPositions.map((p) => p.string));
-      if (maxString + stringDiff >= props.guitar!.strings) {
-        return true;
-      }
-    }
-
-    if (positionDiff < 0) {
-      const minPosition = Math.min(...selectedPositions.map((p) => p.position));
-      if (minPosition + positionDiff < 0) {
-        return true;
-      }
+    if (bounds.minPosition + positionDiff < 0) {
+      return true;
     }
 
     return false;
   }
 
   function moveOver(moveTo: NotePosition): void {
-    if (!moveAnchor || isMoveOutOfBounds(moveTo)) return;
+    if (!movingOffset.value || isMoveOutOfBounds(moveTo)) return;
+    console.log("moveOver", moveTo, lastMoveTo);
     movingOffset.value = {
-      deltaString: moveTo.string - moveAnchor.string,
-      deltaPosition: moveTo.position - moveAnchor.position,
+      deltaString:
+        movingOffset.value.deltaString + moveTo.string - lastMoveTo.string,
+      deltaPosition:
+        movingOffset.value.deltaPosition +
+        moveTo.position -
+        lastMoveTo.position,
     };
+    lastMoveTo = moveTo;
   }
 
   function cancelMove(): void {
@@ -344,6 +354,24 @@ export function provideSelectionState(
     action.value = "none";
   }
 
+  function getFilledBounds(): RegionBounds | undefined {
+    if (selectedPositions.length === 0) return;
+
+    const selectedWithNotes = selectedPositions
+      .filter((pos) => props.guitar.getNote(pos))
+      .map((pos) => ({
+        string: pos.string,
+        position: pos.position,
+      }));
+
+    return {
+      minString: Math.min(...selectedWithNotes.map((p) => p.string)),
+      maxString: Math.max(...selectedWithNotes.map((p) => p.string)),
+      minPosition: Math.min(...selectedWithNotes.map((p) => p.position)),
+      maxPosition: Math.max(...selectedWithNotes.map((p) => p.position)),
+    };
+  }
+
   const selectionState: SelectionState = {
     selections,
     selectNote,
@@ -367,6 +395,7 @@ export function provideSelectionState(
     setAction: (value: SelectionAction) => {
       action.value = value;
     },
+    getFilledBounds,
   };
 
   provide(SelectionInjectionKey, selectionState);

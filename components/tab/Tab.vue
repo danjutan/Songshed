@@ -43,7 +43,7 @@ const newBarStart = ref(0);
 const cellHoverEvents = provideCellHoverEvents();
 const selectionState = provideSelectionState(
   reactiveComputed(() => ({
-    guitar: props.tabStore.guitar,
+    guitar: props.tabStore.guitar!,
     subUnit,
     barSize,
   })),

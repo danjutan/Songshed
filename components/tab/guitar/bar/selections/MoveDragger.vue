@@ -4,13 +4,19 @@ import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
 import { getNoteInputDragData } from "../../../hooks/dnd/types";
-import { injectSelectionState } from "../../../providers/state/provide-selection-state";
+import {
+  injectSelectionState,
+  type RegionBounds,
+} from "../../../providers/state/provide-selection-state";
 import { injectCellHoverEvents } from "../../../providers/events/provide-cell-hover-events";
 import type { NotePosition } from "~/model/stores";
 
 const draggableRef = useTemplateRef("dragger");
 const selectionState = injectSelectionState();
 const cellHoverEvents = injectCellHoverEvents();
+const props = defineProps<{
+  region: RegionBounds;
+}>();
 
 onMounted(() => {
   watchEffect((cleanup) => {
@@ -24,14 +30,10 @@ onMounted(() => {
         getInitialData: (args) => {
           const hoveredPosition = cellHoverEvents.hoveredNote.value!;
           // TODO: this is a little hacky; maybe the anchor should be (one of the) midpoints of the current selection region
-          const anchor: NotePosition = selectionState.isSelectedPosition(
-            hoveredPosition,
-          )
-            ? hoveredPosition
-            : {
-                position: hoveredPosition.position,
-                string: hoveredPosition.string + 1,
-              };
+          const anchor: NotePosition = {
+            string: props.region.minString,
+            position: props.region.minPosition,
+          };
 
           return getNoteInputDragData({
             ...anchor,
