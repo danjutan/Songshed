@@ -9,7 +9,11 @@ export interface TablineBounds {
 const TablineBoundsInjectionKey = Symbol() as InjectionKey<TablineBounds>;
 
 export function provideTablineBounds(
-  props: Reactive<{ bars: Bar[]; columnsPerBar: number; subUnit: number }>,
+  props: ReactiveComputed<{
+    bars: Bar[];
+    columnsPerBar: number;
+    subUnit: number;
+  }>,
 ) {
   const tablineBounds = reactiveComputed(() => ({
     start: props.bars[0].start,

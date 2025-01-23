@@ -10,10 +10,11 @@ import {
 } from "../../../providers/state/provide-selection-state";
 import { injectCellHoverEvents } from "../../../providers/events/provide-cell-hover-events";
 import type { NotePosition } from "~/model/stores";
+import { injectSubUnit } from "~/components/tab/providers/provide-subunit";
 
 const draggableRef = useTemplateRef("dragger");
 const selectionState = injectSelectionState();
-const cellHoverEvents = injectCellHoverEvents();
+const subUnit = injectSubUnit();
 const props = defineProps<{
   region: RegionBounds;
 }>();
@@ -28,11 +29,16 @@ onMounted(() => {
           preventUnhandled.start();
         },
         getInitialData: (args) => {
-          const hoveredPosition = cellHoverEvents.hoveredNote.value!;
-          // TODO: this is a little hacky; maybe the anchor should be (one of the) midpoints of the current selection region
+          const midPosition =
+            Math.round(
+              (props.region.minPosition + props.region.maxPosition) /
+                2 /
+                subUnit.value,
+            ) * subUnit.value;
+
           const anchor: NotePosition = {
             string: props.region.minString,
-            position: props.region.minPosition,
+            position: midPosition,
           };
 
           return getNoteInputDragData({

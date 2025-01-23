@@ -9,6 +9,7 @@ import { provideTablineBounds } from "./provide-tabline-bounds";
 import { provideEditTie } from "./overlay/tie/provide-edit-tie";
 import { provideOverlayControlsTeleport } from "./overlay/provide-overlay-controls-teleport";
 import { useWindowResizing } from "../hooks/use-window-resizing";
+import { injectSubUnit } from "../providers/provide-subunit";
 
 const props = defineProps<{
   tablineIndex: number;
@@ -17,13 +18,19 @@ const props = defineProps<{
   startRow: number;
   columnsPerBar: number;
   beatSize: number;
-  subUnit: number;
 }>();
 
 const tieAddState = injectTieAddState();
 const { isResizing } = useWindowResizing();
+const subUnit = injectSubUnit();
 
-const tablineBounds = provideTablineBounds(props);
+const tablineBounds = provideTablineBounds(
+  reactiveComputed(() => ({
+    bars: props.bars,
+    columnsPerBar: props.columnsPerBar,
+    subUnit,
+  })),
+);
 const overlayControlsId = provideOverlayControlsTeleport();
 provideEditTie(props.guitarStore.ties);
 

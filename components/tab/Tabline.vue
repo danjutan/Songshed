@@ -16,7 +16,6 @@ const props = defineProps<{
   isLastTabline: boolean;
   tabStore: TabStore;
   columnsPerBar: number;
-  subUnit: number;
 }>();
 
 const emit = defineEmits<{
@@ -93,7 +92,6 @@ onMounted(() => {
       :bars="tabline"
       :start-row="annotationRenders.annotationRows + 1"
       :beat-size="tabStore.beatSize"
-      :sub-unit="subUnit"
       :columns-per-bar="columnsPerBar"
     >
       <template #divider="{ bar, barIndex, numStrings }">

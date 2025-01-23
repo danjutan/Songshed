@@ -22,6 +22,7 @@ import { provideAnnotationRenderState } from "./providers/state/annotations/prov
 
 import { useWindowResizing } from "./hooks/use-window-resizing";
 import { provideNotePreviewState } from "./providers/state/provide-note-preview-state";
+import { provideSubUnit } from "./providers/provide-subunit";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -35,7 +36,7 @@ const barSize = computed(
   () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
 );
 
-const subUnit = computed(() => props.tabStore.beatSize / settings.subdivisions);
+const subUnit = provideSubUnit(props.tabStore, settings);
 
 const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
 const newBarStart = ref(0);
@@ -202,7 +203,6 @@ onBeforeUnmount(() => {
       :is-last-tabline="tablineIndex === tablines.length - 1"
       :tab-store="tabStore"
       :columns-per-bar="columnsPerBar"
-      :sub-unit="subUnit"
       @new-bar-click="newBarClick"
     />
   </div>
