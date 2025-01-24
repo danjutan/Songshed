@@ -44,18 +44,18 @@ const newBarStart = ref(0);
 const cellHoverEvents = provideCellHoverEvents();
 const selectionState = provideSelectionState(
   reactiveComputed(() => ({
-    guitar: props.tabStore.guitar!,
+    guitar: props.tabStore.guitar,
     subUnit,
     barSize,
   })),
 );
-provideNotePreviewState(selectionState, props.tabStore.guitar!);
+provideNotePreviewState(selectionState, props.tabStore.guitar);
 const editingState = provideEditingState();
 
 const tieAddState = provideTieAddState(
   reactiveComputed(() => ({
     cellHoverEvents,
-    store: props.tabStore.guitar!,
+    store: props.tabStore.guitar,
     subUnit,
   })),
 );

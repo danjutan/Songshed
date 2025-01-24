@@ -295,7 +295,7 @@ export function provideSelectionState(
     if (!copy) {
       selectedNotes
         .map(({ notePosition }) => notePosition)
-        .forEach(props.guitar!.deleteNote);
+        .forEach(props.guitar.deleteNote);
     }
 
     for (const { notePosition, note } of selectedNotes) {

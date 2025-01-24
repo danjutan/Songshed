@@ -38,11 +38,11 @@ const templateColumns = useTemplateColumns(
 const overlayedBarStart = ref<number | undefined>();
 
 function deleteBar(start: number) {
-  props.tabStore.guitar!.deleteStacks(
+  props.tabStore.guitar.deleteStacks(
     start,
     start + props.tabStore.beatsPerBar * props.tabStore.beatSize,
   );
-  props.tabStore.guitar!.shiftFrom(
+  props.tabStore.guitar.shiftFrom(
     start,
     -props.tabStore.beatsPerBar * props.tabStore.beatSize,
   );
@@ -50,7 +50,7 @@ function deleteBar(start: number) {
 }
 
 function insertBar(start: number) {
-  props.tabStore.guitar!.shiftFrom(
+  props.tabStore.guitar.shiftFrom(
     start,
     props.tabStore.beatsPerBar * props.tabStore.beatSize,
   );
