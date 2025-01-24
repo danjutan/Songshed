@@ -227,7 +227,7 @@ const noteText = computed(() => {
     </template>
 
     <NoteInput
-      v-if="!notePreview"
+      v-show="!notePreview"
       ref="noteInputRef"
       class="input"
       :class="{

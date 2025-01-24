@@ -86,7 +86,11 @@ defineExpose({
       @input="onInput"
       @blur="onBlur"
       @focus="onFocus"
-      @keyup="(e) => e.stopPropagation()"
+      @keyup.stop="
+        () => {
+          /*TODO: figure out if necessary or remove*/
+        }
+      "
     />
   </div>
 </template>
