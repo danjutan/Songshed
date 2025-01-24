@@ -25,6 +25,7 @@ export function useWindowResizing() {
 
   // Add resize listener when mounted
   onMounted(() => {
+    lastWidth.value = window.innerWidth;
     window.addEventListener("resize", onResize);
   });
 

@@ -65,7 +65,7 @@ export interface SelectionState {
   ) => void;
   action: SelectionAction;
   regions: RegionBounds[];
-  movingOffset: Ref<{ deltaString: number; deltaPosition: number } | undefined>;
+  movingOffset: { deltaString: number; deltaPosition: number };
   getFilledBounds: () => RegionBounds | undefined;
 }
 
@@ -229,60 +229,46 @@ export function provideSelectionState(
     return selections.has(notePositionKey(position));
   }
 
-  const movingOffset = ref<
-    { deltaString: number; deltaPosition: number } | undefined
-  >();
+  const movingOffset = reactive({
+    deltaString: 0,
+    deltaPosition: 0,
+  });
   let lastMoveTo: NotePosition;
 
   function startMove(origin: NotePosition): void {
     const bounds = getFilledBounds();
     if (!bounds) return;
 
-    movingOffset.value = {
-      deltaString: origin.string - bounds.minString,
-      deltaPosition: 0,
-    };
+    movingOffset.deltaString = origin.string - bounds.minString;
+    movingOffset.deltaPosition = 0;
+
+    console.log(movingOffset);
 
     lastMoveTo = origin;
     action.value = "moving";
   }
 
-  // watchEffect(() => {
-  //   console.log(movingOffset.value);
-  // });
+  function moveOver(moveTo: NotePosition): void {
+    const bounds = getFilledBounds();
+    if (!bounds) return;
 
-  function isMoveOutOfBounds(moveTo: NotePosition): boolean {
+    const { minString, maxString, minPosition } = bounds;
+    const { deltaString, deltaPosition } = movingOffset;
+
     const stringDiff = moveTo.string - lastMoveTo.string;
     const positionDiff = moveTo.position - lastMoveTo.position;
 
-    const bounds = getFilledBounds();
-    if (!bounds) return false;
-
-    if (bounds.minString + stringDiff < 0) {
-      return true;
-    }
-    if (bounds.maxString + stringDiff >= props.guitar!.strings) {
-      return true;
+    if (
+      minString + deltaString + stringDiff < 0 ||
+      maxString + deltaString + stringDiff >= props.guitar.strings ||
+      minPosition + deltaPosition + positionDiff < 0
+    ) {
+      return;
     }
 
-    if (bounds.minPosition + positionDiff < 0) {
-      return true;
-    }
+    movingOffset.deltaString += stringDiff;
+    movingOffset.deltaPosition += positionDiff;
 
-    return false;
-  }
-
-  function moveOver(moveTo: NotePosition): void {
-    if (!movingOffset.value || isMoveOutOfBounds(moveTo)) return;
-    console.log("moveOver", moveTo, lastMoveTo);
-    movingOffset.value = {
-      deltaString:
-        movingOffset.value.deltaString + moveTo.string - lastMoveTo.string,
-      deltaPosition:
-        movingOffset.value.deltaPosition +
-        moveTo.position -
-        lastMoveTo.position,
-    };
     lastMoveTo = moveTo;
   }
 
@@ -292,10 +278,9 @@ export function provideSelectionState(
 
   function endMove(copy?: boolean): void {
     action.value = "none";
-    if (!movingOffset.value) return;
 
-    const stringDiff = movingOffset.value.deltaString;
-    const positionDiff = movingOffset.value.deltaPosition;
+    const stringDiff = movingOffset.deltaString;
+    const positionDiff = movingOffset.deltaPosition;
 
     const selectedNotes = selectedPositions
       .map((pos) => ({
@@ -339,7 +324,6 @@ export function provideSelectionState(
         }),
       );
     }
-    // moveAnchor = moveTo;
   }
 
   function deleteSelectedNotes(): void {
