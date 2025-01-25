@@ -10,8 +10,12 @@ export function useTemplateColumns(
     beatSize: number;
     resizeObserver: StackResizeObserver;
     settings: SettingsState;
+    el: HTMLDivElement | null;
   }>,
 ) {
+  const collapsedMinWidth = props.settings.collapsedMinWidth;
+  const expandedMinWidth = props.settings.cellHeight;
+
   const frValues = ref<number[]>(
     Array.from({ length: props.tabline.length }, () => 1),
   );
@@ -26,6 +30,16 @@ export function useTemplateColumns(
     },
   );
 
+  // const totalFr = computed(() => {
+  //   return props.tabline
+  //     .flatMap((bar) =>
+  //       Array.from(bar.stacks.entries()).map(([position, stack]) =>
+  //         isCollapsed(props.settings, stack, position % props.beatSize === 0),
+  //       ),
+  //     )
+  //     .filter(Boolean).length;
+  // });
+
   const gridTemplateColumns = computed(() => {
     const barTemplateColumns = (bar: Bar, fr: number) =>
       `repeat(${bar.stacks.size}, minmax(min-content, ${fr}fr))`;
@@ -36,9 +50,6 @@ export function useTemplateColumns(
 
     return `var(--note-font-size) ${guitarline}`;
   });
-
-  const collapsedMinWidth = props.settings.collapsedMinWidth;
-  const expandedMinWidth = props.settings.cellHeight;
 
   function isBarTooSmall(barIndex: number, deltaX: number): boolean {
     const bar = props.tabline[barIndex]!;
@@ -70,12 +81,15 @@ export function useTemplateColumns(
     return barActualWidth < barMinWidth + Math.abs(deltaX);
   }
 
-  function handleResize(barIndex: number, diffX: number, gridWidth: number) {
+  function handleResize(barIndex: number, diffX: number) {
+    if (!props.el) return;
+    const tablineWidth = props.el.getBoundingClientRect().width;
+
     const deltaX = diffX - lastDiffX;
     lastDiffX = diffX;
 
     const totalFr = frValues.value.reduce((sum, fr) => sum + fr, 0);
-    const pxPerFr = gridWidth / totalFr;
+    const pxPerFr = tablineWidth / totalFr;
 
     const deltaFr = deltaX / pxPerFr;
 

@@ -26,12 +26,15 @@ const resizeObserver = injectStackResizeObserver();
 const settings = injectSettingsState();
 const annotationRenders = injectAnnotationRenderState();
 
+const tablineRef = useTemplateRef("tablineRef");
+
 const templateColumns = useTemplateColumns(
   reactiveComputed(() => ({
     tabline: props.tabline,
     beatSize: props.tabStore.beatSize,
     resizeObserver,
     settings,
+    el: tablineRef.value,
   })),
 );
 
@@ -71,6 +74,7 @@ onMounted(() => {
 
 <template>
   <div
+    ref="tablineRef"
     class="tab-line"
     :style="{
       gridTemplateColumns: templateColumns.gridTemplateColumns.value,
@@ -102,8 +106,7 @@ onMounted(() => {
           @start-drag="templateColumns.resetDrag"
           @resize="
             (diffX: number) => {
-              const gridWidth = $el.getBoundingClientRect().width;
-              templateColumns.handleResize(barIndex - 1, diffX, gridWidth);
+              templateColumns.handleResize(barIndex - 1, diffX);
             }
           "
           @end-drag="templateColumns.resetDrag"

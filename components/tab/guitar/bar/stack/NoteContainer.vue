@@ -100,7 +100,7 @@ onMounted(() => {
               string: props.notePosition.string,
             }),
         }),
-        ...[containerRef.value!, noteInputRef.value!.el].map((el) =>
+        ...[containerRef.value!, noteInputRef.value!.el!].map((el) =>
           draggable({
             element: el,
             onGenerateDragPreview: ({ nativeSetDragImage }) => {
