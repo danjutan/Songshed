@@ -406,6 +406,12 @@ const noteText = computed(() => {
 
 /* Variables don't work in queries, so we use aspect-ratio to figure out if it's too narrow relative to var(--cell-height).
    That's why this component is the container and not Stack */
+
+@container (aspect-ratio < 1) {
+  .input {
+    border: 1px solid red;
+  }
+}
 @container (aspect-ratio < 0.8) {
   .input,
   .note-block {

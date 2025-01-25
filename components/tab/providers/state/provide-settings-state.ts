@@ -1,6 +1,6 @@
 export function provideSettingsState() {
   const settings = reactive({
-    subdivisions: 1, // per beat
+    subdivisions: 2, // per beat
     collapseSubdivisions: false,
     collapseEmpty: true,
     collapseAll: false,

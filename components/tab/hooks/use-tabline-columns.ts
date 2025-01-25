@@ -3,6 +3,7 @@ import type { Bar } from "../Tab.vue";
 import type { StackResizeObserver } from "../providers/events/provide-resize-observer";
 import type { SettingsState } from "../providers/state/provide-settings-state";
 import { isCollapsed } from "./use-collapsed";
+import { injectSubUnit } from "../providers/provide-subunit";
 
 export function useTemplateColumns(
   props: ReactiveComputed<{
@@ -16,12 +17,7 @@ export function useTemplateColumns(
   const collapsedMinWidth = props.settings.collapsedMinWidth;
   const expandedMinWidth = props.settings.cellHeight;
 
-  const dividerSpace = computed(() => {
-    return (
-      (props.settings.cellHeight / 3) * (props.tabline.length - 1) +
-      props.settings.cellHeight * 0.8
-    );
-  });
+  const subUnit = injectSubUnit();
 
   const barPercentages = ref<number[]>(
     Array.from(
@@ -36,12 +32,9 @@ export function useTemplateColumns(
     () => props.tabline.length,
     () => {
       if (props.el) {
-        const ratio =
-          (props.el.getBoundingClientRect().width - dividerSpace.value) /
-          props.el.getBoundingClientRect().width;
         barPercentages.value = Array.from(
           { length: props.tabline.length },
-          () => ratio / props.tabline.length,
+          () => 1 / props.tabline.length,
         );
       }
       // TODO: smarter joins than this?
@@ -105,18 +98,25 @@ export function useTemplateColumns(
     return expandedSets;
   });
 
+  const dividersWidth = computed(() => {
+    // return `((var(--note-font-size) * 2 + var(--divider-width) * ${props.tabline.length - 1})`;
+    return (
+      props.settings.cellHeight * 0.8 * 2 +
+      (props.settings.cellHeight / 3) * (props.tabline.length - 1)
+    );
+  });
+
   const gridTemplateColumns = computed(() => {
     if (!props.el) return "";
+    const ratio =
+      (props.el!.getBoundingClientRect().width - dividersWidth.value) /
+      props.el!.getBoundingClientRect().width;
     const barTemplateColumns = (bar: Bar, barIndex: number) => {
       const percentage = barPercentages.value[barIndex];
       const numExpanded = expanded.value.get(barIndex)!.size;
       const numCollapsed = bar.stacks.size - numExpanded;
 
       const perColumn = `${(percentage / bar.stacks.size) * 100}%`;
-
-      const ratio =
-        (props.el!.getBoundingClientRect().width - dividerSpace.value) /
-        props.el!.getBoundingClientRect().width;
 
       return Array.from(bar.stacks.entries())
         .map(([position]) => {
@@ -126,7 +126,7 @@ export function useTemplateColumns(
             position % props.beatSize === 0,
           );
           if (collapsed) {
-            return `calc((${percentage * 100}% - max(${perColumn}, ${expandedMinWidth}px) * ${numExpanded})/${numCollapsed} * ${ratio})`;
+            return `calc(((${percentage * 100}% - max(${perColumn}, ${expandedMinWidth}px) * ${numExpanded})/${numCollapsed}) * ${ratio})`;
             // return `calc(${perColumn} -
             //   max(
             //     calc(${numExpanded} * (${expandedMinWidth}px - ${perColumn})
@@ -144,7 +144,7 @@ export function useTemplateColumns(
       .map(barTemplateColumns)
       .join(" min-content ");
 
-    return `var(--note-font-size) ${guitarline}`;
+    return `var(--note-font-size) ${guitarline} var(--note-font-size)`;
   });
 
   function isBarTooSmall(barIndex: number, deltaX: number): boolean {
