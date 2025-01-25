@@ -1,14 +1,14 @@
 export function provideSettingsState() {
   const settings = reactive({
-    subdivisions: 4, // per beat
+    subdivisions: 1, // per beat
     collapseSubdivisions: false,
-    collapseEmpty: false,
-    collapseAll: true,
+    collapseEmpty: true,
+    collapseAll: false,
     collapseRatio: 0.25, // for resizing,
     // pixels:
     cellHeight: 24,
     contextMenuHeight: 18,
-    collapsedMinWidth: 5,
+    collapsedMinWidth: 12,
     // flags
     posLineCenter: true,
   });
