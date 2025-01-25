@@ -37,7 +37,6 @@ export function useTemplateColumns(
           () => 1 / props.tabline.length,
         );
       }
-      // TODO: smarter joins than this?
     },
   );
 
@@ -112,11 +111,11 @@ export function useTemplateColumns(
       (props.el!.getBoundingClientRect().width - dividersWidth.value) /
       props.el!.getBoundingClientRect().width;
     const barTemplateColumns = (bar: Bar, barIndex: number) => {
-      const percentage = barPercentages.value[barIndex];
+      const percentage = `${barPercentages.value[barIndex] * 100}%`;
       const numExpanded = expanded.value.get(barIndex)!.size;
       const numCollapsed = bar.stacks.size - numExpanded;
 
-      const perColumn = `${(percentage / bar.stacks.size) * 100}%`;
+      const perColumn = `calc(${percentage} / ${bar.stacks.size})`;
 
       return Array.from(bar.stacks.entries())
         .map(([position]) => {
@@ -126,7 +125,13 @@ export function useTemplateColumns(
             position % props.beatSize === 0,
           );
           if (collapsed) {
-            return `calc(((${percentage * 100}% - max(${perColumn}, ${expandedMinWidth}px) * ${numExpanded})/${numCollapsed}) * ${ratio})`;
+            return `calc(
+            (
+              (${percentage} -
+                 max(${perColumn}, ${expandedMinWidth}px) * ${numExpanded}
+              )
+              / ${numCollapsed}
+            ) * ${ratio})`;
             // return `calc(${perColumn} -
             //   max(
             //     calc(${numExpanded} * (${expandedMinWidth}px - ${perColumn})
@@ -135,7 +140,7 @@ export function useTemplateColumns(
             //   )
             // )`;
           }
-          return `minmax(min-content, ${perColumn})`;
+          return perColumn;
         })
         .join(" ");
     };
