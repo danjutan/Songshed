@@ -6,7 +6,7 @@ import { useIsCollapsed } from "~/components/tab/hooks/use-collapsed";
 
 const props = withDefaults(
   defineProps<{
-    notes: NoteStack<GuitarNote>;
+    notes: Array<GuitarNote | undefined>;
     position: number;
     frets: number;
     onBeat: boolean;
@@ -23,16 +23,13 @@ const emit = defineEmits<{
 const resizeState = injectStackResizeObserver();
 
 const stackRef = useTemplateRef<HTMLDivElement>("stack");
-const noteSpots = computed(() => {
-  const noteSpots = new Array<GuitarNote | undefined>(props.tuning.length);
-  for (const [string, note] of props.notes.entries()) {
-    noteSpots[string] = note;
-  }
-  return noteSpots;
-});
 
 onMounted(() => {
   resizeState.registerStackRef(props.position, stackRef.value!);
+});
+
+watch(props.notes, () => {
+  console.log("notes changed", props.position, props.notes);
 });
 
 // onUnmounted(() => {
@@ -43,13 +40,16 @@ onBeforeUpdate(() => {
   console.log("updated stack");
 });
 
-const isCollapsed = useIsCollapsed(props.notes, props.onBeat);
+const isCollapsed = useIsCollapsed(
+  props.notes.filter(Boolean).length,
+  props.onBeat,
+);
 </script>
 
 <template>
   <div ref="stack" class="stack">
     <NoteContainer
-      v-for="(note, string) in noteSpots"
+      v-for="(note, string) in notes"
       :key="string"
       class="note-container"
       :note="note"
@@ -68,6 +68,7 @@ const isCollapsed = useIsCollapsed(props.notes, props.onBeat);
 
 <style scoped>
 .stack {
+  grid-row: 1 / -1;
   display: grid;
   grid-template-rows: subgrid;
 }

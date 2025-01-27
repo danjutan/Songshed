@@ -61,10 +61,6 @@ const centeredOverDivider = (from: number, to: number) => {
   return to + subUnit.value - dividerBetween === dividerBetween - from;
 };
 
-const columnEnd = computed(
-  () => props.columnsPerBar * props.bars.length + props.bars.length + 1,
-);
-
 onBeforeUpdate(() => {
   console.log("updated line", props.tablineIndex);
 });
@@ -87,19 +83,12 @@ onMounted(() => {
 
 <template>
   <template v-for="(bar, i) in bars" :key="bar.start">
-    <slot
-      name="divider"
-      :num-strings="guitarStore.strings"
-      :bar
-      :bar-index="i"
-    />
+    <slot name="divider" :bar :bar-index="i" />
 
     <GuitarBar
       :stack-data="bar.stacks"
-      :sub-unit
       :beat-size
-      :start-column="i * (columnsPerBar + 1) + 2"
-      :start-row="2"
+      :column="(i + 1) * 2"
       :tuning="guitarStore.tuning"
       :frets="guitarStore.frets"
       :num-strings="numStrings"
@@ -136,8 +125,8 @@ onMounted(() => {
 .overlay,
 .overlay-controls {
   pointer-events: none;
-  grid-column: 2 / v-bind(columnEnd);
-  grid-row: 2 / span calc(v-bind(numStrings) + 1);
+  grid-column: 2 / -1;
+  grid-row: 2;
   width: 100%;
   height: calc(
     100% + var(--cell-height) / 2 + var(--context-menu-height) +

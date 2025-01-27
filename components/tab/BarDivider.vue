@@ -10,23 +10,23 @@ import {
   CornerRightUp,
   CornerDownLeft,
 } from "lucide-vue-next";
+import { injectBarManagement } from "./providers/provide-bar-management";
+
 const draggerRef = useTemplateRef("dragger");
+const { insertBar, deleteBar, insertBreak, joinBreak } = injectBarManagement();
 
 const props = defineProps<{
-  joinable: boolean;
   barIndex: number;
+  barStart: number;
+  joinable: boolean;
 }>();
 
 const emit = defineEmits<{
   startDrag: [];
   resize: [diffX: number];
   endDrag: [];
-  insert: [];
-  delete: [];
   deleteHoverStart: [];
   deleteHoverEnd: [];
-  join: [];
-  break: [];
 }>();
 
 onMounted(() => {
@@ -63,23 +63,23 @@ onMounted(() => {
       <div v-if="barIndex !== 0" class="grip">
         <GripVertical />
       </div>
-      <div class="button insert" @click="emit('insert')">
+      <div class="button insert" @click="insertBar(barStart)">
         <Plus />
       </div>
       <div
         class="button delete"
-        @click="emit('delete')"
+        @click="deleteBar(barStart)"
         @mouseover="emit('deleteHoverStart')"
         @mouseleave="emit('deleteHoverEnd')"
       >
         <Delete />
       </div>
       <template v-if="barIndex === 0">
-        <div v-if="joinable" class="button join" @click="emit('join')">
+        <div v-if="joinable" class="button join" @click="joinBreak(barStart)">
           <CornerRightUp />
         </div>
       </template>
-      <div v-else class="button break" @click="emit('break')">
+      <div v-else class="button break" @click="insertBreak(barStart)">
         <CornerDownLeft />
       </div>
     </div>

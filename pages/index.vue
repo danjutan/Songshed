@@ -9,7 +9,7 @@ const guitar = store.createGuitarTab();
 const guitarNotes: Array<[number, number, string]> = [
   [0, 0, "B4"],
   [Spacing.Quarter * 4, 2, "B4"],
-  [Spacing.Quarter * 6, 2, "B4"],
+  [Spacing.Quarter * 5, 2, "B4"],
   [Spacing.Quarter * 8, 2, "B4"],
   // [Spacing.Quarter * 2, 2, "B4"],
   // [Spacing.Quarter * 2 + Spacing.Sixteenth, 2, "D4"],

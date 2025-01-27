@@ -180,6 +180,8 @@ const noteText = computed(() => {
   }
   return "";
 });
+
+const row = computed(() => props.notePosition.string + 1);
 </script>
 
 <template>
@@ -282,6 +284,7 @@ const noteText = computed(() => {
 <style scoped>
 .container {
   grid-column: 1;
+  grid-row: v-bind(row);
   display: grid;
   grid-template-columns: 1fr min-content 1fr;
   grid-template-rows: 1fr min-content 1fr;
@@ -407,11 +410,6 @@ const noteText = computed(() => {
 /* Variables don't work in queries, so we use aspect-ratio to figure out if it's too narrow relative to var(--cell-height).
    That's why this component is the container and not Stack */
 
-@container (aspect-ratio < 1) {
-  .input {
-    border: 1px solid red;
-  }
-}
 @container (aspect-ratio < 0.8) {
   .input,
   .note-block {

@@ -6,17 +6,17 @@ import type { GuitarNote, NoteStack } from "~/model/data";
 
 export function isCollapsed(
   settings: SettingsState,
-  stack: NoteStack<GuitarNote>,
+  notesInStack: number,
   onBeat: boolean,
 ) {
   if (settings.collapseAll) return true;
-  if (settings.collapseEmpty && stack.size === 0) return true;
+  if (settings.collapseEmpty && notesInStack === 0) return true;
   if (settings.collapseSubdivisions && !onBeat) return true;
   return false;
 }
 
-export function useIsCollapsed(stack: NoteStack<GuitarNote>, onBeat: boolean) {
+export function useIsCollapsed(notesInStack: number, onBeat: boolean) {
   const settings = injectSettingsState();
 
-  return computed(() => isCollapsed(settings, stack, onBeat));
+  return computed(() => isCollapsed(settings, notesInStack, onBeat));
 }

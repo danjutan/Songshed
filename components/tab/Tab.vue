@@ -23,6 +23,10 @@ import { provideAnnotationRenderState } from "./providers/state/annotations/prov
 import { useWindowResizing } from "./hooks/use-window-resizing";
 import { provideNotePreviewState } from "./providers/state/provide-note-preview-state";
 import { provideSubUnit } from "./providers/provide-subunit";
+import {
+  provideBarManagement,
+  type Bar,
+} from "./providers/provide-bar-management";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -68,37 +72,17 @@ provideBendEditState(
   })),
 );
 
+const barManagement = provideBarManagement(
+  reactiveComputed(() => ({
+    tabStore: props.tabStore,
+    subUnit: subUnit.value,
+  })),
+);
+
 onMounted(() => {
   useTieAddMonitor(tieAddState);
   useSelectMonitor(selectionState);
   useMoveMonitor(selectionState);
-});
-
-export type Bar = {
-  start: number;
-  end: number;
-  stacks: StackMap<GuitarNote>;
-};
-
-const bars = computed<Bar[]>(() => {
-  if (!props.tabStore.guitar) return [];
-  const bars: Bar[] = [];
-  for (
-    let i = 0;
-    i <= Math.max(newBarStart.value, props.tabStore.guitar.getLastPosition());
-    i += barSize.value
-  ) {
-    bars.push({
-      start: i,
-      end: i + barSize.value,
-      stacks: props.tabStore.guitar.getStacks(
-        i,
-        i + barSize.value,
-        subUnit.value,
-      ),
-    });
-  }
-  return bars;
 });
 
 const { lastWidth } = useWindowResizing();
@@ -111,7 +95,7 @@ const tablines = computed<Array<Bar[]>>(() => {
   const barsPerLine = lastWidth.value
     ? Math.floor(lastWidth.value / barMaxWidth)
     : 3;
-  bars.value.forEach((bar, i) => {
+  barManagement.bars.forEach((bar, i) => {
     currTabline.push(bar);
     if (
       currTabline.length === barsPerLine ||
@@ -173,7 +157,7 @@ function onLeaveTab() {
 }
 
 function newBarClick() {
-  const lastBarStart = bars.value.at(-1)!.start;
+  const lastBarStart = bars.at(-1)!.start;
   newBarStart.value = lastBarStart + barSize.value;
 }
 

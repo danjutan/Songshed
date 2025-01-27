@@ -419,6 +419,11 @@ export interface NotePosition {
   string: number;
 }
 
+export type GuitarStack = {
+  position: number;
+  notes: Array<GuitarNote | undefined>;
+};
+
 export interface GuitarStore
   extends Omit<StackStore<GuitarNote> & GuitarTabData, "getStacks" | "ties"> {
   getNote: (notePosition: NotePosition) => GuitarNote | undefined;
@@ -426,11 +431,7 @@ export interface GuitarStore
   deleteNote: (notePosition: NotePosition) => void;
   moveNote: (from: NotePosition, to: NotePosition) => void;
   deleteStacks: (start: number, end: number) => void;
-  getStacks: (
-    start: number,
-    end: number,
-    subunit: number,
-  ) => StackMap<GuitarNote>;
+  getStacks: (start: number, end: number, subunit: number) => GuitarStack[];
   ties: TieStore;
 }
 
@@ -492,22 +493,24 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     }
   }
 
-  function getStacks(
-    start = 0,
-    end: number,
-    subunit: number,
-  ): StackMap<GuitarNote> {
+  function getStacks(start = 0, end: number, subunit: number) {
     const subset = noteStore.getStacks(start, end);
     for (let i = start; i < end; i += subunit) {
       if (!subset.has(i)) {
         subset.set(i, new Map());
       }
     }
-    return new Map(
-      [...subset.entries()]
-        .sort((a, b) => a[0] - b[0])
-        .filter(([position, _]) => position % subunit === 0),
-    );
+
+    return [...subset.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .filter(([position, _]) => position % subunit === 0)
+      .map(([position, stack]) => {
+        const stackArray = [];
+        for (let i = 0; i < guitarData.strings; i++) {
+          stackArray[i] = stack.get(i) || undefined;
+        }
+        return { position, notes: stackArray };
+      });
   }
 
   function shiftFrom(position: number, shiftBy: number) {

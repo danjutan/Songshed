@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
 import Stack from "./stack/Stack.vue";
-import type { NotePosition } from "~/model/stores";
+import type { GuitarStack, NotePosition } from "~/model/stores";
 import SelectionRegions from "./selections/SelectionRegions.vue";
 
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
+import { injectSubUnit } from "../../providers/provide-subunit";
 
 const settings = injectSettingsState();
 
 const props = defineProps<{
-  stackData: StackMap<GuitarNote>;
-  subUnit: number;
+  stackData: GuitarStack[];
+  column: number;
   beatSize: number;
-  startColumn: number;
-  startRow: number;
   tuning: Midi[];
   frets: number;
   numStrings: number;
@@ -24,28 +23,28 @@ const emit = defineEmits<{
   noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
 
+const subUnit = injectSubUnit();
+
+const numStacks = computed(() => props.stackData.length);
+
 onBeforeUpdate(() => {
   console.log("updated bar");
 });
 </script>
 
 <template>
-  <template
-    v-for="([position, stack], i) in stackData.entries()"
-    :key="position"
-  >
+  <div class="guitar-bar">
     <Stack
+      v-for="({ position, notes }, i) in stackData"
+      :key="position"
       ref="stacks"
+      class="stack"
+      :class="{ border: !settings.posLineCenter && i < stackData.length - 1 }"
       :style="{
-        gridColumn: startColumn + i,
-        gridRow: `${startRow} / span ${numStrings}`,
-        ...(!settings.posLineCenter &&
-          i < stackData.size - 1 && {
-            borderRight: `var(--pos-line-width) solid var(--pos-line-color)`,
-          }),
+        gridColumn: i + 1,
       }"
       :on-beat="position % beatSize === 0"
-      :notes="stack"
+      :notes
       :position="position"
       :tuning
       :frets
@@ -57,8 +56,21 @@ onBeforeUpdate(() => {
         (string: number) => emit('noteDelete', { position, string })
       "
     />
-  </template>
+  </div>
   <SelectionRegions />
 </template>
 
-<style></style>
+<style>
+.guitar-bar {
+  grid-column: v-bind(column);
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: repeat(v-bind(numStacks), 1fr);
+  grid-template-rows: repeat(v-bind(numStrings), var(--cell-height));
+}
+
+.stack.border {
+  border-right: var(--pos-line-width) solid var(--pos-line-color);
+  grid-row: 1 / span v-bind(numStrings);
+}
+</style>
