@@ -191,46 +191,6 @@ const barMinWidth = (bar: Bar) =>
     return total + width;
   }, 0);
 
-// const tabBars = useTemplateRef("tabBars");
-// const tabBarDivs = computed(() => tabBars.value?.map((tabBar) => tabBar?.$el));
-// const tabBarDivs = ref<Array<HTMLDivElement | null>>([]);
-
-// const barWidths = ref(
-//   barManagement.bars.map((bar) => ({ last: 200, current: 200 })),
-// );
-
-// onMounted(() => {
-//   barWidths.value = barManagement.bars.map((bar, i) => {
-//     const div = tabBarDivs.value?.[i];
-//     return {
-//       last: div!.clientWidth,
-//       current: div!.clientWidth,
-//     };
-//   });
-// });
-
-// TODO: keep width data on the bar itself so insertions and deletions work right
-// watch(
-//   tabBars,
-//   (next, prev) => {
-//     console.log("watcher", next, prev);
-//     if (!prev || !next) return;
-//     if (prev.length < next.length) {
-//       for (let i = prev.length; i < next.length; i++) {
-//         const div = tabBarDivs.value?.[i];
-//         console.log("got here", div);
-//         barWidths.value.push({
-//           last: div!.clientWidth,
-//           current: div!.clientWidth,
-//         });
-//       }
-//     }
-//   },
-//   { deep: true },
-// );
-
-// watchEffect(() => console.log(barWidths.value));
-
 const tabBarRefs = useTemplateRef("tabBars");
 const tab = useTemplateRef("tab");
 
@@ -250,10 +210,6 @@ watch(
 );
 
 let lastDiffX = 0;
-
-function startDrag(i: number) {
-  if (!tabBarRefs.value) return;
-}
 
 function onResize(i: number, diffX: number) {
   if (!tabBarRefs.value) return;
@@ -284,31 +240,32 @@ function endDrag(i: number) {
       :columns-per-bar="columnsPerBar"
       @new-bar-click="newBarClick"
     /> -->
-    <TabBar
-      v-for="(bar, i) in barManagement.bars"
-      ref="tabBars"
-      :key="bar.start"
-      :flex-grow="barFlexGrow[i]"
-      :guitar-bar-data="{
-        stackData: bar.stacks,
-        beatSize: props.tabStore.beatSize,
-        tuning: props.tabStore.guitar.tuning,
-        frets: props.tabStore.guitar.frets,
-        numStrings: props.tabStore.guitar.strings,
-      }"
-      :guitar-store="props.tabStore.guitar"
-    >
-      <template #divider>
-        <BarDivider
-          :bar-index="i"
-          :bar-start="bar.start"
-          :joinable="i < barManagement.bars.length - 1"
-          @start-drag="startDrag(i)"
-          @resize="(diffX: number) => onResize(i, diffX)"
-          @end-drag="endDrag(i)"
-        />
-      </template>
-    </TabBar>
+    <template v-for="(bar, i) in barManagement.bars" :key="bar.start">
+      <div v-if="tabStore.lineBreaks.has(bar.start)" class="line-break" />
+
+      <TabBar
+        ref="tabBars"
+        :flex-grow="barFlexGrow[i]"
+        :guitar-bar-data="{
+          stackData: bar.stacks,
+          beatSize: props.tabStore.beatSize,
+          tuning: props.tabStore.guitar.tuning,
+          frets: props.tabStore.guitar.frets,
+          numStrings: props.tabStore.guitar.strings,
+        }"
+        :guitar-store="props.tabStore.guitar"
+      >
+        <template #divider>
+          <BarDivider
+            :bar-index="i"
+            :bar-start="bar.start"
+            :joinable="tabStore.lineBreaks.has(bar.start)"
+            @resize="(diffX: number) => onResize(i, diffX)"
+            @end-drag="endDrag(i)"
+          />
+        </template>
+      </TabBar>
+    </template>
   </div>
 </template>
 
@@ -345,6 +302,11 @@ function endDrag(i: number) {
 
   display: flex;
   flex-wrap: wrap;
+}
+
+.line-break {
+  width: 100%;
+  height: 0px;
 }
 
 .drag-start {

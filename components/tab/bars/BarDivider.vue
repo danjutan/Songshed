@@ -55,12 +55,15 @@ onMounted(() => {
     );
   });
 });
+
+// TODO
+const firstInRow = computed(() => true);
 </script>
 
 <template>
   <div ref="dragger" class="divider" :class="{ first: barIndex === 0 }">
     <div class="thicc">
-      <div v-if="barIndex !== 0" class="grip">
+      <div v-if="!firstInRow" class="grip">
         <GripVertical />
       </div>
       <div class="button insert" @click="insertBar(barStart)">
@@ -74,11 +77,11 @@ onMounted(() => {
       >
         <Delete />
       </div>
-      <template v-if="barIndex === 0">
-        <div v-if="joinable" class="button join" @click="joinBreak(barStart)">
-          <CornerRightUp />
-        </div>
-      </template>
+      <!-- <template v-if="firstInRow"> -->
+      <div v-if="joinable" class="button join" @click="joinBreak(barStart)">
+        <CornerRightUp />
+      </div>
+      <!-- </template> -->
       <div v-else class="button break" @click="insertBreak(barStart)">
         <CornerDownLeft />
       </div>
