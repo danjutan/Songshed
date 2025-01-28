@@ -2,7 +2,7 @@
 import type { TabStore } from "~/model/stores";
 import Toolbar from "./Toolbar.vue";
 import Divider from "./BarDivider.vue";
-import GuitarTabline from "@/components/tab/guitar/GuitarTabLine.vue";
+import GuitarTabline from "~/components/tab/bars/guitar/GuitarTabLine.vue";
 import { injectStackResizeObserver } from "./providers/events/provide-resize-observer";
 import { injectSettingsState } from "./providers/state/provide-settings-state";
 import { injectAnnotationRenderState } from "./providers/state/annotations/provide-annotation-render-state";

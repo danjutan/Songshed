@@ -10,7 +10,7 @@ import {
   CornerRightUp,
   CornerDownLeft,
 } from "lucide-vue-next";
-import { injectBarManagement } from "./providers/provide-bar-management";
+import { injectBarManagement } from "~/components/tab/providers/provide-bar-management";
 
 const draggerRef = useTemplateRef("dragger");
 const { insertBar, deleteBar, insertBreak, joinBreak } = injectBarManagement();
@@ -109,12 +109,12 @@ onMounted(() => {
   z-index: var(--divider-z-index);
 }
 
-.divider.first {
+/* .divider.first {
   justify-self: end;
   & .thicc {
     transform: translateX(-50%);
   }
-}
+} */
 
 .divider:not(:hover) .thicc {
   display: none;

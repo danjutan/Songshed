@@ -7,7 +7,7 @@ import type { Annotation } from "~/model/data";
 import AnnotationDragBar from "./annotations/AnnotationDragBar.vue";
 import AnnotationRender from "./annotations/AnnotationRender.vue";
 import { injectTieAddState } from "./providers/state/provide-tie-add-state";
-import BendTopBar from "./guitar/overlay/bend/BendTopBar.vue";
+import BendTopBar from "./bars/guitar/overlay/bend/BendTopBar.vue";
 import { Pencil, Plus } from "lucide-vue-next";
 
 const props = defineProps<{

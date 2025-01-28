@@ -3,12 +3,12 @@ import { Grip } from "lucide-vue-next";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
-import { getNoteInputDragData } from "../../../hooks/dnd/types";
+import { getNoteInputDragData } from "~/components/tab/hooks/dnd/types";
 import {
   injectSelectionState,
   type RegionBounds,
-} from "../../../providers/state/provide-selection-state";
-import { injectCellHoverEvents } from "../../../providers/events/provide-cell-hover-events";
+} from "~/components/tab/providers/state/provide-selection-state";
+import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import type { NotePosition } from "~/model/stores";
 import { injectSubUnit } from "~/components/tab/providers/provide-subunit";
 

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { injectCellHoverEvents } from "../../../providers/events/provide-cell-hover-events";
+import { injectCellHoverEvents } from "../../../../providers/events/provide-cell-hover-events";
 
 const props = defineProps<{
   // startRow: number;

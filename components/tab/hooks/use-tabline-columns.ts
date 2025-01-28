@@ -137,10 +137,11 @@ export function useTemplateColumns(
             //     calc(${numExpanded} * (${expandedMinWidth}px - ${perColumn})
             //                      / ${numCollapsed}),
             //     0px
-            //   )
+            //   ) * ${ratio}
             // )`;
           }
-          return perColumn;
+          // return perColumn;
+          return `minmax(${expandedMinWidth}px, ${perColumn})`;
         })
         .join(" ");
     };
@@ -188,6 +189,10 @@ export function useTemplateColumns(
 
     const deltaX = diffX - lastDiffX;
     lastDiffX = diffX;
+
+    if (deltaX < 0 && isBarTooSmall(barIndex, deltaX)) return;
+
+    if (deltaX > 0 && isBarTooSmall(barIndex + 1, deltaX)) return;
 
     const diffPercentage = deltaX / tablineWidth;
     barPercentages.value[barIndex] += diffPercentage;

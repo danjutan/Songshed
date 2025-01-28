@@ -5,25 +5,23 @@ import type { GuitarStack, NotePosition } from "~/model/stores";
 import SelectionRegions from "./selections/SelectionRegions.vue";
 
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
-import { injectSubUnit } from "../../providers/provide-subunit";
 
 const settings = injectSettingsState();
 
-const props = defineProps<{
+export type GuitarBarProps = {
   stackData: GuitarStack[];
-  column: number;
   beatSize: number;
   tuning: Midi[];
   frets: number;
   numStrings: number;
-}>();
+};
+
+const props = defineProps<GuitarBarProps>();
 
 const emit = defineEmits<{
   noteDelete: [notePosition: NotePosition];
   noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
-
-const subUnit = injectSubUnit();
 
 const numStacks = computed(() => props.stackData.length);
 
@@ -57,14 +55,13 @@ onBeforeUpdate(() => {
       "
     />
   </div>
-  <SelectionRegions />
+  <!-- <SelectionRegions /> -->
 </template>
 
 <style>
 .guitar-bar {
-  grid-column: v-bind(column);
-  grid-row: 2;
   display: grid;
+  width: 100%;
   grid-template-columns: repeat(v-bind(numStacks), 1fr);
   grid-template-rows: repeat(v-bind(numStrings), var(--cell-height));
 }

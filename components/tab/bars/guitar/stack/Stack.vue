@@ -28,9 +28,12 @@ onMounted(() => {
   resizeState.registerStackRef(props.position, stackRef.value!);
 });
 
-watch(props.notes, () => {
-  console.log("notes changed", props.position, props.notes);
-});
+watch(
+  () => props.notes,
+  () => {
+    console.log("notes changed", props.position, props.notes);
+  },
+);
 
 // onUnmounted(() => {
 //   console.log("stack unmounted", props.position);
@@ -41,7 +44,7 @@ onBeforeUpdate(() => {
 });
 
 const isCollapsed = useIsCollapsed(
-  props.notes.filter(Boolean).length,
+  computed(() => props.notes),
   props.onBeat,
 );
 </script>

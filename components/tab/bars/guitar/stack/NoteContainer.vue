@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { GuitarNote } from "~/model/data";
 import NoteInput from "./NoteInput.vue";
-import { injectSelectionState } from "../../../providers/state/provide-selection-state";
-import { injectEditingState } from "../../../providers/state/provide-editing-state";
-import { injectCellHoverEvents } from "../../../providers/events/provide-cell-hover-events";
+import { injectSelectionState } from "~/components/tab/providers/state/provide-selection-state";
+import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
+import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import {
   draggable,
   dropTargetForElements,
@@ -15,10 +15,10 @@ import {
   getNoteInputDragData,
   getNoteInputDropData,
   type TieAddDragDataProps,
-} from "../../../hooks/dnd/types";
+} from "~/components/tab/hooks/dnd/types";
 import NoteTieDragger from "./NoteTieDragger.vue";
 import { X } from "lucide-vue-next";
-import { injectTieAddState } from "@/components/tab/providers/state/provide-tie-add-state";
+import { injectTieAddState } from "~/components/tab/providers/state/provide-tie-add-state";
 import type { NotePosition } from "~/model/stores";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectNotePreviewState } from "~/components/tab/providers/state/provide-note-preview-state";

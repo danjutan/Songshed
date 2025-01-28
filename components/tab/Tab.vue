@@ -2,6 +2,7 @@
 import type { GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
 import Tabline from "./Tabline.vue";
+import TabBar from "./bars/TabBar.vue";
 
 import { provideSelectionState } from "./providers/state/provide-selection-state";
 import { provideEditingState } from "./providers/state/provide-editing-state";
@@ -27,6 +28,9 @@ import {
   provideBarManagement,
   type Bar,
 } from "./providers/provide-bar-management";
+
+import BarDivider from "./bars/BarDivider.vue";
+import { isCollapsed } from "./hooks/use-collapsed";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -157,7 +161,7 @@ function onLeaveTab() {
 }
 
 function newBarClick() {
-  const lastBarStart = bars.at(-1)!.start;
+  const lastBarStart = barManagement.bars.at(-1)!.start;
   newBarStart.value = lastBarStart + barSize.value;
 }
 
@@ -174,11 +178,118 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener("keyup", onKeyUp);
 });
+
+const barMinWidth = (bar: Bar) =>
+  Array.from(bar.stacks.entries()).reduce((total: number, [position]) => {
+    const width = isCollapsed(
+      settings,
+      bar.stacks[position].notes,
+      position % props.tabStore.beatSize === 0,
+    )
+      ? settings.collapsedMinWidth
+      : settings.cellHeight;
+    return total + width;
+  }, 0);
+
+// const tabBars = useTemplateRef("tabBars");
+// const tabBarDivs = computed(() => tabBars.value?.map((tabBar) => tabBar?.$el));
+// const tabBarDivs = ref<Array<HTMLDivElement | null>>([]);
+
+// const barWidths = ref(
+//   barManagement.bars.map((bar) => ({ last: 200, current: 200 })),
+// );
+
+// onMounted(() => {
+//   barWidths.value = barManagement.bars.map((bar, i) => {
+//     const div = tabBarDivs.value?.[i];
+//     return {
+//       last: div!.clientWidth,
+//       current: div!.clientWidth,
+//     };
+//   });
+// });
+
+// TODO: keep width data on the bar itself so insertions and deletions work right
+// watch(
+//   tabBars,
+//   (next, prev) => {
+//     console.log("watcher", next, prev);
+//     if (!prev || !next) return;
+//     if (prev.length < next.length) {
+//       for (let i = prev.length; i < next.length; i++) {
+//         const div = tabBarDivs.value?.[i];
+//         console.log("got here", div);
+//         barWidths.value.push({
+//           last: div!.clientWidth,
+//           current: div!.clientWidth,
+//         });
+//       }
+//     }
+//   },
+//   { deep: true },
+// );
+
+// watchEffect(() => console.log(barWidths.value));
+
+const tabBarRefs = useTemplateRef("tabBars");
+const tab = useTemplateRef("tab");
+
+const barFlexGrow = ref(
+  barManagement.bars.map((bar) => 10 / barManagement.bars.length),
+);
+
+watch(
+  () => barManagement.bars,
+  (next, prev) => {
+    // TODO: intelligently retain proportions and handle insersions/deletes
+    barFlexGrow.value = barManagement.bars.map(
+      (bar) => 10 / barManagement.bars.length,
+    );
+  },
+);
+
+let dragStartFlexGrowLeft: number | undefined;
+let dragStartFlexGrowRight: number | undefined;
+let lastDiffX = 0;
+
+function startDrag(i: number) {
+  if (!tabBarRefs.value) return;
+  dragStartFlexGrowLeft = barFlexGrow.value[i - 1];
+  dragStartFlexGrowRight = barFlexGrow.value[i];
+}
+
+function onResize(i: number, diffX: number) {
+  if (!tabBarRefs.value || !dragStartFlexGrowLeft || !dragStartFlexGrowRight)
+    return;
+
+  const tabWidth = tab.value!.clientWidth;
+  const deltaX = diffX - lastDiffX;
+  lastDiffX = diffX;
+  const diffPercentage = deltaX / tabWidth;
+
+  // const leftMinWidth = barMinWidth(barManagement.bars[i - 1]!);
+  // const rightMinWidth = barMinWidth(barManagement.bars[i]!);
+  // if (
+  //   tabBarRefs.value[i - 1]!.$el!.clientWidth + diffX < leftMinWidth ||
+  //   tabBarRefs.value[i]!.$el!.clientWidth - diffX < rightMinWidth
+  // ) {
+  //   return;
+  // }
+  barFlexGrow.value[i - 1]! += diffPercentage * 10;
+  barFlexGrow.value[i]! -= diffPercentage * 10;
+  // tabBarRefs.value[i - 1]!.$el!.style.width = `${dragStartWidthLeft + diffX}px`;
+  // tabBarRefs.value[i]!.$el!.style.width = `${dragStartWidthRight - diffX}px`;
+}
+
+function endDrag(i: number) {
+  dragStartFlexGrowLeft = undefined;
+  dragStartFlexGrowRight = undefined;
+}
 </script>
 
 <template>
-  <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
-    <Tabline
+  <div ref="tab" class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
+    <!-- <Tabline
       v-for="(tabline, tablineIndex) in tablines"
       :key="tablineIndex"
       :tabline="tabline"
@@ -187,7 +298,32 @@ onBeforeUnmount(() => {
       :tab-store="tabStore"
       :columns-per-bar="columnsPerBar"
       @new-bar-click="newBarClick"
-    />
+    /> -->
+    <TabBar
+      v-for="(bar, i) in barManagement.bars"
+      ref="tabBars"
+      :key="bar.start"
+      :flex-grow="barFlexGrow[i]"
+      :guitar-bar-data="{
+        stackData: bar.stacks,
+        beatSize: props.tabStore.beatSize,
+        tuning: props.tabStore.guitar.tuning,
+        frets: props.tabStore.guitar.frets,
+        numStrings: props.tabStore.guitar.strings,
+      }"
+      :guitar-store="props.tabStore.guitar"
+    >
+      <template #divider>
+        <BarDivider
+          :bar-index="i"
+          :bar-start="bar.start"
+          :joinable="i < barManagement.bars.length - 1"
+          @start-drag="startDrag(i)"
+          @resize="(diffX: number) => onResize(i, diffX)"
+          @end-drag="endDrag(i)"
+        />
+      </template>
+    </TabBar>
   </div>
 </template>
 
@@ -221,6 +357,9 @@ onBeforeUnmount(() => {
   --divider-z-index: 3;
 
   user-select: none;
+
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .drag-start {

@@ -3,8 +3,8 @@ import {
   isWithinRegion,
   type RegionBounds,
 } from "~/components/tab/providers/state/provide-selection-state";
-import { injectColumnsMap } from "../../../providers/provide-columns-map";
-import { injectCellHoverEvents } from "../../../providers/events/provide-cell-hover-events";
+import { injectColumnsMap } from "~/components/tab/providers/provide-columns-map";
+import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import SelectionToolbar from "./SelectionToolbar.vue";
 
 const props = defineProps<{

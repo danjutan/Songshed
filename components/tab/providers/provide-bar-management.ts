@@ -32,7 +32,6 @@ export function provideBarManagement(
 
   const bars = computed<Bar[]>(() => {
     if (!props.tabStore.guitar) return [];
-    console.log("here");
     const bars: Bar[] = [];
     for (
       let i = 0;
