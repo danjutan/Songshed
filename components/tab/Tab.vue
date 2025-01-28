@@ -241,6 +241,7 @@ const barFlexGrow = ref(
 watch(
   () => barManagement.bars,
   (next, prev) => {
+    if (prev.length === next.length) return;
     // TODO: intelligently retain proportions and handle insersions/deletes
     barFlexGrow.value = barManagement.bars.map(
       (bar) => 10 / barManagement.bars.length,
