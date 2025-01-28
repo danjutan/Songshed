@@ -3,6 +3,7 @@ import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
 import Stack from "./stack/Stack.vue";
 import type { GuitarStack, NotePosition } from "~/model/stores";
 import SelectionRegions from "./selections/SelectionRegions.vue";
+import Toolbar from "~/components/tab/Toolbar.vue";
 
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 

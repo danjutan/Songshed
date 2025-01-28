@@ -46,8 +46,10 @@ const barSize = computed(
 
 const subUnit = provideSubUnit(props.tabStore, settings);
 
-const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
+// const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
 const newBarStart = ref(0);
+
+const { tablineStarts } = provideStackResizeObserver();
 
 const cellHoverEvents = provideCellHoverEvents();
 const selectionState = provideSelectionState(
@@ -89,37 +91,10 @@ onMounted(() => {
   useMoveMonitor(selectionState);
 });
 
-const { lastWidth } = useWindowResizing();
-const tablines = computed<Array<Bar[]>>(() => {
-  const tablineBars: Array<Bar[]> = [];
-  let currTabline: Bar[] = [];
-  const barMaxWidth =
-    settings.collapseRatio * settings.collapsedMinWidth * columnsPerBar.value +
-    (1 - settings.collapseRatio) * settings.cellHeight * columnsPerBar.value;
-  const barsPerLine = lastWidth.value
-    ? Math.floor(lastWidth.value / barMaxWidth)
-    : 3;
-  barManagement.bars.forEach((bar, i) => {
-    currTabline.push(bar);
-    if (
-      currTabline.length === barsPerLine ||
-      props.tabStore.lineBreaks.has((i + 1) * barSize.value)
-    ) {
-      tablineBars.push(currTabline);
-      currTabline = [];
-    }
-  });
-  if (currTabline.length) {
-    tablineBars.push(currTabline);
-  }
-  return tablineBars;
-});
+// const columnsMap = provideColumnsMap(
+//   reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
+// );
 
-const columnsMap = provideColumnsMap(
-  reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
-);
-
-provideStackResizeObserver(columnsMap);
 // const collapsed = provideCollapsedState(
 //   reactiveComputed(() => ({
 //     editing: editingState,
@@ -141,14 +116,14 @@ const annotationAddState = provideAnnotationAddState(
   })),
 );
 
-const annotationRenders = provideAnnotationRenderState(
-  reactiveComputed(() => ({
-    store: props.tabStore.annotations,
-    subUnit: subUnit.value,
-    newAnnotation: annotationAddState.newAnnotation,
-    columnsMap,
-  })),
-);
+// const annotationRenders = provideAnnotationRenderState(
+//   reactiveComputed(() => ({
+//     store: props.tabStore.annotations,
+//     subUnit: subUnit.value,
+//     newAnnotation: annotationAddState.newAnnotation,
+//     columnsMap,
+//   })),
+// );
 
 function onMouseUp() {
   cellHoverEvents.mouseup();
@@ -229,6 +204,7 @@ function endDrag(i: number) {
 </script>
 
 <template>
+  {{ tablineStarts }}
   <div ref="tab" class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
     <!-- <Tabline
       v-for="(tabline, tablineIndex) in tablines"
@@ -257,7 +233,7 @@ function endDrag(i: number) {
       >
         <template #divider>
           <BarDivider
-            :bar-index="i"
+            :start-of-line="tablineStarts.includes(bar.start)"
             :bar-start="bar.start"
             :joinable="tabStore.lineBreaks.has(bar.start)"
             @resize="(diffX: number) => onResize(i, diffX)"

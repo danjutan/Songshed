@@ -16,7 +16,7 @@ const draggerRef = useTemplateRef("dragger");
 const { insertBar, deleteBar, insertBreak, joinBreak } = injectBarManagement();
 
 const props = defineProps<{
-  barIndex: number;
+  startOfLine: boolean;
   barStart: number;
   joinable: boolean;
 }>();
@@ -31,7 +31,7 @@ const emit = defineEmits<{
 
 onMounted(() => {
   watchEffect((cleanup) => {
-    if (props.barIndex === 0) return;
+    if (props.startOfLine) return;
     cleanup(
       draggable({
         element: draggerRef.value!,
@@ -55,15 +55,12 @@ onMounted(() => {
     );
   });
 });
-
-// TODO
-const firstInRow = computed(() => true);
 </script>
 
 <template>
-  <div ref="dragger" class="divider" :class="{ first: barIndex === 0 }">
+  <div ref="dragger" class="divider" :class="{ first: startOfLine }">
     <div class="thicc">
-      <div v-if="!firstInRow" class="grip">
+      <div v-if="!startOfLine" class="grip">
         <GripVertical />
       </div>
       <div class="button insert" @click="insertBar(barStart)">
@@ -77,11 +74,11 @@ const firstInRow = computed(() => true);
       >
         <Delete />
       </div>
-      <!-- <template v-if="firstInRow"> -->
-      <div v-if="joinable" class="button join" @click="joinBreak(barStart)">
-        <CornerRightUp />
-      </div>
-      <!-- </template> -->
+      <template v-if="startOfLine">
+        <div v-if="joinable" class="button join" @click="joinBreak(barStart)">
+          <CornerRightUp />
+        </div>
+      </template>
       <div v-else class="button break" @click="insertBreak(barStart)">
         <CornerDownLeft />
       </div>
