@@ -249,42 +249,26 @@ watch(
   },
 );
 
-let dragStartFlexGrowLeft: number | undefined;
-let dragStartFlexGrowRight: number | undefined;
 let lastDiffX = 0;
 
 function startDrag(i: number) {
   if (!tabBarRefs.value) return;
-  dragStartFlexGrowLeft = barFlexGrow.value[i - 1];
-  dragStartFlexGrowRight = barFlexGrow.value[i];
 }
 
 function onResize(i: number, diffX: number) {
-  if (!tabBarRefs.value || !dragStartFlexGrowLeft || !dragStartFlexGrowRight)
-    return;
+  if (!tabBarRefs.value) return;
 
   const tabWidth = tab.value!.clientWidth;
   const deltaX = diffX - lastDiffX;
   lastDiffX = diffX;
   const diffPercentage = deltaX / tabWidth;
 
-  // const leftMinWidth = barMinWidth(barManagement.bars[i - 1]!);
-  // const rightMinWidth = barMinWidth(barManagement.bars[i]!);
-  // if (
-  //   tabBarRefs.value[i - 1]!.$el!.clientWidth + diffX < leftMinWidth ||
-  //   tabBarRefs.value[i]!.$el!.clientWidth - diffX < rightMinWidth
-  // ) {
-  //   return;
-  // }
   barFlexGrow.value[i - 1]! += diffPercentage * 10;
   barFlexGrow.value[i]! -= diffPercentage * 10;
-  // tabBarRefs.value[i - 1]!.$el!.style.width = `${dragStartWidthLeft + diffX}px`;
-  // tabBarRefs.value[i]!.$el!.style.width = `${dragStartWidthRight - diffX}px`;
 }
 
 function endDrag(i: number) {
-  dragStartFlexGrowLeft = undefined;
-  dragStartFlexGrowRight = undefined;
+  lastDiffX = 0;
 }
 </script>
 
