@@ -3,7 +3,7 @@ import {
   injectSelectionState,
   type RegionBounds,
 } from "~/components/tab/providers/state/provide-selection-state";
-import { injectTablineBounds } from "../provide-tabline-bounds";
+import { injectTablineBounds } from "../provide-bar-bounds";
 import SelectionRegion from "./SelectionRegion.vue";
 
 const selectionState = injectSelectionState();

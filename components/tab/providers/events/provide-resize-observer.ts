@@ -11,7 +11,10 @@ export interface StackCoords {
 
 export interface StackResizeObserver {
   registerStackRef: (startPos: number, stack: HTMLDivElement) => void;
-  getStackCoords: (startPos: number) => StackCoords | undefined;
+  getStackCoords: (
+    position: number,
+    barStart?: number,
+  ) => StackCoords | undefined;
   getPreviousStackPos: (startPosition: number) => number | undefined;
   getNextStackPos: (startPosition: number) => number | undefined;
   tablineStarts: ComputedRef<number[]>;
@@ -47,6 +50,8 @@ export function provideStackResizeObserver() {
   const tablineStarts = computed<number[]>(() => {
     const breaks: number[] = [];
 
+    if (posToY.value.length === 0) return [0];
+
     posToY.value.forEach(({ position, y }, i: number) => {
       if (i === 0) return;
       const prevY = posToY.value[i - 1].y;
@@ -55,7 +60,7 @@ export function provideStackResizeObserver() {
       }
     });
 
-    return [0, ...breaks];
+    return [0, ...breaks, posToY.value[posToY.value.length - 1].position];
   });
 
   let firstPos = Infinity;
@@ -151,11 +156,14 @@ export function provideStackResizeObserver() {
     if (startPos < firstPos) firstPos = startPos;
   }
 
-  function getStackCoords(startPos: number) {
-    const coords = posToCoords.get(startPos);
-    if (!coords) return;
-    // WARNING: assumes all tablines start at the same x position
-    return withOffset(coords.coords, -posToCoords.get(firstPos)!.coords.left);
+  function getStackCoords(position: number, barStart?: number) {
+    if (!posToCoords.has(position)) return;
+    const coords = posToCoords.get(position)!.coords;
+    if (barStart !== undefined) {
+      const barStartCoords = posToCoords.get(barStart)!.coords;
+      return withOffset(coords, -barStartCoords.left);
+    }
+    return coords;
   }
 
   function getNextStackPos(startPosition: number): number | undefined {

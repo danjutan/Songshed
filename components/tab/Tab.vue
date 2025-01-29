@@ -31,6 +31,7 @@ import {
 
 import BarDivider from "./bars/BarDivider.vue";
 import { isCollapsed } from "./hooks/use-collapsed";
+import { provideBeatSize } from "./providers/provide-beatsize";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -40,11 +41,11 @@ const settings = injectSettingsState();
 const cellHeightPx = computed(() => `${settings.cellHeight}px`);
 const contextMenuHeightPx = computed(() => `${settings.contextMenuHeight}px`);
 const collapsedMinWidthPx = computed(() => `${settings.collapsedMinWidth}px`);
-const barSize = computed(
-  () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
-);
 
 const subUnit = provideSubUnit(props.tabStore, settings);
+const beatSize = provideBeatSize(props.tabStore);
+
+const barSize = computed(() => props.tabStore.beatsPerBar * beatSize.value);
 
 // const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
 const newBarStart = ref(0);
@@ -204,7 +205,6 @@ function endDrag(i: number) {
 </script>
 
 <template>
-  {{ tablineStarts }}
   <div ref="tab" class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
     <!-- <Tabline
       v-for="(tabline, tablineIndex) in tablines"
@@ -222,14 +222,9 @@ function endDrag(i: number) {
       <TabBar
         ref="tabBars"
         :flex-grow="barFlexGrow[i]"
-        :guitar-bar-data="{
-          stackData: bar.stacks,
-          beatSize: props.tabStore.beatSize,
-          tuning: props.tabStore.guitar.tuning,
-          frets: props.tabStore.guitar.frets,
-          numStrings: props.tabStore.guitar.strings,
-        }"
         :guitar-store="props.tabStore.guitar"
+        :bar="bar"
+        :guitar-stacks="bar.stacks"
       >
         <template #divider>
           <BarDivider
