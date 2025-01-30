@@ -50,11 +50,11 @@ onBeforeUpdate(() => {
 });
 
 const inBounds = (position: number) =>
-  position >= tabBarBounds.start && position <= tabBarBounds.end;
+  position >= tabBarBounds.start && position < tabBarBounds.end;
 
 const inBarOrThrough = (from: number, to: number) => {
   const within = inBounds(from) || inBounds(to);
-  const through = from < tabBarBounds.start && to > tabBarBounds.end;
+  const through = from < tabBarBounds.start && to >= tabBarBounds.end;
   return within || through;
 };
 
@@ -72,10 +72,26 @@ const ties = computed(() => {
   return withNew.filter((tie) => inBarOrThrough(tie.from, tie.to));
 });
 
-// If a tie is centered over a divider, we need to shift the label
-const centeredOverDivider = (from: number, to: number) => {
-  return to + subUnit.value - tabBarBounds.end === tabBarBounds.end - from;
+const showLabel = (from: number, to: number): boolean | "shift" => {
+  if (inBounds(from) && inBounds(to)) {
+    return true;
+  }
+
+  const middle = (from + to + subUnit.value) / 2;
+
+  if (middle === tabBarBounds.start) {
+    return "shift";
+  }
+
+  return inBounds(middle);
 };
+
+// If a tie is centered over a divider, we need to shift the label
+// const shiftLabel = (from: number, to: number) => {
+//   const distanceBeforeEnd = tabBarBounds.end - from;
+//   const distanceAfterEnd = to + subUnit.value - tabBarBounds.end;
+//   return distanceBeforeEnd === distanceAfterEnd;
+// };
 
 const tablineHasBends = computed(() => {
   return tieAddState.hasBendsWithin(
@@ -125,7 +141,7 @@ const tablineHasBends = computed(() => {
           v-for="tie in ties"
           :key="`${tie.from}-${tie.string}`"
           :tie
-          :over-divider="centeredOverDivider(tie.from, tie.to)"
+          :show-label="showLabel(tie.from, tie.to)"
         />
       </svg>
     </ClientOnly>

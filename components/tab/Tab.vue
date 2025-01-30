@@ -224,7 +224,6 @@ function endDrag(i: number) {
         :flex-grow="barFlexGrow[i]"
         :guitar-store="props.tabStore.guitar"
         :bar="bar"
-        :guitar-stacks="bar.stacks"
       >
         <template #divider>
           <BarDivider

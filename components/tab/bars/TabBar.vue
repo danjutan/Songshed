@@ -9,7 +9,6 @@ import { injectStackResizeObserver } from "../providers/events/provide-resize-ob
 
 const props = defineProps<{
   bar: Bar;
-  guitarStacks: GuitarStack[];
   guitarStore: GuitarStore;
   flexGrow?: number;
 }>();
@@ -22,7 +21,7 @@ provideTabBarBounds(props.bar, tablineStarts);
   <div class="tab-bar">
     <GuitarBar
       class="guitar"
-      :stack-data="guitarStacks"
+      :stack-data="bar.stacks"
       :tuning="guitarStore.tuning"
       :frets="guitarStore.frets"
       :num-strings="guitarStore.strings"

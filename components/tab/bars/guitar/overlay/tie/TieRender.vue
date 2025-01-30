@@ -11,7 +11,7 @@ import { injectSettingsState } from "~/components/tab/providers/state/provide-se
 
 const props = defineProps<{
   tie: Tie;
-  overDivider: boolean;
+  showLabel?: boolean | "shift";
 }>();
 
 const { editingNote } = injectEditingState();
@@ -82,10 +82,10 @@ const startRowTop = computed(
         :x1="from.center"
         :x2="to.center"
         :y="startRowTop + row * cellHeight - 1"
-        :shift-label="overDivider"
+        :shift-label="showLabel === 'shift'"
       >
         <TieSelect
-          v-if="tie.to !== tie.from"
+          v-if="showLabel && tie.to !== tie.from"
           :active="selectActive"
           :tie
           :x
