@@ -12,11 +12,11 @@ import SelectionRegions from "./selections/SelectionRegions.vue";
 import Toolbar from "~/components/tab/Toolbar.vue";
 
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
-import { injectTabBarBounds } from "./provide-bar-bounds";
+import { injectTabBarBounds } from "../provide-bar-bounds";
 import { injectTieAddState } from "../../providers/state/provide-tie-add-state";
 import { injectSubUnit } from "../../providers/provide-subunit";
-import { provideEditTie } from "./overlay/tie/provide-edit-tie";
-import { provideOverlayControlsTeleport } from "./overlay/provide-overlay-controls-teleport";
+import { provideEditTie } from "./provide-edit-tie";
+import { provideOverlayControlsTeleport } from "./provide-overlay-controls-teleport";
 
 import BendRender from "./overlay/bend/BendRender.vue";
 import TieRender from "./overlay/tie/TieRender.vue";
@@ -125,6 +125,7 @@ const tablineHasBends = computed(() => {
           (string: number) => emit('noteDelete', { position, string })
         "
       />
+      <SelectionRegions />
       <ClientOnly>
         <svg :id="overlayControlsId" class="overlay-controls">
           <!--Teleport-->

@@ -7,7 +7,7 @@ import { injectStackResizeObserver } from "./providers/events/provide-resize-obs
 import { injectSettingsState } from "./providers/state/provide-settings-state";
 import { injectAnnotationRenderState } from "./providers/state/annotations/provide-annotation-render-state";
 import { Plus } from "lucide-vue-next";
-import type { Bar } from "./providers/provide-bar-management";
+import type { Bar } from "./providers/state/provide-bar-management";
 
 const props = defineProps<{
   tabline: Bar[];

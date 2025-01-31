@@ -4,7 +4,7 @@ import { injectStackResizeObserver } from "~/components/tab/providers/events/pro
 import { injectBendEditState } from "@/components/tab/providers/state/provide-bend-edit-state";
 import OverlayCoords from "../OverlayCoords.vue";
 import OverlaySelect from "../OverlaySelect.vue";
-import { injectOverlayControlsTeleport } from "../provide-overlay-controls-teleport";
+import { injectOverlayControlsTeleport } from "../../provide-overlay-controls-teleport";
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";

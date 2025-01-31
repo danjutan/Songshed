@@ -1,5 +1,5 @@
 import type { InjectionKey } from "vue";
-import type { Bar } from "@/components/tab/providers/provide-bar-management";
+import type { Bar } from "~/components/tab/providers/state/provide-bar-management";
 
 export interface TabBarBounds {
   start: number;

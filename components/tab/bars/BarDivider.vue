@@ -10,7 +10,7 @@ import {
   CornerRightUp,
   CornerDownLeft,
 } from "lucide-vue-next";
-import { injectBarManagement } from "~/components/tab/providers/provide-bar-management";
+import { injectBarManagement } from "~/components/tab/providers/state/provide-bar-management";
 
 const draggerRef = useTemplateRef("dragger");
 const { insertBar, deleteBar, insertBreak, joinBreak } = injectBarManagement();

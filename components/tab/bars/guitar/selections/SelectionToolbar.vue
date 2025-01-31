@@ -32,10 +32,11 @@ const props = defineProps<{
 
 <style scoped>
 .selection-toolbar {
+  position: absolute;
   pointer-events: auto;
   display: flex;
   height: var(--context-menu-height);
-  transform: translateY(40%);
+  transform: translateY(-50%);
   border-radius: 4px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   opacity: 0.4;

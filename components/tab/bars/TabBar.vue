@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import type { GuitarStack, GuitarStore, NotePosition } from "~/model/stores";
-import type { Bar } from "../providers/provide-bar-management";
+import type { Bar } from "../providers/state/provide-bar-management";
 import GuitarBar from "./guitar/GuitarBar.vue";
 import type { GuitarNote } from "~/model/data";
 import { injectSubUnit } from "../providers/provide-subunit";
-import { provideTabBarBounds } from "./guitar/provide-bar-bounds";
+import { provideTabBarBounds } from "./provide-bar-bounds";
 import { injectStackResizeObserver } from "../providers/events/provide-resize-observer";
 
 const props = defineProps<{

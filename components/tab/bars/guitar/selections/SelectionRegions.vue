@@ -3,7 +3,7 @@ import {
   injectSelectionState,
   type RegionBounds,
 } from "~/components/tab/providers/state/provide-selection-state";
-import { injectTabBarBounds } from "../provide-bar-bounds";
+import { injectTabBarBounds } from "../../provide-bar-bounds";
 import SelectionRegion from "./SelectionRegion.vue";
 
 const selectionState = injectSelectionState();
@@ -12,7 +12,7 @@ const tabBarBounds = injectTabBarBounds();
 const inBounds = (region: RegionBounds) => {
   return (
     region.minPosition >= tabBarBounds.start &&
-    region.maxPosition <= tabBarBounds.end
+    region.maxPosition < tabBarBounds.end
   );
 };
 

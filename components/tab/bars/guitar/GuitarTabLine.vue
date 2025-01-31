@@ -6,8 +6,8 @@ import BendRender from "./overlay/bend/BendRender.vue";
 import TieRender from "./overlay/tie/TieRender.vue";
 import { injectTieAddState } from "../../providers/state/provide-tie-add-state";
 import { provideTablineBounds } from "./provide-tabline-bounds";
-import { provideEditTie } from "./overlay/tie/provide-edit-tie";
-import { provideOverlayControlsTeleport } from "./overlay/provide-overlay-controls-teleport";
+import { provideEditTie } from "./provide-edit-tie";
+import { provideOverlayControlsTeleport } from "./provide-overlay-controls-teleport";
 import { useWindowResizing } from "../../hooks/use-window-resizing";
 import { injectSubUnit } from "../../providers/provide-subunit";
 

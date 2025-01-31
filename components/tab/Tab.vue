@@ -27,7 +27,7 @@ import { provideSubUnit } from "./providers/provide-subunit";
 import {
   provideBarManagement,
   type Bar,
-} from "./providers/provide-bar-management";
+} from "./providers/state/provide-bar-management";
 
 import BarDivider from "./bars/BarDivider.vue";
 import { isCollapsed } from "./hooks/use-collapsed";

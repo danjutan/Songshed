@@ -1,6 +1,4 @@
 import type { InjectionKey, Reactive } from "vue";
-import { useResizeObserver } from "@vueuse/core";
-import type { ColumnsMap } from "../provide-columns-map";
 
 export interface StackCoords {
   top: number;

@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import OverlaySelect from "../OverlaySelect.vue";
 import type { Tie } from "~/model/stores";
-import { injectEditTie } from "./provide-edit-tie";
+import { injectEditTie } from "../../provide-edit-tie";
 import { TieType } from "~/model/data";
-import { injectOverlayControlsTeleport } from "../provide-overlay-controls-teleport";
+import { injectOverlayControlsTeleport } from "../../provide-overlay-controls-teleport";
 
 const props = defineProps<{
   active: boolean;
