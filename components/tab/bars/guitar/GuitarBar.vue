@@ -86,13 +86,6 @@ const showLabel = (from: number, to: number): boolean | "shift" => {
   return inBounds(middle);
 };
 
-// If a tie is centered over a divider, we need to shift the label
-// const shiftLabel = (from: number, to: number) => {
-//   const distanceBeforeEnd = tabBarBounds.end - from;
-//   const distanceAfterEnd = to + subUnit.value - tabBarBounds.end;
-//   return distanceBeforeEnd === distanceAfterEnd;
-// };
-
 const tablineHasBends = computed(() => {
   return tieAddState.hasBendsWithin(
     tabBarBounds.tabline.start,
@@ -104,47 +97,53 @@ const tablineHasBends = computed(() => {
 <template>
   <div class="guitar-bar" :class="{ 'has-bends': tablineHasBends }">
     <slot name="divider" />
-    <Stack
-      v-for="({ position, notes }, i) in stackData"
-      :key="position"
-      ref="stacks"
-      class="stack"
-      :class="{ border: !settings.posLineCenter && i < stackData.length - 1 }"
-      :style="{
-        gridColumn: i + 2,
-        gridRow: `${tablineHasBends ? 3 : 1} / -1`,
-      }"
-      :notes
-      :position="position"
-      :tuning
-      :frets
-      @note-change="
-        (string: number, note: GuitarNote) =>
-          emit('noteChange', { position, string }, note)
-      "
-      @note-delete="
-        (string: number) => emit('noteDelete', { position, string })
-      "
-    />
-
-    <ClientOnly>
-      <svg :id="overlayControlsId" class="overlay-controls">
-        <!--Teleport-->
-      </svg>
-      <svg class="overlay">
-        <BendRender
-          v-for="bend in bends"
-          :key="`${bend.from}-${bend.string}`"
-          :bend
-        />
-        <TieRender
-          v-for="tie in ties"
-          :key="`${tie.from}-${tie.string}`"
-          :tie
-          :show-label="showLabel(tie.from, tie.to)"
-        />
-      </svg>
-    </ClientOnly>
+    <div class="toolbar">
+      <!-- annotations go here -->
+      <div v-if="tablineHasBends" class="bend-bar" />
+      <div class="flex-bar" />
+    </div>
+    <div class="notes-grid">
+      <Stack
+        v-for="({ position, notes }, i) in stackData"
+        :key="position"
+        ref="stacks"
+        class="stack"
+        :class="{ border: !settings.posLineCenter && i < stackData.length - 1 }"
+        :style="{
+          gridColumn: i + 1,
+          gridRow: '1 / -1',
+        }"
+        :notes
+        :position="position"
+        :tuning
+        :frets
+        @note-change="
+          (string: number, note: GuitarNote) =>
+            emit('noteChange', { position, string }, note)
+        "
+        @note-delete="
+          (string: number) => emit('noteDelete', { position, string })
+        "
+      />
+      <ClientOnly>
+        <svg :id="overlayControlsId" class="overlay-controls">
+          <!--Teleport-->
+        </svg>
+        <svg class="overlay">
+          <BendRender
+            v-for="bend in bends"
+            :key="`${bend.from}-${bend.string}`"
+            :bend
+          />
+          <TieRender
+            v-for="tie in ties"
+            :key="`${tie.from}-${tie.string}`"
+            :tie
+            :show-label="showLabel(tie.from, tie.to)"
+          />
+        </svg>
+      </ClientOnly>
+    </div>
   </div>
   <!-- <SelectionRegions /> -->
 </template>
@@ -154,14 +153,40 @@ const tablineHasBends = computed(() => {
   display: grid;
   width: 100%;
   grid-template-columns: min-content repeat(v-bind(numStacks), 1fr);
-  grid-template-rows: repeat(v-bind(numStrings), var(--cell-height));
+  grid-template-rows: auto auto;
 
   .divider {
     grid-column: 1;
-    grid-row: 1 / -1;
+    grid-row: -2 / -1;
   }
 }
-.guitar-bar.has-bends {
+
+.notes-grid {
+  display: grid;
+  grid-column: 2 / -1;
+  grid-row: 2;
+  grid-template-columns: subgrid;
+  grid-template-rows: repeat(v-bind(numStrings), var(--cell-height));
+}
+
+.toolbar {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: subgrid;
+
+  & .flex-bar {
+    grid-column: 1 / -1;
+    height: var(--context-menu-height);
+  }
+
+  & .bend-bar {
+    grid-column: 1 / -1;
+    height: var(--context-menu-height);
+  }
+}
+
+/* .guitar-bar.has-bends {
   grid-template-rows: var(--cell-height) var(--context-menu-height) repeat(
       v-bind(numStrings),
       var(--cell-height)
@@ -175,7 +200,7 @@ const tablineHasBends = computed(() => {
   .overlay-controls {
     grid-row: 3 / -1;
   }
-}
+} */
 
 .stack.border {
   border-right: var(--pos-line-width) solid var(--pos-line-color);
@@ -189,7 +214,7 @@ const tablineHasBends = computed(() => {
 .guitar-bar .overlay,
 .guitar-bar .overlay-controls {
   pointer-events: none;
-  grid-column: 2 / -1;
+  grid-column: 1 / -1;
   grid-row: 1 / -1;
   width: 100%;
   height: calc(
