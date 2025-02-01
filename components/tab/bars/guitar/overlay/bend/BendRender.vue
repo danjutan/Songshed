@@ -67,6 +67,7 @@ const selectActive = computed(() => {
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
 
+const cellHeight = computed(() => settings.cellHeight);
 onUnmounted(() => {
   console.log("bend unmounted");
 });
@@ -74,11 +75,7 @@ onUnmounted(() => {
 
 <template>
   <OverlayCoords
-    v-slot="{
-      coords: [from, to, upswingTo, through, afterTo],
-      cellHeight,
-      rightEdge,
-    }"
+    v-slot="{ coords: [from, to, upswingTo, through, afterTo], rightEdge }"
     :positions="[
       props.bend.from,
       props.bend.to,
@@ -205,7 +202,11 @@ onUnmounted(() => {
           @mouseleave="releaseArrowHover = false"
         />
         <line
-          v-if="!hasThrough && afterTo"
+          v-if="
+            !hasThrough &&
+            (releaseArrowHover || upswingArrowHover || labelHover) &&
+            afterTo
+          "
           :x1="to.right"
           :y1="upswingToY + cellHeight * 0.35"
           :x2="afterTo.center"

@@ -40,9 +40,9 @@ watch(
 //   console.log("stack unmounted", props.position);
 // });
 
-onBeforeUpdate(() => {
-  console.log("updated stack");
-});
+// onBeforeUpdate(() => {
+//   console.log("updated stack");
+// });
 
 const isCollapsed = useIsCollapsed(
   computed(() => props.notes),

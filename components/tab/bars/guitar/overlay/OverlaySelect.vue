@@ -56,7 +56,7 @@ const iconSizePx = `${iconSize}px`;
   --vs-font-size: calc(var(--note-font-size) * 0.75);
   --vs-option-padding: 1px 2px;
   --vs-indicators-gap: 0px;
-  --vs-menu-offset-top: 2px;
+  --vs-menu-offset-top: -1px;
 
   width: fit-content !important;
 

@@ -39,9 +39,9 @@ const emit = defineEmits<{
 
 const numStacks = computed(() => props.stackData.length);
 
-onBeforeUpdate(() => {
-  console.log("updated bar");
-});
+// onBeforeUpdate(() => {
+//   console.log("updated bar");
+// });
 
 const inBounds = (position: number) =>
   position >= tabBarBounds.start && position < tabBarBounds.end;

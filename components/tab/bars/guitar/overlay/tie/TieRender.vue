@@ -62,14 +62,23 @@ const selectActive = computed(() => {
   return false;
 });
 
+watch(
+  () => props.tie.type,
+  () => {
+    selectHovered.value = false;
+  },
+);
+
 const startRowTop = computed(
   () => settings.contextMenuHeight + settings.cellHeight,
 );
+
+const cellHeight = computed(() => settings.cellHeight);
 </script>
 
 <template>
   <OverlayCoords
-    v-slot="{ coords: [from, to], cellHeight }"
+    v-slot="{ coords: [from, to] }"
     :positions="[tie.from, tie.to]"
   >
     <svg v-if="from && to">

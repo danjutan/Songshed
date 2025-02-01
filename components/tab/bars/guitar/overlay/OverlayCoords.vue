@@ -19,8 +19,6 @@ const subUnit = injectSubUnit();
 const resizeObserver = injectStackResizeObserver();
 const settingState = injectSettingsState();
 
-const cellHeight = computed(() => settingState.cellHeight);
-
 const { tablineStarts } = resizeObserver;
 
 const getStackCoords = (position: number) =>
@@ -59,7 +57,6 @@ const toCoords = (position: number): StackCoords | undefined => {
     :coords="
       positions.map((pos) => (pos !== undefined ? toCoords(pos) : undefined))
     "
-    :cell-height
     :right-edge="getStackCoords(bounds.end - subUnit)?.right || Infinity"
   />
 </template>
