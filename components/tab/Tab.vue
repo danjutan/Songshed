@@ -15,7 +15,7 @@ import { provideColumnsMap } from "./providers/provide-columns-map";
 import { useTieAddMonitor } from "./hooks/dnd/use-tie-add-monitor";
 import { useSelectMonitor } from "./hooks/dnd/use-select-monitor";
 import { useMoveMonitor } from "./hooks/dnd/use-move-monitor";
-
+import { useBendEditMonitor } from "./hooks/dnd/use-bend-edit-monitor";
 import { injectSettingsState } from "./providers/state/provide-settings-state";
 
 import { provideAnnotationAddState } from "./providers/state/annotations/provide-annotation-add-state";
@@ -71,7 +71,7 @@ const tieAddState = provideTieAddState(
   })),
 );
 
-provideBendEditState(
+const bendEditState = provideBendEditState(
   reactiveComputed(() => ({
     cellHoverEvents,
     tieAddState,
@@ -90,6 +90,7 @@ onMounted(() => {
   useTieAddMonitor(tieAddState);
   useSelectMonitor(selectionState);
   useMoveMonitor(selectionState);
+  useBendEditMonitor(bendEditState);
 });
 
 // const columnsMap = provideColumnsMap(

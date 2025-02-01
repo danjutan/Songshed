@@ -8,7 +8,7 @@ import { injectOverlayControlsTeleport } from "../../provide-overlay-controls-te
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
-
+import BendDragger from "./BendDragger.vue";
 export interface BendRenderProps {
   bend: Bend;
 }
@@ -115,14 +115,13 @@ onUnmounted(() => {
         <path d="M 0 0 L 10 5 L 0 10 z" />
       </marker>
 
-      <rect
-        class="upswing-dragger"
+      <BendDragger
+        :bend="props.bend"
+        :mode="'upswing'"
         :x="upswingTo.left"
-        :y="upswingToY"
+        :y="upswingToY + settings.contextMenuHeight"
         :width="upswingTo.right - upswingTo.left"
-        :height="cellHeight * 1.5"
-        opacity="0"
-        @mousedown="bendEditState.start('upswing', props.bend)"
+        :height="cellHeight"
         @mouseover="upswingArrowHover = true"
         @mouseleave="upswingArrowHover = false"
       />
@@ -188,22 +187,21 @@ onUnmounted(() => {
       </g>
 
       <g v-if="!bendEditState.dragging">
-        <rect
-          class="release-grabber"
+        <BendDragger
+          :bend="props.bend"
+          :mode="'release'"
           :x="hasThrough ? to.left : to.right"
           :y="
             hasThrough && bend.releaseType === 'connect'
-              ? (startRow - 1.5) * cellHeight
+              ? startRowTop + (startRow - 1.5) * cellHeight
               : upswingToY
           "
           :width="to.right - to.left"
           :height="settings.contextMenuHeight"
-          opacity="0"
-          @mousedown.prevent="bendEditState.start('release', props.bend)"
           @click="
-            bendEditState.onReleaseGrabberClick(getNextStackPos(bend.to)!)
+            bendEditState.onReleaseGrabberClick(bend, getNextStackPos(bend.to)!)
           "
-          @mouseover.prevent="releaseArrowHover = true"
+          @mouseover="releaseArrowHover = true"
           @mouseleave="releaseArrowHover = false"
         />
         <line

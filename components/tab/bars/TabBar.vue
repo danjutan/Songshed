@@ -19,6 +19,7 @@ provideTabBarBounds(props.bar, tablineStarts);
 
 <template>
   <div class="tab-bar">
+    <!-- annotations go here -->
     <GuitarBar
       class="guitar"
       :stack-data="bar.stacks"

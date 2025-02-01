@@ -1,16 +1,17 @@
-import type { Bend, TieStore } from "~/model/stores";
+import type { Bend, NotePosition, TieStore } from "~/model/stores";
 import type {
   CellHoverEvents,
   HoveredRow,
 } from "../events/provide-cell-hover-events";
 import type { TieAddState } from "./provide-tie-add-state";
 
-type StartType = "upswing" | "release";
+export type StartType = "upswing" | "release";
 
 export function provideBendEditState(
   props: ReactiveComputed<{
     cellHoverEvents: CellHoverEvents;
     tieAddState: TieAddState;
+    // TODO: see if we can remove this dependency
     tieStore: TieStore | undefined;
   }>,
 ) {
@@ -54,17 +55,23 @@ export function provideBendEditState(
     return bend;
   }
 
-  cellHoverEvents.addHoverListener((type, position) => {
+  function dragBendBar(position: number) {
     if (dragging.value && !tieAddState.dragging) {
-      const updated = updateOnDrag(type, position);
+      const updated = updateOnDrag("bend", position);
       props.tieStore!.updateBend(updated);
-      // emit("updateBend", updated);
     }
-  });
+  }
 
-  cellHoverEvents.addMouseUpListener(() => {
+  function dragNoteInput(notePosition: NotePosition) {
+    if (dragging.value && !tieAddState.dragging) {
+      const updated = updateOnDrag(notePosition.string, notePosition.position);
+      props.tieStore!.updateBend(updated);
+    }
+  }
+
+  function end() {
     dragging.value = undefined;
-  });
+  }
 
   function onLabelHover() {
     if (dragging.value === "release") {
@@ -75,11 +82,11 @@ export function provideBendEditState(
     }
   }
 
-  function onReleaseGrabberClick(grabberPosition: number) {
-    if (!draggingBend.value?.through?.length) {
+  function onReleaseGrabberClick(bend: Bend, grabberPosition: number) {
+    if (!bend.through?.length) {
       props.tieStore!.updateBend({
-        ...draggingBend.value!,
-        through: [draggingBend.value!.to - draggingBend.value!.from!],
+        ...bend,
+        through: [bend.to - bend.from],
         to: grabberPosition,
         releaseType: "hold",
       });
@@ -96,6 +103,9 @@ export function provideBendEditState(
 
   const bendEditState = {
     start,
+    dragBendBar,
+    dragNoteInput,
+    end,
     onLabelHover,
     deleteBend,
     setBendValue,

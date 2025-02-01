@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import type { GuitarNote, NoteStack, StackMap } from "~/model/data";
+import type { GuitarNote } from "~/model/data";
 import Stack from "./stack/Stack.vue";
-import type {
-  Bend,
-  GuitarStack,
-  NotePosition,
-  Tie,
-  TieStore,
-} from "~/model/stores";
+import type { GuitarStack, NotePosition, TieStore } from "~/model/stores";
 import SelectionRegions from "./selections/SelectionRegions.vue";
-import Toolbar from "~/components/tab/Toolbar.vue";
+import BendDroppable from "./overlay/bend/BendDroppable.vue";
 
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectTabBarBounds } from "../provide-bar-bounds";
@@ -98,9 +92,19 @@ const tablineHasBends = computed(() => {
   <div class="guitar-bar" :class="{ 'has-bends': tablineHasBends }">
     <slot name="divider" />
     <div class="toolbar">
-      <!-- annotations go here -->
-      <div v-if="tablineHasBends" class="bend-bar" />
       <div class="flex-bar" />
+      <template v-if="tablineHasBends">
+        <div class="bend-bar" />
+        <BendDroppable
+          v-for="(stack, i) in stackData"
+          :key="stack.position"
+          class="bend-droppable"
+          :position="stack.position"
+          :style="{
+            gridColumn: i === 0 ? '1 / span 2' : i + 2,
+          }"
+        />
+      </template>
     </div>
     <div class="notes-grid">
       <Stack
@@ -175,15 +179,21 @@ const tablineHasBends = computed(() => {
   grid-row: 1;
   display: grid;
   grid-template-columns: subgrid;
+  grid-auto-rows: var(--context-menu-height);
 
   & .flex-bar {
     grid-column: 1 / -1;
-    height: var(--context-menu-height);
+    grid-row: 2;
   }
 
   & .bend-bar {
     grid-column: 1 / -1;
+    grid-row: 1;
     height: var(--context-menu-height);
+  }
+
+  & .bend-droppable {
+    grid-row: 1 / span 2;
   }
 }
 
