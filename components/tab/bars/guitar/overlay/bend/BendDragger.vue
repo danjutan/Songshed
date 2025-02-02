@@ -22,7 +22,7 @@ const emit = defineEmits<{
   click: [];
 }>();
 
-const { overlayControlsSelector } = injectOverlayControlsTeleport();
+const { draggersSelector } = injectOverlayControlsTeleport();
 
 const dragger = useTemplateRef("dragger");
 
@@ -55,7 +55,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <Teleport :to="overlayControlsSelector">
+  <Teleport :to="draggersSelector">
     <foreignObject :x="x" :y="y" :width="width" :height="height">
       <div
         ref="dragger"

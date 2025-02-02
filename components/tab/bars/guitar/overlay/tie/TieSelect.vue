@@ -13,7 +13,7 @@ const props = defineProps<{
 }>();
 
 const { updateType, deleteTie } = injectEditTie();
-const { overlayControlsSelector } = injectOverlayControlsTeleport();
+const { selectsSelector } = injectOverlayControlsTeleport();
 
 const options = computed<[TieType, string][]>(() => {
   const connected =
@@ -49,7 +49,7 @@ const emits = defineEmits<{
 </script>
 
 <template>
-  <Teleport :to="overlayControlsSelector">
+  <Teleport :to="selectsSelector">
     <foreignObject :x="x" :y :width="55" :height="200" overflow="visible">
       <OverlaySelect
         v-model="model"

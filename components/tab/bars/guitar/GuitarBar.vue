@@ -29,7 +29,9 @@ const tieAddState = injectTieAddState();
 const tabBarBounds = injectTabBarBounds();
 const subUnit = injectSubUnit();
 
-const overlayControlsId = provideOverlayControlsTeleport();
+const { uniqueId, draggersClass, selectsClass } =
+  provideOverlayControlsTeleport();
+
 provideEditTie(props.tieStore);
 
 const emit = defineEmits<{
@@ -131,9 +133,14 @@ const tablineHasBends = computed(() => {
       />
       <SelectionRegions />
       <ClientOnly>
-        <svg :id="overlayControlsId" class="overlay-controls">
-          <!--Teleport-->
-        </svg>
+        <div :id="uniqueId" class="overlay-controls">
+          <svg :class="draggersClass">
+            <!--Teleport-->
+          </svg>
+          <svg :class="selectsClass">
+            <!--Teleport-->
+          </svg>
+        </div>
         <svg class="overlay">
           <BendRender
             v-for="bend in bends"
@@ -218,12 +225,15 @@ const tablineHasBends = computed(() => {
   grid-row: 1 / span v-bind(numStrings);
 }
 .overlay-controls {
-  z-index: var(--overlay-controls-z-index);
+  display: contents;
+}
+.overlay-controls > svg {
   position: relative; /* somehow makes the VueSelect hover events work right */
   overflow: hidden;
+  z-index: var(--overlay-controls-z-index);
 }
 .guitar-bar .overlay,
-.guitar-bar .overlay-controls {
+.guitar-bar .overlay-controls > svg {
   pointer-events: none;
   grid-column: 1 / -1;
   grid-row: 1 / -1;

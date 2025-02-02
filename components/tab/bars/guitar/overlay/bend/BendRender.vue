@@ -15,7 +15,7 @@ export interface BendRenderProps {
 
 const props = defineProps<BendRenderProps>();
 const bendEditState = injectBendEditState();
-const { overlayControlsSelector } = injectOverlayControlsTeleport();
+const { selectsSelector } = injectOverlayControlsTeleport();
 const { editingNote } = injectEditingState();
 const { getNextStackPos } = injectStackResizeObserver();
 const settings = injectSettingsState();
@@ -123,7 +123,7 @@ onUnmounted(() => {
         @mouseleave="upswingArrowHover = false"
       />
 
-      <Teleport :to="overlayControlsSelector">
+      <Teleport :to="selectsSelector">
         <foreignObject
           v-if="upswingTo.right < rightEdge"
           :x="upswingTo.left"
