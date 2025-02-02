@@ -9,11 +9,12 @@ import { injectCellHoverEvents } from "~/components/tab/providers/events/provide
 import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import BendDragger from "./BendDragger.vue";
-export interface BendRenderProps {
-  bend: Bend;
-}
 
-const props = defineProps<BendRenderProps>();
+const props = defineProps<{
+  bend: Bend;
+  showLabel: boolean;
+}>();
+
 const bendEditState = injectBendEditState();
 const { selectsSelector } = injectOverlayControlsTeleport();
 const { editingNote } = injectEditingState();
@@ -75,7 +76,7 @@ onUnmounted(() => {
 
 <template>
   <OverlayCoords
-    v-slot="{ coords: [from, to, upswingTo, through, afterTo], rightEdge }"
+    v-slot="{ coords: [from, to, upswingTo, through, afterTo] }"
     :positions="[
       props.bend.from,
       props.bend.to,
@@ -125,7 +126,7 @@ onUnmounted(() => {
 
       <Teleport :to="selectsSelector">
         <foreignObject
-          v-if="upswingTo.right < rightEdge"
+          v-if="showLabel"
           :x="upswingTo.left"
           :y="upswingToY - 2"
           :width="100"

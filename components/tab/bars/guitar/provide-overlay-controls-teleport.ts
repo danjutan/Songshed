@@ -1,6 +1,7 @@
 export function provideOverlayControlsTeleport() {
   const uniqueId = `overlay-controls-${useId()}`;
 
+  // layers
   const draggersClass = "draggers";
   const selectsClass = "selects";
 

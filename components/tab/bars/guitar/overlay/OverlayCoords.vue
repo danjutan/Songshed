@@ -57,6 +57,5 @@ const toCoords = (position: number): StackCoords | undefined => {
     :coords="
       positions.map((pos) => (pos !== undefined ? toCoords(pos) : undefined))
     "
-    :right-edge="getStackCoords(bounds.end - subUnit)?.right || Infinity"
   />
 </template>

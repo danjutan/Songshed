@@ -68,7 +68,7 @@ const ties = computed(() => {
   return withNew.filter((tie) => inBarOrThrough(tie.from, tie.to));
 });
 
-const showLabel = (from: number, to: number): boolean | "shift" => {
+const showTieLabel = (from: number, to: number): boolean | "shift" => {
   if (inBounds(from) && inBounds(to)) {
     return true;
   }
@@ -132,30 +132,31 @@ const tablineHasBends = computed(() => {
         "
       />
       <SelectionRegions />
-      <ClientOnly>
-        <div :id="uniqueId" class="overlay-controls">
-          <svg :class="draggersClass">
-            <!--Teleport-->
-          </svg>
-          <svg :class="selectsClass">
-            <!--Teleport-->
-          </svg>
-        </div>
-        <svg class="overlay">
-          <BendRender
-            v-for="bend in bends"
-            :key="`${bend.from}-${bend.string}`"
-            :bend
-          />
-          <TieRender
-            v-for="tie in ties"
-            :key="`${tie.from}-${tie.string}`"
-            :tie
-            :show-label="showLabel(tie.from, tie.to)"
-          />
-        </svg>
-      </ClientOnly>
     </div>
+    <ClientOnly>
+      <div :id="uniqueId" class="overlay-controls">
+        <svg :class="draggersClass">
+          <!--Teleport-->
+        </svg>
+        <svg :class="selectsClass">
+          <!--Teleport-->
+        </svg>
+      </div>
+      <svg class="overlay">
+        <BendRender
+          v-for="bend in bends"
+          :key="`${bend.from}-${bend.string}`"
+          :bend
+          :show-label="inBounds(bend.to)"
+        />
+        <TieRender
+          v-for="tie in ties"
+          :key="`${tie.from}-${tie.string}`"
+          :tie
+          :show-label="showTieLabel(tie.from, tie.to)"
+        />
+      </svg>
+    </ClientOnly>
   </div>
   <!-- <SelectionRegions /> -->
 </template>
@@ -204,22 +205,6 @@ const tablineHasBends = computed(() => {
   }
 }
 
-/* .guitar-bar.has-bends {
-  grid-template-rows: var(--cell-height) var(--context-menu-height) repeat(
-      v-bind(numStrings),
-      var(--cell-height)
-    );
-
-  .divider {
-    grid-row: 3 / -1;
-  }
-
-  .overlay,
-  .overlay-controls {
-    grid-row: 3 / -1;
-  }
-} */
-
 .stack.border {
   border-right: var(--pos-line-width) solid var(--pos-line-color);
   grid-row: 1 / span v-bind(numStrings);
@@ -229,14 +214,15 @@ const tablineHasBends = computed(() => {
 }
 .overlay-controls > svg {
   position: relative; /* somehow makes the VueSelect hover events work right */
-  overflow: hidden;
+  overflow: visible;
   z-index: var(--overlay-controls-z-index);
 }
+
 .guitar-bar .overlay,
 .guitar-bar .overlay-controls > svg {
   pointer-events: none;
   grid-column: 1 / -1;
-  grid-row: 1 / -1;
+  grid-row: 2;
   width: 100%;
   height: calc(
     100% + var(--cell-height) / 2 + var(--context-menu-height) +
