@@ -158,7 +158,6 @@ const tablineHasBends = computed(() => {
       </svg>
     </ClientOnly>
   </div>
-  <!-- <SelectionRegions /> -->
 </template>
 
 <style>

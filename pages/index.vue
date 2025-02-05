@@ -3,6 +3,45 @@ import { TieType, type GuitarNote } from "~/model/data";
 import { createTabStore } from "~/model/stores";
 
 const store = createTabStore();
+store.annotations.createAnnotation(0, {
+  text: "1",
+  start: 5,
+  end: 8,
+});
+
+store.annotations.createAnnotation(0, {
+  text: "2",
+  start: 12,
+  end: 14,
+});
+
+store.annotations.createAnnotation(0, {
+  text: "3",
+  start: 16,
+  end: 24,
+});
+
+store.annotations.createAnnotation(0, {
+  text: "4",
+  start: 0,
+});
+
+store.annotations.createAnnotation(0, {
+  text: "5",
+  start: 3,
+});
+
+store.annotations.createAnnotation(0, {
+  text: "6",
+  start: 1,
+  end: 2,
+});
+
+// store.annotations.createAnnotation(0, {
+//   text: "7",
+//   start: 25,
+//   end: 40,
+// });
 
 const guitar = store.createGuitarTab();
 
@@ -38,8 +77,8 @@ const guitarNotes: Array<[number, number, string]> = [
   // [Spacing.Quarter * 10 + Spacing.Sixteenth, 2, "F4"],
   // [Spacing.Quarter * 12 - Spacing.Eighth, 2, "G4"],
   // [Spacing.Quarter * 12, 2, "F4"],
-  // [Spacing.Quarter * 12 + Spacing.Sixteenth, 0, "F4"],
-  // [Spacing.Quarter * 45 + Spacing.Sixteenth, 0, "F4"],
+  [Spacing.Quarter * 22 + Spacing.Sixteenth, 0, "F4"],
+  [Spacing.Quarter * 45 + Spacing.Sixteenth, 0, "F4"],
 ];
 
 guitarNotes.forEach(([position, string, midiString]) => {

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { Tie } from "~/model/stores";
-import OverlayCoords from "../OverlayCoords.vue";
+import OverlayCoords from "~/components/tab/bars/OverlayCoords.vue";
 import TieCurve from "./TieCurve.vue";
 import TieSelect from "./TieSelect.vue";
 import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";

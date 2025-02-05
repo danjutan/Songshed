@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { injectSettingsState } from "../../../providers/state/provide-settings-state";
+import { injectSettingsState } from "../providers/state/provide-settings-state";
 import {
   withOffset,
   type StackCoords,
   injectStackResizeObserver,
-} from "../../../providers/events/provide-resize-observer";
-import { injectTabBarBounds } from "../../provide-bar-bounds";
+} from "../providers/events/provide-resize-observer";
+import { injectTabBarBounds } from "~/components/tab/bars/provide-bar-bounds";
 import { injectSubUnit } from "~/components/tab/providers/provide-subunit";
 
 // There's an argument for this being a hook instead of a component. I liked the ergonomics of being able to do the positioning within the template, and I didn't like the idea of inject() outside of a component.

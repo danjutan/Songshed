@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import type { Bend } from "~/model/stores";
 import { injectStackResizeObserver } from "~/components/tab/providers/events/provide-resize-observer";
-import { injectBendEditState } from "@/components/tab/providers/state/provide-bend-edit-state";
-import OverlayCoords from "../OverlayCoords.vue";
+import { injectBendEditState } from "~/components/tab/providers/state/provide-bend-edit-state";
+import OverlayCoords from "~/components/tab/bars/OverlayCoords.vue";
 import OverlaySelect from "../OverlaySelect.vue";
 import { injectOverlayControlsTeleport } from "../../provide-overlay-controls-teleport";
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
@@ -69,9 +69,10 @@ const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
 
 const cellHeight = computed(() => settings.cellHeight);
-onUnmounted(() => {
-  console.log("bend unmounted");
-});
+
+// onUnmounted(() => {
+//   console.log("bend unmounted");
+// });
 </script>
 
 <template>

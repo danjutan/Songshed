@@ -222,9 +222,10 @@ function endDrag(i: number) {
 
       <TabBar
         ref="tabBars"
-        :flex-grow="barFlexGrow[i]"
-        :guitar-store="props.tabStore.guitar"
         :bar="bar"
+        :flex-grow="barFlexGrow[i]"
+        :annotation-store="props.tabStore.annotations"
+        :guitar-store="props.tabStore.guitar"
       >
         <template #divider>
           <BarDivider

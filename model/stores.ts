@@ -161,13 +161,16 @@ function createAnnotationStore(
       return annotations.get(row)![0]; // TODO: revist: goal is to return a reactive object; if irrelevant or broken, just return data
     }
 
-    // TODO: revist: <= vs <; do we need this check at all?
-    const overlaps = ofRow.some(
-      (a: Annotation) =>
-        (a.start < data.start && a.end > data.start) ||
-        (a.start > data.start && a.end < data.end),
-    );
-    if (overlaps) return false;
+    // TODO: check this on the UI end
+    // const overlaps = ofRow.some((a: Annotation) => {
+    //   const aEnd = a.end ?? a.start;
+    //   const dataEnd = data.end ?? data.start;
+    //   return (
+    //     (a.start < data.start && aEnd > data.start) ||
+    //     (a.start > data.start && aEnd < dataEnd)
+    //   );
+    // });
+    // if (overlaps) return false;
     ofRow.push(data);
     return ofRow.at(-1)!; // see above
   }
