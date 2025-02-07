@@ -225,7 +225,7 @@ const tablineHasBends = computed(() => {
 .guitar-bar .overlay,
 .guitar-bar .overlay-controls > svg {
   pointer-events: none;
-  grid-column: 1 / -1;
+  grid-column: 2 / -1;
   grid-row: 2;
   width: 100%;
   height: calc(
