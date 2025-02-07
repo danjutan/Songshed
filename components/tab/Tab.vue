@@ -30,6 +30,7 @@ import {
 import BarDivider from "./bars/BarDivider.vue";
 import { isCollapsed } from "./hooks/use-collapsed";
 import { provideBeatSize } from "./providers/provide-beatsize";
+import { Plus } from "lucide-vue-next";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -46,7 +47,6 @@ const beatSize = provideBeatSize(props.tabStore);
 const barSize = computed(() => props.tabStore.beatsPerBar * beatSize.value);
 
 // const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
-const newBarStart = ref(0);
 
 const { tablineStarts } = provideStackResizeObserver();
 
@@ -136,11 +136,6 @@ function onLeaveTab() {
   editingState.blurEditing();
 }
 
-function newBarClick() {
-  const lastBarStart = barManagement.bars.at(-1)!.start;
-  newBarStart.value = lastBarStart + barSize.value;
-}
-
 function onKeyUp(e: KeyboardEvent) {
   if (e.key === "Backspace") {
     selectionState.deleteSelectedNotes();
@@ -203,6 +198,7 @@ function endDrag(i: number) {
   lastDiffX = 0;
 }
 
+const numStrings = computed(() => props.tabStore.guitar.strings);
 const deletingBarStart = ref<number | undefined>(undefined);
 </script>
 
@@ -232,6 +228,10 @@ const deletingBarStart = ref<number | undefined>(undefined);
         </template>
       </TabBar>
     </template>
+    <!-- TODO: re-evaluate; do I toss this down a slot? -->
+    <div class="new-button" @click="barManagement.newBarClick">
+      <Plus />
+    </div>
   </div>
 </template>
 
@@ -279,5 +279,14 @@ const deletingBarStart = ref<number | undefined>(undefined);
 
 .drag-start {
   cursor: crosshair;
+}
+
+.new-button {
+  align-self: center;
+  cursor: pointer;
+
+  &:hover svg {
+    stroke-width: 3;
+  }
 }
 </style>

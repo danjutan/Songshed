@@ -21,14 +21,6 @@ const oneColumnAdjustment = computed(() => {
   return props.region.minPosition === props.region.maxPosition ? 1 : 0;
 });
 
-watchEffect(() => {
-  console.log(
-    props.region.minPosition,
-    props.region.maxPosition,
-    tabBarBounds.start,
-    subUnit.value,
-  );
-});
 const startColumn = computed(
   () => (props.region.minPosition - tabBarBounds.start) / subUnit.value + 1,
 );

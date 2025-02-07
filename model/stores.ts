@@ -144,7 +144,7 @@ function createChordStore({ tuning, chords }: ChordsData) {
 export type ChordStore = ReturnType<typeof createChordStore>;
 
 export interface AnnotationStore {
-  createAnnotation: (row: number, data: Annotation) => Annotation | false;
+  createAnnotation: (row: number, data: Annotation) => void;
   deleteAnnotation: (row: number, data: Annotation) => void;
   getAnnotations: (row: number) => Annotation[];
   getRows: () => number[];
@@ -158,21 +158,10 @@ function createAnnotationStore(
     const ofRow = annotations.get(row);
     if (!ofRow) {
       annotations.set(row, [data]);
-      return annotations.get(row)![0]; // TODO: revist: goal is to return a reactive object; if irrelevant or broken, just return data
+      return;
     }
 
-    // TODO: check this on the UI end
-    // const overlaps = ofRow.some((a: Annotation) => {
-    //   const aEnd = a.end ?? a.start;
-    //   const dataEnd = data.end ?? data.start;
-    //   return (
-    //     (a.start < data.start && aEnd > data.start) ||
-    //     (a.start > data.start && aEnd < dataEnd)
-    //   );
-    // });
-    // if (overlaps) return false;
     ofRow.push(data);
-    return ofRow.at(-1)!; // see above
   }
 
   function deleteAnnotation(row: number, data: Annotation) {
@@ -182,7 +171,7 @@ function createAnnotationStore(
         (a) => a.start === data.start && a.end === data.end,
       );
       ofRow.splice(toDelete, 1);
-      if (ofRow.length === 0) {
+      if (ofRow.length === 0 && row === annotations.size - 1) {
         annotations.delete(row);
       }
     }
