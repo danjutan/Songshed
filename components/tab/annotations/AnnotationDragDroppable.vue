@@ -15,6 +15,7 @@ import { injectAnnotationAddState } from "../providers/state/annotations/provide
 
 const props = defineProps<{
   row: number;
+  renderRow: number;
   position: number;
   firstInBar: boolean;
 }>();
@@ -83,7 +84,7 @@ onMounted(() => {
   /* border: 1px solid black; */
   z-index: var(--annotation-dragger-z-index);
   position: absolute;
-  top: calc(v-bind(row) * var(--cell-height));
+  top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
 }
 </style>

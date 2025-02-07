@@ -17,9 +17,8 @@ export function provideTabBarBounds(
   tablineStarts: ComputedRef<number[]>,
 ) {
   const tabBarBounds = reactiveComputed(() => {
-    const tablineStartIndex = tablineStarts.value.findIndex(
-      (start) => bar.start >= start,
-    );
+    const tablineStartIndex =
+      tablineStarts.value.findIndex((lineStart) => lineStart > bar.start) - 1;
     return {
       start: bar.start,
       end: bar.end,

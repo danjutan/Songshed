@@ -3,6 +3,7 @@ import AnnotationRender from "./AnnotationRender.vue";
 
 export interface NewAnnotationRenderProps {
   row: number;
+  renderRow: number;
   start: number;
   end: number;
   startAtLeft?: number;
@@ -17,6 +18,7 @@ const props = defineProps<NewAnnotationRenderProps>();
     creating
     :annotation="{ start, end, text: '' }"
     :row="row"
+    :render-row="renderRow"
     :start-at-left="startAtLeft"
     :end-at-right="endAtRight"
   />

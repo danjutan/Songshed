@@ -11,6 +11,7 @@ import {
 
 export interface AnnotationRenderProps {
   row: number;
+  renderRow: number;
   startAtLeft?: number;
   endAtRight?: number;
   annotation: Annotation;
@@ -36,7 +37,7 @@ const titleEl = useTemplateRef("title");
 function titleInput() {
   if (props.annotation) {
     const value = titleEl.value!.innerText;
-    emit("updateTitle", value);
+    emit("updateText", value);
   }
 }
 
@@ -114,12 +115,11 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 .annotation {
   position: absolute;
   z-index: var(--annotation-z-index);
-  top: calc(v-bind(row) * var(--cell-height));
+  top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
   display: flex;
   align-items: center;
   border: 1px solid gray;
-  background-color: lightblue;
   pointer-events: v-bind(pointerEvents);
 
   &:hover {

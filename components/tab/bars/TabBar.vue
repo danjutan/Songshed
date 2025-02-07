@@ -12,6 +12,8 @@ import { injectSubUnit } from "../providers/provide-subunit";
 import { provideTabBarBounds } from "./provide-bar-bounds";
 import { injectStackResizeObserver } from "../providers/events/provide-resize-observer";
 import AnnotationsContainer from "../annotations/AnnotationsContainer.vue";
+import NewRowButton from "../annotations/NewRowButton.vue";
+
 const props = defineProps<{
   annotationStore: AnnotationStore;
   bar: Bar;
@@ -21,11 +23,20 @@ const props = defineProps<{
 
 const { tablineStarts } = injectStackResizeObserver();
 provideTabBarBounds(props.bar, tablineStarts);
+
+const firstInLine = computed(() =>
+  tablineStarts.value.includes(props.bar.start),
+);
 </script>
 
 <template>
-  <div class="tab-bar">
-    <AnnotationsContainer :annotation-store="annotationStore" />
+  <div class="tab-bar" :class="{ firstInLine }">
+    <NewRowButton
+      v-if="firstInLine"
+      class="new-row-button"
+      @click="annotationStore.createNextRow()"
+    />
+    <AnnotationsContainer class="annotations" :annotation-store />
     <GuitarBar
       class="guitar"
       :stack-data="bar.stacks"
@@ -49,9 +60,22 @@ provideTabBarBounds(props.bar, tablineStarts);
   display: grid;
   /* min-width: min-content; */
   flex: v-bind(flexGrow) 0 0px;
-  /* grid-template-columns: repeat(1, auto); */
+  position: relative;
 }
-/* .guitar {
-  grid-column: 2 / 2;
-} */
+
+.new-row-button {
+  grid-column: 1;
+  grid-row: 1;
+  /* To avoid reflowing and looping the ResizeObserver */
+  position: absolute;
+  top: 1px;
+}
+
+.tab-bar.firstInLine {
+  grid-template-columns: var(--cell-height) auto;
+  & .guitar,
+  & .annotations {
+    grid-column: 2;
+  }
+}
 </style>

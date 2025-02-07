@@ -22,8 +22,8 @@ const tabBarBounds = injectTabBarBounds();
 const { tablineStarts } = injectStackResizeObserver();
 const subUnit = injectSubUnit();
 
-const rows = props.annotationStore.getRows();
-const numRows = computed(() => rows.length);
+const rows = computed(() => props.annotationStore.getRows());
+const numRows = computed(() => rows.value.length);
 
 function edgeProps(
   start: number,
@@ -31,33 +31,28 @@ function edgeProps(
 ): { startAtLeft?: number; endAtRight?: number } | false {
   const startLineStart =
     tablineStarts.value.findIndex((lineStart) => lineStart > start) - 1;
-  const currentLineIndex =
-    tablineStarts.value.findIndex(
-      (lineStart) => lineStart > tabBarBounds.start,
-    ) - 1;
-  const currentLineStart = tablineStarts.value[currentLineIndex];
-  const currentLineEnd = tablineStarts.value[currentLineIndex + 1];
-  const endAtRight = currentLineEnd - subUnit.value;
+  const endAtRight = tabBarBounds.tabline.end - subUnit.value;
 
   const startsInCurrentBar =
     start >= tabBarBounds.start && start < tabBarBounds.end;
 
   if (startsInCurrentBar) {
     return {
-      ...(end >= currentLineEnd && { endAtRight }),
+      ...(end >= tabBarBounds.tabline.end && { endAtRight }),
     };
   }
 
-  const isFirstBar = tabBarBounds.start === currentLineStart;
+  const isFirstBar = tabBarBounds.start === tabBarBounds.tabline.start;
 
   if (isFirstBar) {
     const extendsFromPreviousLine =
-      startLineStart < currentLineStart && end >= currentLineStart;
+      startLineStart < tabBarBounds.tabline.start &&
+      end >= tabBarBounds.tabline.start;
 
     if (extendsFromPreviousLine) {
       return {
-        startAtLeft: currentLineStart,
-        ...(end >= currentLineEnd && { endAtRight }),
+        startAtLeft: tabBarBounds.tabline.start,
+        ...(end >= tabBarBounds.tabline.end && { endAtRight }),
       };
     }
   }
@@ -66,19 +61,21 @@ function edgeProps(
 }
 
 const annotationRenders = computed<AnnotationRenderProps[]>(() => {
-  return rows.flatMap(
+  return rows.value.flatMap(
     (row) =>
       props.annotationStore
         .getAnnotations(row)
         .map((annotation) => {
           const { start, end } = annotation;
           const props = edgeProps(start, end);
-          if (!props) return false;
-          return {
-            ...props,
-            row,
-            annotation,
-          };
+          if (props) {
+            return {
+              ...props,
+              row,
+              renderRow: numRows.value - row - 1,
+              annotation,
+            };
+          }
         })
         .filter(Boolean) as AnnotationRenderProps[],
   );
@@ -93,6 +90,7 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
       return {
         ...props,
         row,
+        renderRow: numRows.value - row - 1,
         start,
         end,
       };
@@ -111,28 +109,27 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
       >
         <AnnotationDragDroppable
           :row="row"
+          :render-row="numRows - row - 1"
           :position="tabBarBounds.start + subUnit * i"
           :first-in-bar="i === 0"
         />
       </template>
     </template>
     <AnnotationRender
-      v-for="{ annotation, row, startAtLeft, endAtRight } in annotationRenders"
-      :key="annotation.start"
-      :annotation="annotation"
-      :row="row"
-      :start-at-left="startAtLeft"
-      :end-at-right="endAtRight"
-      @update-title="(text: string) => (annotation.text = text)"
-      @delete="annotationStore.deleteAnnotation(row, annotation)"
+      v-for="renderProps in annotationRenders"
+      :key="renderProps.annotation.start"
+      v-bind="renderProps"
+      @update-text="(text: string) => (renderProps.annotation.text = text)"
+      @delete="
+        annotationStore.deleteAnnotation(
+          renderProps.row,
+          renderProps.annotation,
+        )
+      "
     />
     <NewAnnotationRender
       v-if="newAnnotationRender"
-      :row="newAnnotationRender.row"
-      :start="newAnnotationRender.start"
-      :end="newAnnotationRender.end"
-      :start-at-left="newAnnotationRender.startAtLeft"
-      :end-at-right="newAnnotationRender.endAtRight"
+      v-bind="newAnnotationRender"
     />
   </div>
 </template>

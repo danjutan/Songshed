@@ -160,14 +160,14 @@ const tablineHasBends = computed(() => {
   </div>
 </template>
 
-<style>
+<style scoped>
 .guitar-bar {
   display: grid;
   width: 100%;
   grid-template-columns: min-content repeat(v-bind(numStacks), 1fr);
   grid-template-rows: auto auto;
 
-  .divider {
+  & :deep(.divider) {
     grid-column: 1;
     grid-row: -2 / -1;
   }
@@ -187,23 +187,25 @@ const tablineHasBends = computed(() => {
   display: grid;
   grid-template-columns: subgrid;
   grid-auto-rows: var(--context-menu-height);
-
-  & .flex-bar {
-    grid-column: 1 / -1;
-    grid-row: 2;
-  }
-
-  & .bend-bar {
-    grid-column: 1 / -1;
-    grid-row: 1;
-    height: var(--context-menu-height);
-  }
-
-  & .bend-droppable {
-    grid-row: 1 / span 2;
-  }
 }
 
+.flex-bar {
+  grid-column: 1 / -1;
+}
+
+.has-bends .flex-bar {
+  grid-row: 2;
+}
+
+.bend-bar {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  height: var(--context-menu-height);
+}
+
+& .bend-droppable {
+  grid-row: 1 / span 2;
+}
 .stack.border {
   border-right: var(--pos-line-width) solid var(--pos-line-color);
   grid-row: 1 / span v-bind(numStrings);

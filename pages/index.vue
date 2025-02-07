@@ -9,35 +9,35 @@ store.annotations.createAnnotation(0, {
   end: 8,
 });
 
-store.annotations.createAnnotation(0, {
+store.annotations.createAnnotation(1, {
   text: "2",
   start: 12,
   end: 14,
 });
 
-store.annotations.createAnnotation(0, {
-  text: "3",
-  start: 16,
-  end: 24,
-});
+// store.annotations.createAnnotation(0, {
+//   text: "3",
+//   start: 16,
+//   end: 24,
+// });
 
-store.annotations.createAnnotation(0, {
-  text: "4",
-  start: 0,
-  end: 0,
-});
+// store.annotations.createAnnotation(0, {
+//   text: "4",
+//   start: 0,
+//   end: 0,
+// });
 
-store.annotations.createAnnotation(0, {
-  text: "5",
-  start: 3,
-  end: 3,
-});
+// store.annotations.createAnnotation(0, {
+//   text: "5",
+//   start: 3,
+//   end: 3,
+// });
 
-store.annotations.createAnnotation(0, {
-  text: "6",
-  start: 1,
-  end: 2,
-});
+// store.annotations.createAnnotation(0, {
+//   text: "6",
+//   start: 1,
+//   end: 2,
+// });
 
 // store.annotations.createAnnotation(0, {
 //   text: "7",
@@ -92,59 +92,59 @@ guitarNotes.forEach(([position, string, midiString]) => {
 
 const ties = guitar.ties;
 
-ties.setTie(5, Spacing.Quarter * 4 - Spacing.Eighth, {
-  type: "bend",
-  releaseType: "connect",
-  bend: 1,
-  through: [Spacing.Sixteenth],
-  to: Spacing.Quarter * 5,
-});
+// ties.setTie(5, Spacing.Quarter * 4 - Spacing.Eighth, {
+//   type: "bend",
+//   releaseType: "connect",
+//   bend: 1,
+//   through: [Spacing.Sixteenth],
+//   to: Spacing.Quarter * 5,
+// });
 
-ties.setTie(5, Spacing.Quarter * 5 - Spacing.Eighth, {
-  type: "bend",
-  releaseType: "hold",
-  bend: 0.5,
-  through: [Spacing.Sixteenth * 4],
-  to: Spacing.Quarter * 6,
-});
+// ties.setTie(5, Spacing.Quarter * 5 - Spacing.Eighth, {
+//   type: "bend",
+//   releaseType: "hold",
+//   bend: 0.5,
+//   through: [Spacing.Sixteenth * 4],
+//   to: Spacing.Quarter * 6,
+// });
 
-ties.setTie(0, Spacing.Quarter * 3 - Spacing.Eighth, {
-  type: "bend",
-  releaseType: "hold",
-  bend: 1,
-  to: Spacing.Quarter * 3,
-});
+// ties.setTie(0, Spacing.Quarter * 3 - Spacing.Eighth, {
+//   type: "bend",
+//   releaseType: "hold",
+//   bend: 1,
+//   to: Spacing.Quarter * 3,
+// });
 
-ties.setTie(2, Spacing.Quarter * 7, {
-  type: "bend",
-  releaseType: "connect",
-  bend: 1,
-  // through: [Spacing.Sixteenth * 2],
-  to: Spacing.Quarter * 8,
-});
+// ties.setTie(2, Spacing.Quarter * 7, {
+//   type: "bend",
+//   releaseType: "connect",
+//   bend: 1,
+//   // through: [Spacing.Sixteenth * 2],
+//   to: Spacing.Quarter * 8,
+// });
 
-ties.setTie(2, Spacing.Quarter * 11, {
-  type: "bend",
-  releaseType: "connect",
-  bend: 1,
-  // through: [Spacing.Sixteenth * 2],
-  to: Spacing.Quarter * 12,
-});
+// ties.setTie(2, Spacing.Quarter * 11, {
+//   type: "bend",
+//   releaseType: "connect",
+//   bend: 1,
+//   // through: [Spacing.Sixteenth * 2],
+//   to: Spacing.Quarter * 12,
+// });
 
-ties.setTie(2, Spacing.Quarter * 2, {
-  to: Spacing.Quarter * 2 + Spacing.Sixteenth,
-  type: TieType.Hammer,
-});
+// ties.setTie(2, Spacing.Quarter * 2, {
+//   to: Spacing.Quarter * 2 + Spacing.Sixteenth,
+//   type: TieType.Hammer,
+// });
 
-ties.setTie(1, Spacing.Quarter * 3 + Spacing.Sixteenth, {
-  to: Spacing.Whole + Spacing.Sixteenth,
-  type: TieType.TieSlide,
-});
+// ties.setTie(1, Spacing.Quarter * 3 + Spacing.Sixteenth, {
+//   to: Spacing.Whole + Spacing.Sixteenth,
+//   type: TieType.TieSlide,
+// });
 
-ties.setTie(2, Spacing.Whole * 2 - Spacing.Sixteenth, {
-  to: Spacing.Whole * 2,
-  type: TieType.Hammer,
-});
+// ties.setTie(2, Spacing.Whole * 2 - Spacing.Sixteenth, {
+//   to: Spacing.Whole * 2,
+//   type: TieType.Hammer,
+// });
 
 // TODO: not properly sliding through bars
 // ties.setTie(2, Spacing.Whole * 3 - Spacing.Eighth, {
@@ -152,15 +152,15 @@ ties.setTie(2, Spacing.Whole * 2 - Spacing.Sixteenth, {
 //   type: TieType.Slide,
 // });
 
-ties.setTie(0, Spacing.Quarter * 9, {
-  to: Spacing.Quarter * 10 - Spacing.Sixteenth,
-  type: TieType.Slide,
-});
+// ties.setTie(0, Spacing.Quarter * 9, {
+//   to: Spacing.Quarter * 10 - Spacing.Sixteenth,
+//   type: TieType.Slide,
+// });
 
-ties.setTie(2, Spacing.Quarter * 9 - Spacing.Sixteenth, {
-  to: Spacing.Quarter * 10 + Spacing.Sixteenth,
-  type: TieType.Hammer,
-});
+// ties.setTie(2, Spacing.Quarter * 9 - Spacing.Sixteenth, {
+//   to: Spacing.Quarter * 10 + Spacing.Sixteenth,
+//   type: TieType.Hammer,
+// });
 </script>
 
 <template>
