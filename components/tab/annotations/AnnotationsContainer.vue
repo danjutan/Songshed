@@ -25,6 +25,8 @@ const subUnit = injectSubUnit();
 const rows = computed(() => props.annotationStore.getRows());
 const numRows = computed(() => rows.value.length);
 
+const renderRow = (row: number) => numRows.value - row - 1;
+
 function edgeProps(
   start: number,
   end: number,
@@ -72,7 +74,7 @@ const annotationRenders = computed<AnnotationRenderProps[]>(() => {
             return {
               ...props,
               row,
-              renderRow: numRows.value - row - 1,
+              renderRow: renderRow(row),
               annotation,
             };
           }
@@ -90,7 +92,7 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
       return {
         ...props,
         row,
-        renderRow: numRows.value - row - 1,
+        renderRow: renderRow(row),
         start,
         end,
       };
@@ -109,7 +111,7 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
       >
         <AnnotationDragDroppable
           :row="row"
-          :render-row="numRows - row - 1"
+          :render-row="renderRow(row)"
           :position="tabBarBounds.start + subUnit * i"
           :first-in-bar="i === 0"
         />

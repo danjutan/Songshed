@@ -19,6 +19,7 @@ const props = defineProps<{
   bar: Bar;
   guitarStore: GuitarStore;
   flexGrow?: number;
+  highlight?: "delete" | false;
 }>();
 
 const { tablineStarts } = injectStackResizeObserver();
@@ -44,6 +45,7 @@ const firstInLine = computed(() =>
       :frets="guitarStore.frets"
       :num-strings="guitarStore.strings"
       :tie-store="guitarStore.ties"
+      :highlight
       @note-delete="(pos) => guitarStore.deleteNote(pos)"
       @note-change="(pos, note) => guitarStore.setNote(pos, note)"
     >
@@ -51,7 +53,6 @@ const firstInLine = computed(() =>
         <slot name="divider" />
       </template>
     </GuitarBar>
-    <!--TODO: overlay-->
   </div>
 </template>
 

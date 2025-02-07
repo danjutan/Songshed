@@ -202,20 +202,12 @@ function onResize(i: number, diffX: number) {
 function endDrag(i: number) {
   lastDiffX = 0;
 }
+
+const deletingBarStart = ref<number | undefined>(undefined);
 </script>
 
 <template>
   <div ref="tab" class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
-    <!-- <Tabline
-      v-for="(tabline, tablineIndex) in tablines"
-      :key="tablineIndex"
-      :tabline="tabline"
-      :tabline-index="tablineIndex"
-      :is-last-tabline="tablineIndex === tablines.length - 1"
-      :tab-store="tabStore"
-      :columns-per-bar="columnsPerBar"
-      @new-bar-click="newBarClick"
-    /> -->
     <template v-for="(bar, i) in barManagement.bars" :key="bar.start">
       <div v-if="tabStore.lineBreaks.has(bar.start)" class="line-break" />
 
@@ -225,6 +217,7 @@ function endDrag(i: number) {
         :flex-grow="barFlexGrow[i]"
         :annotation-store="props.tabStore.annotations"
         :guitar-store="props.tabStore.guitar"
+        :highlight="deletingBarStart === bar.start && 'delete'"
       >
         <template #divider>
           <BarDivider
@@ -232,6 +225,8 @@ function endDrag(i: number) {
             :bar-start="bar.start"
             :joinable="tabStore.lineBreaks.has(bar.start)"
             @resize="(diffX: number) => onResize(i, diffX)"
+            @delete-hover-start="deletingBarStart = bar.start"
+            @delete-hover-end="deletingBarStart = undefined"
             @end-drag="endDrag(i)"
           />
         </template>

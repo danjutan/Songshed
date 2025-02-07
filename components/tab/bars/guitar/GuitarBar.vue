@@ -23,6 +23,7 @@ const props = defineProps<{
   frets: number;
   numStrings: number;
   tieStore: TieStore;
+  highlight?: "delete" | false;
 }>();
 
 const tieAddState = injectTieAddState();
@@ -93,6 +94,8 @@ const tablineHasBends = computed(() => {
 <template>
   <div class="guitar-bar" :class="{ 'has-bends': tablineHasBends }">
     <slot name="divider" />
+    <!-- TODO: confirm that this is the best component to put this in-->
+    <div v-if="highlight === 'delete'" class="highlight" />
     <div class="toolbar">
       <div class="flex-bar" />
       <template v-if="tablineHasBends">
@@ -230,5 +233,15 @@ const tablineHasBends = computed(() => {
       var(--cell-height)
   );
   margin-top: calc(-1 * (var(--cell-height) + var(--context-menu-height)));
+}
+
+.highlight {
+  grid-column: 2 / -1;
+  grid-row: 2 / -1;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  background-color: var(--delete-color);
+  opacity: var(--select-alpha);
 }
 </style>
