@@ -8,7 +8,7 @@ export function provideSettingsState() {
     // pixels:
     cellHeight: 24,
     contextMenuHeight: 18,
-    collapsedMinWidth: 12,
+    collapsedMinWidth: 16,
     // flags
     posLineCenter: true,
   });

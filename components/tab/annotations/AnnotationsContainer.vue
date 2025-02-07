@@ -27,12 +27,16 @@ const numRows = computed(() => rows.value.length);
 
 const renderRow = (row: number) => numRows.value - row - 1;
 
+const isFirstBar = computed(
+  () => tabBarBounds.start === tabBarBounds.tabline.start,
+);
 function edgeProps(
   start: number,
   end: number,
 ): { startAtLeft?: number; endAtRight?: number } | false {
-  const startLineStart =
+  const startLineIndex =
     tablineStarts.value.findIndex((lineStart) => lineStart > start) - 1;
+  const startLineStart = tablineStarts.value[startLineIndex];
   const endAtRight = tabBarBounds.tabline.end - subUnit.value;
 
   const startsInCurrentBar =
@@ -44,9 +48,7 @@ function edgeProps(
     };
   }
 
-  const isFirstBar = tabBarBounds.start === tabBarBounds.tabline.start;
-
-  if (isFirstBar) {
+  if (isFirstBar.value) {
     const extendsFromPreviousLine =
       startLineStart < tabBarBounds.tabline.start &&
       end >= tabBarBounds.tabline.start;
