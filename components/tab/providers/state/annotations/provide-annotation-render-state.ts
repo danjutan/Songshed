@@ -63,10 +63,10 @@ export function provideAnnotationRenderState(
       }
     });
 
-    if (newAnnotation.startPos !== undefined) {
-      const row = newAnnotation.rowIndex! + 1;
-      const start = newAnnotation.startPos;
-      const end = newAnnotation.endPos ?? start;
+    if (newAnnotation.start !== undefined) {
+      const row = newAnnotation.row! + 1;
+      const start = newAnnotation.start;
+      const end = newAnnotation.end ?? start;
       const first = columnsMap[Math.min(start, end)];
       const last = columnsMap[Math.max(start, end)];
       if (first.tabline !== last.tabline) {

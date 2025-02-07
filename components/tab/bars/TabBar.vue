@@ -25,7 +25,6 @@ provideTabBarBounds(props.bar, tablineStarts);
 
 <template>
   <div class="tab-bar">
-    <!-- annotations go here -->
     <AnnotationsContainer :annotation-store="annotationStore" />
     <GuitarBar
       class="guitar"
@@ -41,6 +40,7 @@ provideTabBarBounds(props.bar, tablineStarts);
         <slot name="divider" />
       </template>
     </GuitarBar>
+    <!--TODO: overlay-->
   </div>
 </template>
 

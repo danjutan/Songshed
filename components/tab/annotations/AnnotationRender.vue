@@ -14,22 +14,20 @@ export interface AnnotationRenderProps {
   startAtLeft?: number;
   endAtRight?: number;
   annotation: Annotation;
+  creating?: boolean;
 }
 
 const props = defineProps<AnnotationRenderProps>();
 
 const emit = defineEmits<{
-  updateTitle: [string];
+  updateText: [string];
   delete: [];
 }>();
 
 const barManagement = injectBarManagement();
 
 const start = computed(() => props.startAtLeft ?? props.annotation.start);
-const end = computed(
-  // neat or evil??
-  () => props.endAtRight ?? props.annotation.end ?? props.annotation.start,
-);
+const end = computed(() => props.endAtRight ?? props.annotation.end);
 
 const pointerEvents = computed(() => (props.annotation ? "auto" : "none"));
 
@@ -89,7 +87,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   >
     <div
       v-if="startCoords && endCoords"
-      :class="`annotation annotation-${row}`"
+      :class="`annotation annotation-${row} ${props.creating && 'creating'}`"
       :style="{
         left: left(startCoords),
         width: width(startCoords, endCoords),
@@ -115,11 +113,12 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 <style scoped>
 .annotation {
   position: absolute;
+  z-index: var(--annotation-z-index);
   top: calc(v-bind(row) * var(--cell-height));
   height: var(--cell-height);
   display: flex;
   align-items: center;
-  border-right: 1px solid gray;
+  border: 1px solid gray;
   background-color: lightblue;
   pointer-events: v-bind(pointerEvents);
 
@@ -128,6 +127,11 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
       visibility: visible;
     }
   }
+}
+
+.creating {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .title {

@@ -10,18 +10,16 @@ import { provideCellHoverEvents } from "./providers/events/provide-cell-hover-ev
 import { provideTieAddState } from "./providers/state/provide-tie-add-state";
 import { provideBendEditState } from "./providers/state/provide-bend-edit-state";
 import { provideStackResizeObserver } from "./providers/events/provide-resize-observer";
-import { provideColumnsMap } from "./providers/provide-columns-map";
 
 import { useTieAddMonitor } from "./hooks/dnd/use-tie-add-monitor";
 import { useSelectMonitor } from "./hooks/dnd/use-select-monitor";
 import { useMoveMonitor } from "./hooks/dnd/use-move-monitor";
 import { useBendEditMonitor } from "./hooks/dnd/use-bend-edit-monitor";
+import { useAnnotationAddMonitor } from "./hooks/dnd/use-annotation-add-monitor";
 import { injectSettingsState } from "./providers/state/provide-settings-state";
 
 import { provideAnnotationAddState } from "./providers/state/annotations/provide-annotation-add-state";
-import { provideAnnotationRenderState } from "./providers/state/annotations/provide-annotation-render-state";
 
-import { useWindowResizing } from "./hooks/use-window-resizing";
 import { provideNotePreviewState } from "./providers/state/provide-note-preview-state";
 import { provideSubUnit } from "./providers/provide-subunit";
 import {
@@ -91,6 +89,7 @@ onMounted(() => {
   useSelectMonitor(selectionState);
   useMoveMonitor(selectionState);
   useBendEditMonitor(bendEditState);
+  useAnnotationAddMonitor(annotationAddState);
 });
 
 // const columnsMap = provideColumnsMap(
@@ -269,6 +268,8 @@ function endDrag(i: number) {
   --bar-overlay-z-index: 1;
   --overlay-controls-z-index: 1;
   --divider-z-index: 3;
+  --annotation-dragger-z-index: 1;
+  --annotation-z-index: 2;
 
   user-select: none;
 
@@ -283,68 +284,5 @@ function endDrag(i: number) {
 
 .drag-start {
   cursor: crosshair;
-}
-
-/* .divider {
-  width: var(--divider-width);
-  padding: 0px 1px;
-  height: 100%;
-  background: black;
-  color: white;
-  font-size: var(--cell-height);
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-
-  & .buttons {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    visibility: hidden;
-
-    & > div:hover {
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    & > .delete {
-      font-size: calc(var(--divider-width) * 1.75);
-    }
-
-    & > .dummy {
-      visibility: hidden;
-    }
-  }
-
-  &.hoverable {
-    &:hover {
-      width: var(--note-font-size);
-
-      & .buttons {
-        visibility: visible;
-      }
-    }
-
-  }
-}*/
-
-/* We don't want this last divider to take up extra space in the grid and throw it off */
-.divider .new-button {
-  margin-left: calc(var(--cell-height) * 0.4);
-  padding-right: calc(var(--cell-height) * 0.1);
-  background: black;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-
-  &:hover {
-    font-weight: bold;
-  }
 }
 </style>

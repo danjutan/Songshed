@@ -6,7 +6,12 @@ import {
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
+import {
+  getAnnotationDragData,
+  getNoteInputDropData,
+} from "../hooks/dnd/types";
 import OverlayCoords from "~/components/tab/bars/OverlayCoords.vue";
+import { injectAnnotationAddState } from "../providers/state/annotations/provide-annotation-add-state";
 
 const props = defineProps<{
   row: number;
@@ -14,31 +19,69 @@ const props = defineProps<{
   firstInBar: boolean;
 }>();
 
-const dragRef = useTemplateRef("container");
+const { dragStart, dragEnd } = injectAnnotationAddState();
+const left = (coords: { left: number }) => {
+  return props.firstInBar
+    ? `${coords.left}px`
+    : `calc(${coords.left}px + var(--divider-width))`;
+};
+
+const width = (coords: { left: number; right: number }) => {
+  return props.firstInBar
+    ? `calc(${coords.right - coords.left}px + var(--divider-width))`
+    : `${coords.right - coords.left}px`;
+};
+
+const element = useTemplateRef("element");
+
+onMounted(() => {
+  watchEffect((cleanup) => {
+    if (element.value) {
+      const data = getAnnotationDragData({
+        row: props.row,
+        position: props.position,
+      });
+      cleanup(
+        combine(
+          dropTargetForElements({
+            element: element.value,
+            getData: () => data,
+          }),
+          draggable({
+            element: element.value,
+            onGenerateDragPreview: ({ nativeSetDragImage }) => {
+              disableNativeDragPreview({ nativeSetDragImage });
+              preventUnhandled.start();
+            },
+            getInitialData: () => data,
+          }),
+        ),
+      );
+    }
+  });
+});
 </script>
 
 <template>
   <OverlayCoords v-slot="{ coords: [coords] }" :positions="[position]">
     <div
       v-if="coords"
-      ref="container"
+      ref="element"
       class="draggable"
       :style="{
-        left: firstInBar
-          ? `${coords.left}px`
-          : `calc(${coords.left}px + var(--divider-width))`,
-        width: firstInBar
-          ? `calc(${coords.right - coords.left}px + var(--divider-width))`
-          : `${coords.right - coords.left}px`,
+        left: left(coords),
+        width: width(coords),
       }"
-      @click="console.log(position, row)"
+      @mousedown="dragStart(row, position)"
+      @click="dragEnd()"
     />
   </OverlayCoords>
 </template>
 
 <style scoped>
 .draggable {
-  border: 1px solid black;
+  /* border: 1px solid black; */
+  z-index: var(--annotation-dragger-z-index);
   position: absolute;
   top: calc(v-bind(row) * var(--cell-height));
   height: var(--cell-height);

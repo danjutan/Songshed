@@ -3,16 +3,16 @@ import type { CellHoverEvents } from "../../events/provide-cell-hover-events";
 import type { InjectionKey } from "vue";
 
 export interface NewAnnotation {
-  rowIndex?: number;
-  startPos?: number;
-  endPos?: number;
+  row: number;
+  start: number;
+  end: number;
 }
 
 export interface AnnotationAddState {
-  newAnnotation: NewAnnotation;
-  start: (row: number, position: number) => void;
-  drag: (position: number) => void;
-  end: () => void;
+  newAnnotation: ComputedRef<NewAnnotation | undefined>;
+  dragStart: (row: number, position: number) => void;
+  dragMove: (position: number) => void;
+  dragEnd: () => void;
 }
 
 export function provideAnnotationAddState(
@@ -22,51 +22,71 @@ export function provideAnnotationAddState(
     cellHoverEvents: CellHoverEvents;
   }>,
 ): AnnotationAddState {
-  const newAnnotation = reactive<NewAnnotation>({
-    rowIndex: undefined,
-    startPos: undefined,
-    endPos: undefined,
+  const rawAnnotation = ref<{
+    row: number;
+    start: number;
+    end: number;
+  }>();
+
+  const newAnnotation = computed<NewAnnotation | undefined>(() => {
+    if (!rawAnnotation.value) return undefined;
+    const { row, start, end } = rawAnnotation.value;
+    const existingOnRow = props.store.getAnnotations(row);
+    if (end >= start) {
+      const blockingRight = existingOnRow.find(
+        (ann) => ann.start > start && ann.end < end,
+      );
+      return {
+        row,
+        start,
+        end: blockingRight ? blockingRight.start - props.subUnit : end,
+      };
+    }
+    if (end < start) {
+      const blockingLeft = existingOnRow.find(
+        (ann) => ann.start < start && ann.end >= end,
+      );
+      return {
+        row,
+        start: blockingLeft ? blockingLeft.end + props.subUnit : end,
+        end: start,
+      };
+    }
   });
 
-  props.cellHoverEvents.addHoverListener((row, position) => drag(position));
-  props.cellHoverEvents.addMouseUpListener(end);
-
-  function start(rowIndex: number, startPosition: number) {
-    newAnnotation.rowIndex = rowIndex;
-    newAnnotation.startPos = startPosition;
+  function dragStart(row: number, startPosition: number) {
+    rawAnnotation.value = {
+      row,
+      start: startPosition,
+      end: startPosition,
+    };
   }
 
-  function drag(position: number) {
-    if (newAnnotation.startPos !== undefined) {
-      newAnnotation.endPos = position;
+  function dragMove(position: number) {
+    if (rawAnnotation.value) {
+      rawAnnotation.value.end = position;
     }
   }
 
-  function end() {
-    const { rowIndex: row, startPos: start, endPos: end } = newAnnotation;
-    if (
-      row !== undefined &&
-      start !== undefined &&
-      end !== undefined &&
-      start !== end
-    ) {
-      const first = Math.min(start, end);
-      const last = Math.max(start, end);
-      props.store.createAnnotation(row, {
-        start: first,
-        end: last + props.subUnit,
-        title: "",
-      });
+  function dragEnd() {
+    if (!newAnnotation.value) {
+      return;
     }
-    newAnnotation.startPos = newAnnotation.endPos = undefined;
+    const { row, start, end } = newAnnotation.value;
+    props.store.createAnnotation(row, {
+      start,
+      end,
+      text: "",
+    });
+    rawAnnotation.value = undefined;
   }
 
-  const state = reactive({
+  const state = {
     newAnnotation,
-    start,
-    drag,
-    end,
-  });
+    dragStart,
+    dragMove,
+    dragEnd,
+  };
   provide(AnnotationAddStateInjectionKey, state);
   return state;
 }

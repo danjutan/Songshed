@@ -1,6 +1,6 @@
 export interface Annotation {
   start: number;
-  end?: number;
+  end: number;
   text: string;
 }
 
