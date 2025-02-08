@@ -84,36 +84,35 @@ export function provideStackResizeObserver() {
 
   const createResizeObserver = () => {
     if (resizeObserver) return resizeObserver;
-    resizeObserver = new ResizeObserver((entries) => {
-      // TODO: This is a major performance bottleneck.
-      for (const [pos, stack] of posToCoords) {
-        updateStackCoords(stack.ref, pos);
-      }
-
-      // Try this later; I'm concerned about tablineStarts being circular
-      // const startEntry = entries[0].target as HTMLElement;
-      // const endEntry = entries[entries.length - 1].target as HTMLElement;
-
-      // const startPos = +startEntry.dataset.position!;
-      // const endPos = +endEntry.dataset.position!;
-
-      // const startTabline = tablineStarts.value.find(
-      //   (lineStartPos) => startPos >= lineStartPos,
-      // );
-      // const endTablineIndex = tablineStarts.value.findLastIndex(
-      //   (lineStartPos) => endPos >= lineStartPos,
-      // );
-
-      // const rangeStart: number = startTabline!;
-      // const rangeEnd: number | undefined =
-      //   tablineStarts.value[endTablineIndex + 1];
-
-      // for (const [pos, stack] of posToCoords) {
-      //   if ((pos >= rangeStart && !rangeEnd) || pos < rangeEnd) {
-      //     updateStackCoords(stack.ref, pos);
-      //   }
-      // }
-    });
+    resizeObserver = new ResizeObserver(
+      useThrottleFn((entries) => {
+        // TODO: This is a major performance bottleneck.
+        // Maybe use directives instead of OverlayCoords to directly register
+        // a value to be updated by the DOM
+        for (const [pos, stack] of posToCoords) {
+          updateStackCoords(stack.ref, pos);
+        }
+        // Try this later; I'm concerned about tablineStarts being circular
+        // const startEntry = entries[0].target as HTMLElement;
+        // const endEntry = entries[entries.length - 1].target as HTMLElement;
+        // const startPos = +startEntry.dataset.position!;
+        // const endPos = +endEntry.dataset.position!;
+        // const startTabline = tablineStarts.value.find(
+        //   (lineStartPos) => startPos >= lineStartPos,
+        // );
+        // const endTablineIndex = tablineStarts.value.findLastIndex(
+        //   (lineStartPos) => endPos >= lineStartPos,
+        // );
+        // const rangeStart: number = startTabline!;
+        // const rangeEnd: number | undefined =
+        //   tablineStarts.value[endTablineIndex + 1];
+        // for (const [pos, stack] of posToCoords) {
+        //   if ((pos >= rangeStart && !rangeEnd) || pos < rangeEnd) {
+        //     updateStackCoords(stack.ref, pos);
+        //   }
+        // }
+      }, 100),
+    );
     return resizeObserver;
   };
 
