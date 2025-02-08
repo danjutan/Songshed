@@ -62,8 +62,6 @@ const tieable = computed(
     props.note !== undefined && props.note.note !== "muted" && isEditing.value,
 );
 const tieing = ref(false);
-const hovering = ref(false);
-const renderInput = computed(() => tieable.value || hovering.value);
 
 const dragData = computed(() => {
   return {
@@ -91,10 +89,7 @@ const ctrlState = useKeyModifier("Control");
 const metaState = useKeyModifier("Meta");
 
 onMounted(() => {
-  watchEffect((cleanup) => {
-    if (!containerRef.value || !noteInputRef.value) {
-      return;
-    }
+  watchEffect((cleanup) =>
     cleanup(
       combine(
         dropTargetForElements({
@@ -124,8 +119,8 @@ onMounted(() => {
           }),
         ),
       ),
-    );
-  });
+    ),
+  );
 });
 
 function onClick(e: MouseEvent) {
@@ -204,12 +199,8 @@ const row = computed(() => props.notePosition.string + 1);
     @click="onClick"
     @mousedown="onMouseDown"
     @mouseenter="
-      () => {
-        cellHoverState.hover(notePosition.string, notePosition.position);
-        hovering = true;
-      }
+      cellHoverState.hover(notePosition.string, notePosition.position)
     "
-    @mouseleave="hovering = false"
   >
     <div class="selected-bg" />
     <!-- <div
@@ -223,7 +214,7 @@ const row = computed(() => props.notePosition.string + 1);
     <div
       v-if="note || notePreview"
       class="note-block"
-      :class="{ preview: notePreview, filled: !renderInput }"
+      :class="{ preview: notePreview }"
     >
       {{ noteText }}
     </div>
@@ -238,7 +229,7 @@ const row = computed(() => props.notePosition.string + 1);
     </template>
 
     <NoteInput
-      v-if="renderInput"
+      v-show="!notePreview"
       ref="noteInputRef"
       class="input"
       :class="{
@@ -315,10 +306,17 @@ const row = computed(() => props.notePosition.string + 1);
     min-width: calc(var(--cell-height) + 12px);
   }
 
-  &:hover .input {
-    background-color: rgb(
-      from var(--note-hover-color) r g b / var(--select-alpha)
-    );
+  &:hover,
+  &.tieable {
+    .note-block {
+      color: transparent;
+    }
+    .input {
+      display: block;
+      background-color: rgb(
+        from var(--note-hover-color) r g b / var(--select-alpha)
+      );
+    }
   }
 }
 
@@ -330,6 +328,7 @@ const row = computed(() => props.notePosition.string + 1);
 }
 
 .input {
+  display: none;
   grid-area: 1 / 1 / -1 / -1;
   &.muted {
     color: transparent;
@@ -338,10 +337,7 @@ const row = computed(() => props.notePosition.string + 1);
 
 .note-block {
   grid-area: 2 / 2;
-  color: transparent;
-  &.filled {
-    color: black;
-  }
+  color: black;
   &.preview {
     opacity: 0.5;
   }
