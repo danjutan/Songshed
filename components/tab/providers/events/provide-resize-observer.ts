@@ -58,7 +58,13 @@ export function provideStackResizeObserver() {
       }
     });
 
-    return [0, ...breaks, posToY.value[posToY.value.length - 1].position];
+    const tablineStarts = [
+      0,
+      ...breaks,
+      posToY.value[posToY.value.length - 1].position,
+    ];
+    console.log(tablineStarts);
+    return tablineStarts;
   });
 
   let firstPos = Infinity;
@@ -79,6 +85,7 @@ export function provideStackResizeObserver() {
   const createResizeObserver = () => {
     if (resizeObserver) return resizeObserver;
     resizeObserver = new ResizeObserver((entries) => {
+      // TODO: This is a major performance bottleneck.
       for (const [pos, stack] of posToCoords) {
         updateStackCoords(stack.ref, pos);
       }

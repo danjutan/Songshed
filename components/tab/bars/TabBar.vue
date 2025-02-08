@@ -31,7 +31,11 @@ const firstInLine = computed(() =>
 </script>
 
 <template>
-  <div class="tab-bar" :class="{ firstInLine }">
+  <div
+    class="tab-bar"
+    :class="{ firstInLine }"
+    :style="{ flex: flexGrow ? `${flexGrow} 0 0px` : undefined }"
+  >
     <NewRowButton
       v-if="firstInLine"
       class="new-row-button"
@@ -60,7 +64,7 @@ const firstInLine = computed(() =>
 .tab-bar {
   display: grid;
   /* min-width: min-content; */
-  flex: v-bind(flexGrow) 0 0px;
+  /* flex: v-bind(flexGrow) 0 0px; */
   position: relative;
 }
 
