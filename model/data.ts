@@ -1,8 +1,7 @@
-export interface Annotation<D = unknown> {
+export interface Annotation {
   start: number;
   end: number;
-  title: string;
-  readonly data?: D;
+  text: string;
 }
 
 export interface NoteData {

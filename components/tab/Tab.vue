@@ -2,6 +2,7 @@
 import type { GuitarNote, StackMap } from "~/model/data";
 import type { TabStore } from "~/model/stores";
 import Tabline from "./Tabline.vue";
+import TabBar from "./bars/TabBar.vue";
 
 import { provideSelectionState } from "./providers/state/provide-selection-state";
 import { provideEditingState } from "./providers/state/provide-editing-state";
@@ -9,20 +10,27 @@ import { provideCellHoverEvents } from "./providers/events/provide-cell-hover-ev
 import { provideTieAddState } from "./providers/state/provide-tie-add-state";
 import { provideBendEditState } from "./providers/state/provide-bend-edit-state";
 import { provideStackResizeObserver } from "./providers/events/provide-resize-observer";
-import { provideColumnsMap } from "./providers/provide-columns-map";
 
 import { useTieAddMonitor } from "./hooks/dnd/use-tie-add-monitor";
 import { useSelectMonitor } from "./hooks/dnd/use-select-monitor";
 import { useMoveMonitor } from "./hooks/dnd/use-move-monitor";
-
+import { useBendEditMonitor } from "./hooks/dnd/use-bend-edit-monitor";
+import { useAnnotationAddMonitor } from "./hooks/dnd/use-annotation-add-monitor";
 import { injectSettingsState } from "./providers/state/provide-settings-state";
 
-import { provideAnnotationAddState } from "./providers/state/annotations/provide-annotation-add-state";
-import { provideAnnotationRenderState } from "./providers/state/annotations/provide-annotation-render-state";
+import { provideAnnotationAddState } from "./providers/state/provide-annotation-add-state";
 
-import { useWindowResizing } from "./hooks/use-window-resizing";
 import { provideNotePreviewState } from "./providers/state/provide-note-preview-state";
 import { provideSubUnit } from "./providers/provide-subunit";
+import {
+  provideBarManagement,
+  type Bar,
+} from "./providers/state/provide-bar-management";
+
+import BarDivider from "./bars/BarDivider.vue";
+import { isCollapsed } from "./hooks/use-collapsed";
+import { provideBeatSize } from "./providers/provide-beatsize";
+import { Plus } from "lucide-vue-next";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -32,14 +40,15 @@ const settings = injectSettingsState();
 const cellHeightPx = computed(() => `${settings.cellHeight}px`);
 const contextMenuHeightPx = computed(() => `${settings.contextMenuHeight}px`);
 const collapsedMinWidthPx = computed(() => `${settings.collapsedMinWidth}px`);
-const barSize = computed(
-  () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
-);
 
 const subUnit = provideSubUnit(props.tabStore, settings);
+const beatSize = provideBeatSize(props.tabStore);
 
-const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
-const newBarStart = ref(0);
+const barSize = computed(() => props.tabStore.beatsPerBar * beatSize.value);
+
+// const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
+
+const { tablineStarts } = provideStackResizeObserver();
 
 const cellHoverEvents = provideCellHoverEvents();
 const selectionState = provideSelectionState(
@@ -60,7 +69,7 @@ const tieAddState = provideTieAddState(
   })),
 );
 
-provideBendEditState(
+const bendEditState = provideBendEditState(
   reactiveComputed(() => ({
     cellHoverEvents,
     tieAddState,
@@ -68,70 +77,25 @@ provideBendEditState(
   })),
 );
 
+const barManagement = provideBarManagement(
+  reactiveComputed(() => ({
+    tabStore: props.tabStore,
+    subUnit: subUnit.value,
+  })),
+);
+
 onMounted(() => {
   useTieAddMonitor(tieAddState);
   useSelectMonitor(selectionState);
   useMoveMonitor(selectionState);
+  useBendEditMonitor(bendEditState);
+  useAnnotationAddMonitor(annotationAddState);
 });
 
-export type Bar = {
-  start: number;
-  end: number;
-  stacks: StackMap<GuitarNote>;
-};
+// const columnsMap = provideColumnsMap(
+//   reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
+// );
 
-const bars = computed<Bar[]>(() => {
-  if (!props.tabStore.guitar) return [];
-  const bars: Bar[] = [];
-  for (
-    let i = 0;
-    i <= Math.max(newBarStart.value, props.tabStore.guitar.getLastPosition());
-    i += barSize.value
-  ) {
-    bars.push({
-      start: i,
-      end: i + barSize.value,
-      stacks: props.tabStore.guitar.getStacks(
-        i,
-        i + barSize.value,
-        subUnit.value,
-      ),
-    });
-  }
-  return bars;
-});
-
-const { lastWidth } = useWindowResizing();
-const tablines = computed<Array<Bar[]>>(() => {
-  const tablineBars: Array<Bar[]> = [];
-  let currTabline: Bar[] = [];
-  const barMaxWidth =
-    settings.collapseRatio * settings.collapsedMinWidth * columnsPerBar.value +
-    (1 - settings.collapseRatio) * settings.cellHeight * columnsPerBar.value;
-  const barsPerLine = lastWidth.value
-    ? Math.floor(lastWidth.value / barMaxWidth)
-    : 3;
-  bars.value.forEach((bar, i) => {
-    currTabline.push(bar);
-    if (
-      currTabline.length === barsPerLine ||
-      props.tabStore.lineBreaks.has((i + 1) * barSize.value)
-    ) {
-      tablineBars.push(currTabline);
-      currTabline = [];
-    }
-  });
-  if (currTabline.length) {
-    tablineBars.push(currTabline);
-  }
-  return tablineBars;
-});
-
-const columnsMap = provideColumnsMap(
-  reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
-);
-
-provideStackResizeObserver(columnsMap);
 // const collapsed = provideCollapsedState(
 //   reactiveComputed(() => ({
 //     editing: editingState,
@@ -153,14 +117,14 @@ const annotationAddState = provideAnnotationAddState(
   })),
 );
 
-const annotationRenders = provideAnnotationRenderState(
-  reactiveComputed(() => ({
-    store: props.tabStore.annotations,
-    subUnit: subUnit.value,
-    newAnnotation: annotationAddState.newAnnotation,
-    columnsMap,
-  })),
-);
+// const annotationRenders = provideAnnotationRenderState(
+//   reactiveComputed(() => ({
+//     store: props.tabStore.annotations,
+//     subUnit: subUnit.value,
+//     newAnnotation: annotationAddState.newAnnotation,
+//     columnsMap,
+//   })),
+// );
 
 function onMouseUp() {
   cellHoverEvents.mouseup();
@@ -170,11 +134,6 @@ function onMouseUp() {
 function onLeaveTab() {
   cellHoverEvents.leaveTab();
   editingState.blurEditing();
-}
-
-function newBarClick() {
-  const lastBarStart = bars.value.at(-1)!.start;
-  newBarStart.value = lastBarStart + barSize.value;
 }
 
 function onKeyUp(e: KeyboardEvent) {
@@ -190,20 +149,89 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener("keyup", onKeyUp);
 });
+
+const barMinWidth = (bar: Bar) =>
+  Array.from(bar.stacks.entries()).reduce((total: number, [position]) => {
+    const width = isCollapsed(
+      settings,
+      bar.stacks[position].notes,
+      position % props.tabStore.beatSize === 0,
+    )
+      ? settings.collapsedMinWidth
+      : settings.cellHeight;
+    return total + width;
+  }, 0);
+
+const tabBarRefs = useTemplateRef("tabBars");
+const tab = useTemplateRef("tab");
+
+const barFlexGrow = ref(
+  barManagement.bars.map((bar) => 10 / barManagement.bars.length),
+);
+
+watch(
+  () => barManagement.bars,
+  (next, prev) => {
+    if (prev.length === next.length) return;
+    // TODO: intelligently retain proportions and handle insersions/deletes
+    barFlexGrow.value = barManagement.bars.map(
+      (bar) => 10 / barManagement.bars.length,
+    );
+  },
+);
+
+let lastDiffX = 0;
+
+function onResize(i: number, diffX: number) {
+  if (!tabBarRefs.value) return;
+
+  const tabWidth = tab.value!.clientWidth;
+  const deltaX = diffX - lastDiffX;
+  lastDiffX = diffX;
+  const diffPercentage = deltaX / tabWidth;
+
+  barFlexGrow.value[i - 1]! += diffPercentage * 10;
+  barFlexGrow.value[i]! -= diffPercentage * 10;
+}
+
+function endDrag(i: number) {
+  lastDiffX = 0;
+}
+
+const numStrings = computed(() => props.tabStore.guitar.strings);
+const deletingBarStart = ref<number | undefined>(undefined);
 </script>
 
 <template>
-  <div class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
-    <Tabline
-      v-for="(tabline, tablineIndex) in tablines"
-      :key="tablineIndex"
-      :tabline="tabline"
-      :tabline-index="tablineIndex"
-      :is-last-tabline="tablineIndex === tablines.length - 1"
-      :tab-store="tabStore"
-      :columns-per-bar="columnsPerBar"
-      @new-bar-click="newBarClick"
-    />
+  <div ref="tab" class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
+    <template v-for="(bar, i) in barManagement.bars" :key="bar.start">
+      <div v-if="tabStore.lineBreaks.has(bar.start)" class="line-break" />
+
+      <TabBar
+        ref="tabBars"
+        :bar="bar"
+        :flex-grow="barFlexGrow[i]"
+        :annotation-store="props.tabStore.annotations"
+        :guitar-store="props.tabStore.guitar"
+        :highlight="deletingBarStart === bar.start && 'delete'"
+      >
+        <template #divider>
+          <BarDivider
+            :start-of-line="tablineStarts.includes(bar.start)"
+            :bar-start="bar.start"
+            :joinable="tabStore.lineBreaks.has(bar.start)"
+            @resize="(diffX: number) => onResize(i, diffX)"
+            @delete-hover-start="deletingBarStart = bar.start"
+            @delete-hover-end="deletingBarStart = undefined"
+            @end-drag="endDrag(i)"
+          />
+        </template>
+      </TabBar>
+    </template>
+    <!-- TODO: re-evaluate; do I toss this down a slot? -->
+    <div class="new-button" @click="barManagement.newBarClick">
+      <Plus />
+    </div>
   </div>
 </template>
 
@@ -235,74 +263,30 @@ onBeforeUnmount(() => {
   --bar-overlay-z-index: 1;
   --overlay-controls-z-index: 1;
   --divider-z-index: 3;
+  --annotation-dragger-z-index: 1;
+  --annotation-z-index: 2;
 
   user-select: none;
+
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.line-break {
+  width: 100%;
+  height: 0px;
 }
 
 .drag-start {
   cursor: crosshair;
 }
 
-/* .divider {
-  width: var(--divider-width);
-  padding: 0px 1px;
-  height: 100%;
-  background: black;
-  color: white;
-  font-size: var(--cell-height);
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-
-  & .buttons {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    visibility: hidden;
-
-    & > div:hover {
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    & > .delete {
-      font-size: calc(var(--divider-width) * 1.75);
-    }
-
-    & > .dummy {
-      visibility: hidden;
-    }
-  }
-
-  &.hoverable {
-    &:hover {
-      width: var(--note-font-size);
-
-      & .buttons {
-        visibility: visible;
-      }
-    }
-
-  }
-}*/
-
-/* We don't want this last divider to take up extra space in the grid and throw it off */
-.divider .new-button {
-  margin-left: calc(var(--cell-height) * 0.4);
-  padding-right: calc(var(--cell-height) * 0.1);
-  background: black;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.new-button {
+  align-self: center;
   cursor: pointer;
 
-  &:hover {
-    font-weight: bold;
+  &:hover svg {
+    stroke-width: 3;
   }
 }
 </style>

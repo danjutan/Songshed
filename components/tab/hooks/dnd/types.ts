@@ -1,4 +1,6 @@
 import type { GuitarNote } from "~/model/data";
+import type { Bend } from "~/model/stores";
+import type { StartType } from "../../providers/state/provide-bend-edit-state";
 
 export type DragType = "select" | /*"tie-add" |*/ "move";
 
@@ -8,6 +10,8 @@ const noteInputDragDataPrivateKey = Symbol("NoteInput drag data");
 const noteInputDropDataPrivateKey = Symbol("NoteInput drop data");
 const bendBarDropDataPrivateKey = Symbol("Bend bar drop data");
 const tieAddDragDataPrivateKey = Symbol("Tie add drag data");
+const bendEditDragDataPrivateKey = Symbol("Bend edit drag data");
+const annotationDragDataPrivateKey = Symbol("Annotation drag data");
 
 export type NoteInputDragDataProps = {
   position: number;
@@ -23,12 +27,31 @@ export type TieAddDragDataProps = {
   mode: "tie" | "bend";
 };
 
-type TieAddDragData = {
-  [tieAddDragDataPrivateKey]: true;
-} & TieAddDragDataProps;
+export type BendEditDragDataProps = {
+  bend: Bend;
+  mode: StartType;
+};
+
+export type AnnotationDragDataProps = {
+  row: number;
+  position: number;
+};
+
 type NoteInputDragData = {
   [noteInputDragDataPrivateKey]: true;
 } & NoteInputDragDataProps;
+
+type TieAddDragData = {
+  [tieAddDragDataPrivateKey]: true;
+} & TieAddDragDataProps;
+
+type BendEditDragData = {
+  [bendEditDragDataPrivateKey]: true;
+} & BendEditDragDataProps;
+
+type AnnotationDragData = {
+  [annotationDragDataPrivateKey]: true;
+} & AnnotationDragDataProps;
 
 type NoteInputDropData = {
   [noteInputDropDataPrivateKey]: true;
@@ -77,6 +100,24 @@ export function getTieAddDragData(params: TieAddDragDataProps): TieAddDragData {
   };
 }
 
+export function getBendEditDragData(
+  params: BendEditDragDataProps,
+): BendEditDragData {
+  return {
+    [bendEditDragDataPrivateKey]: true,
+    ...params,
+  };
+}
+
+export function getAnnotationDragData(
+  params: AnnotationDragDataProps,
+): AnnotationDragData {
+  return {
+    [annotationDragDataPrivateKey]: true,
+    ...params,
+  };
+}
+
 export function isNoteInputDragData(
   data: Record<string | symbol, unknown>,
 ): data is NoteInputDragData {
@@ -99,4 +140,16 @@ export function isBendBarDropData(
   data: Record<string | symbol, unknown>,
 ): data is BendBarDropData {
   return !!data[bendBarDropDataPrivateKey];
+}
+
+export function isBendEditDragData(
+  data: Record<string | symbol, unknown>,
+): data is BendEditDragData {
+  return !!data[bendEditDragDataPrivateKey];
+}
+
+export function isAnnotationDragData(
+  data: Record<string | symbol, unknown>,
+): data is AnnotationDragData {
+  return !!data[annotationDragDataPrivateKey];
 }
