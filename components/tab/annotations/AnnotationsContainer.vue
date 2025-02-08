@@ -7,8 +7,7 @@ import AnnotationRender, {
   type AnnotationRenderProps,
 } from "./AnnotationRender.vue";
 import { injectStackResizeObserver } from "../providers/events/provide-resize-observer";
-import { injectBarManagement } from "../providers/state/provide-bar-management";
-import { injectAnnotationAddState } from "../providers/state/annotations/provide-annotation-add-state";
+import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 import type { Annotation } from "~/model/data";
 import type { NewAnnotationRenderProps } from "./NewAnnotationRender.vue";
 import NewAnnotationRender from "./NewAnnotationRender.vue";

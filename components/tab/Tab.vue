@@ -18,7 +18,7 @@ import { useBendEditMonitor } from "./hooks/dnd/use-bend-edit-monitor";
 import { useAnnotationAddMonitor } from "./hooks/dnd/use-annotation-add-monitor";
 import { injectSettingsState } from "./providers/state/provide-settings-state";
 
-import { provideAnnotationAddState } from "./providers/state/annotations/provide-annotation-add-state";
+import { provideAnnotationAddState } from "./providers/state/provide-annotation-add-state";
 
 import { provideNotePreviewState } from "./providers/state/provide-note-preview-state";
 import { provideSubUnit } from "./providers/provide-subunit";

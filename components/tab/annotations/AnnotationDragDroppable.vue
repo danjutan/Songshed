@@ -11,7 +11,7 @@ import {
   getNoteInputDropData,
 } from "../hooks/dnd/types";
 import OverlayCoords from "~/components/tab/bars/OverlayCoords.vue";
-import { injectAnnotationAddState } from "../providers/state/annotations/provide-annotation-add-state";
+import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 
 const props = defineProps<{
   row: number;
