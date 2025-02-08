@@ -88,36 +88,37 @@ const tieableDragData = computed<Omit<TieAddDragDataProps, "mode"> | undefined>(
 const ctrlState = useKeyModifier("Control");
 const metaState = useKeyModifier("Meta");
 
-onMounted(() => {
-  watchEffect((cleanup) =>
-    cleanup(
-      combine(
-        dropTargetForElements({
-          element: containerRef.value!,
-          getData: () =>
-            getNoteInputDropData({
-              position: props.notePosition.position,
-              string: props.notePosition.string,
-            }),
-        }),
-        ...[containerRef.value!, noteInputRef.value!.el!].map((el) =>
-          draggable({
-            element: el,
-            onGenerateDragPreview: ({ nativeSetDragImage }) => {
-              disableNativeDragPreview({ nativeSetDragImage });
-              preventUnhandled.start();
-            },
-            onDragStart: () => {
-              noteInputRef.value?.blur();
-            },
-            getInitialData: () => {
-              return getNoteInputDragData({
-                ...dragData.value,
-                dragType: "select",
-              });
-            },
+watchEffect((cleanup) => {
+  if (!containerRef.value || !noteInputRef.value) {
+    return;
+  }
+  cleanup(
+    combine(
+      dropTargetForElements({
+        element: containerRef.value!,
+        getData: () =>
+          getNoteInputDropData({
+            position: props.notePosition.position,
+            string: props.notePosition.string,
           }),
-        ),
+      }),
+      ...[containerRef.value!, noteInputRef.value!.el!].map((el) =>
+        draggable({
+          element: el,
+          onGenerateDragPreview: ({ nativeSetDragImage }) => {
+            disableNativeDragPreview({ nativeSetDragImage });
+            preventUnhandled.start();
+          },
+          onDragStart: () => {
+            noteInputRef.value?.blur();
+          },
+          getInitialData: () => {
+            return getNoteInputDragData({
+              ...dragData.value,
+              dragType: "select",
+            });
+          },
+        }),
       ),
     ),
   );

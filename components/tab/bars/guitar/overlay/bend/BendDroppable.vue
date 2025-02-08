@@ -8,15 +8,16 @@ const props = defineProps<{
 
 const droppable = useTemplateRef("droppable");
 
-onMounted(() => {
-  watchEffect((cleanup) => {
-    cleanup(
-      dropTargetForElements({
-        element: droppable.value!,
-        getData: () => getBendBarDropData({ position: props.position }),
-      }),
-    );
-  });
+watchEffect((cleanup) => {
+  if (!droppable.value) {
+    return;
+  }
+  cleanup(
+    dropTargetForElements({
+      element: droppable.value!,
+      getData: () => getBendBarDropData({ position: props.position }),
+    }),
+  );
 });
 </script>
 

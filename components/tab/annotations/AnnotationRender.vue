@@ -93,7 +93,6 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         left: left(startCoords),
         width: width(startCoords, endCoords),
       }"
-      @click="console.log(startCoords.left, endCoords.right)"
     >
       <div
         ref="title"

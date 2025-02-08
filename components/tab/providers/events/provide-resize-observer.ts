@@ -63,7 +63,6 @@ export function provideStackResizeObserver() {
       ...breaks,
       posToY.value[posToY.value.length - 1].position,
     ];
-    console.log(tablineStarts);
     return tablineStarts;
   });
 
