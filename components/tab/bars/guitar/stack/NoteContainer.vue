@@ -306,10 +306,17 @@ const row = computed(() => props.notePosition.string + 1);
     min-width: calc(var(--cell-height) + 12px);
   }
 
-  &:hover .input {
-    background-color: rgb(
-      from var(--note-hover-color) r g b / var(--select-alpha)
-    );
+  &:hover,
+  &.tieable {
+    .note-block {
+      color: transparent;
+    }
+    .input {
+      display: block;
+      background-color: rgb(
+        from var(--note-hover-color) r g b / var(--select-alpha)
+      );
+    }
   }
 }
 
@@ -321,6 +328,7 @@ const row = computed(() => props.notePosition.string + 1);
 }
 
 .input {
+  display: none;
   grid-area: 1 / 1 / -1 / -1;
   &.muted {
     color: transparent;
@@ -329,9 +337,8 @@ const row = computed(() => props.notePosition.string + 1);
 
 .note-block {
   grid-area: 2 / 2;
-  color: transparent;
+  color: black;
   &.preview {
-    color: black;
     opacity: 0.5;
   }
 }
