@@ -6,7 +6,6 @@ import {
   type SelectionState,
 } from "./provide-selection-state";
 import type { GuitarNote } from "~/model/data";
-import { computed } from "vue";
 
 export interface NotePreviewState {
   useNotePreview: (
@@ -29,26 +28,12 @@ export function provideNotePreviewState(
 
     const { deltaString, deltaPosition } = selectionState.movingOffset;
 
-    for (const selectedPos of selectionState.selections) {
-      const note = guitar.getNote(notePositionKeyFromKey(selectedPos));
-      if (!note) continue;
-
-      const { string, position } = notePositionKeyFromKey(selectedPos);
-      const newPosition = {
-        string: string + deltaString,
-        position: position + deltaPosition,
-      };
-
-      const newNote: GuitarNote = {
-        note:
-          note.note === "muted"
-            ? "muted"
-            : ((note.note +
-                (guitar.tuning[newPosition.string] -
-                  guitar.tuning[string])) as Midi),
-      };
-
-      previews[notePositionKey(newPosition)] = newNote;
+    for (const { position, note } of guitar.getMovedNotes(
+      Array.from(selectionState.selections).map(notePositionKeyFromKey),
+      deltaString,
+      deltaPosition,
+    )) {
+      previews[notePositionKey(position)] = note;
     }
 
     return previews;

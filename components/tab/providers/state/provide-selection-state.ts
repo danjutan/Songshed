@@ -246,8 +246,6 @@ export function provideSelectionState(
     movingOffset.deltaString = origin.string - bounds.minString;
     movingOffset.deltaPosition = 0;
 
-    console.log(movingOffset);
-
     lastMoveTo = origin;
     action.value = "moving";
   }
@@ -286,47 +284,17 @@ export function provideSelectionState(
     const stringDiff = movingOffset.deltaString;
     const positionDiff = movingOffset.deltaPosition;
 
-    const selectedNotes = selectedPositions
-      .map((pos) => ({
-        notePosition: pos,
-        note: props.guitar.getNote(pos),
-      }))
-      .filter(
-        (item): item is { notePosition: NotePosition; note: GuitarNote } =>
-          item.note !== undefined,
-      );
-
-    if (!copy) {
-      selectedNotes
-        .map(({ notePosition }) => notePosition)
-        .forEach(props.guitar.deleteNote);
-    }
-
-    for (const { notePosition, note } of selectedNotes) {
-      // TODO: extract this logic (combine with logic in provide-note-preview-state)
-      const newPos = {
-        string: notePosition.string + stringDiff,
-        position: notePosition.position + positionDiff,
-      };
-      if (note.note === "muted") {
-        props.guitar.setNote(newPos, { note: "muted" });
-        continue;
-      }
-
-      const newMidi = (note.note +
-        (props.guitar.tuning[newPos.string] -
-          props.guitar.tuning[notePosition.string])) as Midi;
-      props.guitar.setNote(newPos, { note: newMidi });
-    }
+    const movedPositions = props.guitar.moveNotes(
+      selectedPositions,
+      stringDiff,
+      positionDiff,
+      copy,
+    );
 
     clearSelections();
-    for (const { notePosition } of selectedNotes) {
-      selections.add(
-        notePositionKey({
-          string: notePosition.string + stringDiff,
-          position: notePosition.position + positionDiff,
-        }),
-      );
+
+    for (const position of movedPositions) {
+      selectNote(position);
     }
   }
 
