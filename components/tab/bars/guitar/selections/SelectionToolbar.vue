@@ -13,6 +13,7 @@ const isOneNote = computed(() => selectionState.selections.size === 1);
 const isEmpty = computed(() => selectionState.isEmpty());
 const props = defineProps<{
   region: RegionBounds;
+  top?: string;
 }>();
 
 const copied = copyState.copied;
@@ -33,7 +34,7 @@ function pasteHere() {
 </script>
 
 <template>
-  <div class="selection-toolbar">
+  <div class="selection-toolbar" :style="{ top }">
     <button
       v-if="!isOneNote && !isEmpty"
       class="selection-toolbar-button"
