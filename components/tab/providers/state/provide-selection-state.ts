@@ -45,28 +45,32 @@ type SelectionAction = "might-delete" | "might-move" | "moving" | "none";
 
 export interface SelectionState {
   selections: Set<NotePositionKey>;
-  startSelection: (position: NotePosition) => void;
-  endSelection: () => void;
-  addSelection: (position: NotePosition) => void;
+  regions: RegionBounds[];
+
+  selectNote: (position: NotePosition) => void;
   clearSelections: () => void;
+  deleteSelectedNotes: () => void;
+
+  startSelection: (position: NotePosition) => void;
+  growSelection: (position: NotePosition) => void;
+  endSelection: () => void;
+
   isSelectedPosition: (position: NotePosition) => boolean;
   isEmpty: () => boolean;
-  selectNote: (position: NotePosition) => void;
+
+  movingOffset: { deltaString: number; deltaPosition: number };
   startMove: (origin: NotePosition) => void;
   moveOver: (moveTo: NotePosition) => void;
-  cancelMove: () => void;
   endMove: (copy?: boolean) => void;
-  // moveSelectionsIfValid: (moveTo: NotePosition) => void;
-  deleteSelectedNotes: () => void;
+  cancelMove: () => void;
+
+  action: SelectionAction;
   setAction: (action: SelectionAction) => void;
-  addPositionListener: (
+
+  addSelectNoteListener: (
     position: NotePosition,
     listener: (selected: boolean) => void,
   ) => void;
-  action: SelectionAction;
-  regions: RegionBounds[];
-  movingOffset: { deltaString: number; deltaPosition: number };
-  getFilledBounds: () => RegionBounds | undefined;
 }
 
 export function provideSelectionState(
@@ -90,7 +94,7 @@ export function provideSelectionState(
 
   const action = ref<SelectionAction>("none");
 
-  function addPositionListener(
+  function addSelectNoteListener(
     position: NotePosition,
     listener: (selected: boolean) => void,
   ) {
@@ -188,7 +192,7 @@ export function provideSelectionState(
     currentSelectionEnd = undefined;
   }
 
-  function addSelection(position: NotePosition): void {
+  function growSelection(position: NotePosition): void {
     if (!currentSelectionStart || !currentSelectionEnd) {
       return;
     }
@@ -361,7 +365,7 @@ export function provideSelectionState(
     selectNote,
     startSelection,
     endSelection,
-    addSelection,
+    growSelection,
     clearSelections,
     isSelectedPosition,
     isEmpty,
@@ -369,7 +373,7 @@ export function provideSelectionState(
     endMove,
     deleteSelectedNotes,
     regions,
-    addPositionListener,
+    addSelectNoteListener,
     moveOver,
     cancelMove,
     movingOffset,
@@ -379,7 +383,6 @@ export function provideSelectionState(
     setAction: (value: SelectionAction) => {
       action.value = value;
     },
-    getFilledBounds,
   };
 
   provide(SelectionInjectionKey, selectionState);

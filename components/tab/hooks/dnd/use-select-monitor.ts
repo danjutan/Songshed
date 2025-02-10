@@ -13,6 +13,7 @@ export function useSelectMonitor(selectionState: SelectionState) {
           );
         },
         onDragStart(args) {
+          // See NoteContainer onMouseDown for why we don't clear the selection here
           const data = args.source.data;
           if (isNoteInputDragData(data)) {
             selectionState.startSelection(data);
@@ -24,7 +25,7 @@ export function useSelectMonitor(selectionState: SelectionState) {
             if (isNoteInputDropData(dropData)) {
               const startData = args.source.data;
               if (isNoteInputDragData(startData)) {
-                selectionState.addSelection(dropData);
+                selectionState.growSelection(dropData);
               }
             }
           }

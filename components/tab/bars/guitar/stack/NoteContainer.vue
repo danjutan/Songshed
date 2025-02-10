@@ -49,7 +49,7 @@ const notePreview = useNotePreview(props.notePosition);
 
 // TODO: investigate whether we really need this for performance (vs. a reactive useIsSelected hook)
 const isSelected = ref(false);
-selectionState.addPositionListener(
+selectionState.addSelectNoteListener(
   { string: props.notePosition.string, position: props.notePosition.position },
   (selected) => {
     isSelected.value = selected;
