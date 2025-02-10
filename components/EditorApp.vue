@@ -25,6 +25,16 @@ async function save(saveId: string) {
 }
 
 const selected = ref("");
+
+// Leaving this here fpr reference, but it's probably not a real bottleneck;
+// without the call, the time is just spent on something else
+// onMounted(() => {
+//
+//  // https://github.com/orgs/vuejs/discussions/8805
+//   document.querySelectorAll = function () {
+//     return [];
+//   };
+// });
 </script>
 
 <template>

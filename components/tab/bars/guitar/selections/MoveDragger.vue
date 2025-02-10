@@ -19,36 +19,37 @@ const props = defineProps<{
   region: RegionBounds;
 }>();
 
-onMounted(() => {
-  watchEffect((cleanup) => {
-    cleanup(
-      draggable({
-        element: draggableRef.value!,
-        onGenerateDragPreview: ({ nativeSetDragImage }) => {
-          disableNativeDragPreview({ nativeSetDragImage });
-          preventUnhandled.start();
-        },
-        getInitialData: (args) => {
-          const midPosition =
-            Math.round(
-              (props.region.minPosition + props.region.maxPosition) /
-                2 /
-                subUnit.value,
-            ) * subUnit.value;
+watchEffect((cleanup) => {
+  if (!draggableRef.value) {
+    return;
+  }
+  cleanup(
+    draggable({
+      element: draggableRef.value!,
+      onGenerateDragPreview: ({ nativeSetDragImage }) => {
+        disableNativeDragPreview({ nativeSetDragImage });
+        preventUnhandled.start();
+      },
+      getInitialData: (args) => {
+        const midPosition =
+          Math.round(
+            (props.region.minPosition + props.region.maxPosition) /
+              2 /
+              subUnit.value,
+          ) * subUnit.value;
 
-          const anchor: NotePosition = {
-            string: props.region.minString,
-            position: midPosition,
-          };
+        const anchor: NotePosition = {
+          string: props.region.minString,
+          position: midPosition,
+        };
 
-          return getNoteInputDragData({
-            ...anchor,
-            dragType: "move",
-          });
-        },
-      }),
-    );
-  });
+        return getNoteInputDragData({
+          ...anchor,
+          dragType: "move",
+        });
+      },
+    }),
+  );
 });
 
 function onMouseEnter() {

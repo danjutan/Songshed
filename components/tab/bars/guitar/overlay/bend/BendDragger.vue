@@ -27,30 +27,31 @@ const { draggersSelector } = injectOverlayControlsTeleport();
 const dragger = useTemplateRef("dragger");
 
 const dragging = ref(false);
-onMounted(() => {
-  watchEffect((cleanup) => {
-    cleanup(
-      draggable({
-        element: dragger.value!,
-        onGenerateDragPreview: ({ nativeSetDragImage }) => {
-          disableNativeDragPreview({ nativeSetDragImage });
-          preventUnhandled.start();
-        },
-        onDragStart: () => {
-          dragging.value = true;
-        },
-        onDrop: () => {
-          dragging.value = false;
-        },
-        getInitialData: () => {
-          return getBendEditDragData({
-            bend: props.bend,
-            mode: props.mode,
-          });
-        },
-      }),
-    );
-  });
+watchEffect((cleanup) => {
+  if (!dragger.value) {
+    return;
+  }
+  cleanup(
+    draggable({
+      element: dragger.value!,
+      onGenerateDragPreview: ({ nativeSetDragImage }) => {
+        disableNativeDragPreview({ nativeSetDragImage });
+        preventUnhandled.start();
+      },
+      onDragStart: () => {
+        dragging.value = true;
+      },
+      onDrop: () => {
+        dragging.value = false;
+      },
+      getInitialData: () => {
+        return getBendEditDragData({
+          bend: props.bend,
+          mode: props.mode,
+        });
+      },
+    }),
+  );
 });
 </script>
 

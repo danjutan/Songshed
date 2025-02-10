@@ -168,7 +168,7 @@ const tablineHasBends = computed(() => {
   display: grid;
   width: 100%;
   grid-template-columns: min-content repeat(v-bind(numStacks), 1fr);
-  grid-template-rows: auto auto;
+  grid-template-rows: auto min-content;
 
   & :deep(.divider) {
     grid-column: 1;

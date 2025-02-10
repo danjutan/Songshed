@@ -35,31 +35,30 @@ const width = (coords: { left: number; right: number }) => {
 
 const element = useTemplateRef("element");
 
-onMounted(() => {
-  watchEffect((cleanup) => {
-    if (element.value) {
-      const data = getAnnotationDragData({
-        row: props.row,
-        position: props.position,
-      });
-      cleanup(
-        combine(
-          dropTargetForElements({
-            element: element.value,
-            getData: () => data,
-          }),
-          draggable({
-            element: element.value,
-            onGenerateDragPreview: ({ nativeSetDragImage }) => {
-              disableNativeDragPreview({ nativeSetDragImage });
-              preventUnhandled.start();
-            },
-            getInitialData: () => data,
-          }),
-        ),
-      );
-    }
+watchEffect((cleanup) => {
+  if (!element.value) {
+    return;
+  }
+  const data = getAnnotationDragData({
+    row: props.row,
+    position: props.position,
   });
+  cleanup(
+    combine(
+      dropTargetForElements({
+        element: element.value,
+        getData: () => data,
+      }),
+      draggable({
+        element: element.value,
+        onGenerateDragPreview: ({ nativeSetDragImage }) => {
+          disableNativeDragPreview({ nativeSetDragImage });
+          preventUnhandled.start();
+        },
+        getInitialData: () => data,
+      }),
+    ),
+  );
 });
 </script>
 

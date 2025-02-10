@@ -58,7 +58,12 @@ export function provideStackResizeObserver() {
       }
     });
 
-    return [0, ...breaks, posToY.value[posToY.value.length - 1].position];
+    const tablineStarts = [
+      0,
+      ...breaks,
+      posToY.value[posToY.value.length - 1].position,
+    ];
+    return tablineStarts;
   });
 
   let firstPos = Infinity;
@@ -79,6 +84,9 @@ export function provideStackResizeObserver() {
   const createResizeObserver = () => {
     if (resizeObserver) return resizeObserver;
     resizeObserver = new ResizeObserver((entries) => {
+      // TODO: This is a major performance bottleneck.
+      // Maybe use directives instead of OverlayCoords to directly register
+      // a value to be updated by the DOM
       for (const [pos, stack] of posToCoords) {
         updateStackCoords(stack.ref, pos);
       }
