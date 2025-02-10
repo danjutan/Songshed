@@ -66,11 +66,6 @@ export interface SelectionState {
 
   action: SelectionAction;
   setAction: (action: SelectionAction) => void;
-
-  addSelectNoteListener: (
-    position: NotePosition,
-    listener: (selected: boolean) => void,
-  ) => void;
 }
 
 export function provideSelectionState(
@@ -83,8 +78,6 @@ export function provideSelectionState(
   let currentSelectionStart: NotePosition | undefined;
   let currentSelectionEnd: NotePosition | undefined;
 
-  const listeners = new Map<NotePositionKey, (selected: boolean) => void>();
-
   const selections = reactive<Set<NotePositionKey>>(new Set());
   const selectedPositions = reactiveComputed<NotePosition[]>(() => {
     return Array.from(selections).map((key) => {
@@ -94,11 +87,12 @@ export function provideSelectionState(
 
   const action = ref<SelectionAction>("none");
 
-  function addSelectNoteListener(
-    position: NotePosition,
-    listener: (selected: boolean) => void,
-  ) {
-    listeners.set(notePositionKey(position), listener);
+  function selectNote(position: NotePosition) {
+    selections.add(notePositionKey(position));
+  }
+
+  function unselectNote(position: NotePosition) {
+    selections.delete(notePositionKey(position));
   }
 
   const regions = reactiveComputed<RegionBounds[]>(() => {
@@ -170,16 +164,6 @@ export function provideSelectionState(
     return selectedPositions
       .map(props.guitar.getNote)
       .every((note) => note === undefined);
-  }
-
-  function selectNote(position: NotePosition) {
-    selections.add(notePositionKey(position));
-    listeners.get(notePositionKey(position))?.(true);
-  }
-
-  function unselectNote(position: NotePosition) {
-    selections.delete(notePositionKey(position));
-    listeners.get(notePositionKey(position))?.(false);
   }
 
   function startSelection(position: NotePosition): void {
@@ -341,7 +325,6 @@ export function provideSelectionState(
     endMove,
     deleteSelectedNotes,
     regions,
-    addSelectNoteListener,
     moveOver,
     cancelMove,
     movingOffset,
