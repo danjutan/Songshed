@@ -69,7 +69,7 @@ onMounted(() => {
       <div
         class="button delete"
         @click="deleteBar(barStart)"
-        @mouseover="emit('deleteHoverStart')"
+        @mouseenter="emit('deleteHoverStart')"
         @mouseleave="emit('deleteHoverEnd')"
       >
         <Delete />

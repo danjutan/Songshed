@@ -121,7 +121,7 @@ const cellHeight = computed(() => settings.cellHeight);
         :y="upswingToY + settings.contextMenuHeight"
         :width="upswingTo.right - upswingTo.left"
         :height="cellHeight"
-        @mouseover="upswingArrowHover = true"
+        @mouseenter="upswingArrowHover = true"
         @mouseleave="upswingArrowHover = false"
       />
 
@@ -200,7 +200,7 @@ const cellHeight = computed(() => settings.cellHeight);
           @click="
             bendEditState.onReleaseGrabberClick(bend, getNextStackPos(bend.to)!)
           "
-          @mouseover="releaseArrowHover = true"
+          @mouseenter="releaseArrowHover = true"
           @mouseleave="releaseArrowHover = false"
         />
         <line
