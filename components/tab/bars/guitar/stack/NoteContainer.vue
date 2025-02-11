@@ -329,7 +329,7 @@ const row = computed(() => props.notePosition.string + 1);
 
   &:hover,
   &.tieable {
-    .note-block {
+    .note-block:not(.preview) {
       color: transparent;
     }
     .input {

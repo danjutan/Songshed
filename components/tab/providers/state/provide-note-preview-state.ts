@@ -6,7 +6,7 @@ import {
   type SelectionState,
 } from "./provide-selection-state";
 import type { GuitarNote } from "~/model/data";
-
+import type { CopyState } from "./provide-copy-state";
 export interface NotePreviewState {
   useNotePreview: (
     position: NotePosition,
@@ -17,23 +17,32 @@ const NotePreviewInjectionKey = Symbol() as InjectionKey<NotePreviewState>;
 
 export function provideNotePreviewState(
   selectionState: SelectionState,
+  copyState: CopyState,
   guitar: GuitarStore,
 ): NotePreviewState {
   const notePreviews = computed(() => {
     const previews: Record<NotePositionKey, GuitarNote> = {};
 
-    if (selectionState.action !== "moving") {
-      return previews;
+    if (selectionState.action === "moving") {
+      const { deltaString, deltaPosition } = selectionState.movingOffset;
+
+      for (const { position, note } of guitar.getMovedNotes(
+        Array.from(selectionState.selections).map(notePositionKeyFromKey),
+        deltaString,
+        deltaPosition,
+      )) {
+        previews[notePositionKey(position)] = note;
+      }
     }
 
-    const { deltaString, deltaPosition } = selectionState.movingOffset;
-
-    for (const { position, note } of guitar.getMovedNotes(
-      Array.from(selectionState.selections).map(notePositionKeyFromKey),
-      deltaString,
-      deltaPosition,
-    )) {
-      previews[notePositionKey(position)] = note;
+    if (copyState.pasteDelta.value) {
+      for (const { position, note } of guitar.getMovedNotes(
+        copyState.copiedPositions.value,
+        copyState.pasteDelta.value.string,
+        copyState.pasteDelta.value.position,
+      )) {
+        previews[notePositionKey(position)] = note;
+      }
     }
 
     return previews;

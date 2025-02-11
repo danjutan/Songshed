@@ -23,14 +23,10 @@ function copy() {
   copiedHere.value = true;
 }
 
-function pasteHere() {
-  if (copyState.copied) {
-    copyState.paste({
-      string: props.region.minString,
-      position: props.region.minPosition,
-    });
-  }
-}
+const pastePosition = computed(() => ({
+  string: props.region.minString,
+  position: props.region.minPosition,
+}));
 </script>
 
 <template>
@@ -57,7 +53,9 @@ function pasteHere() {
     <button
       v-if="copied && !copiedHere"
       class="selection-toolbar-button"
-      @click="pasteHere"
+      @click="copyState.paste(pastePosition)"
+      @mouseenter="copyState.pasteHover(pastePosition)"
+      @mouseleave="copyState.pasteHoverLeave"
     >
       <ClipboardPaste class="paste-icon" :size="16" />
     </button>

@@ -6,9 +6,12 @@ import {
 } from "./provide-selection-state";
 
 export interface CopyState {
-  // copiedPositions: NotePosition[];
   copy: () => void;
+  pasteHover: (targetPosition: NotePosition) => void;
+  pasteHoverLeave: () => void;
   paste: (targetPosition: NotePosition) => void;
+  pasteDelta: ComputedRef<NotePosition | undefined>;
+  copiedPositions: ComputedRef<NotePosition[]>;
   copied: ComputedRef<boolean>;
 }
 
@@ -19,32 +22,54 @@ export function provideCopyState(
   guitar: GuitarStore,
 ): CopyState {
   const copiedPositions = ref<NotePosition[]>([]);
-
+  const pastePosition = ref<NotePosition | undefined>(undefined);
   function copy() {
     copiedPositions.value = Array.from(selectionState.selections).map(
       notePositionKeyFromKey,
     );
   }
 
-  function paste(targetPosition: NotePosition) {
-    if (copiedPositions.value.length === 0) return;
+  function pasteHover(targetPosition: NotePosition) {
+    pastePosition.value = targetPosition;
+  }
 
-    const positions = copiedPositions.value;
-    // Calculate the bounds of copied notes to determine offset
-    const minString = Math.min(...positions.map((p) => p.string));
-    const minPosition = Math.min(...positions.map((p) => p.position));
+  function pasteHoverLeave() {
+    pastePosition.value = undefined;
+  }
 
-    // Calculate deltas from target to source top-left corner
-    const deltaString = targetPosition.string - minString;
-    const deltaPosition = targetPosition.position - minPosition;
+  const pasteDelta = computed(() => {
+    if (!pastePosition.value) {
+      return;
+    }
 
-    // Move the notes with copy=true
-    guitar.moveNotes(positions, deltaString, deltaPosition, true);
+    const minString = Math.min(...copiedPositions.value.map((p) => p.string));
+    const minPosition = Math.min(
+      ...copiedPositions.value.map((p) => p.position),
+    );
+
+    return {
+      string: pastePosition.value.string - minString,
+      position: pastePosition.value.position - minPosition,
+    };
+  });
+
+  function paste() {
+    const delta = pasteDelta.value;
+
+    if (copiedPositions.value.length === 0 || !delta) return;
+
+    guitar.moveNotes(copiedPositions.value, delta.string, delta.position, true);
+
+    pastePosition.value = undefined;
   }
 
   const copyState: CopyState = {
     copy,
+    pasteHover,
+    pasteHoverLeave,
     paste,
+    pasteDelta,
+    copiedPositions: computed(() => copiedPositions.value),
     copied: computed(() => copiedPositions.value.length > 0),
   };
 

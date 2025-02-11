@@ -59,7 +59,6 @@ const selectionState = provideSelectionState(
     barSize,
   })),
 );
-provideNotePreviewState(selectionState, props.tabStore.guitar);
 const editingState = provideEditingState();
 
 const tieAddState = provideTieAddState(
@@ -86,6 +85,8 @@ const barManagement = provideBarManagement(
 );
 
 const copyState = provideCopyState(selectionState, props.tabStore.guitar);
+
+provideNotePreviewState(selectionState, copyState, props.tabStore.guitar);
 
 onMounted(() => {
   useTieAddMonitor(tieAddState);
