@@ -58,7 +58,18 @@ export function provideCopyState(
 
     if (copiedPositions.value.length === 0 || !delta) return;
 
-    guitar.moveNotes(copiedPositions.value, delta.string, delta.position, true);
+    const newPositions = guitar.moveNotes(
+      copiedPositions.value,
+      delta.string,
+      delta.position,
+      true,
+    );
+
+    selectionState.clearSelections(); // not needed; just in case
+
+    for (const position of newPositions) {
+      selectionState.selectNote(position);
+    }
 
     pastePosition.value = undefined;
   }
