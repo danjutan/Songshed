@@ -8,6 +8,7 @@ import {
   injectStackResizeObserver,
   type StackCoords,
 } from "../providers/events/provide-resize-observer";
+import { X } from "lucide-vue-next";
 
 export interface AnnotationRenderProps {
   row: number;
@@ -104,7 +105,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         {{ annotation?.text }}
       </div>
       <div v-if="annotation" class="delete" @click="emit('delete')">
-        &Cross;
+        <X :size="16" />
       </div>
     </div>
   </OverlayCoords>
@@ -142,13 +143,11 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 }
 
 .delete {
-  color: maroon;
   cursor: pointer;
   padding: 0px 1px;
   visibility: hidden;
-  &:hover {
-    font-weight: bold;
-    color: darkred;
+  &:hover svg {
+    stroke-width: 3;
   }
 }
 </style>

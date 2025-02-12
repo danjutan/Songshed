@@ -39,6 +39,7 @@ const props = defineProps<{
 
 const settings = injectSettingsState();
 const cellHeightPx = computed(() => `${settings.cellHeight}px`);
+const dividerWidthPx = computed(() => `${settings.dividerWidth}px`);
 const contextMenuHeightPx = computed(() => `${settings.contextMenuHeight}px`);
 const collapsedMinWidthPx = computed(() => `${settings.collapsedMinWidth}px`);
 
@@ -154,17 +155,29 @@ onBeforeUnmount(() => {
   document.removeEventListener("keyup", onKeyUp);
 });
 
-const barMinWidth = (bar: Bar) =>
-  Array.from(bar.stacks.entries()).reduce((total: number, [position]) => {
-    const width = isCollapsed(
-      settings,
-      bar.stacks[position].notes,
-      position % props.tabStore.beatSize === 0,
-    )
-      ? settings.collapsedMinWidth
-      : settings.cellHeight;
-    return total + width;
-  }, 0);
+const barMinWidth = (bar: Bar) => {
+  // NOTE: This must always mirror how TabBar sets itself up
+  const stacks = Array.from(bar.stacks.entries()).reduce(
+    (total: number, [position]) => {
+      const width = isCollapsed(
+        settings,
+        bar.stacks[position].notes,
+        position % props.tabStore.beatSize === 0,
+      )
+        ? settings.collapsedMinWidth
+        : settings.cellHeight;
+      return total + width;
+    },
+    0,
+  );
+
+  const firstBarBuffer = settings.cellHeight;
+  let total = stacks + settings.dividerWidth;
+  if (tablineStarts.value.includes(bar.start)) {
+    total += firstBarBuffer;
+  }
+  return total;
+};
 
 const tabBarRefs = useTemplateRef("tabBars");
 const tab = useTemplateRef("tab");
@@ -190,12 +203,26 @@ function onResize(i: number, diffX: number) {
   if (!tabBarRefs.value) return;
 
   const tabWidth = tab.value!.clientWidth;
+  const leftBar = tabBarRefs.value[i - 1];
+  const rightBar = tabBarRefs.value[i];
+
+  if (!leftBar || !rightBar) return;
+
   const deltaX = diffX - lastDiffX;
   lastDiffX = diffX;
   const diffPercentage = deltaX / tabWidth;
 
-  barFlexGrow.value[i - 1]! += diffPercentage * 10;
-  barFlexGrow.value[i]! -= diffPercentage * 10;
+  const leftMinWidth = barMinWidth(barManagement.bars[i - 1]);
+  const rightMinWidth = barMinWidth(barManagement.bars[i]);
+
+  const leftNewWidth = leftBar.$el.clientWidth + deltaX;
+  const rightNewWidth = rightBar.$el.clientWidth - deltaX;
+
+  if (leftNewWidth > leftMinWidth && rightNewWidth > rightMinWidth) {
+    // TODO: once there are more than one line, this moves too much
+    barFlexGrow.value[i - 1]! += diffPercentage * 10;
+    barFlexGrow.value[i]! -= diffPercentage * 10;
+  }
 }
 
 function endDrag(i: number) {
@@ -244,8 +271,8 @@ const deletingBarStart = ref<number | undefined>(undefined);
   --cell-height: v-bind(cellHeightPx);
   --context-menu-height: v-bind(contextMenuHeightPx);
   --collapsed-min-width: v-bind(collapsedMinWidthPx);
+  --divider-width: v-bind(dividerWidthPx);
   --note-font-size: calc(var(--cell-height) * 0.8);
-  --divider-width: calc(var(--cell-height) / 3);
   --substack-bg: rgba(255, 0, 0, 0.1);
   --pos-line-width: 1px;
   --string-width: 1px;
