@@ -334,9 +334,12 @@ const row = computed(() => props.notePosition.string + 1);
     }
     .input {
       display: block;
-      background-color: rgb(
-        from var(--note-hover-color) r g b / var(--select-alpha)
-      );
+    }
+  }
+
+  &:not(:hover) {
+    .selection-toolbar {
+      display: none;
     }
   }
 }
@@ -351,6 +354,9 @@ const row = computed(() => props.notePosition.string + 1);
 .input {
   display: none;
   grid-area: 1 / 1 / -1 / -1;
+  background-color: rgb(
+    from var(--note-hover-color) r g b / var(--select-alpha)
+  );
   &.muted {
     color: transparent;
   }
