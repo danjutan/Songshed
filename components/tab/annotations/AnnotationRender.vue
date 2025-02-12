@@ -69,7 +69,6 @@ onMounted(() => {
   }
 });
 
-// TODO: reconsider given that the first column could be a different bar
 const startsInFirstColumn = computed(() => {
   return barManagement.bars.some((bar) => bar.start === start.value);
 });
@@ -149,9 +148,14 @@ watchEffect((cleanup) => {
       <div ref="rightHandle" class="resize-handle end">
         <div class="visible" />
       </div>
-      <!-- <div v-if="annotation" class="delete" @click="emit('delete')">
-        <X :size="16" />
-      </div> -->
+      <div
+        v-if="annotation.start === annotation.end"
+        class="center-line pos-line"
+      />
+      <!-- <template v-else>
+        <div class="left-line pos-line" />
+        <div class="right-line pos-line" />
+      </template> -->
     </div>
   </OverlayCoords>
 </template>
@@ -172,6 +176,13 @@ watchEffect((cleanup) => {
   &.any-dragging,
   &.any-creating {
     border: 1px solid gray;
+  }
+
+  &:hover,
+  &:has(.text:focus) {
+    .center-line {
+      display: none;
+    }
   }
 
   &:not(:hover):not(.dragging) {
@@ -225,19 +236,24 @@ watchEffect((cleanup) => {
       width: 6px;
       background-color: gray;
     }
-    /* width: 6px;
-    background-color: gray; */
-
-    /* &.start {
-      margin-left: -4px;
-    }
-
-    &.end {
-      margin-right: -4px;
-    } */
   }
 }
 
+.center-line {
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+}
+
+.pos-line {
+  width: var(--pos-line-width);
+  /* background-color: var(--pos-line-color); */
+  background: gray;
+  height: calc((var(--cell-height) - var(--note-font-size)) * 1.5);
+  top: var(--note-font-size);
+}
 .delete {
   cursor: pointer;
   padding: 0px 1px;
