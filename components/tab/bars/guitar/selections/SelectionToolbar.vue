@@ -23,6 +23,11 @@ function copy() {
   copiedHere.value = true;
 }
 
+function paste() {
+  copyState.paste(pastePosition.value);
+  copiedHere.value = true;
+}
+
 const pastePosition = computed(() => ({
   string: props.region.minString,
   position: props.region.minPosition,
@@ -53,7 +58,7 @@ const pastePosition = computed(() => ({
     <button
       v-if="copied && !copiedHere"
       class="selection-toolbar-button"
-      @click="copyState.paste(pastePosition)"
+      @click="paste"
       @mouseenter="copyState.pasteHover(pastePosition)"
       @mouseleave="copyState.pasteHoverLeave"
     >
