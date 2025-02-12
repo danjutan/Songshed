@@ -90,14 +90,15 @@ const copyState = provideCopyState(selectionState, props.tabStore.guitar);
 
 provideNotePreviewState(selectionState, copyState, props.tabStore.guitar);
 
-const annotationAddState = provideAnnotationAddState(
-  reactiveComputed(() => ({
-    store: props.tabStore.annotations,
-    subUnit: subUnit.value,
-  })),
-);
+const annotationProps = reactiveComputed(() => ({
+  store: props.tabStore.annotations,
+  subUnit: subUnit.value,
+}));
 
-const annotationResizeState = provideAnnotationResizeState();
+const annotationAddState = provideAnnotationAddState(annotationProps);
+
+const annotationResizeState = provideAnnotationResizeState(annotationProps);
+
 onMounted(() => {
   useTieAddMonitor(tieAddState);
   useSelectMonitor(selectionState);

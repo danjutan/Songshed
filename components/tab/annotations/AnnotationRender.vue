@@ -11,6 +11,7 @@ import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/elem
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
 import { getAnnotationResizeDragData } from "../hooks/dnd/types";
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
+import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 
 export interface AnnotationRenderProps {
   row: number;
@@ -31,6 +32,7 @@ const emit = defineEmits<{
 
 const barManagement = injectBarManagement();
 const resizeState = injectAnnotationResizeState();
+const annotationAddState = injectAnnotationAddState();
 
 const start = computed(() => props.startAtLeft ?? props.annotation.start);
 const end = computed(() => props.endAtRight ?? props.annotation.end);
@@ -38,6 +40,10 @@ const end = computed(() => props.endAtRight ?? props.annotation.end);
 const isDragging = computed(() =>
   resizeState.isDragging(props.row, props.annotation),
 );
+
+const isAnyCreating = computed(() => annotationAddState.newAnnotation.value);
+
+const isAnyDragging = resizeState.isAnyDragging;
 
 const pointerEvents = computed(() =>
   props.annotation && !isDragging.value ? "auto" : "none",
@@ -124,6 +130,8 @@ watchEffect((cleanup) => {
       :class="{
         creating: props.creating,
         dragging: isDragging,
+        'any-dragging': isAnyDragging,
+        'any-creating': isAnyCreating,
       }"
       :style="{
         left: left(startCoords),
@@ -160,9 +168,9 @@ watchEffect((cleanup) => {
   pointer-events: v-bind(pointerEvents);
 
   &:hover,
-  &.dragging,
-  &.creating,
-  &:has(.text:focus) {
+  &:has(.text:focus),
+  &.any-dragging,
+  &.any-creating {
     border: 1px solid gray;
   }
 

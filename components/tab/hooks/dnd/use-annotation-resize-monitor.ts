@@ -27,7 +27,8 @@ export function useAnnotationResizeMonitor(resizeState: AnnotationResizeState) {
               isAnnotationResizeDragData(sourceData) &&
               isAnnotationDragData(dropData)
             ) {
-              sourceData.annotation[sourceData.side] = dropData.position;
+              const { row, side, annotation } = sourceData;
+              resizeState.dragMove(row, annotation, side, dropData.position);
             }
           }
         },

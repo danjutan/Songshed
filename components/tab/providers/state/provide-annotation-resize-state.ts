@@ -1,13 +1,27 @@
 import type { Annotation } from "~/model/data";
 import type { AnnotationAddState } from "./provide-annotation-add-state";
+import type { AnnotationStore } from "~/model/stores";
+import type { ComputedRef } from "vue";
 
 export interface AnnotationResizeState {
   isDragging: (row: number, annotation: Annotation) => boolean;
+  isAnyDragging: ComputedRef<boolean>;
   dragStart: (row: number, fixed: "start" | "end", position: number) => void;
+  dragMove: (
+    row: number,
+    annotation: Annotation,
+    side: "start" | "end",
+    position: number,
+  ) => void;
   dragEnd: () => void;
 }
 
-export function provideAnnotationResizeState(): AnnotationResizeState {
+export function provideAnnotationResizeState(
+  props: ReactiveComputed<{
+    store: AnnotationStore;
+    subUnit: number;
+  }>,
+): AnnotationResizeState {
   const draggingFrom = ref<{
     fixed: "start" | "end";
     position: number;
@@ -24,11 +38,40 @@ export function provideAnnotationResizeState(): AnnotationResizeState {
     draggingFrom.value = { fixed, position, row };
   }
 
+  function dragMove(
+    row: number,
+    annotation: Annotation,
+    side: "start" | "end",
+    position: number,
+  ) {
+    // Similar blocking logic to dragMove in provide-annotation-add-state
+    const existingOnRow = props.store.getAnnotations(row);
+    if (side === "end") {
+      const blockingRight = existingOnRow.find(
+        (ann) => ann.start > annotation.start && ann.end < position,
+      );
+      if (blockingRight) {
+        position = blockingRight.start - props.subUnit;
+      }
+    }
+    if (side === "start") {
+      const blockingLeft = existingOnRow.find(
+        (ann) => ann.start < annotation.start && ann.end >= position,
+      );
+      if (blockingLeft) {
+        position = blockingLeft.end + props.subUnit;
+      }
+    }
+    annotation[side] = position;
+  }
+
   function dragEnd() {
     draggingFrom.value = undefined;
   }
 
-  const state = { isDragging, dragStart, dragEnd };
+  const isAnyDragging = computed(() => !!draggingFrom.value);
+
+  const state = { isDragging, dragStart, dragMove, dragEnd, isAnyDragging };
   provide(AnnotationResizeStateInjectionKey, state);
   return state;
 }
