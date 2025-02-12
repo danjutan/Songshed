@@ -17,7 +17,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  mouseover: [];
+  mouseenter: [];
   mouseleave: [];
   click: [];
 }>();
@@ -62,7 +62,7 @@ watchEffect((cleanup) => {
         ref="dragger"
         class="bend-dragger"
         :class="{ dragging }"
-        @mouseover="emit('mouseover')"
+        @mouseenter="emit('mouseenter')"
         @mouseleave="emit('mouseleave')"
         @click="emit('click')"
       />

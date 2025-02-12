@@ -31,6 +31,7 @@ import BarDivider from "./bars/BarDivider.vue";
 import { isCollapsed } from "./hooks/use-collapsed";
 import { provideBeatSize } from "./providers/provide-beatsize";
 import { Plus } from "lucide-vue-next";
+import { provideCopyState } from "./providers/state/provide-copy-state";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -58,7 +59,6 @@ const selectionState = provideSelectionState(
     barSize,
   })),
 );
-provideNotePreviewState(selectionState, props.tabStore.guitar);
 const editingState = provideEditingState();
 
 const tieAddState = provideTieAddState(
@@ -83,6 +83,10 @@ const barManagement = provideBarManagement(
     subUnit: subUnit.value,
   })),
 );
+
+const copyState = provideCopyState(selectionState, props.tabStore.guitar);
+
+provideNotePreviewState(selectionState, copyState, props.tabStore.guitar);
 
 onMounted(() => {
   useTieAddMonitor(tieAddState);

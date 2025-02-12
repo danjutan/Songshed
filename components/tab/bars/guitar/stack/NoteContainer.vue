@@ -22,6 +22,8 @@ import { injectTieAddState } from "~/components/tab/providers/state/provide-tie-
 import type { NotePosition } from "~/model/stores";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectNotePreviewState } from "~/components/tab/providers/state/provide-note-preview-state";
+import SelectionToolbar from "../selections/SelectionToolbar.vue";
+
 const props = defineProps<{
   note: GuitarNote | undefined;
   notePosition: NotePosition;
@@ -47,13 +49,12 @@ const containerRef = ref<HTMLElement>();
 
 const notePreview = useNotePreview(props.notePosition);
 
-// TODO: investigate whether we really need this for performance (vs. a reactive useIsSelected hook)
-const isSelected = ref(false);
-selectionState.addSelectNoteListener(
-  { string: props.notePosition.string, position: props.notePosition.position },
-  (selected) => {
-    isSelected.value = selected;
-  },
+const isSelected = computed(() =>
+  selectionState.isSelectedPosition(props.notePosition),
+);
+
+const isOnlySelection = computed(
+  () => isSelected.value && selectionState.selections.size === 1,
 );
 
 const isEditing = ref(false);
@@ -279,6 +280,20 @@ const row = computed(() => props.notePosition.string + 1);
         mightDelete: selectionState.action === 'might-delete',
       }"
     />
+
+    <SelectionToolbar
+      v-if="isOnlySelection"
+      class="selection-toolbar"
+      :region="{
+        minString: notePosition.string,
+        minPosition: notePosition.position,
+        maxString: notePosition.string,
+        maxPosition: notePosition.position,
+      }"
+      :top="`calc(var(--cell-height) / -4)`"
+      @click.stop="() => {}"
+      @mousedown.stop="() => {}"
+    />
   </div>
 </template>
 
@@ -286,13 +301,18 @@ const row = computed(() => props.notePosition.string + 1);
 .container {
   grid-column: 1;
   grid-row: v-bind(row);
+
   display: grid;
   grid-template-columns: 1fr min-content 1fr;
   grid-template-rows: 1fr min-content 1fr;
-  width: 100%;
-  height: var(--cell-height);
   justify-items: center;
   align-items: center;
+
+  position: relative;
+
+  width: 100%;
+  height: var(--cell-height);
+
   font-size: var(--note-font-size);
 
   container-type: size;
@@ -309,14 +329,17 @@ const row = computed(() => props.notePosition.string + 1);
 
   &:hover,
   &.tieable {
-    .note-block {
+    .note-block:not(.preview) {
       color: transparent;
     }
     .input {
       display: block;
-      background-color: rgb(
-        from var(--note-hover-color) r g b / var(--select-alpha)
-      );
+    }
+  }
+
+  &:not(:hover) {
+    .selection-toolbar {
+      display: none;
     }
   }
 }
@@ -331,6 +354,9 @@ const row = computed(() => props.notePosition.string + 1);
 .input {
   display: none;
   grid-area: 1 / 1 / -1 / -1;
+  background-color: rgb(
+    from var(--note-hover-color) r g b / var(--select-alpha)
+  );
   &.muted {
     color: transparent;
   }

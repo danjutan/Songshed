@@ -1,20 +1,36 @@
 <script lang="ts" setup>
 import MoveDragger from "./MoveDragger.vue";
-import { Delete } from "lucide-vue-next";
+import { Delete, ClipboardPlus, ClipboardPaste } from "lucide-vue-next";
 import {
   injectSelectionState,
   type RegionBounds,
 } from "@/components/tab/providers/state/provide-selection-state";
+import { injectCopyState } from "@/components/tab/providers/state/provide-copy-state";
 const selectionState = injectSelectionState();
+const copyState = injectCopyState();
+
 const isOneNote = computed(() => selectionState.selections.size === 1);
 const isEmpty = computed(() => selectionState.isEmpty());
 const props = defineProps<{
   region: RegionBounds;
+  top?: string;
 }>();
+
+const copied = copyState.copied;
+const copiedHere = ref(false);
+function copy() {
+  copyState.copy();
+  copiedHere.value = true;
+}
+
+const pastePosition = computed(() => ({
+  string: props.region.minString,
+  position: props.region.minPosition,
+}));
 </script>
 
 <template>
-  <div class="selection-toolbar">
+  <div class="selection-toolbar" :style="{ top }">
     <button
       v-if="!isOneNote && !isEmpty"
       class="selection-toolbar-button"
@@ -26,6 +42,22 @@ const props = defineProps<{
     </button>
     <button v-if="!isEmpty" class="selection-toolbar-button">
       <MoveDragger :region="region" />
+    </button>
+    <button
+      v-if="!isEmpty && !copiedHere"
+      class="selection-toolbar-button"
+      @click="copy"
+    >
+      <ClipboardPlus class="copy-icon" :size="16" />
+    </button>
+    <button
+      v-if="copied && !copiedHere"
+      class="selection-toolbar-button"
+      @click="copyState.paste(pastePosition)"
+      @mouseenter="copyState.pasteHover(pastePosition)"
+      @mouseleave="copyState.pasteHoverLeave"
+    >
+      <ClipboardPaste class="paste-icon" :size="16" />
     </button>
   </div>
 </template>

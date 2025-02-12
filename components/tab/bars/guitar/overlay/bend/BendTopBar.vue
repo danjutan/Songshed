@@ -18,7 +18,7 @@ const cellHoverState = injectCellHoverEvents();
     :style="{
       gridColumn: startColumn + 1 + i,
     }"
-    @mouseover="cellHoverState.hover('bend', position)"
+    @mouseenter="cellHoverState.hover('bend', position)"
     @click="console.log('clicked')"
   />
 </template>
