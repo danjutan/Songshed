@@ -81,7 +81,7 @@ watchEffect((cleanup) => {
 
 <style scoped>
 .draggable {
-  /* border: 1px solid black; */
+  border-bottom: 1px solid lightgray;
   z-index: var(--annotation-dragger-z-index);
   position: absolute;
   top: calc(v-bind(renderRow) * var(--cell-height));

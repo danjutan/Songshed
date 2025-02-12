@@ -12,6 +12,7 @@ import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unha
 import { getAnnotationResizeDragData } from "../hooks/dnd/types";
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
+import AnnotationResizeHandle from "./AnnotationResizeHandle.vue";
 
 export interface AnnotationRenderProps {
   row: number;
@@ -86,36 +87,6 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   }
   return `${endCoords.right - startCoords.left}px`;
 };
-
-const leftHandle = useTemplateRef("leftHandle");
-const rightHandle = useTemplateRef("rightHandle");
-
-watchEffect((cleanup) => {
-  if (!leftHandle.value || !rightHandle.value) {
-    return;
-  }
-
-  [leftHandle.value, rightHandle.value].forEach((el, i) => {
-    cleanup(
-      draggable({
-        element: el,
-        onGenerateDragPreview: ({ nativeSetDragImage }) => {
-          disableNativeDragPreview({ nativeSetDragImage });
-          preventUnhandled.start();
-        },
-        getInitialData: () =>
-          getAnnotationResizeDragData({
-            row: props.row,
-            annotation: props.annotation,
-            side: i === 0 ? "start" : "end",
-          }),
-        onDrop: () => {
-          focusText();
-        },
-      }),
-    );
-  });
-});
 </script>
 
 <template>
@@ -139,16 +110,24 @@ watchEffect((cleanup) => {
         width: width(startCoords, endCoords),
       }"
     >
-      <div v-show="!startAtLeft" ref="leftHandle" class="resize-handle start">
-        <div class="visible" />
-      </div>
+      <AnnotationResizeHandle
+        v-show="!startAtLeft"
+        :row="row"
+        :annotation="annotation"
+        side="start"
+        @drag-end="focusText"
+      />
+
+      <AnnotationResizeHandle
+        v-show="!endAtRight"
+        :row="row"
+        :annotation="annotation"
+        side="end"
+        @drag-end="focusText"
+      />
 
       <div ref="text" class="text" contenteditable @input="onTextInput">
         {{ annotation?.text }}
-      </div>
-
-      <div v-show="!endAtRight" ref="rightHandle" class="resize-handle end">
-        <div class="visible" />
       </div>
 
       <div
@@ -156,9 +135,9 @@ watchEffect((cleanup) => {
         class="center-line pos-line"
       />
 
-      <div class="delete" @click="emit('delete')">
+      <!-- <div class="delete" @click="emit('delete')">
         <X :size="16" />
-      </div>
+      </div> -->
       <!-- <template v-else>
         <div class="left-line pos-line" />
         <div class="right-line pos-line" />
@@ -175,30 +154,31 @@ watchEffect((cleanup) => {
   height: var(--cell-height);
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* align-items: center; */
   pointer-events: v-bind(pointerEvents);
 
   &:hover,
   &:has(.text:focus),
   &.any-dragging,
   &.any-creating {
-    border: 1px solid gray;
+    /* border: 1px solid gray;
     border-top: none;
+    border-bottom: none;
     &.no-right-border {
       border-right: none;
     }
     &.no-left-border {
       border-left: none;
-    }
+    } */
   }
 
-  &:hover {
+  /* &:hover {
     .center-line {
       display: none;
     }
-  }
+  } */
 
-  &:not(:hover):not(.dragging) {
+  &:not(:hover):not(.dragging):not(:has(.text:focus)) {
     .resize-handle {
       display: none;
     }
@@ -215,44 +195,13 @@ watchEffect((cleanup) => {
 
 .text {
   /* overflow: hidden; */
+  z-index: var(--annotation-text-z-index);
   white-space: nowrap;
   /* text-overflow: ellipsis; */
   flex-grow: 1;
   height: min-content;
   text-align: center;
   outline: none;
-}
-
-.resize-handle {
-  position: absolute;
-  width: var(--collapsed-min-width);
-  height: calc(100% + 10px);
-  top: -5px;
-  /* background-color: blue; */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  &.start {
-    left: calc(var(--collapsed-min-width) / -2);
-  }
-
-  &.end {
-    right: calc(var(--collapsed-min-width) / -2);
-  }
-
-  .visible {
-    width: 4px;
-    height: calc(var(--cell-height) * 0.8);
-    background-color: darkgray;
-  }
-
-  &:hover {
-    .visible {
-      width: 6px;
-      background-color: gray;
-    }
-  }
 }
 
 .center-line {
