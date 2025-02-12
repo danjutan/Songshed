@@ -129,6 +129,8 @@ watchEffect((cleanup) => {
       :class="{
         creating: props.creating,
         dragging: isDragging,
+        'no-right-border': endAtRight,
+        'no-left-border': startAtLeft,
         'any-dragging': isAnyDragging,
         'any-creating': isAnyCreating,
       }"
@@ -137,7 +139,7 @@ watchEffect((cleanup) => {
         width: width(startCoords, endCoords),
       }"
     >
-      <div ref="leftHandle" class="resize-handle start">
+      <div v-show="!startAtLeft" ref="leftHandle" class="resize-handle start">
         <div class="visible" />
       </div>
 
@@ -145,13 +147,18 @@ watchEffect((cleanup) => {
         {{ annotation?.text }}
       </div>
 
-      <div ref="rightHandle" class="resize-handle end">
+      <div v-show="!endAtRight" ref="rightHandle" class="resize-handle end">
         <div class="visible" />
       </div>
+
       <div
         v-if="annotation.start === annotation.end"
         class="center-line pos-line"
       />
+
+      <div class="delete" @click="emit('delete')">
+        <X :size="16" />
+      </div>
       <!-- <template v-else>
         <div class="left-line pos-line" />
         <div class="right-line pos-line" />
@@ -176,10 +183,16 @@ watchEffect((cleanup) => {
   &.any-dragging,
   &.any-creating {
     border: 1px solid gray;
+    border-top: none;
+    &.no-right-border {
+      border-right: none;
+    }
+    &.no-left-border {
+      border-left: none;
+    }
   }
 
-  &:hover,
-  &:has(.text:focus) {
+  &:hover {
     .center-line {
       display: none;
     }
@@ -187,6 +200,9 @@ watchEffect((cleanup) => {
 
   &:not(:hover):not(.dragging) {
     .resize-handle {
+      display: none;
+    }
+    .delete {
       display: none;
     }
   }
@@ -256,8 +272,15 @@ watchEffect((cleanup) => {
 }
 .delete {
   cursor: pointer;
-  padding: 0px 1px;
-  visibility: hidden;
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  width: min-content;
+  left: 0;
+  right: 0;
+  transform: translateY(-60%) translateX(50%);
+  color: darkred;
+
   &:hover svg {
     stroke-width: 3;
   }
