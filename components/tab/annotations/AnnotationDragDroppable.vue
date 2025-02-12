@@ -39,15 +39,16 @@ watchEffect((cleanup) => {
   if (!element.value) {
     return;
   }
-  const data = getAnnotationDragData({
-    row: props.row,
-    position: props.position,
-  });
+  const getData = () =>
+    getAnnotationDragData({
+      row: props.row,
+      position: props.position,
+    });
   cleanup(
     combine(
       dropTargetForElements({
         element: element.value,
-        getData: () => data,
+        getData,
       }),
       draggable({
         element: element.value,
@@ -55,7 +56,7 @@ watchEffect((cleanup) => {
           disableNativeDragPreview({ nativeSetDragImage });
           preventUnhandled.start();
         },
-        getInitialData: () => data,
+        getInitialData: getData,
       }),
     ),
   );

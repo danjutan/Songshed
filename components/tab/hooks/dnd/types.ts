@@ -1,4 +1,4 @@
-import type { GuitarNote } from "~/model/data";
+import type { Annotation, GuitarNote } from "~/model/data";
 import type { Bend } from "~/model/stores";
 import type { StartType } from "../../providers/state/provide-bend-edit-state";
 
@@ -12,7 +12,9 @@ const bendBarDropDataPrivateKey = Symbol("Bend bar drop data");
 const tieAddDragDataPrivateKey = Symbol("Tie add drag data");
 const bendEditDragDataPrivateKey = Symbol("Bend edit drag data");
 const annotationDragDataPrivateKey = Symbol("Annotation drag data");
-
+const annotationResizeDragDataPrivateKey = Symbol(
+  "Annotation resize drag data",
+);
 export type NoteInputDragDataProps = {
   position: number;
   string: number;
@@ -37,6 +39,12 @@ export type AnnotationDragDataProps = {
   position: number;
 };
 
+export type AnnotationResizeDragDataProps = {
+  row: number;
+  annotation: Annotation;
+  side: "start" | "end";
+};
+
 type NoteInputDragData = {
   [noteInputDragDataPrivateKey]: true;
 } & NoteInputDragDataProps;
@@ -52,6 +60,10 @@ type BendEditDragData = {
 type AnnotationDragData = {
   [annotationDragDataPrivateKey]: true;
 } & AnnotationDragDataProps;
+
+type AnnotationResizeDragData = {
+  [annotationResizeDragDataPrivateKey]: true;
+} & AnnotationResizeDragDataProps;
 
 type NoteInputDropData = {
   [noteInputDropDataPrivateKey]: true;
@@ -118,6 +130,15 @@ export function getAnnotationDragData(
   };
 }
 
+export function getAnnotationResizeDragData(
+  params: AnnotationResizeDragDataProps,
+): AnnotationResizeDragData {
+  return {
+    [annotationResizeDragDataPrivateKey]: true,
+    ...params,
+  };
+}
+
 export function isNoteInputDragData(
   data: Record<string | symbol, unknown>,
 ): data is NoteInputDragData {
@@ -152,4 +173,10 @@ export function isAnnotationDragData(
   data: Record<string | symbol, unknown>,
 ): data is AnnotationDragData {
   return !!data[annotationDragDataPrivateKey];
+}
+
+export function isAnnotationResizeDragData(
+  data: Record<string | symbol, unknown>,
+): data is AnnotationResizeDragData {
+  return !!data[annotationResizeDragDataPrivateKey];
 }

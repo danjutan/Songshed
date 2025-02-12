@@ -2,13 +2,15 @@
 import type { Annotation } from "~/model/data";
 import { useTemplateRef } from "vue";
 import OverlayCoords from "../bars/OverlayCoords.vue";
-import { injectTabBarBounds } from "../bars/provide-bar-bounds";
 import { injectBarManagement } from "../providers/state/provide-bar-management";
-import {
-  injectStackResizeObserver,
-  type StackCoords,
-} from "../providers/events/provide-resize-observer";
+import { type StackCoords } from "../providers/events/provide-resize-observer";
 import { X } from "lucide-vue-next";
+
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
+import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
+import { getAnnotationResizeDragData } from "../hooks/dnd/types";
+import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
 
 export interface AnnotationRenderProps {
   row: number;
@@ -16,6 +18,7 @@ export interface AnnotationRenderProps {
   startAtLeft?: number;
   endAtRight?: number;
   annotation: Annotation;
+
   creating?: boolean;
 }
 
@@ -27,31 +30,38 @@ const emit = defineEmits<{
 }>();
 
 const barManagement = injectBarManagement();
+const resizeState = injectAnnotationResizeState();
 
 const start = computed(() => props.startAtLeft ?? props.annotation.start);
 const end = computed(() => props.endAtRight ?? props.annotation.end);
 
-const pointerEvents = computed(() => (props.annotation ? "auto" : "none"));
+const isDragging = computed(() =>
+  resizeState.isDragging(props.row, props.annotation),
+);
 
-const titleEl = useTemplateRef("title");
+const pointerEvents = computed(() =>
+  props.annotation && !isDragging.value ? "auto" : "none",
+);
 
-function titleInput() {
+const textEl = useTemplateRef("text");
+
+function textInput() {
   if (props.annotation) {
-    const value = titleEl.value!.innerText;
+    const value = textEl.value!.innerText;
     emit("updateText", value);
   }
 }
 
-function titleFocus() {
-  window.getSelection()?.selectAllChildren(titleEl.value!);
-  titleEl.value!.scrollTo({ left: 0 });
+function textFocus() {
+  window.getSelection()?.selectAllChildren(textEl.value!);
+  textEl.value!.scrollTo({ left: 0 });
 }
 
 watch(
   () => props.annotation,
   (data) => {
     if (data) {
-      setTimeout(() => titleEl.value!.focus(), 1);
+      setTimeout(() => textEl.value!.focus(), 1);
     }
   },
 );
@@ -80,6 +90,33 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   }
   return `${endCoords.right - startCoords.left}px`;
 };
+
+const leftHandle = useTemplateRef("leftHandle");
+const rightHandle = useTemplateRef("rightHandle");
+
+watchEffect((cleanup) => {
+  if (!leftHandle.value || !rightHandle.value) {
+    return;
+  }
+
+  [leftHandle.value, rightHandle.value].forEach((el, i) => {
+    cleanup(
+      draggable({
+        element: el,
+        onGenerateDragPreview: ({ nativeSetDragImage }) => {
+          disableNativeDragPreview({ nativeSetDragImage });
+          preventUnhandled.start();
+        },
+        getInitialData: () =>
+          getAnnotationResizeDragData({
+            row: props.row,
+            annotation: props.annotation,
+            side: i === 0 ? "start" : "end",
+          }),
+      }),
+    );
+  });
+});
 </script>
 
 <template>
@@ -89,24 +126,32 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   >
     <div
       v-if="startCoords && endCoords"
-      :class="`annotation annotation-${row} ${props.creating && 'creating'}`"
+      class="annotation"
+      :class="{
+        creating: props.creating,
+        dragging: isDragging,
+      }"
       :style="{
         left: left(startCoords),
         width: width(startCoords, endCoords),
       }"
     >
+      <div ref="leftHandle" class="resize-handle start" />
+
       <div
-        ref="title"
-        class="title"
+        ref="text"
+        class="text"
         contenteditable
-        @input="titleInput"
-        @focus="titleFocus"
+        @input="textInput"
+        @focus="textFocus"
       >
         {{ annotation?.text }}
       </div>
-      <div v-if="annotation" class="delete" @click="emit('delete')">
+
+      <div ref="rightHandle" class="resize-handle end" />
+      <!-- <div v-if="annotation" class="delete" @click="emit('delete')">
         <X :size="16" />
-      </div>
+      </div> -->
     </div>
   </OverlayCoords>
 </template>
@@ -118,13 +163,20 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
   display: flex;
-  align-items: center;
-  border: 1px solid gray;
+  justify-content: center;
   pointer-events: v-bind(pointerEvents);
 
-  &:hover {
+  &:hover,
+  &.dragging {
+    border: 1px solid gray;
     .delete {
       visibility: visible;
+    }
+  }
+
+  &:not(:hover):not(.dragging) {
+    .resize-handle {
+      display: none;
     }
   }
 }
@@ -134,12 +186,41 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   pointer-events: none;
 }
 
-.title {
-  overflow: hidden;
+.text {
+  /* overflow: hidden; */
   white-space: nowrap;
   /* text-overflow: ellipsis; */
   flex-grow: 1;
+  height: min-content;
   text-align: center;
+}
+
+.resize-handle {
+  width: 4px;
+  height: 80%;
+  background-color: darkgray;
+  align-self: center;
+
+  &.start {
+    margin-left: -2px;
+  }
+
+  &.end {
+    margin-right: -2px;
+  }
+
+  &:hover {
+    width: 6px;
+    background-color: gray;
+
+    &.start {
+      margin-left: -4px;
+    }
+
+    &.end {
+      margin-right: -4px;
+    }
+  }
 }
 
 .delete {

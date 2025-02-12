@@ -32,7 +32,8 @@ import { isCollapsed } from "./hooks/use-collapsed";
 import { provideBeatSize } from "./providers/provide-beatsize";
 import { Plus } from "lucide-vue-next";
 import { provideCopyState } from "./providers/state/provide-copy-state";
-
+import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-monitor";
+import { provideAnnotationResizeState } from "./providers/state/provide-annotation-resize-state";
 const props = defineProps<{
   tabStore: TabStore;
 }>();
@@ -89,12 +90,21 @@ const copyState = provideCopyState(selectionState, props.tabStore.guitar);
 
 provideNotePreviewState(selectionState, copyState, props.tabStore.guitar);
 
+const annotationAddState = provideAnnotationAddState(
+  reactiveComputed(() => ({
+    store: props.tabStore.annotations,
+    subUnit: subUnit.value,
+  })),
+);
+
+const annotationResizeState = provideAnnotationResizeState();
 onMounted(() => {
   useTieAddMonitor(tieAddState);
   useSelectMonitor(selectionState);
   useMoveMonitor(selectionState);
   useBendEditMonitor(bendEditState);
   useAnnotationAddMonitor(annotationAddState);
+  useAnnotationResizeMonitor(annotationResizeState);
 });
 
 // const columnsMap = provideColumnsMap(
@@ -113,14 +123,6 @@ onMounted(() => {
 //     beatSize: props.tabStore.beatSize,
 //   })),
 // );
-
-const annotationAddState = provideAnnotationAddState(
-  reactiveComputed(() => ({
-    store: props.tabStore.annotations,
-    subUnit: subUnit.value,
-    cellHoverEvents,
-  })),
-);
 
 // const annotationRenders = provideAnnotationRenderState(
 //   reactiveComputed(() => ({

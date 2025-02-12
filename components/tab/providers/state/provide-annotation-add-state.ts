@@ -1,5 +1,4 @@
 import type { AnnotationStore } from "~/model/stores";
-import type { CellHoverEvents } from "../../events/provide-cell-hover-events";
 import type { InjectionKey } from "vue";
 
 export interface NewAnnotation {
@@ -19,7 +18,6 @@ export function provideAnnotationAddState(
   props: ReactiveComputed<{
     store: AnnotationStore;
     subUnit: number;
-    cellHoverEvents: CellHoverEvents;
   }>,
 ): AnnotationAddState {
   const rawAnnotation = ref<{

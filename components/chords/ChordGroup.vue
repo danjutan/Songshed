@@ -66,7 +66,7 @@ function titleInput(e: Event, chord: Chord) {
   width: 100%;
   justify-content: center;
 }
-.title {
+.text {
   border-bottom: 1px solid black;
   width: 50px;
   text-align: center;

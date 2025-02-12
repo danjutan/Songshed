@@ -119,8 +119,8 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
       </template>
     </template>
     <AnnotationRender
-      v-for="renderProps in annotationRenders"
-      :key="renderProps.annotation.start"
+      v-for="(renderProps, i) in annotationRenders"
+      :key="i"
       v-bind="renderProps"
       @update-text="(text: string) => (renderProps.annotation.text = text)"
       @delete="
