@@ -44,6 +44,12 @@ export function provideAnnotationResizeState(
     side: "start" | "end",
     position: number,
   ) {
+    if (side === "start" && position > annotation.end) {
+      position = annotation.start;
+    }
+    if (side === "end" && position < annotation.start) {
+      position = annotation.end;
+    }
     // Similar blocking logic to dragMove in provide-annotation-add-state
     const existingOnRow = props.store.getAnnotations(row);
     if (side === "end") {
