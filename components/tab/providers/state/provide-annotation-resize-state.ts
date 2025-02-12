@@ -16,7 +16,6 @@ export function provideAnnotationResizeState(): AnnotationResizeState {
 
   function isDragging(row: number, annotation: Annotation) {
     if (!draggingFrom.value) return false;
-    console.log("draggingFrom", draggingFrom.value);
     const { fixed, position, row: startRow } = draggingFrom.value;
     return row === startRow && annotation[fixed] === position;
   }

@@ -45,37 +45,28 @@ const pointerEvents = computed(() =>
 
 const textEl = useTemplateRef("text");
 
-function textInput() {
+function onTextInput() {
   if (props.annotation) {
     const value = textEl.value!.innerText;
     emit("updateText", value);
   }
 }
 
-function textFocus() {
-  window.getSelection()?.selectAllChildren(textEl.value!);
-  textEl.value!.scrollTo({ left: 0 });
+function focusText() {
+  if (textEl.value) {
+    textEl.value.focus();
+  }
 }
-
-watch(
-  () => props.annotation,
-  (data) => {
-    if (data) {
-      setTimeout(() => textEl.value!.focus(), 1);
-    }
-  },
-);
+onMounted(() => {
+  if (!props.creating) {
+    setTimeout(() => focusText(), 1);
+  }
+});
 
 // TODO: reconsider given that the first column could be a different bar
 const startsInFirstColumn = computed(() => {
   return barManagement.bars.some((bar) => bar.start === start.value);
 });
-
-// const endsInFirstColumn = computed(() => {
-//   return barManagement.bars.some(
-//     (bar) => bar.start === (props.annotation.end ?? props.annotation.start),
-//   );
-// });
 
 const left = (startCoords: StackCoords) => {
   if (startsInFirstColumn.value) {
@@ -113,6 +104,9 @@ watchEffect((cleanup) => {
             annotation: props.annotation,
             side: i === 0 ? "start" : "end",
           }),
+        onDrop: () => {
+          focusText();
+        },
       }),
     );
   });
@@ -136,19 +130,17 @@ watchEffect((cleanup) => {
         width: width(startCoords, endCoords),
       }"
     >
-      <div ref="leftHandle" class="resize-handle start" />
+      <div ref="leftHandle" class="resize-handle start">
+        <div class="visible" />
+      </div>
 
-      <div
-        ref="text"
-        class="text"
-        contenteditable
-        @input="textInput"
-        @focus="textFocus"
-      >
+      <div ref="text" class="text" contenteditable @input="onTextInput">
         {{ annotation?.text }}
       </div>
 
-      <div ref="rightHandle" class="resize-handle end" />
+      <div ref="rightHandle" class="resize-handle end">
+        <div class="visible" />
+      </div>
       <!-- <div v-if="annotation" class="delete" @click="emit('delete')">
         <X :size="16" />
       </div> -->
@@ -164,14 +156,14 @@ watchEffect((cleanup) => {
   height: var(--cell-height);
   display: flex;
   justify-content: center;
+  align-items: center;
   pointer-events: v-bind(pointerEvents);
 
   &:hover,
-  &.dragging {
+  &.dragging,
+  &.creating,
+  &:has(.text:focus) {
     border: 1px solid gray;
-    .delete {
-      visibility: visible;
-    }
   }
 
   &:not(:hover):not(.dragging) {
@@ -193,33 +185,48 @@ watchEffect((cleanup) => {
   flex-grow: 1;
   height: min-content;
   text-align: center;
+  outline: none;
 }
 
 .resize-handle {
-  width: 4px;
-  height: 80%;
-  background-color: darkgray;
-  align-self: center;
+  position: absolute;
+  width: var(--collapsed-min-width);
+  height: calc(100% + 10px);
+  top: -5px;
+  /* background-color: blue; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   &.start {
-    margin-left: -2px;
+    left: calc(var(--collapsed-min-width) / -2);
   }
 
   &.end {
-    margin-right: -2px;
+    right: calc(var(--collapsed-min-width) / -2);
+  }
+
+  .visible {
+    width: 4px;
+    height: calc(var(--cell-height) * 0.8);
+    background-color: darkgray;
   }
 
   &:hover {
-    width: 6px;
-    background-color: gray;
+    .visible {
+      width: 6px;
+      background-color: gray;
+    }
+    /* width: 6px;
+    background-color: gray; */
 
-    &.start {
+    /* &.start {
       margin-left: -4px;
     }
 
     &.end {
       margin-right: -4px;
-    }
+    } */
   }
 }
 
