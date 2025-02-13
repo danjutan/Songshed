@@ -210,6 +210,15 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
     }
   }
 
+  & .text {
+    pointer-events: none;
+  }
+  &:hover {
+    .text {
+      pointer-events: auto;
+    }
+  }
+
   /* &.any-creating, */
   /* &.other-dragging { */
   &.other-hovered:not(:has(.text:focus)),
@@ -250,7 +259,6 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 }
 
 .text {
-  pointer-events: none;
   z-index: var(--annotation-text-z-index);
   font-size: var(--annotation-font-size);
   align-self: center;

@@ -104,6 +104,7 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
 
 <template>
   <div class="annotations-container">
+    <div class="line" />
     <template v-for="row in rows" :key="row">
       <template
         v-for="(_, i) in (tabBarBounds.end - tabBarBounds.start) / subUnit"
