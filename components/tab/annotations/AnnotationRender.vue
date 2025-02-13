@@ -220,7 +220,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 
   /* &.any-creating, */
   /* &.other-dragging { */
-  &.other-hovered:not(:has(.text:focus)),
+  &.other-hovered:not(:hover),
   &.any-creating {
     /* pointer-events: none; */
     border-left: 1px solid darkgray;
