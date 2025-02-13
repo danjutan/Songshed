@@ -60,16 +60,15 @@ watchEffect((cleanup) => {
   z-index: var(--annotation-resize-dragger-z-index);
   position: absolute;
   width: var(--collapsed-min-width);
-  height: 100%;
+  height: calc(var(--cell-height) * 1.35);
   display: grid;
   justify-items: center;
   &.below {
-    height: 135%;
     & .pole {
-      padding-bottom: 4px;
+      height: calc(var(--cell-height) * 1.35);
     }
     & .dragger {
-      align-self: flex-end;
+      margin-top: calc(var(--cell-height) * 0.8);
     }
   }
 }
@@ -85,8 +84,8 @@ watchEffect((cleanup) => {
 .dragger {
   grid-area: 1 / 1;
   width: 4px;
-  align-self: center;
   height: calc(var(--cell-height) * 0.6);
+  margin-top: calc(var(--cell-height) * 0.25);
   background-color: darkgray;
 }
 
@@ -98,7 +97,7 @@ watchEffect((cleanup) => {
 .pole {
   grid-area: 1 / 1;
   width: var(--pos-line-width);
-  height: 100%;
+  height: var(--cell-height);
   background-color: var(--pos-line-color);
 }
 </style>

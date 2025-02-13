@@ -68,6 +68,7 @@ useResizeObserver(textEl, ([entry]) => {
   const { width } = entry.contentRect;
   const containerWidth = annotationEl.value?.clientWidth;
   overflown.value = width > containerWidth;
+  // overflown.value = entry.target.clientWidth > entry.target.scrollWidth;
 });
 
 function onTextInput() {
@@ -147,7 +148,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         :row="row"
         :annotation="annotation"
         side="start"
-        :below="overflown"
+        :below="overflown && !isDragging"
         @drag-end="focusText"
       />
 
@@ -156,7 +157,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         :row="row"
         :annotation="annotation"
         side="end"
-        :below="overflown"
+        :below="overflown && !isDragging"
         @drag-end="focusText"
       />
 
@@ -205,19 +206,17 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   &.dragging,
   &:has(.text:focus):not(.other-hovered) {
     background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
+    z-index: var(--annotation-current-z-index);
     & .resize-handle {
       visibility: visible;
     }
   }
 
-  & .text {
-    pointer-events: none;
-  }
-  &:hover {
-    .text {
-      pointer-events: auto;
+  /* &:has(.resize-handle:hover) {
+    & .text {
+      overflow: hidden;
     }
-  }
+  } */
 
   /* &.any-creating, */
   /* &.other-dragging { */
@@ -259,14 +258,20 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 }
 
 .text {
-  z-index: var(--annotation-text-z-index);
   font-size: var(--annotation-font-size);
+  display: flex;
+  justify-content: center;
   align-self: center;
   white-space: nowrap;
   flex-grow: 1;
   height: min-content;
   text-align: center;
   outline: none;
+
+  /* pointer-events: none;
+  &:focus {
+    pointer-events: auto;
+  } */
 }
 
 .center-line {
