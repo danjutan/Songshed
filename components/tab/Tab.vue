@@ -295,6 +295,7 @@ const deletingBarStart = ref<number | undefined>(undefined);
   /* To allow for tie-dragging on the bottommost notes */
   --bottom-note-padding: var(--cell-height);
 
+  --pos-line-z-index: -1;
   --bar-overlay-z-index: 1;
   --overlay-controls-z-index: 1;
   --divider-z-index: 3;

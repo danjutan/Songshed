@@ -46,7 +46,6 @@ export function provideAnnotationResizeState(
     side: "start" | "end",
     position: number,
   ) {
-    console.log("dragMove", row, annotation, side, position);
     if (side === "start" && position > annotation.end) {
       position = annotation.start;
     }

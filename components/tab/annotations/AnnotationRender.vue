@@ -52,7 +52,16 @@ const pointerEvents = computed(() =>
   props.annotation && !isDragging.value ? "auto" : "none",
 );
 
+const annotationEl = useTemplateRef("annotation");
 const textEl = useTemplateRef("text");
+
+const overflown = ref(false);
+useResizeObserver(textEl, ([entry]) => {
+  if (!annotationEl.value) return;
+  const { width } = entry.contentRect;
+  const containerWidth = annotationEl.value?.clientWidth;
+  overflown.value = width > containerWidth;
+});
 
 function onTextInput() {
   if (props.annotation) {
@@ -98,6 +107,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   >
     <div
       v-if="startCoords && endCoords"
+      ref="annotation"
       class="annotation"
       :class="{
         creating: props.creating,
@@ -120,6 +130,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         :row="row"
         :annotation="annotation"
         side="start"
+        :below="overflown"
         @drag-end="focusText"
       />
 
@@ -128,6 +139,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         :row="row"
         :annotation="annotation"
         side="end"
+        :below="overflown"
         @drag-end="focusText"
       />
 
@@ -203,10 +215,8 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 }
 
 .text {
-  /* overflow: hidden; */
   z-index: var(--annotation-text-z-index);
   white-space: nowrap;
-  /* text-overflow: ellipsis; */
   flex-grow: 1;
   height: min-content;
   text-align: center;

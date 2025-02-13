@@ -9,6 +9,7 @@ const props = defineProps<{
   row: number;
   annotation: Annotation;
   side: "start" | "end";
+  below?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -40,7 +41,15 @@ watchEffect((cleanup) => {
 </script>
 
 <template>
-  <div ref="handleRef" class="resize-handle" :class="side">
+  <div
+    ref="handleRef"
+    class="resize-handle"
+    :class="{
+      start: side === 'start',
+      end: side === 'end',
+      below,
+    }"
+  >
     <div class="pole" />
     <div class="dragger" />
   </div>
@@ -51,9 +60,18 @@ watchEffect((cleanup) => {
   z-index: var(--annotation-resize-dragger-z-index);
   position: absolute;
   width: var(--collapsed-min-width);
-  height: 120%;
+  height: 100%;
   display: grid;
   justify-items: center;
+  &.below {
+    height: 125%;
+    & .pole {
+      padding-bottom: 4px;
+    }
+    & .dragger {
+      align-self: flex-end;
+    }
+  }
 }
 
 .resize-handle.start {
@@ -66,10 +84,9 @@ watchEffect((cleanup) => {
 
 .dragger {
   grid-area: 1 / 1;
-  align-self: flex-end;
   width: 4px;
-  /* height: calc(var(--cell-height) * 0.8); */
-  height: 50%;
+  align-self: center;
+  height: calc(var(--cell-height) * 0.6);
   background-color: darkgray;
 }
 
@@ -82,7 +99,6 @@ watchEffect((cleanup) => {
   grid-area: 1 / 1;
   width: var(--pos-line-width);
   height: 100%;
-  padding-bottom: 4px;
   background-color: var(--pos-line-color);
 }
 </style>
