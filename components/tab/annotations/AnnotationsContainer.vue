@@ -8,7 +8,6 @@ import AnnotationRender, {
 } from "./AnnotationRender.vue";
 import { injectStackResizeObserver } from "../providers/events/provide-resize-observer";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
-import type { Annotation } from "~/model/data";
 import type { NewAnnotationRenderProps } from "./NewAnnotationRender.vue";
 import NewAnnotationRender from "./NewAnnotationRender.vue";
 
@@ -105,6 +104,7 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
 
 <template>
   <div class="annotations-container">
+    <div class="line" />
     <template v-for="row in rows" :key="row">
       <template
         v-for="(_, i) in (tabBarBounds.end - tabBarBounds.start) / subUnit"
@@ -117,10 +117,16 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
           :first-in-bar="i === 0"
         />
       </template>
+      <div
+        class="line"
+        :style="{
+          top: `calc(${renderRow(row) + 1} * var(--cell-height))`,
+        }"
+      />
     </template>
     <AnnotationRender
-      v-for="renderProps in annotationRenders"
-      :key="renderProps.annotation.start"
+      v-for="(renderProps, i) in annotationRenders"
+      :key="i"
       v-bind="renderProps"
       @update-text="(text: string) => (renderProps.annotation.text = text)"
       @delete="
@@ -141,5 +147,13 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
 .annotations-container {
   height: calc(v-bind(numRows) * var(--cell-height));
   position: relative;
+}
+
+.line {
+  background: lightgray;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
 }
 </style>

@@ -2,13 +2,18 @@
 import type { Annotation } from "~/model/data";
 import { useTemplateRef } from "vue";
 import OverlayCoords from "../bars/OverlayCoords.vue";
-import { injectTabBarBounds } from "../bars/provide-bar-bounds";
 import { injectBarManagement } from "../providers/state/provide-bar-management";
-import {
-  injectStackResizeObserver,
-  type StackCoords,
-} from "../providers/events/provide-resize-observer";
+import { type StackCoords } from "../providers/events/provide-resize-observer";
 import { X } from "lucide-vue-next";
+
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
+import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
+import { getAnnotationResizeDragData } from "../hooks/dnd/types";
+import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
+import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
+import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
+import AnnotationResizeHandle from "./AnnotationResizeHandle.vue";
 
 export interface AnnotationRenderProps {
   row: number;
@@ -16,6 +21,7 @@ export interface AnnotationRenderProps {
   startAtLeft?: number;
   endAtRight?: number;
   annotation: Annotation;
+
   creating?: boolean;
 }
 
@@ -27,45 +33,74 @@ const emit = defineEmits<{
 }>();
 
 const barManagement = injectBarManagement();
+const resizeState = injectAnnotationResizeState();
+const annotationAddState = injectAnnotationAddState();
+const hoverState = injectAnnotationHoverState();
 
 const start = computed(() => props.startAtLeft ?? props.annotation.start);
 const end = computed(() => props.endAtRight ?? props.annotation.end);
 
-const pointerEvents = computed(() => (props.annotation ? "auto" : "none"));
+const isDragging = computed(() =>
+  resizeState.isDragging(props.row, props.annotation),
+);
 
-const titleEl = useTemplateRef("title");
+const isAnyHovered = computed(() => hoverState.hoveredRow.value !== undefined);
+const isOtherHovered = computed(
+  () =>
+    isAnyHovered.value && !hoverState.isHovered(props.row, props.annotation),
+);
+// now reduntant because whenever we're creating we're also hovering over a row
+// const isAnyDragging = computed(
+//   () => resizeState.draggingFrom.value !== undefined,
+// );
+const isAnyCreating = computed(() => annotationAddState.newAnnotation.value);
 
-function titleInput() {
+const pointerEvents = computed(() =>
+  props.annotation && !isDragging.value ? "auto" : "none",
+);
+
+const annotationEl = useTemplateRef("annotation");
+const textEl = useTemplateRef("text");
+
+const overflown = ref(false);
+useResizeObserver(textEl, ([entry]) => {
+  if (!annotationEl.value) return;
+  const { width } = entry.contentRect;
+  const containerWidth = annotationEl.value?.clientWidth;
+  overflown.value = width > containerWidth;
+  // overflown.value = entry.target.clientWidth > entry.target.scrollWidth;
+});
+
+function onTextInput() {
   if (props.annotation) {
-    const value = titleEl.value!.innerText;
+    const value = textEl.value!.innerText;
     emit("updateText", value);
   }
 }
 
-function titleFocus() {
-  window.getSelection()?.selectAllChildren(titleEl.value!);
-  titleEl.value!.scrollTo({ left: 0 });
+function onTextBlur() {
+  if (props.annotation) {
+    const value = textEl.value!.innerText;
+    if (value.length === 0) {
+      emit("delete");
+    }
+  }
 }
 
-watch(
-  () => props.annotation,
-  (data) => {
-    if (data) {
-      setTimeout(() => titleEl.value!.focus(), 1);
-    }
-  },
-);
+function focusText() {
+  if (textEl.value) {
+    textEl.value.focus();
+  }
+}
+onMounted(() => {
+  if (!props.creating) {
+    setTimeout(() => focusText(), 1);
+  }
+});
 
-// TODO: reconsider given that the first column could be a different bar
 const startsInFirstColumn = computed(() => {
   return barManagement.bars.some((bar) => bar.start === start.value);
 });
-
-// const endsInFirstColumn = computed(() => {
-//   return barManagement.bars.some(
-//     (bar) => bar.start === (props.annotation.end ?? props.annotation.start),
-//   );
-// });
 
 const left = (startCoords: StackCoords) => {
   if (startsInFirstColumn.value) {
@@ -89,24 +124,66 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   >
     <div
       v-if="startCoords && endCoords"
-      :class="`annotation annotation-${row} ${props.creating && 'creating'}`"
+      ref="annotation"
+      class="annotation"
+      :class="{
+        creating: props.creating,
+        dragging: isDragging,
+        'no-right-border': endAtRight,
+        'no-left-border': startAtLeft,
+        'any-creating': isAnyCreating,
+        'any-hovered': isAnyHovered,
+        'other-hovered': isOtherHovered,
+        // 'other-dragging': !isDragging && isAnyDragging,
+      }"
       :style="{
         left: left(startCoords),
         width: width(startCoords, endCoords),
       }"
+      @mouseenter="hoverState.setHovered(props.row, props.annotation)"
+      @mouseleave="hoverState.clearHovered()"
     >
+      <AnnotationResizeHandle
+        v-show="!startAtLeft"
+        :row="row"
+        :annotation="annotation"
+        side="start"
+        :below="overflown && !isDragging"
+        @drag-end="focusText"
+      />
+
+      <AnnotationResizeHandle
+        v-show="!endAtRight"
+        :row="row"
+        :annotation="annotation"
+        side="end"
+        :below="overflown && !isDragging"
+        @drag-end="focusText"
+      />
+
       <div
-        ref="title"
-        class="title"
+        ref="text"
+        class="text"
         contenteditable
-        @input="titleInput"
-        @focus="titleFocus"
+        spellcheck="false"
+        @input="onTextInput"
+        @blur="onTextBlur"
       >
         {{ annotation?.text }}
       </div>
-      <div v-if="annotation" class="delete" @click="emit('delete')">
+
+      <div
+        v-if="annotation.start === annotation.end"
+        class="center-line pos-line"
+      />
+
+      <!-- <div class="delete" @click="emit('delete')">
         <X :size="16" />
-      </div>
+      </div> -->
+      <!-- <template v-else>
+        <div class="left-line pos-line" />
+        <div class="right-line pos-line" />
+      </template> -->
     </div>
   </OverlayCoords>
 </template>
@@ -118,15 +195,61 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
   display: flex;
-  align-items: center;
-  border: 1px solid gray;
+  justify-content: center;
   pointer-events: v-bind(pointerEvents);
 
-  &:hover {
-    .delete {
+  & .resize-handle {
+    visibility: hidden;
+  }
+
+  &:hover,
+  &.dragging,
+  &:has(.text:focus):not(.other-hovered) {
+    background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
+    z-index: var(--annotation-current-z-index);
+    & .resize-handle {
       visibility: visible;
     }
   }
+
+  /* &:has(.resize-handle:hover) {
+    & .text {
+      overflow: hidden;
+    }
+  } */
+
+  /* &.any-creating, */
+  /* &.other-dragging { */
+  &.other-hovered:not(:has(.text:focus)),
+  &.any-creating {
+    /* pointer-events: none; */
+    border-left: 1px solid darkgray;
+    border-right: 1px solid darkgray;
+    &.no-right-border {
+      border-right: none;
+    }
+    &.no-left-border {
+      border-left: none;
+    }
+  }
+
+  /* &:hover {
+    .center-line {
+      display: none;
+    }
+  } */
+
+  /* &:not(:hover):not(.dragging) {
+    background-color: transparent;
+    &:not(:has(.text:focus)) {
+      .resize-handle {
+        display: none;
+      }
+      .delete {
+        display: none;
+      }
+    }
+  } */
 }
 
 .creating {
@@ -134,20 +257,52 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   pointer-events: none;
 }
 
-.title {
-  overflow: hidden;
+.text {
+  font-size: var(--annotation-font-size);
+  display: flex;
+  justify-content: center;
+  align-self: center;
   white-space: nowrap;
-  /* text-overflow: ellipsis; */
   flex-grow: 1;
+  height: min-content;
   text-align: center;
+  outline: none;
+
+  /* pointer-events: none;
+  &:focus {
+    pointer-events: auto;
+  } */
 }
 
-.delete {
+.center-line {
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+}
+
+.pos-line {
+  width: var(--pos-line-width);
+  /* background-color: var(--pos-line-color); */
+  background: gray;
+  height: calc((var(--cell-height) - var(--note-font-size)) * 1.5);
+  top: var(--note-font-size);
+}
+
+/* .delete {
   cursor: pointer;
-  padding: 0px 1px;
-  visibility: hidden;
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  width: min-content;
+  left: 0;
+  right: 0;
+  transform: translateY(-60%) translateX(50%);
+  color: darkred;
+
   &:hover svg {
     stroke-width: 3;
   }
-}
+} */
 </style>

@@ -12,6 +12,8 @@ import {
 } from "../hooks/dnd/types";
 import OverlayCoords from "~/components/tab/bars/OverlayCoords.vue";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
+import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
+import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
 
 const props = defineProps<{
   row: number;
@@ -20,7 +22,16 @@ const props = defineProps<{
   firstInBar: boolean;
 }>();
 
-const { dragStart, dragEnd } = injectAnnotationAddState();
+const { dragStart, dragEnd, newAnnotation } = injectAnnotationAddState();
+const resizeState = injectAnnotationResizeState();
+const hoverState = injectAnnotationHoverState();
+
+const isDragging = computed(
+  () =>
+    resizeState.draggingFrom.value?.row === props.row ||
+    newAnnotation.value?.row === props.row,
+);
+
 const left = (coords: { left: number }) => {
   return props.firstInBar
     ? `${coords.left}px`
@@ -35,19 +46,23 @@ const width = (coords: { left: number; right: number }) => {
 
 const element = useTemplateRef("element");
 
+// TODO: when a drag starts on a row (whether a new annotation drag or a resize drag),
+// all of the droppables on the row grow in height
+
 watchEffect((cleanup) => {
   if (!element.value) {
     return;
   }
-  const data = getAnnotationDragData({
-    row: props.row,
-    position: props.position,
-  });
+  const getData = () =>
+    getAnnotationDragData({
+      row: props.row,
+      position: props.position,
+    });
   cleanup(
     combine(
       dropTargetForElements({
         element: element.value,
-        getData: () => data,
+        getData,
       }),
       draggable({
         element: element.value,
@@ -55,7 +70,7 @@ watchEffect((cleanup) => {
           disableNativeDragPreview({ nativeSetDragImage });
           preventUnhandled.start();
         },
-        getInitialData: () => data,
+        getInitialData: getData,
       }),
     ),
   );
@@ -68,22 +83,29 @@ watchEffect((cleanup) => {
       v-if="coords"
       ref="element"
       class="draggable"
+      :class="{ dragging: isDragging }"
       :style="{
         left: left(coords),
         width: width(coords),
       }"
       @mousedown="dragStart(row, position)"
       @click="dragEnd()"
+      @mouseenter="hoverState.setHovered(row)"
+      @mouseleave="hoverState.clearHovered()"
     />
   </OverlayCoords>
 </template>
 
 <style scoped>
 .draggable {
-  /* border: 1px solid black; */
   z-index: var(--annotation-dragger-z-index);
   position: absolute;
   top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
+
+  &.dragging {
+    height: 400%;
+    top: calc(v-bind(renderRow) * var(--cell-height) - 200%);
+  }
 }
 </style>

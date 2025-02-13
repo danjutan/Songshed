@@ -391,6 +391,7 @@ const row = computed(() => props.notePosition.string + 1);
 
 .pos-line {
   width: var(--pos-line-width);
+  z-index: var(--pos-line-z-index);
   height: 100%;
   background-color: var(--pos-line-color);
   justify-self: center;

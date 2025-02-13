@@ -32,7 +32,9 @@ import { isCollapsed } from "./hooks/use-collapsed";
 import { provideBeatSize } from "./providers/provide-beatsize";
 import { Plus } from "lucide-vue-next";
 import { provideCopyState } from "./providers/state/provide-copy-state";
-
+import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-monitor";
+import { provideAnnotationResizeState } from "./providers/state/provide-annotation-resize-state";
+import { provideAnnotationHoverState } from "./providers/state/provide-annotation-hover-state";
 const props = defineProps<{
   tabStore: TabStore;
 }>();
@@ -89,12 +91,22 @@ const copyState = provideCopyState(selectionState, props.tabStore.guitar);
 
 provideNotePreviewState(selectionState, copyState, props.tabStore.guitar);
 
+const annotationProps = reactiveComputed(() => ({
+  store: props.tabStore.annotations,
+  subUnit: subUnit.value,
+}));
+
+const annotationAddState = provideAnnotationAddState(annotationProps);
+const annotationResizeState = provideAnnotationResizeState(annotationProps);
+provideAnnotationHoverState();
+
 onMounted(() => {
   useTieAddMonitor(tieAddState);
   useSelectMonitor(selectionState);
   useMoveMonitor(selectionState);
   useBendEditMonitor(bendEditState);
   useAnnotationAddMonitor(annotationAddState);
+  useAnnotationResizeMonitor(annotationResizeState);
 });
 
 // const columnsMap = provideColumnsMap(
@@ -113,14 +125,6 @@ onMounted(() => {
 //     beatSize: props.tabStore.beatSize,
 //   })),
 // );
-
-const annotationAddState = provideAnnotationAddState(
-  reactiveComputed(() => ({
-    store: props.tabStore.annotations,
-    subUnit: subUnit.value,
-    cellHoverEvents,
-  })),
-);
 
 // const annotationRenders = provideAnnotationRenderState(
 //   reactiveComputed(() => ({
@@ -273,6 +277,8 @@ const deletingBarStart = ref<number | undefined>(undefined);
   --collapsed-min-width: v-bind(collapsedMinWidthPx);
   --divider-width: v-bind(dividerWidthPx);
   --note-font-size: calc(var(--cell-height) * 0.8);
+  --annotation-font-size: calc(var(--cell-height) * 0.7);
+  --overlay-select-font-size: calc(var(--cell-height) * 0.6);
   --substack-bg: rgba(255, 0, 0, 0.1);
   --pos-line-width: 1px;
   --string-width: 1px;
@@ -291,11 +297,14 @@ const deletingBarStart = ref<number | undefined>(undefined);
   /* To allow for tie-dragging on the bottommost notes */
   --bottom-note-padding: var(--cell-height);
 
+  --pos-line-z-index: -1;
   --bar-overlay-z-index: 1;
   --overlay-controls-z-index: 1;
   --divider-z-index: 3;
   --annotation-dragger-z-index: 1;
   --annotation-z-index: 2;
+  --annotation-current-z-index: 3;
+  --annotation-resize-dragger-z-index: 4;
 
   user-select: none;
 
