@@ -161,12 +161,15 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   justify-content: center;
   /* align-items: center; */
   pointer-events: v-bind(pointerEvents);
+  background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
 
   &.any-hovered:not(:hover):not(:has(.text:focus)),
   &.any-creating,
   &.other-dragging {
-    border-left: 1px solid var(--pos-line-color);
-    border-right: 1px solid var(--pos-line-color);
+    pointer-events: none;
+    z-index: -1;
+    border-left: 1px solid darkgray;
+    border-right: 1px solid darkgray;
     &.no-right-border {
       border-right: none;
     }
@@ -181,12 +184,15 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
     }
   } */
 
-  &:not(:hover):not(.dragging):not(:has(.text:focus)) {
-    .resize-handle {
-      display: none;
-    }
-    .delete {
-      display: none;
+  &:not(:hover):not(.dragging) {
+    background-color: transparent;
+    &:not(:has(.text:focus)) {
+      .resize-handle {
+        display: none;
+      }
+      .delete {
+        display: none;
+      }
     }
   }
 }
