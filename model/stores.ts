@@ -52,17 +52,13 @@ export function createTabStore(
     ...init,
   });
 
-  const guitarStore = ref<GuitarStore>(
-    data.guitarData
-      ? createGuitarStore(data.guitarData)
-      : createGuitarStore({
-          ties: new Map(),
-          strings: 6,
-          tuning: defaultTuning,
-          frets: 24,
-          stacks: new Map(),
-        }),
-  );
+  const guitarStore = ref<GuitarStore>();
+
+  if (data.guitarData) {
+    guitarStore.value = createGuitarStore(data.guitarData);
+  } else {
+    createGuitarTab();
+  }
 
   const annotationStore = createAnnotationStore(data.annotations);
   const chordStore = createChordStore(data.chordsData);
