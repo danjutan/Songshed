@@ -70,6 +70,15 @@ function onTextInput() {
   }
 }
 
+function onTextBlur() {
+  if (props.annotation) {
+    const value = textEl.value!.innerText;
+    if (value.length === 0) {
+      emit("delete");
+    }
+  }
+}
+
 function focusText() {
   if (textEl.value) {
     textEl.value.focus();
@@ -143,7 +152,13 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         @drag-end="focusText"
       />
 
-      <div ref="text" class="text" contenteditable @input="onTextInput">
+      <div
+        ref="text"
+        class="text"
+        contenteditable
+        @input="onTextInput"
+        @blur="onTextBlur"
+      >
         {{ annotation?.text }}
       </div>
 
