@@ -45,13 +45,8 @@ const isDragging = computed(() =>
 );
 
 const isAnyCreating = computed(() => annotationAddState.newAnnotation.value);
-
+const isAnyHovered = hoverState.isAnyHovered;
 const isAnyDragging = resizeState.isAnyDragging;
-const isOtherHovered = computed(
-  () =>
-    hoverState.isAnyHovered &&
-    !hoverState.isHovered(props.row, props.annotation),
-);
 
 const pointerEvents = computed(() =>
   props.annotation && !isDragging.value ? "auto" : "none",
@@ -109,9 +104,9 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         dragging: isDragging,
         'no-right-border': endAtRight,
         'no-left-border': startAtLeft,
-        'any-dragging': isAnyDragging,
         'any-creating': isAnyCreating,
-        'other-hovered': isOtherHovered,
+        'any-hovered': isAnyHovered,
+        'other-dragging': !isDragging && isAnyDragging,
       }"
       :style="{
         left: left(startCoords),
@@ -167,15 +162,17 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   /* align-items: center; */
   pointer-events: v-bind(pointerEvents);
 
-  &.other-hovered:not(:has(.text:focus)) {
-    border-left: 1px solid gray;
-    border-right: 1px solid gray;
+  &.any-hovered:not(:hover):not(:has(.text:focus)),
+  &.any-creating,
+  &.other-dragging {
+    border-left: 1px solid var(--pos-line-color);
+    border-right: 1px solid var(--pos-line-color);
     &.no-right-border {
       border-right: none;
     }
     &.no-left-border {
       border-left: none;
-    } */
+    }
   }
 
   /* &:hover {
