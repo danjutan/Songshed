@@ -53,7 +53,7 @@ const iconSizePx = `${iconSize}px`;
   pointer-events: all;
   --vs-input-bg: rgba(255, 255, 255, 0.8);
   --vs-input-placeholder-color: black;
-  --vs-font-size: calc(var(--note-font-size) * 0.75);
+  --vs-font-size: var(--overlay-select-font-size);
   --vs-option-padding: 1px 2px;
   --vs-indicators-gap: 0px;
   --vs-menu-offset-top: -1px;

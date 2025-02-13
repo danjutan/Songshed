@@ -64,7 +64,7 @@ watchEffect((cleanup) => {
   display: grid;
   justify-items: center;
   &.below {
-    height: 125%;
+    height: 135%;
     & .pole {
       padding-bottom: 4px;
     }

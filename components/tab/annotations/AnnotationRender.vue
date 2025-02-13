@@ -156,6 +156,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         ref="text"
         class="text"
         contenteditable
+        spellcheck="false"
         @input="onTextInput"
         @blur="onTextBlur"
       >
@@ -186,7 +187,6 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   height: var(--cell-height);
   display: flex;
   justify-content: center;
-  /* align-items: center; */
   pointer-events: v-bind(pointerEvents);
   background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
 
@@ -231,6 +231,8 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 
 .text {
   z-index: var(--annotation-text-z-index);
+  font-size: var(--annotation-font-size);
+  align-self: center;
   white-space: nowrap;
   flex-grow: 1;
   height: min-content;
