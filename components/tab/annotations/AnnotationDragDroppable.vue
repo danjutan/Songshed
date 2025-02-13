@@ -12,6 +12,7 @@ import {
 } from "../hooks/dnd/types";
 import OverlayCoords from "~/components/tab/bars/OverlayCoords.vue";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
+import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
 
 const props = defineProps<{
   row: number;
@@ -20,7 +21,15 @@ const props = defineProps<{
   firstInBar: boolean;
 }>();
 
-const { dragStart, dragEnd } = injectAnnotationAddState();
+const { dragStart, dragEnd, newAnnotation } = injectAnnotationAddState();
+const resizeState = injectAnnotationResizeState();
+
+const isDragging = computed(
+  () =>
+    resizeState.draggingFrom.value?.row === props.row ||
+    newAnnotation.value?.row === props.row,
+);
+
 const left = (coords: { left: number }) => {
   return props.firstInBar
     ? `${coords.left}px`
@@ -34,6 +43,9 @@ const width = (coords: { left: number; right: number }) => {
 };
 
 const element = useTemplateRef("element");
+
+// TODO: when a drag starts on a row (whether a new annotation drag or a resize drag),
+// all of the droppables on the row grow in height
 
 watchEffect((cleanup) => {
   if (!element.value) {
@@ -69,6 +81,7 @@ watchEffect((cleanup) => {
       v-if="coords"
       ref="element"
       class="draggable"
+      :class="{ dragging: isDragging }"
       :style="{
         left: left(coords),
         width: width(coords),
@@ -81,10 +94,14 @@ watchEffect((cleanup) => {
 
 <style scoped>
 .draggable {
-  border-bottom: 1px solid lightgray;
   z-index: var(--annotation-dragger-z-index);
   position: absolute;
   top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
+
+  &.dragging {
+    height: 400%;
+    top: calc(v-bind(renderRow) * var(--cell-height) - 200%);
+  }
 }
 </style>

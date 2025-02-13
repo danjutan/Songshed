@@ -116,6 +116,12 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
           :first-in-bar="i === 0"
         />
       </template>
+      <div
+        class="line"
+        :style="{
+          top: `calc(${renderRow(row) + 1} * var(--cell-height))`,
+        }"
+      />
     </template>
     <AnnotationRender
       v-for="(renderProps, i) in annotationRenders"
@@ -140,5 +146,13 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
 .annotations-container {
   height: calc(v-bind(numRows) * var(--cell-height));
   position: relative;
+}
+
+.line {
+  background: lightgray;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 1px;
 }
 </style>

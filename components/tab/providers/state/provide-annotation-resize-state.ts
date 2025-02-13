@@ -3,10 +3,16 @@ import type { AnnotationAddState } from "./provide-annotation-add-state";
 import type { AnnotationStore } from "~/model/stores";
 import type { ComputedRef } from "vue";
 
+type DraggingFrom = {
+  fixed: "start" | "end";
+  position: number;
+  row: number;
+};
+
 export interface AnnotationResizeState {
+  draggingFrom: ComputedRef<DraggingFrom | undefined>;
   isDragging: (row: number, annotation: Annotation) => boolean;
-  isAnyDragging: ComputedRef<boolean>;
-  dragStart: (row: number, fixed: "start" | "end", position: number) => void;
+  dragStart: (from: DraggingFrom) => void;
   dragMove: (
     row: number,
     annotation: Annotation,
@@ -22,11 +28,7 @@ export function provideAnnotationResizeState(
     subUnit: number;
   }>,
 ): AnnotationResizeState {
-  const draggingFrom = ref<{
-    fixed: "start" | "end";
-    position: number;
-    row: number;
-  }>();
+  const draggingFrom = ref<DraggingFrom>();
 
   function isDragging(row: number, annotation: Annotation) {
     if (!draggingFrom.value) return false;
@@ -34,8 +36,8 @@ export function provideAnnotationResizeState(
     return row === startRow && annotation[fixed] === position;
   }
 
-  function dragStart(row: number, fixed: "start" | "end", position: number) {
-    draggingFrom.value = { fixed, position, row };
+  function dragStart(from: DraggingFrom) {
+    draggingFrom.value = from;
   }
 
   function dragMove(
@@ -76,9 +78,13 @@ export function provideAnnotationResizeState(
     draggingFrom.value = undefined;
   }
 
-  const isAnyDragging = computed(() => !!draggingFrom.value);
-
-  const state = { isDragging, dragStart, dragMove, dragEnd, isAnyDragging };
+  const state = {
+    isDragging,
+    dragStart,
+    dragMove,
+    dragEnd,
+    draggingFrom: computed(() => draggingFrom.value),
+  };
   provide(AnnotationResizeStateInjectionKey, state);
   return state;
 }

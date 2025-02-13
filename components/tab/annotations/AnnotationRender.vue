@@ -46,7 +46,7 @@ const isDragging = computed(() =>
 
 const isAnyCreating = computed(() => annotationAddState.newAnnotation.value);
 const isAnyHovered = hoverState.isAnyHovered;
-const isAnyDragging = resizeState.isAnyDragging;
+const isAnyDragging = computed(() => !!resizeState.draggingFrom.value);
 
 const pointerEvents = computed(() =>
   props.annotation && !isDragging.value ? "auto" : "none",

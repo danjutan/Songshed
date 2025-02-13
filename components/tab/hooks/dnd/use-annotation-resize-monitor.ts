@@ -16,7 +16,11 @@ export function useAnnotationResizeMonitor(resizeState: AnnotationResizeState) {
             const { row, side, annotation } = sourceData;
             const fixedSide = side === "start" ? "end" : "start";
             const position = annotation[fixedSide];
-            resizeState.dragStart(row, fixedSide, position);
+            resizeState.dragStart({
+              fixed: fixedSide,
+              position,
+              row,
+            });
           }
         },
         onDropTargetChange(args) {
