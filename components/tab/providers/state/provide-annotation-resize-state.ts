@@ -44,6 +44,7 @@ export function provideAnnotationResizeState(
     side: "start" | "end",
     position: number,
   ) {
+    console.log("dragMove", row, annotation, side, position);
     if (side === "start" && position > annotation.end) {
       position = annotation.start;
     }
@@ -54,7 +55,7 @@ export function provideAnnotationResizeState(
     const existingOnRow = props.store.getAnnotations(row);
     if (side === "end") {
       const blockingRight = existingOnRow.find(
-        (ann) => ann.start > annotation.start && ann.end < position,
+        (ann) => ann.start > annotation.start && position >= ann.start,
       );
       if (blockingRight) {
         position = blockingRight.start - props.subUnit;
