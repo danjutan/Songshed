@@ -303,7 +303,7 @@ const deletingBarStart = ref<number | undefined>(undefined);
   --divider-z-index: 3;
   --annotation-dragger-z-index: 1;
   --annotation-z-index: 2;
-  --annotation-resize-dragger-z-index: 0;
+  --annotation-resize-dragger-z-index: 3;
   --annotation-text-z-index: 1;
 
   user-select: none;

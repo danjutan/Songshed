@@ -44,9 +44,16 @@ const isDragging = computed(() =>
   resizeState.isDragging(props.row, props.annotation),
 );
 
+const isAnyHovered = computed(() => hoverState.hoveredRow.value !== undefined);
+const isOtherHovered = computed(
+  () =>
+    isAnyHovered.value && !hoverState.isHovered(props.row, props.annotation),
+);
+// now reduntant because whenever we're creating we're also hovering over a row
+// const isAnyDragging = computed(
+//   () => resizeState.draggingFrom.value !== undefined,
+// );
 const isAnyCreating = computed(() => annotationAddState.newAnnotation.value);
-const isAnyHovered = hoverState.isAnyHovered;
-const isAnyDragging = computed(() => !!resizeState.draggingFrom.value);
 
 const pointerEvents = computed(() =>
   props.annotation && !isDragging.value ? "auto" : "none",
@@ -125,7 +132,8 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         'no-left-border': startAtLeft,
         'any-creating': isAnyCreating,
         'any-hovered': isAnyHovered,
-        'other-dragging': !isDragging && isAnyDragging,
+        'other-hovered': isOtherHovered,
+        // 'other-dragging': !isDragging && isAnyDragging,
       }"
       :style="{
         left: left(startCoords),
@@ -188,13 +196,25 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   display: flex;
   justify-content: center;
   pointer-events: v-bind(pointerEvents);
-  background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
 
-  &.any-hovered:not(:hover):not(:has(.text:focus)),
-  &.any-creating,
-  &.other-dragging {
-    pointer-events: none;
-    z-index: -1;
+  & .resize-handle {
+    visibility: hidden;
+  }
+
+  &:hover,
+  &.dragging,
+  &:has(.text:focus):not(.other-hovered) {
+    background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
+    & .resize-handle {
+      visibility: visible;
+    }
+  }
+
+  /* &.any-creating, */
+  /* &.other-dragging { */
+  &.other-hovered:not(:has(.text:focus)),
+  &.any-creating {
+    /* pointer-events: none; */
     border-left: 1px solid darkgray;
     border-right: 1px solid darkgray;
     &.no-right-border {
@@ -211,7 +231,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
     }
   } */
 
-  &:not(:hover):not(.dragging) {
+  /* &:not(:hover):not(.dragging) {
     background-color: transparent;
     &:not(:has(.text:focus)) {
       .resize-handle {
@@ -221,7 +241,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         display: none;
       }
     }
-  }
+  } */
 }
 
 .creating {
@@ -230,6 +250,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 }
 
 .text {
+  pointer-events: none;
   z-index: var(--annotation-text-z-index);
   font-size: var(--annotation-font-size);
   align-self: center;
@@ -255,7 +276,8 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   height: calc((var(--cell-height) - var(--note-font-size)) * 1.5);
   top: var(--note-font-size);
 }
-.delete {
+
+/* .delete {
   cursor: pointer;
   position: absolute;
   margin-left: auto;
@@ -269,5 +291,5 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   &:hover svg {
     stroke-width: 3;
   }
-}
+} */
 </style>

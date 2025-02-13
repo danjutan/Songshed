@@ -13,6 +13,7 @@ import {
 import OverlayCoords from "~/components/tab/bars/OverlayCoords.vue";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
+import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
 
 const props = defineProps<{
   row: number;
@@ -23,6 +24,7 @@ const props = defineProps<{
 
 const { dragStart, dragEnd, newAnnotation } = injectAnnotationAddState();
 const resizeState = injectAnnotationResizeState();
+const hoverState = injectAnnotationHoverState();
 
 const isDragging = computed(
   () =>
@@ -88,6 +90,8 @@ watchEffect((cleanup) => {
       }"
       @mousedown="dragStart(row, position)"
       @click="dragEnd()"
+      @mouseenter="hoverState.setHovered(row)"
+      @mouseleave="hoverState.clearHovered()"
     />
   </OverlayCoords>
 </template>

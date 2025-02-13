@@ -2,31 +2,36 @@ import type { Annotation } from "~/model/data";
 import type { InjectionKey } from "vue";
 
 export interface AnnotationHoverState {
-  // hoveredAnnotation: Ref<
-  //   | {
-  //       row: number;
-  //       annotation: Annotation;
-  //     }
-  //   | undefined
-  // >;
-  setHovered: (row: number, annotation: Annotation) => void;
+  hoveredRow: ComputedRef<number | undefined>;
+  hoveredAnnotation: ComputedRef<
+    | {
+        row: number;
+        annotation: Annotation;
+      }
+    | undefined
+  >;
+  setHovered: (row: number, annotation?: Annotation) => void;
   clearHovered: () => void;
   isHovered: (row: number, annotation: Annotation) => boolean;
-  isAnyHovered: ComputedRef<boolean>;
 }
 
 export function provideAnnotationHoverState() {
+  const hoveredRow = ref<number | undefined>(undefined);
   const hoveredAnnotation = ref<{
     row: number;
     annotation: Annotation;
   }>();
 
-  function setHovered(row: number, annotation: Annotation) {
-    hoveredAnnotation.value = { row, annotation };
+  function setHovered(row: number, annotation?: Annotation) {
+    if (annotation) {
+      hoveredAnnotation.value = { row, annotation };
+    }
+    hoveredRow.value = row;
   }
 
   function clearHovered() {
     hoveredAnnotation.value = undefined;
+    hoveredRow.value = undefined;
   }
 
   function isHovered(row: number, annotation: Annotation) {
@@ -37,8 +42,8 @@ export function provideAnnotationHoverState() {
   }
 
   const state = {
-    // hoveredAnnotation,
-    isAnyHovered: computed(() => hoveredAnnotation.value !== undefined),
+    hoveredRow: computed(() => hoveredRow.value),
+    hoveredAnnotation: computed(() => hoveredAnnotation.value),
     setHovered,
     clearHovered,
     isHovered,
