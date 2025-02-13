@@ -12,6 +12,7 @@ import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unha
 import { getAnnotationResizeDragData } from "../hooks/dnd/types";
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
+import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
 
 export interface AnnotationRenderProps {
   row: number;
@@ -33,6 +34,7 @@ const emit = defineEmits<{
 const barManagement = injectBarManagement();
 const resizeState = injectAnnotationResizeState();
 const annotationAddState = injectAnnotationAddState();
+const hoverState = injectAnnotationHoverState();
 
 const start = computed(() => props.startAtLeft ?? props.annotation.start);
 const end = computed(() => props.endAtRight ?? props.annotation.end);
@@ -44,6 +46,11 @@ const isDragging = computed(() =>
 const isAnyCreating = computed(() => annotationAddState.newAnnotation.value);
 
 const isAnyDragging = resizeState.isAnyDragging;
+const isOtherHovered = computed(
+  () =>
+    hoverState.isAnyHovered &&
+    !hoverState.isHovered(props.row, props.annotation),
+);
 
 const pointerEvents = computed(() =>
   props.annotation && !isDragging.value ? "auto" : "none",
@@ -133,11 +140,14 @@ watchEffect((cleanup) => {
         'no-left-border': startAtLeft,
         'any-dragging': isAnyDragging,
         'any-creating': isAnyCreating,
+        'other-hovered': isOtherHovered,
       }"
       :style="{
         left: left(startCoords),
         width: width(startCoords, endCoords),
       }"
+      @mouseenter="hoverState.setHovered(props.row, props.annotation)"
+      @mouseleave="hoverState.clearHovered()"
     >
       <div v-show="!startAtLeft" ref="leftHandle" class="resize-handle start">
         <div class="visible" />
@@ -178,12 +188,9 @@ watchEffect((cleanup) => {
   align-items: center;
   pointer-events: v-bind(pointerEvents);
 
-  &:hover,
-  &:has(.text:focus),
-  &.any-dragging,
-  &.any-creating {
-    border: 1px solid gray;
-    border-top: none;
+  &.other-hovered:not(:has(.text:focus)) {
+    border-left: 1px solid gray;
+    border-right: 1px solid gray;
     &.no-right-border {
       border-right: none;
     }

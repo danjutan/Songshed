@@ -34,6 +34,7 @@ import { Plus } from "lucide-vue-next";
 import { provideCopyState } from "./providers/state/provide-copy-state";
 import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-monitor";
 import { provideAnnotationResizeState } from "./providers/state/provide-annotation-resize-state";
+import { provideAnnotationHoverState } from "./providers/state/provide-annotation-hover-state";
 const props = defineProps<{
   tabStore: TabStore;
 }>();
@@ -96,8 +97,8 @@ const annotationProps = reactiveComputed(() => ({
 }));
 
 const annotationAddState = provideAnnotationAddState(annotationProps);
-
 const annotationResizeState = provideAnnotationResizeState(annotationProps);
+provideAnnotationHoverState();
 
 onMounted(() => {
   useTieAddMonitor(tieAddState);
