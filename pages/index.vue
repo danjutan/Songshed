@@ -79,7 +79,7 @@ const guitarNotes: Array<[number, number, string]> = [
   [Spacing.Quarter * 10 + Spacing.Sixteenth, 2, "F4"],
   [Spacing.Quarter * 12 - Spacing.Eighth, 2, "G4"],
   [Spacing.Quarter * 12, 2, "F4"],
-  [Spacing.Quarter * 25 + Spacing.Sixteenth, 0, "F4"],
+  // [Spacing.Quarter * 25 + Spacing.Sixteenth, 0, "F4"],
   // [Spacing.Quarter * 45 + Spacing.Sixteenth, 0, "F4"],
 ];
 

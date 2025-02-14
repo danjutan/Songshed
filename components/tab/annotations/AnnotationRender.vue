@@ -4,12 +4,7 @@ import { useTemplateRef } from "vue";
 import OverlayCoords from "../bars/OverlayCoords.vue";
 import { injectBarManagement } from "../providers/state/provide-bar-management";
 import { type StackCoords } from "../providers/events/provide-resize-observer";
-import { X } from "lucide-vue-next";
 
-import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
-import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
-import { getAnnotationResizeDragData } from "../hooks/dnd/types";
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
@@ -65,10 +60,9 @@ const textEl = useTemplateRef("text");
 const overflown = ref(false);
 useResizeObserver(textEl, ([entry]) => {
   if (!annotationEl.value) return;
-  const { width } = entry.contentRect;
+  const textWidth = entry.target.clientWidth;
   const containerWidth = annotationEl.value?.clientWidth;
-  overflown.value = width > containerWidth;
-  // overflown.value = entry.target.clientWidth > entry.target.scrollWidth;
+  overflown.value = textWidth > containerWidth;
 });
 
 function onTextInput() {

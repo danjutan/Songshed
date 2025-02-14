@@ -290,7 +290,7 @@ const row = computed(() => props.notePosition.string + 1);
         maxString: notePosition.string,
         maxPosition: notePosition.position,
       }"
-      :top="`calc(var(--cell-height) / -4)`"
+      :top="`calc(var(--cell-height) / -8)`"
       @click.stop="() => {}"
       @mousedown.stop="() => {}"
     />
