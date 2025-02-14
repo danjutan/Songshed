@@ -61,7 +61,7 @@ onMounted(() => {
   cursor: crosshair;
   justify-self: center;
   align-self: end;
-  z-index: var(--overlay-controls-z-index);
+  z-index: var(--tie-dragger-z-index);
 
   &.tie {
     grid-row: 2 / 3;

@@ -79,6 +79,7 @@ const cellHeight = computed(() => settings.cellHeight);
 <template>
   <OverlayCoords
     v-slot="{ coords: [from, to] }"
+    :offset="settings.dividerWidth"
     :positions="[tie.from, tie.to]"
   >
     <svg v-if="from && to">

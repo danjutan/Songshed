@@ -300,6 +300,7 @@ const deletingBarStart = ref<number | undefined>(undefined);
   --pos-line-z-index: -1;
   --bar-overlay-z-index: 1;
   --overlay-controls-z-index: 1;
+  --tie-dragger-z-index: 2;
   --divider-z-index: 3;
   --annotation-dragger-z-index: 1;
   --annotation-z-index: 2;

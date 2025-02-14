@@ -78,6 +78,7 @@ const cellHeight = computed(() => settings.cellHeight);
 <template>
   <OverlayCoords
     v-slot="{ coords: [from, to, upswingTo, through, afterTo] }"
+    :offset="settings.dividerWidth"
     :positions="[
       props.bend.from,
       props.bend.to,

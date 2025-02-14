@@ -57,12 +57,12 @@ const pointerEvents = computed(() =>
 const annotationEl = useTemplateRef("annotation");
 const textEl = useTemplateRef("text");
 
-const overflown = ref(false);
+const overflowing = ref(false);
 useResizeObserver(textEl, ([entry]) => {
   if (!annotationEl.value) return;
   const textWidth = entry.target.clientWidth;
   const containerWidth = annotationEl.value?.clientWidth;
-  overflown.value = textWidth > containerWidth;
+  overflowing.value = textWidth > containerWidth;
 });
 
 function onTextInput() {
@@ -142,7 +142,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         :row="row"
         :annotation="annotation"
         side="start"
-        :below="overflown && !isDragging"
+        :below="overflowing && !isDragging"
         @drag-end="focusText"
       />
 
@@ -151,7 +151,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         :row="row"
         :annotation="annotation"
         side="end"
-        :below="overflown && !isDragging"
+        :below="overflowing && !isDragging"
         @drag-end="focusText"
       />
 

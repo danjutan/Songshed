@@ -10,9 +10,15 @@ import { injectSubUnit } from "~/components/tab/providers/provide-subunit";
 
 // There's an argument for this being a hook instead of a component. I liked the ergonomics of being able to do the positioning within the template, and I didn't like the idea of inject() outside of a component.
 
-const props = defineProps<{
-  positions: Array<number | undefined>;
-}>();
+const props = withDefaults(
+  defineProps<{
+    positions: Array<number | undefined>;
+    offset?: number;
+  }>(),
+  {
+    offset: 0,
+  },
+);
 
 const bounds = injectTabBarBounds();
 const subUnit = injectSubUnit();
@@ -48,7 +54,7 @@ const toCoords = (position: number): StackCoords | undefined => {
     const offset = coords.right - nextLineStartX; // will be positive;
     return withOffset(getStackCoords(bounds.end - subUnit.value), offset);
   }
-  return coords;
+  return withOffset(coords, props.offset);
 };
 </script>
 
