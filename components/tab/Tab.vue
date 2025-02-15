@@ -282,20 +282,24 @@ const deletingBarStart = ref<number | undefined>(undefined);
   --substack-bg: rgba(255, 0, 0, 0.1);
   --pos-line-width: 1px;
   --string-width: 1px;
-  --pos-line-color: lightgray;
-  --string-color: gray;
-  --note-hover-color: rgb(172, 206, 247);
+
+  /*https://primevue.org/theming/styled/#colors*/
+  --pos-line-color: var(--p-surface-300);
+  --string-color: var(--p-surface-400);
+  --tie-color: var(--p-surface-900);
+  --bend-color: var(--p-surface-800);
+  --divider-color: var(--p-surface-900);
+  --divider-icon-color: var(--p-surface-50);
+
+  --note-hover-color: var(--p-blue-200);
+  --select-color: var(--p-blue-200);
+  --might-move-color: var(--p-amber-300);
+  --moving-color: var(--p-amber-400);
+  --delete-color: var(--p-red-300);
 
   --select-alpha: 0.3;
-  --select-color: rgb(173, 206, 247);
-  --might-move-color: rgb(72, 187, 120);
-  --moving-color: rgb(56, 161, 105);
-  --delete-color: rgba(255, 0, 0);
 
   --tie-dragger-color: #1e3a8a;
-
-  /* To allow for tie-dragging on the bottommost notes */
-  --bottom-note-padding: var(--cell-height);
 
   --pos-line-z-index: -1;
   --overlay-svg-z-index: 0;

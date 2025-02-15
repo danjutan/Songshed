@@ -75,8 +75,4 @@ const isCollapsed = useIsCollapsed(
   display: grid;
   grid-template-rows: subgrid;
 }
-
-.note-container:last-child {
-  padding-bottom: var(--bottom-note-padding);
-}
 </style>

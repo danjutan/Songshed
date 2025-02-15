@@ -127,7 +127,7 @@ const cellHeight = computed(() => settings.cellHeight);
 
 <style scoped>
 line {
-  stroke: black;
+  stroke: var(--tie-color);
   stroke-width: 1;
 }
 </style>

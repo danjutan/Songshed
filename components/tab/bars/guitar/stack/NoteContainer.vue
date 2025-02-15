@@ -364,7 +364,6 @@ const row = computed(() => props.notePosition.string + 1);
 
 .note-block {
   grid-area: 2 / 2;
-  color: black;
   &.preview {
     opacity: 0.5;
   }

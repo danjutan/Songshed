@@ -15,10 +15,10 @@ function titleInput(e: Event, chord: Chord) {
 
 <template>
   <div class="container">
-    <div class="chord" v-for="(chord, i) of data.chords">
+    <div v-for="(chord, i) of data.chords" class="chord">
       <div class="title-row">
         <div class="left-filler" />
-        <div class="title" contenteditable @input="(e) => titleInput(e, chord)">
+        <div class="text" contenteditable @input="(e) => titleInput(e, chord)">
           {{ chord.title }}
         </div>
         <div class="delete" @click="data.deleteChord(i)">&Cross;</div>
@@ -67,7 +67,7 @@ function titleInput(e: Event, chord: Chord) {
   justify-content: center;
 }
 .text {
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid var(--p-text-color);
   width: 50px;
   text-align: center;
   font-weight: bold;
@@ -76,7 +76,7 @@ function titleInput(e: Event, chord: Chord) {
 .delete {
   opacity: 0;
   cursor: pointer;
-  color: darkred;
+  color: var(--p-red-600);
   &:hover {
     font-weight: bold;
   }
@@ -103,6 +103,7 @@ function titleInput(e: Event, chord: Chord) {
   align-items: center;
   cursor: pointer;
 
+  /* TODO: get rid of this */
   &:hover {
     background: lightcoral;
     border-color: darkred;

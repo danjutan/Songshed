@@ -123,7 +123,7 @@ function onInputClick(e: Event) {
       :height="topEndHeight"
       :x="gridStartX - 0.5"
       :width="gridEndX - gridStartX + 1"
-      :fill="'black'"
+      fill="var(--p-content-color)"
     />
 
     <line
@@ -132,7 +132,7 @@ function onInputClick(e: Event) {
       :x2="gridStartX + i * cellWidth"
       :y1="gridStartY"
       :y2="gridEndY"
-      :stroke="'black'"
+      stroke="var(--p-content-color)"
     />
 
     <line
@@ -141,7 +141,7 @@ function onInputClick(e: Event) {
       :x2="gridEndX"
       :y1="gridStartY + n * cellHeight - 0.5"
       :y2="gridStartY + n * cellHeight - 0.5"
-      :stroke="'black'"
+      stroke="var(--p-content-color)"
     />
 
     <template v-for="(_, x) in strings">
@@ -181,7 +181,7 @@ function onInputClick(e: Event) {
             :cy="gridStartY - cellHeight * 0.65"
             :r="noteRadius"
             fill="transparent"
-            stroke="black"
+            stroke="var(--p-content-color)"
           />
           <rect
             :x="gridStartX + (strings - string - 1.5) * cellWidth"
@@ -298,7 +298,6 @@ function onInputClick(e: Event) {
       :transform="`rotate(90, ${cellWidth * 0.75 - 1} ${gridEndY + cellWidth / 2})`"
       font-family="sans-serif"
       :font-size="cellHeight / 2"
-      fill="gray"
       @click="incrementWindow"
     >
       ⮕
@@ -331,9 +330,13 @@ svg:not(:hover) .arrow {
   fill: transparent;
 }
 
+.arrow {
+  fill: var(--p-content-color);
+}
+
 .arrow:hover,
 .bottom-edge:hover + .arrow {
-  fill: black;
+  fill: var(--p-content-hover-color);
   cursor: pointer;
 }
 

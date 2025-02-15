@@ -210,7 +210,6 @@ const cellHeight = computed(() => settings.cellHeight);
           :y1="upswingToY + cellHeight * 0.35"
           :x2="afterTo.center"
           :y2="upswingToY + cellHeight * 0.35"
-          stroke="black"
           opacity="0.4"
           :marker-end="'url(#arrow)'"
         />
@@ -222,9 +221,10 @@ const cellHeight = computed(() => settings.cellHeight);
 <style scoped>
 .upswing-curve,
 .downswing-curve,
-.hold-line {
+.hold-line,
+line {
   stroke-width: 1;
-  stroke: black;
+  stroke: var(--bend-color);
   fill: none;
 }
 
