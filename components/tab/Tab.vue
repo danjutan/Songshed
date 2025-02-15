@@ -286,8 +286,10 @@ const deletingBarStart = ref<number | undefined>(undefined);
   /*https://primevue.org/theming/styled/#colors*/
   --pos-line-color: var(--p-surface-300);
   --string-color: var(--p-surface-400);
+
   --tie-color: var(--p-surface-900);
-  --bend-color: var(--p-surface-800);
+  --bend-color: var(--p-surface-900);
+
   --divider-color: var(--p-surface-900);
   --divider-icon-color: var(--p-surface-50);
 
@@ -296,6 +298,14 @@ const deletingBarStart = ref<number | undefined>(undefined);
   --might-move-color: var(--p-amber-300);
   --moving-color: var(--p-amber-400);
   --delete-color: var(--p-red-300);
+
+  --annotation-row-line-color: var(--p-surface-300);
+  --annotation-border: var(--p-surface-300);
+  --annotation-notch-color: var(--p-surface-400);
+  --annotation-dragger-color: var(--p-surface-400);
+  --annotation-dragger-hover-color: var(--p-surface-500);
+  --annotation-hover-background-color: var(--p-blue-100);
+  --annotation-default-background-color: var(--p-slate-100);
 
   --select-alpha: 0.3;
 
@@ -311,11 +321,39 @@ const deletingBarStart = ref<number | undefined>(undefined);
   --divider-z-index: 3;
   --annotation-current-z-index: 3;
   --annotation-resize-dragger-z-index: 4;
+  --selection-toolbar-z-index: 4;
 
   user-select: none;
 
   display: flex;
   flex-wrap: wrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  .tab {
+    --pos-line-color: var(--p-surface-500);
+    --string-color: var(--p-surface-600);
+
+    --tie-color: var(--p-surface-400);
+    --bend-color: var(--p-surface-400);
+
+    --divider-color: var(--p-primary-600);
+    --divider-icon-color: var(--p-surface-50);
+
+    --note-hover-color: var(--p-blue-100);
+    --select-color: var(--p-blue-200);
+    --might-move-color: var(--p-amber-400);
+    --moving-color: var(--p-amber-500);
+    --delete-color: var(--p-red-400);
+
+    --annotation-row-line-color: var(--p-surface-600);
+    --annotation-border: var(--p-surface-600);
+    --annotation-notch-color: var(--p-surface-500);
+    --annotation-dragger-color: var(--p-surface-500);
+    --annotation-dragger-hover-color: var(--p-surface-400);
+    --annotation-hover-background-color: var(--p-slate-700);
+    --annotation-default-background-color: var(--p-slate-800);
+  }
 }
 
 .line-break {

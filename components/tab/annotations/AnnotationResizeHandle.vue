@@ -50,7 +50,7 @@ watchEffect((cleanup) => {
       below,
     }"
   >
-    <div class="pole" />
+    <!-- <div class="pole" /> -->
     <div class="dragger" />
   </div>
 </template>
@@ -64,9 +64,9 @@ watchEffect((cleanup) => {
   display: grid;
   justify-items: center;
   &.below {
-    & .pole {
+    /* & .pole {
       height: calc(var(--cell-height) * 1.35);
-    }
+    } */
     & .dragger {
       margin-top: calc(var(--cell-height) * 0.8);
     }
@@ -86,18 +86,18 @@ watchEffect((cleanup) => {
   width: 4px;
   height: calc(var(--cell-height) * 0.6);
   margin-top: calc(var(--cell-height) * 0.25);
-  background-color: darkgray;
+  background-color: var(--annotation-dragger-color);
 }
 
 .resize-handle:hover .dragger {
   width: 6px;
-  background-color: gray;
+  background-color: var(--annotation-dragger-hover-color);
 }
 
-.pole {
+/* .pole {
   grid-area: 1 / 1;
   width: var(--pos-line-width);
   height: var(--cell-height);
   background-color: var(--pos-line-color);
-}
+} */
 </style>

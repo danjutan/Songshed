@@ -70,12 +70,13 @@ const pastePosition = computed(() => ({
 <style scoped>
 .selection-toolbar {
   position: absolute;
+  z-index: var(--selection-toolbar-z-index);
   pointer-events: auto;
   display: flex;
   height: var(--context-menu-height);
   transform: translateY(-50%);
   border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--p-button-raised-shadow);
   opacity: 0.4;
   transition: opacity 0.2s;
   &:hover {
@@ -91,25 +92,27 @@ const pastePosition = computed(() => ({
   padding-top: 1px;
   padding-inline: 2px;
   border: none;
-  border-top: 1px solid gray;
-  border-bottom: 1px solid gray;
+  border-top: 1px solid var(--p-button-outlined-secondary-border-color);
+  border-bottom: 1px solid var(--p-button-outlined-secondary-border-color);
   /* background-color: rgba(222, 222, 222, 0.4); */
-  background-color: rgba(255, 255, 255, 1);
+  color: var(--p-button-outlined-secondary-color);
+  background-color: var(--p-button-secondary-background);
   transition: background-color 0.2s;
   &:hover {
-    background-color: rgba(240, 240, 240, 1);
+    color: var(--p-button-secondary-hover-color);
+    background-color: var(--p-button-secondary-hover-background);
   }
   /* background: transparent; */
 
   &:first-child {
     border-top-left-radius: 4px;
     border-bottom-left-radius: 4px;
-    border-left: 1px solid gray;
+    border-left: 2px solid var(--p-button-outlined-secondary-border-color);
   }
   &:last-child {
     border-top-right-radius: 4px;
     border-bottom-right-radius: 4px;
-    border-right: 1px solid gray;
+    border-right: 2px solid var(--p-button-outlined-secondary-border-color);
   }
 }
 

@@ -150,7 +150,7 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
 }
 
 .line {
-  background: lightgray;
+  background: var(--annotation-row-line-color);
   position: absolute;
   left: 0;
   width: 100%;

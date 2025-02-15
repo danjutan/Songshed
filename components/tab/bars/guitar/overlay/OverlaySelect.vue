@@ -65,6 +65,7 @@ const iconSizePx = `${iconSize}px`;
     --vs-input-bg: transparent;
     --vs-input-outline: transparent;
     --vs-border: 1px solid transparent;
+    --vs-text-color: var(--p-text-color);
 
     width: fit-content;
 

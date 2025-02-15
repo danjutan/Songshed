@@ -18,6 +18,7 @@ function titleInput(e: Event, chord: Chord) {
     <div v-for="(chord, i) of data.chords" class="chord">
       <div class="title-row">
         <div class="left-filler" />
+        <!--TODO: user PrimeVue's Inplace-->
         <div class="text" contenteditable @input="(e) => titleInput(e, chord)">
           {{ chord.title }}
         </div>

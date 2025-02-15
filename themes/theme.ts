@@ -3,13 +3,13 @@ import Aura from "@primevue/themes/aura";
 
 const ThemePreset = definePreset(Aura, {
   semantic: {
-    primary: palette("{indigo}"),
+    primary: palette("{rose}"),
     colorScheme: {
       light: {
         surface: palette("{zinc}"),
       },
       dark: {
-        surface: palette("{slate}"),
+        surface: palette("{zinc}"),
       },
     },
   },

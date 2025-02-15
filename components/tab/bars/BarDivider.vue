@@ -93,6 +93,7 @@ onMounted(() => {
   background: var(--divider-color);
   padding: 0;
   position: relative;
+  z-index: var(--divider-z-index);
   &:not(.first) {
     cursor: ew-resize;
   }
