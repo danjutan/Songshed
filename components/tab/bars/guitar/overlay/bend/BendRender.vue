@@ -126,19 +126,15 @@ const cellHeight = computed(() => settings.cellHeight);
         @mouseleave="upswingArrowHover = false"
       />
 
-      <Teleport :to="selectsSelector">
-        <foreignObject
-          v-if="showLabel"
-          :x="upswingTo.left"
-          :y="upswingToY - 2"
-          :width="100"
-          :height="200"
-          overflow="visible"
-        >
+      <foreignObject>
+        <Teleport :to="selectsSelector">
           <div
-            class="select-container"
+            v-if="showLabel"
             :style="{
+              position: 'absolute',
               width: `${upswingTo.right - upswingTo.left}px`,
+              left: `${upswingTo.left}px`,
+              top: `${upswingToY - 2}px`,
               display: 'flex',
               justifyContent: 'center',
             }"
@@ -153,8 +149,8 @@ const cellHeight = computed(() => settings.cellHeight);
               @delete-clicked="bendEditState.deleteBend(props.bend)"
             />
           </div>
-        </foreignObject>
-      </Teleport>
+        </Teleport>
+      </foreignObject>
 
       <path
         class="upswing-curve"

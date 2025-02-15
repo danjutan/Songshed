@@ -46,25 +46,36 @@ const emits = defineEmits<{
   mouseenter: [];
   mouseleave: [];
 }>();
+
+const left = computed(() => props.x + "px");
+const top = computed(() => props.y + "px");
 </script>
 
 <template>
-  <Teleport :to="selectsSelector">
-    <foreignObject :x="x" :y :width="55" :height="200" overflow="visible">
-      <OverlaySelect
-        v-model="model"
-        :active
-        :options
-        :override-display="{ [TieType.Slide]: '', [TieType.TieSlide]: '' }"
-        @delete-clicked="deleteTie(tie)"
-        @mouseenter="$emit('mouseenter')"
-        @mouseleave="$emit('mouseleave')"
-      />
-    </foreignObject>
-  </Teleport>
+  <foreignObject>
+    <Teleport :to="selectsSelector">
+      <div class="tie-select">
+        <OverlaySelect
+          v-model="model"
+          :active
+          :options
+          :override-display="{ [TieType.Slide]: '', [TieType.TieSlide]: '' }"
+          @delete-clicked="deleteTie(tie)"
+          @mouseenter="$emit('mouseenter')"
+          @mouseleave="$emit('mouseleave')"
+        />
+      </div>
+    </Teleport>
+  </foreignObject>
 </template>
 
 <style scoped>
+.tie-select {
+  position: absolute;
+  left: v-bind(left);
+  top: v-bind(top);
+}
+
 .select :deep(.tie-slide) {
   display: grid;
   grid-template-rows: 1fr;

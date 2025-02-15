@@ -138,12 +138,12 @@ const tablineHasBends = computed(() => {
     </div>
     <ClientOnly>
       <div :id="uniqueId" class="overlay-controls">
-        <svg :class="draggersClass">
-          <!--Teleport-->
-        </svg>
-        <svg :class="selectsClass">
-          <!--Teleport-->
-        </svg>
+        <div :class="draggersClass">
+          <!-- Teleport -->
+        </div>
+        <div :class="selectsClass">
+          <!-- Teleport -->
+        </div>
       </div>
       <svg class="overlay">
         <BendRender
@@ -213,17 +213,22 @@ const tablineHasBends = computed(() => {
   border-right: var(--pos-line-width) solid var(--pos-line-color);
   grid-row: 1 / span v-bind(numStrings);
 }
+
+.overlay {
+  z-index: var(--overlay-svg-z-index);
+}
+
 .overlay-controls {
   display: contents;
 }
-.overlay-controls > svg {
+.overlay-controls > div {
   position: relative; /* somehow makes the VueSelect hover events work right */
   overflow: visible;
   z-index: var(--overlay-controls-z-index);
 }
 
-.guitar-bar .overlay,
-.guitar-bar .overlay-controls > svg {
+.overlay,
+.overlay-controls > div {
   pointer-events: none;
   grid-column: 1 / -1;
   grid-row: 2;

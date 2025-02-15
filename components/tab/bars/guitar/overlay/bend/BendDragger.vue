@@ -24,9 +24,14 @@ const emit = defineEmits<{
 
 const { draggersSelector } = injectOverlayControlsTeleport();
 
-const dragger = useTemplateRef("dragger");
+const left = computed(() => props.x + "px");
+const top = computed(() => props.y + "px");
+const width = computed(() => props.width + "px");
+const height = computed(() => props.height + "px");
 
+const dragger = useTemplateRef("dragger");
 const dragging = ref(false);
+
 watchEffect((cleanup) => {
   if (!dragger.value) {
     return;
@@ -56,8 +61,8 @@ watchEffect((cleanup) => {
 </script>
 
 <template>
-  <Teleport :to="draggersSelector">
-    <foreignObject :x="x" :y="y" :width="width" :height="height">
+  <foreignObject>
+    <Teleport :to="draggersSelector">
       <div
         ref="dragger"
         class="bend-dragger"
@@ -66,20 +71,24 @@ watchEffect((cleanup) => {
         @mouseleave="emit('mouseleave')"
         @click="emit('click')"
       />
-    </foreignObject>
-  </Teleport>
+    </Teleport>
+  </foreignObject>
 </template>
 
 <style scoped>
 .bend-dragger {
+  position: absolute;
+  left: v-bind(left);
+  top: v-bind(top);
+  width: v-bind(width);
+  height: v-bind(height);
   pointer-events: all;
-  /* background-color: red;
-  opacity: 0.5; */
-  width: 100%;
-  height: 100%;
 
   &.dragging {
     pointer-events: none;
   }
+
+  /* background-color: red;
+  opacity: 0.5; */
 }
 </style>

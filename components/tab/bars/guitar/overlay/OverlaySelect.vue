@@ -50,15 +50,16 @@ const iconSizePx = `${iconSize}px`;
 /* https://vue3-select-component.vercel.app/styling.html */
 
 .select {
+  width: fit-content !important;
+
   pointer-events: all;
+
   --vs-input-bg: rgba(255, 255, 255, 0.8);
   --vs-input-placeholder-color: black;
   --vs-font-size: var(--overlay-select-font-size);
   --vs-option-padding: 1px 2px;
   --vs-indicators-gap: 0px;
   --vs-menu-offset-top: -1px;
-
-  width: fit-content !important;
 
   &.inactive:not(.open) {
     --vs-input-bg: transparent;
