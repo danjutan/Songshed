@@ -38,6 +38,7 @@ const selected = ref("");
 </script>
 
 <template>
+  <Button label="Test PrimeVue" />
   <Toolbar
     :id
     v-model:beats-per-bar="tabStore.beatsPerBar"
