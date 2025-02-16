@@ -34,6 +34,10 @@ const label = reactiveComputed(() => {
   };
 });
 
+defineExpose({
+  label,
+});
+
 const id = useId();
 </script>
 
@@ -49,7 +53,6 @@ const id = useId();
     :d="curvePath"
     :mask="!close ? `url(#mask-${id})` : undefined"
   />
-  <slot v-if="!close" :x="label.x" :y="label.y" />
 </template>
 
 <style scoped>

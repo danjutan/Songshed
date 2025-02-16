@@ -74,6 +74,15 @@ const startRowTop = computed(
 );
 
 const cellHeight = computed(() => settings.cellHeight);
+
+const hasTie = computed(() =>
+  [TieType.Hammer, TieType.Tap, TieType.TieSlide].includes(props.tie.type),
+);
+const hasSlide = computed(() =>
+  [TieType.Slide, TieType.TieSlide].includes(props.tie.type),
+);
+
+const tieCurve = useTemplateRef("tieCurve");
 </script>
 
 <template>
@@ -84,44 +93,35 @@ const cellHeight = computed(() => settings.cellHeight);
   >
     <svg v-if="from && to">
       <TieCurve
-        v-if="
-          [TieType.Hammer, TieType.Tap, TieType.TieSlide].includes(tie.type)
-        "
-        v-slot="{ x, y }"
+        v-if="hasTie"
+        ref="tieCurve"
         :close="tie.type === TieType.TieSlide"
         :x1="from.center"
         :x2="to.center"
         :y="startRowTop + row * cellHeight - 1"
         :shift-label="showLabel === 'shift'"
-      >
-        <TieSelect
-          v-if="showLabel && tie.to !== tie.from"
-          :active="selectActive"
-          :tie
-          :x
-          :y
-          @mouseenter="selectHovered = true"
-          @mouseleave="selectHovered = false"
-        />
-      </TieCurve>
-      <template v-if="[TieType.Slide, TieType.TieSlide].includes(tie.type)">
-        <line
-          :x1="from.center + (from.right - from.left) * 0.4"
-          :x2="to.center - (to.right - to.left) * 0.4"
-          :y1="startRowTop + slideRowStart * cellHeight"
-          :y2="startRowTop + slideRowEnd * cellHeight"
-        />
-        <TieSelect
-          v-if="showLabel && tie.to !== tie.from"
-          :active="selectActive"
-          hide
-          :x="(from.right + to.left) / 2 - 20"
-          :y="startRowTop + slideRowEnd * cellHeight"
-          :tie
-          @mouseenter="selectHovered = true"
-          @mouseleave="selectHovered = false"
-        />
-      </template>
+      />
+      <line
+        v-if="hasSlide"
+        :x1="from.center + (from.right - from.left) * 0.4"
+        :x2="to.center - (to.right - to.left) * 0.4"
+        :y1="startRowTop + slideRowStart * cellHeight"
+        :y2="startRowTop + slideRowEnd * cellHeight"
+      />
+      <TieSelect
+        v-if="showLabel && tie.to !== tie.from"
+        :active="selectActive"
+        :tie
+        :x="hasSlide ? (from.right + to.left) / 2 - 20 : tieCurve?.label.x ?? 0"
+        :y="
+          hasSlide
+            ? startRowTop + slideRowEnd * cellHeight
+            : tieCurve?.label.y ?? 0
+        "
+        :hide="hasSlide"
+        @mouseenter="() => (selectHovered = true)"
+        @mouseleave="() => (selectHovered = false)"
+      />
     </svg>
   </OverlayCoords>
 </template>

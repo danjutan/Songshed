@@ -62,7 +62,6 @@ const top = computed(() => props.y + "px");
           :hide
           :options
           :override-display="{ [TieType.Slide]: '', [TieType.TieSlide]: '' }"
-          options-teleport-class="tie-select-options"
           @delete-clicked="deleteTie(tie)"
           @mouseenter="$emit('mouseenter')"
           @mouseleave="$emit('mouseleave')"
@@ -80,8 +79,7 @@ const top = computed(() => props.y + "px");
 }
 </style>
 <style>
-.tie-select .tie-slide,
-.tie-select-options .tie-slide {
+.tie-slide {
   display: grid;
   grid-template-rows: 1fr;
   grid-template-columns: 1fr;
@@ -91,7 +89,7 @@ const top = computed(() => props.y + "px");
     display: block;
     grid-column: 1 / 1;
     grid-row: 1 / 1;
-    transform: translateY(35%);
+    transform: translateY(60%);
   }
 
   & .slide {

@@ -5,7 +5,6 @@ import { X, ChevronDown } from "lucide-vue-next";
 const props = defineProps<{
   options: Array<[value: string | number, label: string]>;
   active: boolean; // if false, becomes active on hover
-  optionsTeleportClass?: string;
   placeholder?: string;
   overrideDisplay?: { [value: string]: string };
   hide?: boolean;
@@ -39,9 +38,8 @@ const iconSize = 16;
     size="small"
     :placeholder="placeholder"
     show-clear
+    pt:overlay:class="options-teleport"
     pt:dropdown:class="dropdown"
-    :pt:overlay:class="[optionsTeleportClass, 'options-teleport']"
-    @click="console.log('clicked')"
   >
     <template #value="{ value }">
       <span v-html="optionsMap[value]" />
@@ -66,6 +64,7 @@ const iconSize = 16;
   transition: none; /* TODO: deliberately figure out transitions */
   margin-top: -1px;
 
+  /* TODOL fix focus logic; maybe replace with vue state*/
   &.inactive:not(:has(:focus)) {
     background: none;
     border: none;
