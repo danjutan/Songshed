@@ -99,6 +99,7 @@ const cellHeight = computed(() => settings.cellHeight);
         markerWidth="6"
         markerHeight="6"
         orient="auto-start-reverse"
+        fill="var(--bend-color)"
       >
         <path d="M 0 0 L 10 5 L 0 10 z" />
       </marker>
@@ -111,6 +112,7 @@ const cellHeight = computed(() => settings.cellHeight);
         markerWidth="8"
         markerHeight="8"
         orient="auto-start-reverse"
+        fill="var(--bend-color)"
       >
         <path d="M 0 0 L 10 5 L 0 10 z" />
       </marker>
