@@ -1,12 +1,14 @@
 <script lang="ts" setup>
-import VueSelect from "vue3-select-component";
+import Select from "primevue/select";
 import { X, ChevronDown } from "lucide-vue-next";
 
 const props = defineProps<{
   options: Array<[value: string | number, label: string]>;
   active: boolean; // if false, becomes active on hover
+  optionsTeleportClass?: string;
   placeholder?: string;
   overrideDisplay?: { [value: string]: string };
+  hide?: boolean;
 }>();
 
 const model = defineModel();
@@ -19,108 +21,93 @@ const options = computed(() => {
   return props.options.map(([value, label]) => ({ label, value }));
 });
 
+const optionsMap = computed(() => {
+  return Object.fromEntries(props.options);
+});
+
 const iconSize = 16;
-const iconSizePx = `${iconSize}px`;
 </script>
 
 <template>
-  <VueSelect
+  <Select
     v-model="model"
-    class="select"
-    :class="{ inactive: !active }"
+    class="overlay-select"
+    :class="{ inactive: !active, hide }"
     :options
-    :placeholder
+    option-label="label"
+    option-value="value"
+    size="small"
+    :placeholder="placeholder"
+    show-clear
+    pt:dropdown:class="dropdown"
+    :pt:overlay:class="[optionsTeleportClass, 'options-teleport']"
+    @click="console.log('clicked')"
   >
-    <template #value="{ option }">
-      <span v-html="overrideDisplay?.[option.value!] ?? option.label" />
+    <template #value="{ value }">
+      <span v-html="optionsMap[value]" />
     </template>
     <template #option="{ option }">
       <span v-html="option.label" />
     </template>
-    <template #clear>
-      <X :size="iconSize" @click="$emit('deleteClicked')" />
-    </template>
-    <template #dropdown>
+    <template #dropdownicon>
       <ChevronDown :size="iconSize" />
     </template>
-  </VueSelect>
+    <template #clearicon>
+      <X class="clear" :size="iconSize" @click="$emit('deleteClicked')" />
+    </template>
+  </Select>
 </template>
 
 <style scoped>
-/* https://vue3-select-component.vercel.app/styling.html */
-
-.select {
-  width: fit-content !important;
-
+.overlay-select {
   pointer-events: all;
+  --p-select-sm-padding-x: 4px; /* applies only to left side */
+  --p-select-sm-padding-y: 4px;
+  transition: none; /* TODO: deliberately figure out transitions */
+  margin-top: -1px;
 
-  --vs-input-bg: rgba(255, 255, 255, 0.8);
-  --vs-input-placeholder-color: black;
-  --vs-font-size: var(--overlay-select-font-size);
-  --vs-option-padding: 1px 2px;
-  --vs-indicators-gap: 0px;
-  --vs-menu-offset-top: -1px;
+  &.inactive:not(:has(:focus)) {
+    background: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
 
-  &.inactive:not(.open) {
-    --vs-input-bg: transparent;
-    --vs-input-outline: transparent;
-    --vs-border: 1px solid transparent;
-    --vs-text-color: var(--p-text-color);
-
-    width: fit-content;
-
-    &:deep(.indicators-container) {
+    & .clear,
+    & :deep(.dropdown) {
       display: none;
     }
 
-    &:deep(.control) {
-      /* width: 10px; */
+    &.hide {
+      visibility: hidden;
     }
   }
 
-  &:not(.inactive) :deep(.control),
-  &.open :deep(.control) {
-    padding-left: 2px;
-    /* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); */
-  }
+  /* &.hide:not(:has(:focus)) {
+    visibility: hidden;
+  } */
 
-  &:not(.inactive),
-  &.open {
-    margin-left: -2px;
+  &:deep(.dropdown) {
+    width: unset;
+    padding-right: 2px;
+    &:hover {
+      color: var(--p-text-color);
+      transition: color 0.1s ease-in-out;
+    }
   }
 }
 
-.select.open :deep(.single-value) {
-  position: static !important;
+.clear {
+  align-self: center;
+  color: var(--p-select-dropdown-color);
+  &:hover {
+    color: var(--p-text-color);
+    transition: color 0.1s ease-in-out;
+  }
 }
-
-.select :deep(.control) {
-  height: fit-content;
-  width: fit-content;
-  min-height: 0px;
-
-  & .value-container {
-    height: fit-content;
-    max-width: fit-content;
-    & > * {
-      padding-block: 0px;
-      padding-inline: 0px;
-    }
-  }
-
-  & .indicators-container {
-    flex-direction: row-reverse;
-    min-height: 0px;
-    /* height: fit-content; */
-    padding: 0px;
-
-    & button {
-      width: v-bind(iconSizePx);
-      height: v-bind(iconSizePx);
-      &:hover svg {
-        stroke-width: 2.5;
-      }
-    }
-  }
+</style>
+<style>
+.options-teleport {
+  --p-select-option-padding: 1px 2px;
+  margin-top: unset !important;
 }
 </style>

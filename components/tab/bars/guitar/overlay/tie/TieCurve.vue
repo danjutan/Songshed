@@ -29,7 +29,7 @@ const curvePath = computed(() => {
 
 const label = reactiveComputed(() => {
   return {
-    x: (props.x2 + props.x1) / 2 - 1 + (props.shiftLabel ? 6 : -5),
+    x: (props.x2 + props.x1) / 2 - 1 + (props.shiftLabel ? 6 : -8),
     y: bottom.value - 10,
   };
 });
@@ -41,7 +41,7 @@ const id = useId();
   <defs>
     <mask :id="`mask-${id}`">
       <path :d="curvePath" />
-      <rect :x="label.x" :y="bottom - 5" :width="11" :height="10" />
+      <rect :x="label.x + 3" :y="bottom - 5" :width="11" :height="10" />
     </mask>
   </defs>
   <path

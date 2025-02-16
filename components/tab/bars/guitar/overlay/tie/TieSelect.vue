@@ -10,6 +10,7 @@ const props = defineProps<{
   tie: Tie;
   x: number;
   y: number;
+  hide?: boolean;
 }>();
 
 const { updateType, deleteTie } = injectEditTie();
@@ -58,8 +59,10 @@ const top = computed(() => props.y + "px");
         <OverlaySelect
           v-model="model"
           :active
+          :hide
           :options
           :override-display="{ [TieType.Slide]: '', [TieType.TieSlide]: '' }"
+          options-teleport-class="tie-select-options"
           @delete-clicked="deleteTie(tie)"
           @mouseenter="$emit('mouseenter')"
           @mouseleave="$emit('mouseleave')"
@@ -75,18 +78,20 @@ const top = computed(() => props.y + "px");
   left: v-bind(left);
   top: v-bind(top);
 }
-
-.select :deep(.tie-slide) {
+</style>
+<style>
+.tie-select .tie-slide,
+.tie-select-options .tie-slide {
   display: grid;
   grid-template-rows: 1fr;
   grid-template-columns: 1fr;
   transform: translateY(-10%);
   & .tie {
-    font-size: 100%;
+    font-size: 120%;
     display: block;
     grid-column: 1 / 1;
     grid-row: 1 / 1;
-    transform: translateY(80%);
+    transform: translateY(35%);
   }
 
   & .slide {

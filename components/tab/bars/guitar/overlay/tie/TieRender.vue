@@ -112,8 +112,9 @@ const cellHeight = computed(() => settings.cellHeight);
           :y2="startRowTop + slideRowEnd * cellHeight"
         />
         <TieSelect
-          v-if="tie.to !== tie.from && selectActive"
-          active
+          v-if="showLabel && tie.to !== tie.from"
+          :active="selectActive"
+          hide
           :x="(from.right + to.left) / 2 - 20"
           :y="startRowTop + slideRowEnd * cellHeight"
           :tie
