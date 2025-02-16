@@ -64,7 +64,6 @@ const iconSize = 16;
   transition: none; /* TODO: deliberately figure out transitions */
   margin-top: -1px;
 
-  /* TODOL fix focus logic; maybe replace with vue state*/
   &.inactive:not(:has(:focus)) {
     background: none;
     border: none;
@@ -77,7 +76,8 @@ const iconSize = 16;
     }
 
     &.hide {
-      visibility: hidden;
+      /* visibility: hidden and display: none don't allow focus */
+      opacity: 0;
     }
   }
 
