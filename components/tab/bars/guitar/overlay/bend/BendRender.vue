@@ -68,6 +68,8 @@ const selectActive = computed(() => {
 const upswingArrowHover = ref(false);
 const releaseArrowHover = ref(false);
 
+const dragging = bendEditState.dragging;
+
 const cellHeight = computed(() => settings.cellHeight);
 
 // onUnmounted(() => {
@@ -146,6 +148,7 @@ const cellHeight = computed(() => settings.cellHeight);
               :active="selectActive"
               :options
               class="select"
+              :pointer-events-none="dragging"
               @mouseenter="labelHover = true"
               @mouseleave="labelHover = false"
               @delete-clicked="bendEditState.deleteBend(props.bend)"
@@ -184,7 +187,7 @@ const cellHeight = computed(() => settings.cellHeight);
         />
       </g>
 
-      <g v-if="!bendEditState.dragging">
+      <g v-if="!dragging">
         <BendDragger
           :bend="props.bend"
           :mode="'release'"

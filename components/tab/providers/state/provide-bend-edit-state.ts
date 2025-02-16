@@ -40,10 +40,12 @@ export function provideBendEditState(
       bend.to = position;
       return bend;
     }
-    if (
-      dragging.value === "release" &&
-      position > bend.from + (bend.through?.[0] || 0)
-    ) {
+    if (dragging.value === "release") {
+      if (bend.through && position <= bend.from + bend.through[0]) {
+        bend.to = bend.from + bend.through[0];
+        bend.through = undefined;
+        return bend;
+      }
       if (!bend.through) {
         bend.through = [bend.to - bend.from];
       }
@@ -110,9 +112,8 @@ export function provideBendEditState(
     deleteBend,
     setBendValue,
     onReleaseGrabberClick,
-    get dragging() {
-      return dragging.value !== undefined;
-    },
+    dragging: computed(() => dragging.value !== undefined),
+    draggingBend: computed(() => draggingBend.value),
   };
 
   provide(BendEditInjectionKey, bendEditState);

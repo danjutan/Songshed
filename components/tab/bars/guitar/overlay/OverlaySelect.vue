@@ -8,6 +8,7 @@ const props = defineProps<{
   placeholder?: string;
   overrideDisplay?: { [value: string]: string };
   hide?: boolean;
+  pointerEventsNone?: boolean;
 }>();
 
 const model = defineModel();
@@ -31,7 +32,7 @@ const iconSize = 16;
   <Select
     v-model="model"
     class="overlay-select"
-    :class="{ inactive: !active, hide }"
+    :class="{ inactive: !active, hide, none: pointerEventsNone }"
     :options
     option-label="label"
     option-value="value"
@@ -58,12 +59,16 @@ const iconSize = 16;
 
 <style scoped>
 .overlay-select {
-  pointer-events: all;
   --p-select-sm-padding-x: 4px; /* applies only to left side */
   --p-select-sm-padding-y: 4px;
-  transition: none; /* TODO: deliberately figure out transitions */
   margin-top: -1px;
 
+  transition: none; /* TODO: deliberately figure out transitions */
+
+  pointer-events: all;
+  &.none {
+    pointer-events: none;
+  }
   &.inactive:not(:has(:focus)) {
     background: none;
     border: none;
@@ -80,10 +85,6 @@ const iconSize = 16;
       opacity: 0;
     }
   }
-
-  /* &.hide:not(:has(:focus)) {
-    visibility: hidden;
-  } */
 
   &:deep(.dropdown) {
     width: unset;

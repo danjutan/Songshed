@@ -22,7 +22,6 @@ export function useBendEditMonitor(bendEditState: BendEditState) {
         onDropTargetChange(args) {
           if (args.location.current.dropTargets.length > 0) {
             const dropData = args.location.current.dropTargets[0].data;
-            console.log("dropData", dropData);
             if (isBendBarDropData(dropData)) {
               bendEditState.dragBendBar(dropData.position);
               return;
