@@ -278,7 +278,8 @@ const deletingBarStart = ref<number | undefined>(undefined);
   --divider-width: v-bind(dividerWidthPx);
   --note-font-size: calc(var(--cell-height) * 0.8);
   --annotation-font-size: calc(var(--cell-height) * 0.7);
-  --overlay-select-font-size: calc(var(--cell-height) * 0.6);
+  /* See OverlaySelect.vue */
+  /* --overlay-select-font-size: calc(var(--cell-height) * 0.6); */
   --substack-bg: rgba(255, 0, 0, 0.1);
   --pos-line-width: 1px;
   --string-width: 1px;
