@@ -338,8 +338,8 @@ const deletingBarStart = ref<number | undefined>(undefined);
 
 @media (prefers-color-scheme: dark) {
   .tab {
-    --pos-line-color: var(--p-surface-500);
-    --string-color: var(--p-surface-600);
+    --pos-line-color: var(--p-surface-600);
+    --string-color: var(--p-surface-700);
 
     --tie-color: var(--p-surface-300);
     --bend-color: var(--p-surface-300);

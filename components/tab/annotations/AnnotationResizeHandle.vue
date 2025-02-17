@@ -60,7 +60,7 @@ watchEffect((cleanup) => {
     }"
     @mousedown="mouseDown = true"
     @mouseup="mouseDown = false"
-    @mouseout="mouseDown = false"
+    @mouseleave="mouseDown = false"
   >
     <!-- <div class="pole" /> -->
     <div class="dragger" />
@@ -85,8 +85,13 @@ watchEffect((cleanup) => {
   }
 
   &.mouse-down {
-    width: 100px;
-    transform: translateX(calc(50px - var(--collapsed-min-width) / 2));
+    width: 400px;
+    &.end {
+      transform: translateX(calc(200px - var(--collapsed-min-width) / 2));
+    }
+    &.start {
+      transform: translateX(calc(-200px + var(--collapsed-min-width) / 2));
+    }
   }
 }
 

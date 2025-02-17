@@ -74,8 +74,8 @@ function onTextInput() {
 }
 
 function onTextBlur() {
-  if (props.annotation) {
-    const value = textEl.value!.innerText;
+  if (props.annotation && textEl.value) {
+    const value = textEl.value.innerText;
     if (value.length === 0) {
       emit("delete");
     }
