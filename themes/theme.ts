@@ -1,5 +1,6 @@
 import { definePreset, palette } from "@primevue/themes";
 import Aura from "@primevue/themes/aura";
+import Nora from "@primevue/themes/nora";
 
 const ThemePreset = definePreset(Aura, {
   semantic: {

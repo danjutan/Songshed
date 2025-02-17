@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { GuitarNote, StackMap } from "~/model/data";
-import type { TabStore } from "~/model/stores";
-import Tabline from "./Tabline.vue";
 import TabBar from "./bars/TabBar.vue";
+import TabToolbar from "./TabToolbar.vue";
+import BarDivider from "./bars/BarDivider.vue";
+import { Plus } from "lucide-vue-next";
+
+import type { TabStore } from "~/model/stores";
 
 import { provideSelectionState } from "./providers/state/provide-selection-state";
 import { provideEditingState } from "./providers/state/provide-editing-state";
@@ -10,31 +12,28 @@ import { provideCellHoverEvents } from "./providers/events/provide-cell-hover-ev
 import { provideTieAddState } from "./providers/state/provide-tie-add-state";
 import { provideBendEditState } from "./providers/state/provide-bend-edit-state";
 import { provideStackResizeObserver } from "./providers/events/provide-resize-observer";
-
-import { useTieAddMonitor } from "./hooks/dnd/use-tie-add-monitor";
-import { useSelectMonitor } from "./hooks/dnd/use-select-monitor";
-import { useMoveMonitor } from "./hooks/dnd/use-move-monitor";
-import { useBendEditMonitor } from "./hooks/dnd/use-bend-edit-monitor";
-import { useAnnotationAddMonitor } from "./hooks/dnd/use-annotation-add-monitor";
-import { injectSettingsState } from "./providers/state/provide-settings-state";
-
 import { provideAnnotationAddState } from "./providers/state/provide-annotation-add-state";
-
 import { provideNotePreviewState } from "./providers/state/provide-note-preview-state";
 import { provideSubUnit } from "./providers/provide-subunit";
 import {
   provideBarManagement,
   type Bar,
 } from "./providers/state/provide-bar-management";
-
-import BarDivider from "./bars/BarDivider.vue";
-import { isCollapsed } from "./hooks/use-collapsed";
 import { provideBeatSize } from "./providers/provide-beatsize";
-import { Plus } from "lucide-vue-next";
 import { provideCopyState } from "./providers/state/provide-copy-state";
-import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-monitor";
 import { provideAnnotationResizeState } from "./providers/state/provide-annotation-resize-state";
 import { provideAnnotationHoverState } from "./providers/state/provide-annotation-hover-state";
+
+import { injectSettingsState } from "./providers/state/provide-settings-state";
+
+import { useTieAddMonitor } from "./hooks/dnd/use-tie-add-monitor";
+import { useSelectMonitor } from "./hooks/dnd/use-select-monitor";
+import { useMoveMonitor } from "./hooks/dnd/use-move-monitor";
+import { useBendEditMonitor } from "./hooks/dnd/use-bend-edit-monitor";
+import { useAnnotationAddMonitor } from "./hooks/dnd/use-annotation-add-monitor";
+import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-monitor";
+
+import { isCollapsed } from "./hooks/use-collapsed";
 const props = defineProps<{
   tabStore: TabStore;
 }>();
@@ -238,6 +237,7 @@ const deletingBarStart = ref<number | undefined>(undefined);
 </script>
 
 <template>
+  <TabToolbar />
   <div ref="tab" class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
     <template v-for="(bar, i) in barManagement.bars" :key="bar.start">
       <div v-if="tabStore.lineBreaks.has(bar.start)" class="line-break" />
