@@ -334,8 +334,8 @@ const deletingBarStart = ref<number | undefined>(undefined);
     --pos-line-color: var(--p-surface-500);
     --string-color: var(--p-surface-600);
 
-    --tie-color: var(--p-surface-400);
-    --bend-color: var(--p-surface-400);
+    --tie-color: var(--p-surface-300);
+    --bend-color: var(--p-surface-300);
 
     --divider-color: var(--p-primary-600);
     --divider-icon-color: var(--p-surface-50);
@@ -349,10 +349,10 @@ const deletingBarStart = ref<number | undefined>(undefined);
     --annotation-row-line-color: var(--p-surface-600);
     --annotation-border: var(--p-surface-600);
     --annotation-notch-color: var(--p-surface-500);
-    --annotation-dragger-color: var(--p-surface-500);
-    --annotation-dragger-hover-color: var(--p-surface-400);
-    --annotation-hover-background-color: var(--p-slate-700);
-    --annotation-default-background-color: var(--p-slate-800);
+    --annotation-dragger-color: var(--p-surface-400);
+    --annotation-dragger-hover-color: var(--p-surface-300);
+    --annotation-hover-background-color: var(--p-primary-700);
+    --annotation-default-background-color: var(--p-slate-700);
   }
 }
 

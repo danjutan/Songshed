@@ -18,6 +18,9 @@ const emit = defineEmits<{
 
 const handleRef = ref<HTMLElement>();
 
+const mouseDown = ref(false);
+const dragging = ref(false);
+
 watchEffect((cleanup) => {
   if (!handleRef.value) return;
 
@@ -34,7 +37,11 @@ watchEffect((cleanup) => {
           annotation: props.annotation,
           side: props.side,
         }),
-      onDrop: () => emit("dragEnd"),
+      onDragStart: () => (dragging.value = true),
+      onDrop: () => {
+        dragging.value = false;
+        emit("dragEnd");
+      },
     }),
   );
 });
@@ -48,7 +55,12 @@ watchEffect((cleanup) => {
       start: side === 'start',
       end: side === 'end',
       below,
+      dragging,
+      'mouse-down': mouseDown,
     }"
+    @mousedown="mouseDown = true"
+    @mouseup="mouseDown = false"
+    @mouseout="mouseDown = false"
   >
     <!-- <div class="pole" /> -->
     <div class="dragger" />
@@ -71,6 +83,11 @@ watchEffect((cleanup) => {
       margin-top: calc(var(--cell-height) * 0.8);
     }
   }
+
+  &.mouse-down {
+    width: 100px;
+    transform: translateX(calc(50px - var(--collapsed-min-width) / 2));
+  }
 }
 
 .resize-handle.start {
@@ -89,7 +106,8 @@ watchEffect((cleanup) => {
   background-color: var(--annotation-dragger-color);
 }
 
-.resize-handle:hover .dragger {
+.resize-handle:hover .dragger,
+.resize-handle.dragging .dragger {
   width: 6px;
   background-color: var(--annotation-dragger-hover-color);
 }
