@@ -314,12 +314,12 @@ const deletingBarStart = ref<number | undefined>(undefined);
 
   --pos-line-z-index: -1;
   --overlay-svg-z-index: 0;
-  --overlay-controls-z-index: 1;
   --bar-overlay-z-index: 1;
   --annotation-dragger-z-index: 1;
   --annotation-z-index: 2;
   --tie-dragger-z-index: 2;
   --divider-z-index: 3;
+  --overlay-controls-z-index: 4;
   --annotation-current-z-index: 3;
   --annotation-resize-dragger-z-index: 4;
   --selection-toolbar-z-index: 4;

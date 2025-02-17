@@ -43,7 +43,6 @@ const iconSize = 16;
     size="small"
     :placeholder="placeholder"
     show-clear
-    pt:overlay:class="options-teleport"
     pt:dropdown:class="dropdown"
     pt:label:class="label"
     :pt:option="{ style: { fontSize: fontSizePx } }"
