@@ -145,9 +145,7 @@ export function provideTieAddState(
   }
 
   const tieAddState = {
-    get dragging() {
-      return mode.value !== undefined;
-    },
+    dragging: computed(() => mode.value !== undefined),
     get dragDirection() {
       return dragDirection.value;
     },

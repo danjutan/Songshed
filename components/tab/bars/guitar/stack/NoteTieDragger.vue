@@ -54,8 +54,8 @@ onMounted(() => {
 
 <style scoped>
 .tie-dragger {
-  width: 8px;
-  height: 8px;
+  width: calc(var(--cell-height) / 3);
+  height: calc(var(--cell-height) / 3);
   border-radius: 50%;
   background-color: var(--tie-dragger-color);
   cursor: crosshair;
@@ -68,7 +68,7 @@ onMounted(() => {
     grid-column: 2;
     justify-self: center;
     align-self: end;
-    transform: translateY(4px);
+    transform: translateY(calc(var(--cell-height) / 6));
   }
 
   &.bend {

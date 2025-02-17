@@ -58,14 +58,14 @@ export function provideBendEditState(
   }
 
   function dragBendBar(position: number) {
-    if (dragging.value && !tieAddState.dragging) {
+    if (dragging.value && !tieAddState.dragging.value) {
       const updated = updateOnDrag("bend", position);
       props.tieStore!.updateBend(updated);
     }
   }
 
   function dragNoteInput(notePosition: NotePosition) {
-    if (dragging.value && !tieAddState.dragging) {
+    if (dragging.value && !tieAddState.dragging.value) {
       const updated = updateOnDrag(notePosition.string, notePosition.position);
       props.tieStore!.updateBend(updated);
     }

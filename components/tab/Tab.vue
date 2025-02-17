@@ -284,12 +284,16 @@ const deletingBarStart = ref<number | undefined>(undefined);
   --pos-line-width: 1px;
   --string-width: 1px;
 
+  /* Extra height at the bottom of the stack for tie dragging */
+  --note-container-drag-extender-height: 100px;
+
   /*https://primevue.org/theming/styled/#colors*/
   --pos-line-color: var(--p-surface-300);
   --string-color: var(--p-surface-400);
 
   --tie-color: var(--p-surface-900);
   --bend-color: var(--p-surface-900);
+  --tie-dragger-color: var(--p-primary-700);
 
   --divider-color: var(--p-surface-900);
   --divider-icon-color: var(--p-surface-50);
@@ -310,19 +314,18 @@ const deletingBarStart = ref<number | undefined>(undefined);
 
   --select-alpha: 0.3;
 
-  --tie-dragger-color: #1e3a8a;
-
   --pos-line-z-index: -1;
   --overlay-svg-z-index: 0;
   --bar-overlay-z-index: 1;
   --annotation-dragger-z-index: 1;
   --annotation-z-index: 2;
-  --tie-dragger-z-index: 2;
   --divider-z-index: 3;
   --overlay-controls-z-index: 4;
   --annotation-current-z-index: 3;
   --annotation-resize-dragger-z-index: 4;
   --selection-toolbar-z-index: 4;
+  --note-container-drag-extender-z-index: 5;
+  --tie-dragger-z-index: 5;
 
   user-select: none;
 
@@ -337,6 +340,7 @@ const deletingBarStart = ref<number | undefined>(undefined);
 
     --tie-color: var(--p-surface-300);
     --bend-color: var(--p-surface-300);
+    --tie-dragger-color: var(--p-primary-600);
 
     --divider-color: var(--p-primary-600);
     --divider-icon-color: var(--p-surface-50);

@@ -39,7 +39,7 @@ const slideRowEnd = computed(() =>
 const selectHovered = ref(false);
 
 const selectActive = computed(() => {
-  if (tieAddState.dragging) return false;
+  if (tieAddState.dragging.value) return false;
   if (selectHovered.value) return true;
   if (editingNote.value) {
     if (

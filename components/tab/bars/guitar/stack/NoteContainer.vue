@@ -40,7 +40,7 @@ const emit = defineEmits<{
 const editing = injectEditingState();
 const selectionState = injectSelectionState();
 const cellHoverState = injectCellHoverEvents();
-const { hasTieBothSides, hasBend } = injectTieAddState();
+const { hasTieBothSides, hasBend, dragging } = injectTieAddState();
 const settings = injectSettingsState();
 const { useNotePreview } = injectNotePreviewState();
 
@@ -195,6 +195,7 @@ const row = computed(() => props.notePosition.string + 1);
       tieable,
       tieing,
       collapsed,
+      'any-tieing': dragging,
       'pos-line-center': settings.posLineCenter,
     }"
     :style="{ gridRow: notePosition.string + 1 }"
@@ -271,6 +272,8 @@ const row = computed(() => props.notePosition.string + 1);
       />
     </template>
 
+    <div class="drag-extender" />
+
     <div
       v-if="selectionState.action !== 'none' && isSelected"
       class="select-action-overlay"
@@ -340,6 +343,16 @@ const row = computed(() => props.notePosition.string + 1);
   &:not(:hover) {
     .selection-toolbar {
       display: none;
+    }
+  }
+
+  &:last-child.any-tieing {
+    .drag-extender {
+      z-index: var(--note-container-drag-extender-z-index);
+      position: absolute;
+      width: 100%;
+      height: var(--note-container-drag-extender-height);
+      align-self: start;
     }
   }
 }
