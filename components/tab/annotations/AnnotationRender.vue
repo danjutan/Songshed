@@ -39,11 +39,12 @@ const isDragging = computed(() =>
   resizeState.isDragging(props.row, props.annotation),
 );
 
-const isAnyHovered = computed(() => hoverState.hoveredRow.value !== undefined);
-const isOtherHovered = computed(
-  () =>
-    isAnyHovered.value && !hoverState.isHovered(props.row, props.annotation),
+// includes other half across tablines
+const isHovered = computed(() =>
+  hoverState.isHovered(props.row, props.annotation),
 );
+const isAnyHovered = computed(() => hoverState.hoveredRow.value !== undefined);
+const isOtherHovered = computed(() => isAnyHovered.value && !isHovered.value);
 // now reduntant because whenever we're creating we're also hovering over a row
 // const isAnyDragging = computed(
 //   () => resizeState.draggingFrom.value !== undefined,
@@ -126,6 +127,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         'no-right-border': endAtRight,
         'no-left-border': startAtLeft,
         'any-creating': isAnyCreating,
+        hovered: isHovered,
         'any-hovered': isAnyHovered,
         'other-hovered': isOtherHovered,
         // 'other-dragging': !isDragging && isAnyDragging,
@@ -196,7 +198,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
     visibility: hidden;
   }
 
-  &:hover,
+  &.hovered,
   &.dragging,
   &:has(.text:focus):not(.other-hovered) {
     background-color: var(--annotation-hover-background-color);
