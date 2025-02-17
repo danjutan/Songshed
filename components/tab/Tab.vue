@@ -309,8 +309,11 @@ const deletingBarStart = ref<number | undefined>(undefined);
   --annotation-notch-color: var(--p-surface-400);
   --annotation-dragger-color: var(--p-surface-400);
   --annotation-dragger-hover-color: var(--p-surface-500);
-  --annotation-hover-background-color: var(--p-blue-100);
-  --annotation-default-background-color: var(--p-slate-100);
+  --annotation-hover-background-color: var(--p-blue-200);
+  /* --annotation-default-background-color: var(--p-slate-100); */
+  --annotation-default-background-color: rgb(
+    from var(--annotation-hover-background-color) r g b / 0.4
+  );
 
   --select-alpha: 0.3;
 
@@ -357,7 +360,11 @@ const deletingBarStart = ref<number | undefined>(undefined);
     --annotation-dragger-color: var(--p-surface-400);
     --annotation-dragger-hover-color: var(--p-surface-300);
     --annotation-hover-background-color: var(--p-primary-700);
-    --annotation-default-background-color: var(--p-slate-700);
+    /* --annotation-default-background-color: var(--p-slate-700); */
+
+    --annotation-default-background-color: rgb(
+      from var(--p-primary-500) r g b / 0.4
+    );
   }
 }
 
