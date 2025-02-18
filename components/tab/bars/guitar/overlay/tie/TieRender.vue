@@ -7,7 +7,7 @@ import { injectEditingState } from "~/components/tab/providers/state/provide-edi
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import { TieType } from "~/model/data";
 import { injectTieAddState } from "~/components/tab/providers/state/provide-tie-add-state";
-import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
+import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
 
 const props = defineProps<{
   tie: Tie;
@@ -16,7 +16,7 @@ const props = defineProps<{
 
 const { editingNote } = injectEditingState();
 const { hoveredCell } = injectCellHoverEvents();
-const settings = injectSettingsState();
+const { contextMenuHeight, cellHeight, dividerWidth } = injectSpacingsState();
 const tieAddState = injectTieAddState();
 
 const connected = computed(
@@ -39,7 +39,7 @@ const slideRowEnd = computed(() =>
 const selectHovered = ref(false);
 
 const selectActive = computed(() => {
-  if (tieAddState.dragging) return false;
+  if (tieAddState.dragging.value) return false;
   if (selectHovered.value) return true;
   if (editingNote.value) {
     if (
@@ -69,65 +69,62 @@ watch(
   },
 );
 
-const startRowTop = computed(
-  () => settings.contextMenuHeight + settings.cellHeight,
+const startRowTop = computed(() => contextMenuHeight.value + cellHeight.value);
+
+const hasTie = computed(() =>
+  [TieType.Hammer, TieType.Tap, TieType.TieSlide].includes(props.tie.type),
+);
+const hasSlide = computed(() =>
+  [TieType.Slide, TieType.TieSlide].includes(props.tie.type),
 );
 
-const cellHeight = computed(() => settings.cellHeight);
+const tieCurve = useTemplateRef("tieCurve");
 </script>
 
 <template>
   <OverlayCoords
     v-slot="{ coords: [from, to] }"
-    :offset="settings.dividerWidth"
+    :offset="dividerWidth"
     :positions="[tie.from, tie.to]"
   >
     <svg v-if="from && to">
       <TieCurve
-        v-if="
-          [TieType.Hammer, TieType.Tap, TieType.TieSlide].includes(tie.type)
-        "
-        v-slot="{ x, y }"
+        v-if="hasTie"
+        ref="tieCurve"
         :close="tie.type === TieType.TieSlide"
         :x1="from.center"
         :x2="to.center"
         :y="startRowTop + row * cellHeight - 1"
         :shift-label="showLabel === 'shift'"
-      >
-        <TieSelect
-          v-if="showLabel && tie.to !== tie.from"
-          :active="selectActive"
-          :tie
-          :x
-          :y
-          @mouseenter="selectHovered = true"
-          @mouseleave="selectHovered = false"
-        />
-      </TieCurve>
-      <template v-if="[TieType.Slide, TieType.TieSlide].includes(tie.type)">
-        <line
-          :x1="from.center + (from.right - from.left) * 0.4"
-          :x2="to.center - (to.right - to.left) * 0.4"
-          :y1="startRowTop + slideRowStart * cellHeight"
-          :y2="startRowTop + slideRowEnd * cellHeight"
-        />
-        <TieSelect
-          v-if="tie.to !== tie.from && selectActive"
-          active
-          :x="(from.right + to.left) / 2 - 20"
-          :y="startRowTop + slideRowEnd * cellHeight"
-          :tie
-          @mouseenter="selectHovered = true"
-          @mouseleave="selectHovered = false"
-        />
-      </template>
+      />
+      <line
+        v-if="hasSlide"
+        :x1="from.center + (from.right - from.left) * 0.4"
+        :x2="to.center - (to.right - to.left) * 0.4"
+        :y1="startRowTop + slideRowStart * cellHeight"
+        :y2="startRowTop + slideRowEnd * cellHeight"
+      />
+      <TieSelect
+        v-if="showLabel && tie.to !== tie.from"
+        :active="selectActive"
+        :tie
+        :x="hasSlide ? (from.right + to.left) / 2 - 20 : tieCurve?.label.x ?? 0"
+        :y="
+          hasSlide
+            ? startRowTop + slideRowEnd * cellHeight
+            : tieCurve?.label.y ?? 0
+        "
+        :hide="hasSlide"
+        @mouseenter="() => (selectHovered = true)"
+        @mouseleave="() => (selectHovered = false)"
+      />
     </svg>
   </OverlayCoords>
 </template>
 
 <style scoped>
 line {
-  stroke: black;
+  stroke: var(--tie-color);
   stroke-width: 1;
 }
 </style>

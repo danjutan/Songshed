@@ -40,10 +40,12 @@ export function provideBendEditState(
       bend.to = position;
       return bend;
     }
-    if (
-      dragging.value === "release" &&
-      position > bend.from + (bend.through?.[0] || 0)
-    ) {
+    if (dragging.value === "release") {
+      if (bend.through && position <= bend.from + bend.through[0]) {
+        bend.to = bend.from + bend.through[0];
+        bend.through = undefined;
+        return bend;
+      }
       if (!bend.through) {
         bend.through = [bend.to - bend.from];
       }
@@ -56,14 +58,14 @@ export function provideBendEditState(
   }
 
   function dragBendBar(position: number) {
-    if (dragging.value && !tieAddState.dragging) {
+    if (dragging.value && !tieAddState.dragging.value) {
       const updated = updateOnDrag("bend", position);
       props.tieStore!.updateBend(updated);
     }
   }
 
   function dragNoteInput(notePosition: NotePosition) {
-    if (dragging.value && !tieAddState.dragging) {
+    if (dragging.value && !tieAddState.dragging.value) {
       const updated = updateOnDrag(notePosition.string, notePosition.position);
       props.tieStore!.updateBend(updated);
     }
@@ -110,9 +112,8 @@ export function provideBendEditState(
     deleteBend,
     setBendValue,
     onReleaseGrabberClick,
-    get dragging() {
-      return dragging.value !== undefined;
-    },
+    dragging: computed(() => dragging.value !== undefined),
+    draggingBend: computed(() => draggingBend.value),
   };
 
   provide(BendEditInjectionKey, bendEditState);

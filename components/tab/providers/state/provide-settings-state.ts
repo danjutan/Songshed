@@ -4,13 +4,7 @@ export function provideSettingsState() {
     collapseSubdivisions: false,
     collapseEmpty: true,
     collapseAll: false,
-    collapseRatio: 0.25, // for resizing,
-    // pixels:
     cellHeight: 24,
-    dividerWidth: 8,
-    contextMenuHeight: 18,
-    collapsedMinWidth: 12,
-    // flags
     posLineCenter: true,
   });
 

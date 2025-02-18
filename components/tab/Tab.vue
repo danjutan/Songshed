@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { GuitarNote, StackMap } from "~/model/data";
-import type { TabStore } from "~/model/stores";
-import Tabline from "./Tabline.vue";
 import TabBar from "./bars/TabBar.vue";
+import TabToolbar from "./TabToolbar.vue";
+import BarDivider from "./bars/BarDivider.vue";
+import { Plus } from "lucide-vue-next";
+
+import type { TabStore } from "~/model/stores";
 
 import { provideSelectionState } from "./providers/state/provide-selection-state";
 import { provideEditingState } from "./providers/state/provide-editing-state";
@@ -10,40 +12,35 @@ import { provideCellHoverEvents } from "./providers/events/provide-cell-hover-ev
 import { provideTieAddState } from "./providers/state/provide-tie-add-state";
 import { provideBendEditState } from "./providers/state/provide-bend-edit-state";
 import { provideStackResizeObserver } from "./providers/events/provide-resize-observer";
-
-import { useTieAddMonitor } from "./hooks/dnd/use-tie-add-monitor";
-import { useSelectMonitor } from "./hooks/dnd/use-select-monitor";
-import { useMoveMonitor } from "./hooks/dnd/use-move-monitor";
-import { useBendEditMonitor } from "./hooks/dnd/use-bend-edit-monitor";
-import { useAnnotationAddMonitor } from "./hooks/dnd/use-annotation-add-monitor";
-import { injectSettingsState } from "./providers/state/provide-settings-state";
-
 import { provideAnnotationAddState } from "./providers/state/provide-annotation-add-state";
-
 import { provideNotePreviewState } from "./providers/state/provide-note-preview-state";
 import { provideSubUnit } from "./providers/provide-subunit";
 import {
   provideBarManagement,
   type Bar,
 } from "./providers/state/provide-bar-management";
-
-import BarDivider from "./bars/BarDivider.vue";
-import { isCollapsed } from "./hooks/use-collapsed";
 import { provideBeatSize } from "./providers/provide-beatsize";
-import { Plus } from "lucide-vue-next";
 import { provideCopyState } from "./providers/state/provide-copy-state";
-import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-monitor";
 import { provideAnnotationResizeState } from "./providers/state/provide-annotation-resize-state";
 import { provideAnnotationHoverState } from "./providers/state/provide-annotation-hover-state";
+
+import { injectSettingsState } from "./providers/state/provide-settings-state";
+
+import { useTieAddMonitor } from "./hooks/dnd/use-tie-add-monitor";
+import { useSelectMonitor } from "./hooks/dnd/use-select-monitor";
+import { useMoveMonitor } from "./hooks/dnd/use-move-monitor";
+import { useBendEditMonitor } from "./hooks/dnd/use-bend-edit-monitor";
+import { useAnnotationAddMonitor } from "./hooks/dnd/use-annotation-add-monitor";
+import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-monitor";
+
+import { isCollapsed } from "./hooks/use-collapsed";
+import { injectSpacingsState } from "./providers/provide-spacings";
 const props = defineProps<{
   tabStore: TabStore;
 }>();
 
 const settings = injectSettingsState();
-const cellHeightPx = computed(() => `${settings.cellHeight}px`);
-const dividerWidthPx = computed(() => `${settings.dividerWidth}px`);
-const contextMenuHeightPx = computed(() => `${settings.contextMenuHeight}px`);
-const collapsedMinWidthPx = computed(() => `${settings.collapsedMinWidth}px`);
+const { collapsedMinWidth, cellHeight, dividerWidth } = injectSpacingsState();
 
 const subUnit = provideSubUnit(props.tabStore, settings);
 const beatSize = provideBeatSize(props.tabStore);
@@ -168,15 +165,15 @@ const barMinWidth = (bar: Bar) => {
         bar.stacks[position].notes,
         position % props.tabStore.beatSize === 0,
       )
-        ? settings.collapsedMinWidth
-        : settings.cellHeight;
+        ? collapsedMinWidth.value
+        : cellHeight.value;
       return total + width;
     },
     0,
   );
 
-  const firstBarBuffer = settings.cellHeight;
-  let total = stacks + settings.dividerWidth;
+  const firstBarBuffer = cellHeight.value;
+  let total = stacks + dividerWidth.value;
   if (tablineStarts.value.includes(bar.start)) {
     total += firstBarBuffer;
   }
@@ -233,11 +230,11 @@ function endDrag(i: number) {
   lastDiffX = 0;
 }
 
-const numStrings = computed(() => props.tabStore.guitar.strings);
 const deletingBarStart = ref<number | undefined>(undefined);
 </script>
 
 <template>
+  <TabToolbar />
   <div ref="tab" class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
     <template v-for="(bar, i) in barManagement.bars" :key="bar.start">
       <div v-if="tabStore.lineBreaks.has(bar.start)" class="line-break" />
@@ -272,44 +269,7 @@ const deletingBarStart = ref<number | undefined>(undefined);
 
 <style scoped>
 .tab {
-  --cell-height: v-bind(cellHeightPx);
-  --context-menu-height: v-bind(contextMenuHeightPx);
-  --collapsed-min-width: v-bind(collapsedMinWidthPx);
-  --divider-width: v-bind(dividerWidthPx);
-  --note-font-size: calc(var(--cell-height) * 0.8);
-  --annotation-font-size: calc(var(--cell-height) * 0.7);
-  --overlay-select-font-size: calc(var(--cell-height) * 0.6);
-  --substack-bg: rgba(255, 0, 0, 0.1);
-  --pos-line-width: 1px;
-  --string-width: 1px;
-  --pos-line-color: lightgray;
-  --string-color: gray;
-  --note-hover-color: rgb(172, 206, 247);
-
-  --select-alpha: 0.3;
-  --select-color: rgb(173, 206, 247);
-  --might-move-color: rgb(72, 187, 120);
-  --moving-color: rgb(56, 161, 105);
-  --delete-color: rgba(255, 0, 0);
-
-  --tie-dragger-color: #1e3a8a;
-
-  /* To allow for tie-dragging on the bottommost notes */
-  --bottom-note-padding: var(--cell-height);
-
-  --pos-line-z-index: -1;
-  --overlay-svg-z-index: 0;
-  --overlay-controls-z-index: 1;
-  --bar-overlay-z-index: 1;
-  --annotation-dragger-z-index: 1;
-  --annotation-z-index: 2;
-  --tie-dragger-z-index: 2;
-  --divider-z-index: 3;
-  --annotation-current-z-index: 3;
-  --annotation-resize-dragger-z-index: 4;
-
   user-select: none;
-
   display: flex;
   flex-wrap: wrap;
 }

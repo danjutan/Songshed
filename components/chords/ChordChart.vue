@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { ChordNote, NoteStack } from "~/model/data";
-import { X } from "lucide-vue-next";
+import type {
+  InputNumberBlurEvent,
+  InputNumberInputEvent,
+} from "primevue/inputnumber";
+import { X, ChevronDown, ChevronUp } from "lucide-vue-next";
 
 const props = withDefaults(
   defineProps<{
@@ -30,7 +34,7 @@ const fingering = computed(() => {
   return fingering;
 });
 
-const cellWidth = 24; // relative to a border width of 1
+const cellWidth = 48; // relative to a border width of 1
 const cellRatio = 4 / 3; // height / width
 const cellHeight = cellWidth * cellRatio;
 const topEndHeight = cellHeight / 4;
@@ -51,6 +55,13 @@ const numFrets = computed(() =>
   fretStart.value ? Math.max(4, lastFret.value - fretStart.value + 1) : 4,
 );
 
+const windowStart = ref(fretStart.value);
+const windowEnd = computed(() => windowStart.value + numFrets.value - 1);
+
+watch(numFrets, () => {
+  windowStart.value = fretStart.value;
+});
+
 function incrementWindow() {
   windowStart.value++;
 }
@@ -58,9 +69,6 @@ function incrementWindow() {
 function decrementWindow() {
   if (windowStart.value - 1 >= 1) windowStart.value--;
 }
-
-const windowStart = ref(fretStart.value);
-const windowEnd = computed(() => windowStart.value + numFrets.value - 1);
 
 // const fretLabelWidth = computed(() => (windowStart.value === 0 ? 0 : cellWidth));
 const gridStartX = computed(() => cellWidth);
@@ -74,6 +82,9 @@ const totalWidth = computed(() => gridEndX.value + cellWidth / 2);
 const totalHeight = computed(
   () => cellHeight * (numFrets.value + 0.5) + gridStartY.value,
 );
+
+const fretFontSize = computed(() => cellWidth / 2);
+const fretFontSizePx = computed(() => `${fretFontSize.value}px`);
 
 const viewBox = computed(() => `0 0 ${totalWidth.value} ${totalHeight.value}`);
 
@@ -90,22 +101,26 @@ function setFret(string: number, fret: number | false) {
   });
 }
 
-function onInput(e: Event) {
-  const target = e.target as HTMLInputElement;
-  const value = target.value;
-  if (value.trim() == "") {
+function onInput(e: InputNumberInputEvent) {
+  if (e.value === null) {
     return;
   }
-  const num = parseInt(value);
-  if (Number.isInteger(num) && num >= 1 && num < 99) {
-    windowStart.value = num;
-    return;
+  if (typeof e.value === "number") {
+    if (e.value < 1) {
+      windowStart.value = 1;
+    } else if (e.value < 30) {
+      windowStart.value = e.value;
+    }
   }
+  const target = e.originalEvent.target as HTMLInputElement;
   target.value = `${windowStart.value}`;
 }
 
-function onInputBlur(e: Event) {
-  const target = e.target as HTMLInputElement;
+function onInputBlur(e: InputNumberBlurEvent) {
+  if (!e.value) {
+    windowStart.value = 1;
+  }
+  const target = e.originalEvent.target as HTMLInputElement;
   target.value = `${windowStart.value}`;
 }
 
@@ -123,7 +138,7 @@ function onInputClick(e: Event) {
       :height="topEndHeight"
       :x="gridStartX - 0.5"
       :width="gridEndX - gridStartX + 1"
-      :fill="'black'"
+      fill="var(--p-content-color)"
     />
 
     <line
@@ -132,7 +147,7 @@ function onInputClick(e: Event) {
       :x2="gridStartX + i * cellWidth"
       :y1="gridStartY"
       :y2="gridEndY"
-      :stroke="'black'"
+      stroke="var(--p-content-color)"
     />
 
     <line
@@ -141,7 +156,7 @@ function onInputClick(e: Event) {
       :x2="gridEndX"
       :y1="gridStartY + n * cellHeight - 0.5"
       :y2="gridStartY + n * cellHeight - 0.5"
-      :stroke="'black'"
+      stroke="var(--p-content-color)"
     />
 
     <template v-for="(_, x) in strings">
@@ -181,7 +196,7 @@ function onInputClick(e: Event) {
             :cy="gridStartY - cellHeight * 0.65"
             :r="noteRadius"
             fill="transparent"
-            stroke="black"
+            stroke="var(--p-content-color)"
           />
           <rect
             :x="gridStartX + (strings - string - 1.5) * cellWidth"
@@ -207,6 +222,7 @@ function onInputClick(e: Event) {
               cellHeight / 2
             "
             :r="noteRadius"
+            fill="var(--p-content-color)"
             @click="setFret(string, false)"
           />
           <g class="selected-open-group" @click="setFret(string, 0)">
@@ -228,16 +244,8 @@ function onInputClick(e: Event) {
         </template>
       </template>
       <g v-else class="muted-group" @click="setFret(string, 0)">
-        <!-- <text
-          class="muted"
-          text-anchor="middle"
-          :x="gridStartX + (strings - +string - 1) * cellWidth"
-          :y="gridStartY - cellHeight / 2"
-        >
-          &Cross;
-        </text> -->
         <X
-          :size="16"
+          :size="(cellWidth * 2) / 3"
           :x="gridStartX + (strings - string - 1.33) * cellWidth"
           :y="gridStartY - cellHeight * 0.85"
         />
@@ -254,31 +262,30 @@ function onInputClick(e: Event) {
     <template v-if="windowStart !== 1">
       <text
         v-for="(n, i) in numFrets"
+        class="fret-label"
         text-anchor="middle"
-        :x="cellWidth / 2 - 1"
+        :x="cellWidth / 3"
         :y="gridStartY + n * cellHeight - cellWidth / 2"
-        fill="gray"
         font-family="sans-serif"
-        :font-size="cellWidth / 2"
+        :font-size="fretFontSize"
       >
         {{ windowStart + i }}
       </text>
     </template>
 
-    <text
+    <foreignObject
       v-if="windowStart > 1"
-      class="arrow"
-      text-anchor="middle"
-      :x="cellWidth / 2"
-      :y="gridStartY - cellHeight / 3 - 1"
-      :transform="`rotate(-90, ${cellWidth * 0.75 - 1} ${gridStartY - cellHeight / 3 - 1})`"
-      font-family="sans-serif"
-      :font-size="cellHeight / 2"
-      fill="gray"
-      @click="decrementWindow"
+      :x="-2"
+      :y="gridStartY - cellHeight / 2"
+      :width="cellWidth"
+      :height="cellHeight"
     >
-      ⮕
-    </text>
+      <Button text @click="decrementWindow">
+        <template #icon>
+          <ChevronUp class="arrow" :size="fretFontSize * 1.5" />
+        </template>
+      </Button>
+    </foreignObject>
 
     <rect
       class="bottom-edge"
@@ -290,25 +297,29 @@ function onInputClick(e: Event) {
       @click="incrementWindow"
     />
 
-    <text
-      class="arrow"
-      text-anchor="middle"
-      :x="cellWidth / 2"
-      :y="gridEndY + cellWidth"
-      :transform="`rotate(90, ${cellWidth * 0.75 - 1} ${gridEndY + cellWidth / 2})`"
-      font-family="sans-serif"
-      :font-size="cellHeight / 2"
-      fill="gray"
-      @click="incrementWindow"
+    <foreignObject
+      :x="-2"
+      :y="gridEndY - cellHeight / 3 + 1"
+      :width="cellWidth"
+      :height="cellHeight"
     >
-      ⮕
-    </text>
+      <Button text @click="incrementWindow">
+        <template #icon>
+          <ChevronDown class="arrow" :size="fretFontSize * 1.5" />
+        </template>
+      </Button>
+    </foreignObject>
 
-    <foreignObject :x="0" :y="gridStartY + 6" :width="22" :height="cellHeight">
-      <input
-        type="text"
-        :value="windowStart"
-        inputmode="numeric"
+    <foreignObject
+      :x="-7"
+      :y="gridStartY + cellHeight / 8 + 1"
+      :width="cellWidth"
+      :height="cellHeight"
+    >
+      <InputNumber
+        :model-value="windowStart"
+        class="fret-input"
+        pt:pcInputText:class="fret-input-text"
         @input="onInput"
         @blur="onInputBlur"
         @click="onInputClick"
@@ -321,20 +332,38 @@ function onInputClick(e: Event) {
 svg {
   /* border: 1px solid black; */
   user-select: none;
+  overflow: visible;
 }
 
-svg:hover input {
-  display: inline-block;
+svg:not(:hover) .fret-input {
+  display: none;
 }
 
 svg:not(:hover) .arrow {
   fill: transparent;
 }
 
+.fret-input:deep(input) {
+  /* If we ever care about changing the cellWidth, this won't scale right*/
+  width: calc(v-bind(fretFontSizePx) * 2 - 2px);
+  padding-inline: 0px;
+  text-align: center;
+  font-family: sans-serif;
+  font-size: v-bind(fretFontSizePx);
+}
+
+.fret-label {
+  fill: rgb(from var(--p-content-color) r g b / 0.7);
+}
+
+.arrow {
+  color: var(--p-content-color);
+  cursor: pointer;
+}
+
 .arrow:hover,
 .bottom-edge:hover + .arrow {
-  fill: black;
-  cursor: pointer;
+  opacity: 0.5;
 }
 
 .bottom-edge {
@@ -345,23 +374,12 @@ svg:not(:hover) .arrow {
   fill: transparent;
 }
 
-.selectable-group:hover .selectable {
-  fill: rgb(80, 80, 80);
-}
-
-input {
-  display: none;
-  width: 14px;
-  font-size: 12px;
-  text-align: center;
-}
-
 .open-group:hover {
   opacity: 0.5;
 }
 
 .muted-group:hover {
-  .muted {
+  & svg {
     opacity: 0.5;
   }
 }
@@ -370,13 +388,14 @@ input {
   stroke: rgb(80, 80, 80);
 }
 
-.selected:hover {
-  fill: gray;
-  & + .open-group .open {
-    stroke: rgb(80, 80, 80);
-  }
+.selectable-group:hover .selectable {
+  fill: rgb(from var(--note-hover-color) r g b / 0.7);
+  stroke: rgb(from var(--p-content-color) r g b / 0.25);
 }
-
+.selected:hover {
+  fill: rgb(from var(--note-hover-color) r g b / 0.2);
+  stroke: rgb(from var(--p-content-color) r g b / 0.25);
+}
 .open-group rect,
 .muted-group rect,
 .selected-open-group rect,

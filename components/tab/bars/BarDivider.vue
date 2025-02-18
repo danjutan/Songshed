@@ -90,9 +90,10 @@ onMounted(() => {
 .divider {
   width: var(--divider-width);
   height: 100%;
-  background: black;
+  background: var(--divider-color);
   padding: 0;
   position: relative;
+  z-index: var(--divider-z-index);
   &:not(.first) {
     cursor: ew-resize;
   }
@@ -103,7 +104,7 @@ onMounted(() => {
   grid-template-rows: repeat(6, var(--cell-height));
   height: 100%;
   position: absolute;
-  background: black;
+  background: var(--divider-color);
   width: var(--note-font-size);
   transform: translateX(-25%);
   z-index: var(--divider-z-index);
@@ -146,7 +147,7 @@ onMounted(() => {
 }
 
 svg {
-  color: white;
+  color: var(--divider-icon-color);
   width: var(--context-menu-height);
 }
 

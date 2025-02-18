@@ -12,20 +12,22 @@
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.4.0",
     "@babel/runtime": "^7.26.0",
+    "@primevue/themes": "^4.2.5",
     "@vue/language-server": "^2.1.10",
     "@vue/typescript-plugin": "^2.1.10",
     "@vueuse/core": "^12.0.0",
     "bind-event-listener": "^3.0.0",
     "lucide-vue-next": "^0.471.0",
     "nuxi": "^3.10.1",
+    "primevue": "^4.2.5",
     "tonal": "^6.0.0",
     "vue": "^3.5.13",
-    "vue-router": "^4.3.0",
-    "vue3-select-component": "^0.7.0"
+    "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@nuxt/eslint": "^0.3.13",
     "@nuxthub/core": "^0.8.8",
+    "@primevue/nuxt-module": "^4.2.5",
     "@vueuse/nuxt": "12.0.0",
     "nuxt": "^3.13.0",
     "prettier": "3.3.1",

@@ -39,11 +39,12 @@ const isDragging = computed(() =>
   resizeState.isDragging(props.row, props.annotation),
 );
 
-const isAnyHovered = computed(() => hoverState.hoveredRow.value !== undefined);
-const isOtherHovered = computed(
-  () =>
-    isAnyHovered.value && !hoverState.isHovered(props.row, props.annotation),
+// includes other half across tablines
+const isHovered = computed(() =>
+  hoverState.isHovered(props.row, props.annotation),
 );
+const isAnyHovered = computed(() => hoverState.hoveredRow.value !== undefined);
+const isOtherHovered = computed(() => isAnyHovered.value && !isHovered.value);
 // now reduntant because whenever we're creating we're also hovering over a row
 // const isAnyDragging = computed(
 //   () => resizeState.draggingFrom.value !== undefined,
@@ -73,8 +74,8 @@ function onTextInput() {
 }
 
 function onTextBlur() {
-  if (props.annotation) {
-    const value = textEl.value!.innerText;
+  if (props.annotation && textEl.value) {
+    const value = textEl.value.innerText;
     if (value.length === 0) {
       emit("delete");
     }
@@ -126,6 +127,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         'no-right-border': endAtRight,
         'no-left-border': startAtLeft,
         'any-creating': isAnyCreating,
+        hovered: isHovered,
         'any-hovered': isAnyHovered,
         'other-hovered': isOtherHovered,
         // 'other-dragging': !isDragging && isAnyDragging,
@@ -135,7 +137,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
         width: width(startCoords, endCoords),
       }"
       @mouseenter="hoverState.setHovered(props.row, props.annotation)"
-      @mouseleave="hoverState.clearHovered()"
+      @mouseleave="if (!isDragging) hoverState.clearHovered();"
     >
       <AnnotationResizeHandle
         v-show="!startAtLeft"
@@ -196,10 +198,10 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
     visibility: hidden;
   }
 
-  &:hover,
+  &.hovered,
   &.dragging,
   &:has(.text:focus):not(.other-hovered) {
-    background-color: rgb(from var(--select-color) r g b / var(--select-alpha));
+    background-color: var(--annotation-hover-background-color);
     z-index: var(--annotation-current-z-index);
     & .resize-handle {
       visibility: visible;
@@ -212,13 +214,12 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
     }
   } */
 
-  /* &.any-creating, */
-  /* &.other-dragging { */
-  &.other-hovered:not(:hover),
+  &.any-hovered,
   &.any-creating {
     /* pointer-events: none; */
-    border-left: 1px solid darkgray;
-    border-right: 1px solid darkgray;
+    border: 1px solid var(--annotation-border);
+    border-bottom: none;
+    background-color: var(--annotation-default-background-color);
     &.no-right-border {
       border-right: none;
     }
@@ -278,8 +279,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 
 .pos-line {
   width: var(--pos-line-width);
-  /* background-color: var(--pos-line-color); */
-  background: gray;
+  background: var(--annotation-notch-color);
   height: calc((var(--cell-height) - var(--note-font-size)) * 1.5);
   top: var(--note-font-size);
 }

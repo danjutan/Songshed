@@ -3,14 +3,24 @@ import type { TabStore } from "~/model/stores";
 import Toolbar from "./tab/settings/SettingsBar.vue";
 import Tab from "./tab/Tab.vue";
 import ChordGroup from "./chords/ChordGroup.vue";
-import { provideSettingsState } from "./tab/providers/state/provide-settings-state";
+import {
+  injectSettingsState,
+  provideSettingsState,
+} from "./tab/providers/state/provide-settings-state";
+import { provideSpacings } from "./tab/providers/provide-spacings";
 
 const props = defineProps<{
   tabStore: TabStore;
   id: string;
 }>();
 
-provideSettingsState();
+const settings = provideSettingsState();
+const {
+  cellHeightPx,
+  dividerWidthPx,
+  contextMenuHeightPx,
+  collapsedMinWidthPx,
+} = provideSpacings(settings);
 
 async function save(saveId: string) {
   if (props.tabStore && saveId) {
@@ -24,8 +34,6 @@ async function save(saveId: string) {
   }
 }
 
-const selected = ref("");
-
 // Leaving this here fpr reference, but it's probably not a real bottleneck;
 // without the call, the time is just spent on something else
 // onMounted(() => {
@@ -38,14 +46,102 @@ const selected = ref("");
 </script>
 
 <template>
-  <Toolbar
-    :id
-    v-model:beats-per-bar="tabStore.beatsPerBar"
-    v-model:beat-size="tabStore.beatSize"
-    @save="save"
-  />
-  <ChordGroup :data="tabStore.chords" />
-  <Tab :tab-store="tabStore" />
+  <div class="editor-app">
+    <Button variant="outlined" raised label="Test PrimeVue" />
+    <Toolbar
+      :id
+      v-model:beats-per-bar="tabStore.beatsPerBar"
+      v-model:beat-size="tabStore.beatSize"
+      @save="save"
+    />
+    <ChordGroup :data="tabStore.chords" />
+    <Tab :tab-store="tabStore" />
+  </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.editor-app {
+  --cell-height: v-bind(cellHeightPx);
+  --context-menu-height: v-bind(contextMenuHeightPx);
+  --collapsed-min-width: v-bind(collapsedMinWidthPx);
+  --divider-width: v-bind(dividerWidthPx);
+  --note-font-size: calc(var(--cell-height) * 0.8);
+  --annotation-font-size: calc(var(--cell-height) * 0.7);
+  --substack-bg: rgba(255, 0, 0, 0.1);
+  --pos-line-width: 1px;
+  --string-width: 1px;
+
+  --note-container-drag-extender-height: 100px;
+
+  --pos-line-color: var(--p-surface-300);
+  --string-color: var(--p-surface-400);
+
+  --tie-color: var(--p-surface-900);
+  --bend-color: var(--p-surface-900);
+  --tie-dragger-color: var(--p-primary-700);
+
+  --divider-color: var(--p-surface-900);
+  --divider-icon-color: var(--p-surface-50);
+
+  --note-hover-color: var(--p-blue-200);
+  --select-color: var(--p-blue-200);
+  --might-move-color: var(--p-amber-300);
+  --moving-color: var(--p-amber-400);
+  --delete-color: var(--p-red-300);
+
+  --annotation-row-line-color: var(--p-surface-300);
+  --annotation-border: var(--p-surface-300);
+  --annotation-notch-color: var(--p-surface-400);
+  --annotation-dragger-color: var(--p-surface-400);
+  --annotation-dragger-hover-color: var(--p-surface-500);
+  --annotation-hover-background-color: var(--p-blue-200);
+  --annotation-default-background-color: rgb(
+    from var(--annotation-hover-background-color) r g b / 0.4
+  );
+
+  --select-alpha: 0.3;
+
+  --pos-line-z-index: -1;
+  --overlay-svg-z-index: 0;
+  --bar-overlay-z-index: 1;
+  --annotation-dragger-z-index: 1;
+  --annotation-z-index: 2;
+  --divider-z-index: 3;
+  --overlay-controls-z-index: 4;
+  --annotation-current-z-index: 3;
+  --annotation-resize-dragger-z-index: 4;
+  --selection-toolbar-z-index: 4;
+  --note-container-drag-extender-z-index: 5;
+  --tie-dragger-z-index: 5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .editor-app {
+    --pos-line-color: var(--p-surface-600);
+    --string-color: var(--p-surface-700);
+
+    --tie-color: var(--p-surface-300);
+    --bend-color: var(--p-surface-300);
+    --tie-dragger-color: var(--p-primary-600);
+
+    --divider-color: var(--p-primary-600);
+    --divider-icon-color: var(--p-surface-50);
+
+    --note-hover-color: var(--p-blue-100);
+    --select-color: var(--p-blue-200);
+    --might-move-color: var(--p-amber-400);
+    --moving-color: var(--p-amber-500);
+    --delete-color: var(--p-red-400);
+
+    --annotation-row-line-color: var(--p-surface-600);
+    --annotation-border: var(--p-surface-600);
+    --annotation-notch-color: var(--p-surface-500);
+    --annotation-dragger-color: var(--p-surface-400);
+    --annotation-dragger-hover-color: var(--p-surface-300);
+    --annotation-hover-background-color: var(--p-primary-700);
+    --annotation-default-background-color: rgb(
+      from var(--p-primary-500) r g b / 0.4
+    );
+  }
+}
+</style>

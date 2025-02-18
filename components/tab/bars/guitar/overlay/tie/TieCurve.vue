@@ -29,9 +29,13 @@ const curvePath = computed(() => {
 
 const label = reactiveComputed(() => {
   return {
-    x: (props.x2 + props.x1) / 2 - 1 + (props.shiftLabel ? 6 : -5),
+    x: (props.x2 + props.x1) / 2 - 1 + (props.shiftLabel ? 6 : -8),
     y: bottom.value - 10,
   };
+});
+
+defineExpose({
+  label,
 });
 
 const id = useId();
@@ -40,18 +44,23 @@ const id = useId();
 <template>
   <defs>
     <mask :id="`mask-${id}`">
-      <path :d="curvePath" fill="white" />
-      <rect
-        :x="label.x"
-        :y="bottom - 5"
-        :width="11"
-        :height="10"
-        fill="black"
-      />
+      <path :d="curvePath" />
+      <rect :x="label.x + 3" :y="bottom - 5" :width="11" :height="10" />
     </mask>
   </defs>
-  <path :d="curvePath" :mask="!close ? `url(#mask-${id})` : undefined" />
-  <slot v-if="!close" :x="label.x" :y="label.y" />
+  <path
+    class="tie-curve"
+    :d="curvePath"
+    :mask="!close ? `url(#mask-${id})` : undefined"
+  />
 </template>
 
-<style scoped></style>
+<style scoped>
+mask path {
+  fill: white;
+}
+
+.tie-curve {
+  fill: var(--tie-color);
+}
+</style>

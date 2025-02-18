@@ -2,26 +2,42 @@
 import type { ChordStore } from "~/model/stores";
 import ChordChart from "./ChordChart.vue";
 import type { Chord } from "~/model/data";
+import { Check, X, Plus } from "lucide-vue-next";
 
 const props = defineProps<{
   data: ChordStore;
 }>();
-
-function titleInput(e: Event, chord: Chord) {
-  const value = (e.target as HTMLDivElement).innerText;
-  chord.title = value;
-}
 </script>
 
 <template>
   <div class="container">
-    <div class="chord" v-for="(chord, i) of data.chords">
+    <div v-for="(chord, i) of data.chords" class="chord">
       <div class="title-row">
         <div class="left-filler" />
-        <div class="title" contenteditable @input="(e) => titleInput(e, chord)">
-          {{ chord.title }}
-        </div>
-        <div class="delete" @click="data.deleteChord(i)">&Cross;</div>
+        <!--TODO: use PrimeVue's Inplace-->
+        <Inplace
+          class="inplace"
+          pt:display:class="inplace-display"
+          pt:content:class="inplace-content"
+        >
+          <template #display>
+            {{ chord.title || "..." }}
+          </template>
+          <template #content="{ closeCallback }">
+            <InputText v-model="chord.title" class="title-input" />
+            <Button class="icon-button" text @click="closeCallback">
+              <template #icon>
+                <Check :size="16" color="var(--p-green-600)" />
+              </template>
+            </Button>
+          </template>
+        </Inplace>
+
+        <Button class="delete icon-button" text @click="data.deleteChord(i)">
+          <template #icon>
+            <X :size="16" />
+          </template>
+        </Button>
       </div>
       <ChordChart
         class="chart"
@@ -30,10 +46,13 @@ function titleInput(e: Event, chord: Chord) {
         @update-string="(string, note) => chord.notes.set(string, note)"
         @mute-string="(string) => chord.notes.delete(string)"
       />
+      <div class="overlay" />
     </div>
-    <div class="add" @click="data.addChord()">
-      <span>+</span>
-    </div>
+    <Button class="add" severity="contrast" @click="data.addChord()">
+      <template #icon>
+        <Plus :size="24" />
+      </template>
+    </Button>
   </div>
 </template>
 
@@ -44,6 +63,7 @@ function titleInput(e: Event, chord: Chord) {
 }
 
 .chord {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -61,22 +81,60 @@ function titleInput(e: Event, chord: Chord) {
   }
 }
 
+.overlay {
+  position: absolute;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.chord:has(.delete:hover) {
+  .overlay {
+    background: rgb(from var(--delete-color) r g b / var(--select-alpha));
+  }
+}
+
 .title-row {
   display: flex;
   width: 100%;
   justify-content: center;
 }
+
 .text {
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid var(--p-text-color);
   width: 50px;
   text-align: center;
-  font-weight: bold;
+}
+
+:deep(.inplace-display) {
+  padding: 6px;
+}
+
+:deep(.inplace-content) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title-input {
+  width: 80px;
+  text-align: center;
+  height: 32px;
+  padding-inline: 2px;
+}
+
+.icon-button {
+  width: 16px;
+  height: 32px;
+  padding: 0px;
 }
 
 .delete {
   opacity: 0;
   cursor: pointer;
-  color: darkred;
+  color: var(--p-red-600);
   &:hover {
     font-weight: bold;
   }
@@ -86,7 +144,7 @@ function titleInput(e: Event, chord: Chord) {
   width: 24px;
 }
 .chart {
-  width: 120px;
+  width: 150px;
   /* border: 1px solid blue;
   &:hover {
     width: 180px;
@@ -94,20 +152,7 @@ function titleInput(e: Event, chord: Chord) {
 }
 
 .add {
-  height: 100px;
-  width: 20px;
-  border-radius: 10px;
-  font-size: 26px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-
-  &:hover {
-    background: lightcoral;
-    border-color: darkred;
-    color: white;
-    font-weight: bold;
-  }
+  width: none;
+  padding: 2px;
 }
 </style>
