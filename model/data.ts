@@ -37,7 +37,8 @@ export interface GuitarNote extends NoteData {
   bend?: string; */
 }
 
-export interface ChordNote extends NoteData {
+export interface ChordNote {
+  note: Midi;
   finger?: number; // to implement
 }
 
