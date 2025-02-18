@@ -7,7 +7,7 @@ import { injectEditingState } from "~/components/tab/providers/state/provide-edi
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import { TieType } from "~/model/data";
 import { injectTieAddState } from "~/components/tab/providers/state/provide-tie-add-state";
-import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
+import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
 
 const props = defineProps<{
   tie: Tie;
@@ -16,7 +16,7 @@ const props = defineProps<{
 
 const { editingNote } = injectEditingState();
 const { hoveredCell } = injectCellHoverEvents();
-const settings = injectSettingsState();
+const { contextMenuHeight, cellHeight, dividerWidth } = injectSpacingsState();
 const tieAddState = injectTieAddState();
 
 const connected = computed(
@@ -69,11 +69,7 @@ watch(
   },
 );
 
-const startRowTop = computed(
-  () => settings.contextMenuHeight + settings.cellHeight,
-);
-
-const cellHeight = computed(() => settings.cellHeight);
+const startRowTop = computed(() => contextMenuHeight.value + cellHeight.value);
 
 const hasTie = computed(() =>
   [TieType.Hammer, TieType.Tap, TieType.TieSlide].includes(props.tie.type),
@@ -88,7 +84,7 @@ const tieCurve = useTemplateRef("tieCurve");
 <template>
   <OverlayCoords
     v-slot="{ coords: [from, to] }"
-    :offset="settings.dividerWidth"
+    :offset="dividerWidth"
     :positions="[tie.from, tie.to]"
   >
     <svg v-if="from && to">

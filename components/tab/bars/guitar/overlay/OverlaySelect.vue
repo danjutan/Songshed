@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import Select from "primevue/select";
 import { X, ChevronDown } from "lucide-vue-next";
-import { injectSettingsState } from "@/components/tab/providers/state/provide-settings-state";
+import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
+
 const props = defineProps<{
   options: Array<[value: string | number, label: string]>;
   active: boolean; // if false, becomes active on hover
@@ -11,9 +12,9 @@ const props = defineProps<{
   pointerEventsNone?: boolean;
 }>();
 
-const settings = injectSettingsState();
+const { cellHeightPx } = injectSpacingsState();
 // We have to use `style` explicitly to style the options because they're teleported outside of scope
-const fontSizePx = computed(() => `${settings.cellHeight * 0.6}px`);
+const fontSizePx = computed(() => `calc(${cellHeightPx.value} * 0.6)`);
 
 const model = defineModel();
 

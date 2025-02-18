@@ -9,6 +9,7 @@ import { injectCellHoverEvents } from "~/components/tab/providers/events/provide
 import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import BendDragger from "./BendDragger.vue";
+import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
 
 const props = defineProps<{
   bend: Bend;
@@ -19,11 +20,10 @@ const bendEditState = injectBendEditState();
 const { selectsSelector } = injectOverlayControlsTeleport();
 const { editingNote } = injectEditingState();
 const { getNextStackPos } = injectStackResizeObserver();
-const settings = injectSettingsState();
 
-const startRowTop = computed(
-  () => settings.contextMenuHeight + settings.cellHeight,
-);
+const { contextMenuHeight, cellHeight, dividerWidth } = injectSpacingsState();
+
+const startRowTop = computed(() => contextMenuHeight.value + cellHeight.value);
 
 const startRow = computed(() => props.bend.string + 1);
 
@@ -33,7 +33,7 @@ const throughPos = computed(() =>
 );
 
 const upswingToPos = computed(() => throughPos.value ?? props.bend.to);
-const upswingToY = settings.contextMenuHeight / 3;
+const upswingToY = contextMenuHeight.value / 3;
 
 const isPrebend = computed(() => props.bend.from === props.bend.to);
 
@@ -70,8 +70,6 @@ const releaseArrowHover = ref(false);
 
 const dragging = bendEditState.dragging;
 
-const cellHeight = computed(() => settings.cellHeight);
-
 // onUnmounted(() => {
 //   console.log("bend unmounted");
 // });
@@ -80,7 +78,7 @@ const cellHeight = computed(() => settings.cellHeight);
 <template>
   <OverlayCoords
     v-slot="{ coords: [from, to, upswingTo, through, afterTo] }"
-    :offset="settings.dividerWidth"
+    :offset="dividerWidth"
     :positions="[
       props.bend.from,
       props.bend.to,
@@ -123,7 +121,7 @@ const cellHeight = computed(() => settings.cellHeight);
         :bend="props.bend"
         :mode="'upswing'"
         :x="upswingTo.left"
-        :y="upswingToY + settings.contextMenuHeight"
+        :y="upswingToY + contextMenuHeight"
         :width="upswingTo.right - upswingTo.left"
         :height="cellHeight"
         @mouseenter="upswingArrowHover = true"
@@ -198,7 +196,7 @@ const cellHeight = computed(() => settings.cellHeight);
               : upswingToY
           "
           :width="to.right - to.left"
-          :height="settings.contextMenuHeight"
+          :height="contextMenuHeight"
           @click="
             bendEditState.onReleaseGrabberClick(bend, getNextStackPos(bend.to)!)
           "

@@ -4,7 +4,7 @@ import type { Tie } from "~/model/stores";
 import { injectEditTie } from "../../provide-edit-tie";
 import { TieType } from "~/model/data";
 import { injectOverlayControlsTeleport } from "../../provide-overlay-controls-teleport";
-import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
+import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
 
 const props = defineProps<{
   active: boolean;
@@ -17,8 +17,8 @@ const props = defineProps<{
 const { updateType, deleteTie } = injectEditTie();
 const { selectsSelector } = injectOverlayControlsTeleport();
 
-const settings = injectSettingsState();
-const iconSizePx = computed(() => `${(settings.cellHeight * 2) / 3}px`);
+const { cellHeight } = injectSpacingsState();
+const iconSize = computed(() => `${(cellHeight.value * 2) / 3}`);
 
 function tieSlideCurvePath() {
   const x1 = 0;
@@ -45,11 +45,11 @@ const options = computed<[TieType, string][]>(() => {
       ? `<line x1="1" y1="${yStart + 6}" x2="9" y2="${yStart + 2}" stroke="currentColor" stroke-width="0.5" />`
       : `<line x1="1" y1="${yStart + 2}" x2="10" y2="${yStart + 6}" stroke="currentColor" stroke-width="0.5" />`;
 
-  const slideIcon = `<svg class="slide" width="${iconSizePx.value}" height="${iconSizePx.value}" viewBox="0 0 10 10">
+  const slideIcon = `<svg class="slide" width="${iconSize.value}" height="${iconSize.value}" viewBox="0 0 10 10">
     ${slideLine(2)}
   </svg>`;
 
-  const tieSlideIcon = `<svg class="tie-slide" width="${iconSizePx.value}" height="${iconSizePx.value}" viewBox="0 0 10 10">
+  const tieSlideIcon = `<svg class="tie-slide" width="${iconSize.value}" height="${iconSize.value}" viewBox="0 0 10 10">
     ${slideLine(0)}
     <path fill="currentColor" d="${tieSlideCurvePath()}" />
   </svg>`;

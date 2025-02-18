@@ -34,11 +34,13 @@ import { useAnnotationAddMonitor } from "./hooks/dnd/use-annotation-add-monitor"
 import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-monitor";
 
 import { isCollapsed } from "./hooks/use-collapsed";
+import { injectSpacingsState } from "./providers/provide-spacings";
 const props = defineProps<{
   tabStore: TabStore;
 }>();
 
 const settings = injectSettingsState();
+const { collapsedMinWidth, cellHeight, dividerWidth } = injectSpacingsState();
 
 const subUnit = provideSubUnit(props.tabStore, settings);
 const beatSize = provideBeatSize(props.tabStore);
@@ -163,15 +165,15 @@ const barMinWidth = (bar: Bar) => {
         bar.stacks[position].notes,
         position % props.tabStore.beatSize === 0,
       )
-        ? settings.collapsedMinWidth
-        : settings.cellHeight;
+        ? collapsedMinWidth.value
+        : cellHeight.value;
       return total + width;
     },
     0,
   );
 
-  const firstBarBuffer = settings.cellHeight;
-  let total = stacks + settings.dividerWidth;
+  const firstBarBuffer = cellHeight.value;
+  let total = stacks + dividerWidth.value;
   if (tablineStarts.value.includes(bar.start)) {
     total += firstBarBuffer;
   }
@@ -228,7 +230,6 @@ function endDrag(i: number) {
   lastDiffX = 0;
 }
 
-const numStrings = computed(() => props.tabStore.guitar.strings);
 const deletingBarStart = ref<number | undefined>(undefined);
 </script>
 

@@ -7,6 +7,7 @@ import {
   injectSettingsState,
   provideSettingsState,
 } from "./tab/providers/state/provide-settings-state";
+import { provideSpacings } from "./tab/providers/provide-spacings";
 
 const props = defineProps<{
   tabStore: TabStore;
@@ -14,11 +15,12 @@ const props = defineProps<{
 }>();
 
 const settings = provideSettingsState();
-
-const cellHeightPx = computed(() => `${settings.cellHeight}px`);
-const dividerWidthPx = computed(() => `${settings.dividerWidth}px`);
-const contextMenuHeightPx = computed(() => `${settings.contextMenuHeight}px`);
-const collapsedMinWidthPx = computed(() => `${settings.collapsedMinWidth}px`);
+const {
+  cellHeightPx,
+  dividerWidthPx,
+  contextMenuHeightPx,
+  collapsedMinWidthPx,
+} = provideSpacings(settings);
 
 async function save(saveId: string) {
   if (props.tabStore && saveId) {
