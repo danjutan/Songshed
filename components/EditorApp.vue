@@ -47,7 +47,6 @@ async function save(saveId: string) {
 
 <template>
   <div class="editor-app">
-    <Button variant="outlined" raised label="Test PrimeVue" />
     <Toolbar
       :id
       v-model:beats-per-bar="tabStore.beatsPerBar"

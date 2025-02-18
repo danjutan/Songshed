@@ -10,6 +10,7 @@ import { injectEditingState } from "~/components/tab/providers/state/provide-edi
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import BendDragger from "./BendDragger.vue";
 import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
+import { injectSubUnit } from "~/components/tab/providers/provide-subunit";
 
 const props = defineProps<{
   bend: Bend;
@@ -19,9 +20,9 @@ const props = defineProps<{
 const bendEditState = injectBendEditState();
 const { selectsSelector } = injectOverlayControlsTeleport();
 const { editingNote } = injectEditingState();
-const { getNextStackPos } = injectStackResizeObserver();
 
 const { contextMenuHeight, cellHeight, dividerWidth } = injectSpacingsState();
+const subunit = injectSubUnit();
 
 const startRowTop = computed(() => contextMenuHeight.value + cellHeight.value);
 
@@ -77,14 +78,14 @@ const dragging = bendEditState.dragging;
 
 <template>
   <OverlayCoords
-    v-slot="{ coords: [from, to, upswingTo, through, afterTo] }"
+    v-slot="{ coords: [from, to, upswingTo, through, next] }"
     :offset="dividerWidth"
     :positions="[
       props.bend.from,
       props.bend.to,
       upswingToPos,
       throughPos,
-      getNextStackPos(props.bend.to),
+      props.bend.to + subunit,
     ]"
   >
     <g
@@ -135,8 +136,8 @@ const dragging = bendEditState.dragging;
             :style="{
               position: 'absolute',
               width: `${upswingTo.right - upswingTo.left}px`,
-              left: `${upswingTo.left}px`,
-              top: `${upswingToY - 2}px`,
+              left: `${upswingTo.left - 2}px`,
+              top: `${upswingToY - 4}px`,
               display: 'flex',
               justifyContent: 'center',
             }"
@@ -197,23 +198,22 @@ const dragging = bendEditState.dragging;
           "
           :width="to.right - to.left"
           :height="contextMenuHeight"
-          @click="
-            bendEditState.onReleaseGrabberClick(bend, getNextStackPos(bend.to)!)
-          "
+          @click="bendEditState.onReleaseGrabberClick(bend, bend.to + subunit)"
           @mouseenter="releaseArrowHover = true"
           @mouseleave="releaseArrowHover = false"
         />
+        <!--TODO: teleport this to OverlayControls so it works between bars -->
         <line
           v-if="
             !hasThrough &&
             (releaseArrowHover || upswingArrowHover || labelHover) &&
-            afterTo
+            next
           "
           :x1="to.right"
           :y1="upswingToY + cellHeight * 0.35"
-          :x2="afterTo.center"
+          :x2="next.center"
           :y2="upswingToY + cellHeight * 0.35"
-          opacity="0.4"
+          :opacity="0.4"
           :marker-end="'url(#arrow)'"
         />
       </g>

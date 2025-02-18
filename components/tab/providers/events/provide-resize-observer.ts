@@ -13,8 +13,6 @@ export interface StackResizeObserver {
     position: number,
     barStart?: number,
   ) => StackCoords | undefined;
-  getPreviousStackPos: (startPosition: number) => number | undefined;
-  getNextStackPos: (startPosition: number) => number | undefined;
   tablineStarts: ComputedRef<number[]>;
 }
 
@@ -172,20 +170,10 @@ export function provideStackResizeObserver() {
     return coords;
   }
 
-  function getNextStackPos(startPosition: number): number | undefined {
-    return posToCoords.get(startPosition)?.next;
-  }
-
-  function getPreviousStackPos(startPosition: number): number | undefined {
-    return posToCoords.get(startPosition)?.prev;
-  }
-
   const stackResizeObserver: StackResizeObserver = {
     tablineStarts,
     registerStackRef,
     getStackCoords,
-    getPreviousStackPos,
-    getNextStackPos,
   };
 
   provide(StackResizeObserverInjectionKey, stackResizeObserver);
