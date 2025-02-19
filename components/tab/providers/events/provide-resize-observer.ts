@@ -24,6 +24,7 @@ export interface StackResizeObserver {
     listener: (coords: StackCoords) => void,
   ) => () => void;
   tablineStarts: Readonly<number[]>;
+  getStackCoords: (pos: number) => StackCoords | undefined;
 }
 
 export function withOffset(coords: StackCoords, offset: number): StackCoords {
@@ -148,10 +149,16 @@ export function provideStackResizeObserver() {
 
   //   return [0, ...breaks, entries[entries.length - 1].position];
   // });
+
+  function getStackCoords(pos: number) {
+    return lastCoords.get(pos);
+  }
+
   const stackResizeObserver: StackResizeObserver = {
     tablineStarts: readonly(tablineStarts),
     registerStackRef,
     registerListener,
+    getStackCoords,
   };
 
   provide(StackResizeObserverInjectionKey, stackResizeObserver);
