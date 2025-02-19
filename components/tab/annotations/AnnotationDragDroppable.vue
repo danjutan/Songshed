@@ -14,6 +14,7 @@ import OverlayCoords from "~/components/tab/bars/OverlayCoords.vue";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
 import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
+import { useCoordsDirective } from "../hooks/use-coords-directive";
 
 const props = defineProps<{
   row: number;
@@ -25,6 +26,8 @@ const props = defineProps<{
 const { dragStart, dragEnd, newAnnotation } = injectAnnotationAddState();
 const resizeState = injectAnnotationResizeState();
 const hoverState = injectAnnotationHoverState();
+
+const vCoords = useCoordsDirective();
 
 const isDragging = computed(
   () =>
@@ -78,22 +81,18 @@ watchEffect((cleanup) => {
 </script>
 
 <template>
-  <OverlayCoords v-slot="{ coords: [coords] }" :positions="[position]">
-    <div
-      v-if="coords"
-      ref="element"
-      class="draggable"
-      :class="{ dragging: isDragging }"
-      :style="{
-        left: left(coords),
-        width: width(coords),
-      }"
-      @mousedown="dragStart(row, position)"
-      @click="dragEnd()"
-      @mouseenter="hoverState.setHovered(row)"
-      @mouseleave="hoverState.clearHovered()"
-    />
-  </OverlayCoords>
+  <div
+    ref="element"
+    v-coords:[position].left="left"
+    v-coords:[position].width="width"
+    class="draggable"
+    :class="{ dragging: isDragging }"
+    @mousedown="dragStart(row, position)"
+    @click="dragEnd()"
+    @mouseover="console.log('dragdrop', position)"
+    @mouseenter="hoverState.setHovered(row)"
+    @mouseleave="hoverState.clearHovered()"
+  />
 </template>
 
 <style scoped>
@@ -102,6 +101,11 @@ watchEffect((cleanup) => {
   position: absolute;
   top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
+
+  border: 1px solid red;
+  &:hover {
+    background: blue;
+  }
 
   &.dragging {
     height: 400%;

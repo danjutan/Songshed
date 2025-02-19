@@ -10,6 +10,7 @@ import { injectStackResizeObserver } from "../providers/events/provide-resize-ob
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 import type { NewAnnotationRenderProps } from "./NewAnnotationRender.vue";
 import NewAnnotationRender from "./NewAnnotationRender.vue";
+import { useCoordsDirective } from "../hooks/use-coords-directive";
 
 const props = defineProps<{
   annotationStore: AnnotationStore;
@@ -33,8 +34,8 @@ function edgeProps(
   end: number,
 ): { startAtLeft?: number; endAtRight?: number } | false {
   const startLineIndex =
-    tablineStarts.value.findIndex((lineStart) => lineStart > start) - 1;
-  const startLineStart = tablineStarts.value[startLineIndex];
+    tablineStarts.findIndex((lineStart) => lineStart > start) - 1;
+  const startLineStart = tablineStarts[startLineIndex];
   const endAtRight = tabBarBounds.tabline.end - subUnit.value;
 
   const startsInCurrentBar =
@@ -100,6 +101,8 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
   }
   return false;
 });
+
+const vCoords = useCoordsDirective();
 </script>
 
 <template>
@@ -124,7 +127,7 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
         }"
       />
     </template>
-    <AnnotationRender
+    <!-- <AnnotationRender
       v-for="(renderProps, i) in annotationRenders"
       :key="i"
       v-bind="renderProps"
@@ -135,7 +138,7 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
           renderProps.annotation,
         )
       "
-    />
+    /> -->
     <NewAnnotationRender
       v-if="newAnnotationRender"
       v-bind="newAnnotationRender"

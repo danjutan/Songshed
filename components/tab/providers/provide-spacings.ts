@@ -25,7 +25,7 @@ export function provideSpacings(settings: SettingsState): SpacingsState {
   const cellHeight = computed(() => settings.cellHeight);
   const dividerWidth = computed(() => settings.cellHeight / 3);
   const contextMenuHeight = computed(() => (settings.cellHeight * 3) / 4);
-  const collapsedMinWidth = computed(() => settings.cellHeight / 4);
+  const collapsedMinWidth = computed(() => settings.cellHeight / 2);
 
   // Pixel values
   const cellHeightPx = computed(() => `${cellHeight.value}px`);

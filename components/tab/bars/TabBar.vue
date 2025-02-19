@@ -22,11 +22,12 @@ const props = defineProps<{
   highlight?: "delete" | false;
 }>();
 
-const { tablineStarts } = injectStackResizeObserver();
-provideTabBarBounds(props.bar, tablineStarts);
+const resizeObserver = injectStackResizeObserver();
+
+provideTabBarBounds(props.bar, resizeObserver);
 
 const firstInLine = computed(() =>
-  tablineStarts.value.includes(props.bar.start),
+  resizeObserver.tablineStarts.includes(props.bar.start),
 );
 </script>
 

@@ -48,7 +48,7 @@ const props = defineProps<{
       />
       <div class="overlay" />
     </div>
-    <Button class="add" severity="contrast" @click="data.addChord()">
+    <Button class="add" severity="secondary" outlined @click="data.addChord()">
       <template #icon>
         <Plus :size="24" />
       </template>
