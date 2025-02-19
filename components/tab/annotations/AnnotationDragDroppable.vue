@@ -27,7 +27,9 @@ const { dragStart, dragEnd, newAnnotation } = injectAnnotationAddState();
 const resizeState = injectAnnotationResizeState();
 const hoverState = injectAnnotationHoverState();
 
-const vCoords = useCoordsDirective();
+const vCoords = useCoordsDirective({
+  position: props.position,
+});
 
 const isDragging = computed(
   () =>
@@ -83,13 +85,12 @@ watchEffect((cleanup) => {
 <template>
   <div
     ref="element"
-    v-coords:[position].left="left"
-    v-coords:[position].width="width"
+    v-coords:left="({ position }) => position && left(position)"
+    v-coords:width="({ position }) => position && width(position)"
     class="draggable"
     :class="{ dragging: isDragging }"
     @mousedown="dragStart(row, position)"
     @click="dragEnd()"
-    @mouseover="console.log('dragdrop', position)"
     @mouseenter="hoverState.setHovered(row)"
     @mouseleave="hoverState.clearHovered()"
   />
@@ -101,11 +102,6 @@ watchEffect((cleanup) => {
   position: absolute;
   top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
-
-  border: 1px solid red;
-  &:hover {
-    background: blue;
-  }
 
   &.dragging {
     height: 400%;

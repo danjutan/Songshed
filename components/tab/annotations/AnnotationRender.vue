@@ -3,12 +3,16 @@ import type { Annotation } from "~/model/data";
 import { useTemplateRef } from "vue";
 import OverlayCoords from "../bars/OverlayCoords.vue";
 import { injectBarManagement } from "../providers/state/provide-bar-management";
-import { type StackCoords } from "../providers/events/provide-resize-observer";
+import {
+  coordsEqual,
+  type StackCoords,
+} from "../providers/events/provide-resize-observer";
 
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
 import AnnotationResizeHandle from "./AnnotationResizeHandle.vue";
+import { useCoordsDirective } from "../hooks/use-coords-directive";
 
 export interface AnnotationRenderProps {
   row: number;
@@ -110,78 +114,78 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   }
   return `${endCoords.right - startCoords.left}px`;
 };
+
+const vCoords = useCoordsDirective({
+  start: start,
+  end: end,
+});
 </script>
 
 <template>
-  <OverlayCoords
-    v-slot="{ coords: [startCoords, endCoords] }"
-    :positions="[start, end]"
+  <div
+    ref="annotation"
+    v-coords:left="(coords) => coords.start && left(coords.start)"
+    v-coords:width="
+      (coords) => coords.start && coords.end && width(coords.start, coords.end)
+    "
+    class="annotation"
+    :class="{
+      creating: props.creating,
+      dragging: isDragging,
+      'no-right-border': endAtRight,
+      'no-left-border': startAtLeft,
+      'any-creating': isAnyCreating,
+      hovered: isHovered,
+      'any-hovered': isAnyHovered,
+      'other-hovered': isOtherHovered,
+      // 'other-dragging': !isDragging && isAnyDragging,
+    }"
+    @mouseenter="hoverState.setHovered(props.row, props.annotation)"
+    @mouseleave="if (!isDragging) hoverState.clearHovered();"
+    @click="console.log('click', start, end)"
   >
+    <AnnotationResizeHandle
+      v-show="!startAtLeft"
+      :row="row"
+      :annotation="annotation"
+      side="start"
+      :below="overflowing && !isDragging"
+      @drag-end="focusText"
+    />
+
+    <AnnotationResizeHandle
+      v-show="!endAtRight"
+      :row="row"
+      :annotation="annotation"
+      side="end"
+      :below="overflowing && !isDragging"
+      @drag-end="focusText"
+    />
+
     <div
-      v-if="startCoords && endCoords"
-      ref="annotation"
-      class="annotation"
-      :class="{
-        creating: props.creating,
-        dragging: isDragging,
-        'no-right-border': endAtRight,
-        'no-left-border': startAtLeft,
-        'any-creating': isAnyCreating,
-        hovered: isHovered,
-        'any-hovered': isAnyHovered,
-        'other-hovered': isOtherHovered,
-        // 'other-dragging': !isDragging && isAnyDragging,
-      }"
-      :style="{
-        left: left(startCoords),
-        width: width(startCoords, endCoords),
-      }"
-      @mouseenter="hoverState.setHovered(props.row, props.annotation)"
-      @mouseleave="if (!isDragging) hoverState.clearHovered();"
+      ref="text"
+      class="text"
+      contenteditable
+      spellcheck="false"
+      @input="onTextInput"
+      @blur="onTextBlur"
     >
-      <AnnotationResizeHandle
-        v-show="!startAtLeft"
-        :row="row"
-        :annotation="annotation"
-        side="start"
-        :below="overflowing && !isDragging"
-        @drag-end="focusText"
-      />
+      {{ annotation?.text }}
+    </div>
 
-      <AnnotationResizeHandle
-        v-show="!endAtRight"
-        :row="row"
-        :annotation="annotation"
-        side="end"
-        :below="overflowing && !isDragging"
-        @drag-end="focusText"
-      />
+    <div
+      v-if="annotation.start === annotation.end"
+      class="center-line pos-line"
+    />
 
-      <div
-        ref="text"
-        class="text"
-        contenteditable
-        spellcheck="false"
-        @input="onTextInput"
-        @blur="onTextBlur"
-      >
-        {{ annotation?.text }}
-      </div>
-
-      <div
-        v-if="annotation.start === annotation.end"
-        class="center-line pos-line"
-      />
-
-      <!-- <div class="delete" @click="emit('delete')">
+    <!-- <div class="delete" @click="emit('delete')">
         <X :size="16" />
       </div> -->
-      <!-- <template v-else>
+    <!-- <template v-else>
         <div class="left-line pos-line" />
         <div class="right-line pos-line" />
       </template> -->
-    </div>
-  </OverlayCoords>
+  </div>
 </template>
 
 <style scoped>

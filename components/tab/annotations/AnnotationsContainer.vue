@@ -101,8 +101,6 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
   }
   return false;
 });
-
-const vCoords = useCoordsDirective();
 </script>
 
 <template>
@@ -127,7 +125,7 @@ const vCoords = useCoordsDirective();
         }"
       />
     </template>
-    <!-- <AnnotationRender
+    <AnnotationRender
       v-for="(renderProps, i) in annotationRenders"
       :key="i"
       v-bind="renderProps"
@@ -138,7 +136,7 @@ const vCoords = useCoordsDirective();
           renderProps.annotation,
         )
       "
-    /> -->
+    />
     <NewAnnotationRender
       v-if="newAnnotationRender"
       v-bind="newAnnotationRender"

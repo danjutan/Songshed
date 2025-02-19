@@ -7,7 +7,10 @@ export interface StackCoords {
   right: number;
 }
 
-function coordsEqual(a: StackCoords | undefined, b: StackCoords | undefined) {
+export function coordsEqual(
+  a: StackCoords | undefined,
+  b: StackCoords | undefined,
+) {
   if (!a || !b) return false;
   return (
     a.top === b.top &&
@@ -15,6 +18,15 @@ function coordsEqual(a: StackCoords | undefined, b: StackCoords | undefined) {
     a.center === b.center &&
     a.right === b.right
   );
+}
+
+export function withOffset(coords: StackCoords, offset: number): StackCoords {
+  return {
+    top: coords.top,
+    left: coords.left + offset,
+    center: coords.center + offset,
+    right: coords.right + offset,
+  };
 }
 
 export interface StackResizeObserver {
@@ -25,15 +37,6 @@ export interface StackResizeObserver {
   ) => () => void;
   tablineStarts: Readonly<number[]>;
   getStackCoords: (pos: number) => StackCoords | undefined;
-}
-
-export function withOffset(coords: StackCoords, offset: number): StackCoords {
-  return {
-    top: coords.top,
-    left: coords.left + offset,
-    center: coords.center + offset,
-    right: coords.right + offset,
-  };
 }
 
 const StackResizeObserverInjectionKey =
@@ -48,6 +51,10 @@ export function provideStackResizeObserver() {
   const sortedPositions: number[] = [];
 
   const tablineStarts = reactive<number[]>([]);
+
+  watch(tablineStarts, (newTablineStarts) => {
+    console.log("tablineStarts changed", newTablineStarts);
+  });
 
   function registerListener(
     pos: number,
@@ -96,10 +103,10 @@ export function provideStackResizeObserver() {
       tablineStarts.splice(
         0,
         tablineStarts.length,
-        0,
         ...tops
           .filter(([pos, top], i) => tops[i - 1]?.[1] !== top)
           .map(([pos]) => pos),
+        // tops[tops.length - 1]?.[0],
       );
       // entries.forEach((entry) => {
       // entries.forEach((entry) => {
