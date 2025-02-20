@@ -145,20 +145,20 @@ const tablineHasBends = computed(() => {
           <!-- Teleport -->
         </div>
       </div>
-      <!-- <svg class="overlay">
-        <BendRender
+      <svg class="overlay">
+        <!-- <BendRender
           v-for="bend in bends"
           :key="`${bend.from}-${bend.string}`"
           :bend
           :show-label="inBounds(bend.to)"
-        />
+        /> -->
         <TieRender
           v-for="tie in ties"
           :key="`${tie.from}-${tie.string}`"
           :tie
           :show-label="showTieLabel(tie.from, tie.to)"
         />
-      </svg> -->
+      </svg>
     </ClientOnly>
   </div>
 </template>

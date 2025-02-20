@@ -5,12 +5,18 @@ import { injectEditTie } from "../../provide-edit-tie";
 import { TieType } from "~/model/data";
 import { injectOverlayControlsTeleport } from "../../provide-overlay-controls-teleport";
 import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
+import {
+  useCoordsDirective,
+  type ValueFn,
+} from "~/components/tab/hooks/use-coords-directive";
 
 const props = defineProps<{
   active: boolean;
   tie: Tie;
-  x: number;
-  y: number;
+  fromPos: number;
+  toPos: number;
+  leftValue: ValueFn<"from" | "to", string | undefined>;
+  topValue: ValueFn<"from" | "to", string | undefined>;
   hide?: boolean;
 }>();
 
@@ -18,6 +24,12 @@ const { updateType, deleteTie } = injectEditTie();
 const { selectsSelector } = injectOverlayControlsTeleport();
 
 const { cellHeight } = injectSpacingsState();
+
+const vCoords = useCoordsDirective({
+  from: computed(() => props.fromPos),
+  to: computed(() => props.toPos),
+});
+
 const iconSize = computed(() => `${(cellHeight.value * 2) / 3}`);
 
 function tieSlideCurvePath() {
@@ -75,15 +87,12 @@ const emits = defineEmits<{
   mouseenter: [];
   mouseleave: [];
 }>();
-
-const left = computed(() => props.x + "px");
-const top = computed(() => props.y + "px");
 </script>
 
 <template>
   <foreignObject>
     <Teleport :to="selectsSelector">
-      <div class="tie-select">
+      <div v-coords:left="leftValue" v-coords:top="topValue" class="tie-select">
         <OverlaySelect
           v-model="model"
           :active
@@ -102,7 +111,5 @@ const top = computed(() => props.y + "px");
 <style scoped>
 .tie-select {
   position: absolute;
-  left: v-bind(left);
-  top: v-bind(top);
 }
 </style>

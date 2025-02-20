@@ -13,9 +13,16 @@ import {
 } from "../providers/events/provide-resize-observer";
 import { injectSubUnit } from "../providers/provide-subunit";
 
-type CoordsMap<T extends Record<string, unknown>> = {
-  [K in keyof T]?: StackCoords;
+type ObjectKey = string | number | symbol;
+
+type CoordsMap<K extends ObjectKey> = {
+  [key in K]?: StackCoords;
 };
+
+export type ValueFn<
+  K extends ObjectKey,
+  V extends string | number | undefined = string | number | undefined,
+> = (coordsMap: CoordsMap<K>) => V;
 
 export function useCoordsDirective<
   T extends Record<string, number | ComputedRef<number>>,
@@ -23,9 +30,9 @@ export function useCoordsDirective<
   positions: T,
 ): Directive<
   HTMLElement,
-  (coordsMap: CoordsMap<T>) => string | undefined,
+  ValueFn<keyof T>,
   string, // unused
-  "left" | "width" | "x1" | "x2" | "d"
+  "left" | "width" | "top" | "x" | "x1" | "x2" | "y" | "y1" | "y2" | "d"
 > {
   const tabBarBounds = injectTabBarBounds();
   const resizeObserver = injectStackResizeObserver();
@@ -39,7 +46,7 @@ export function useCoordsDirective<
     }
   }
 
-  const coordsMap: CoordsMap<T> = {};
+  const coordsMap: CoordsMap<keyof T> = {};
 
   const getCoords = (position: number, coords: StackCoords) => {
     const tablineStartIndex = resizeObserver.tablineStarts.findLastIndex(
@@ -81,7 +88,7 @@ export function useCoordsDirective<
     //   );
     // }
 
-    return withOffset(coords, -tabBarBounds.left!);
+    return withOffset(coords, -(tabBarBounds.left ?? 0));
   };
   return {
     mounted: (el, binding) => {
@@ -91,11 +98,15 @@ export function useCoordsDirective<
       const updateElement = () => {
         const value = binding.value(coordsMap);
         if (value === undefined) return;
-        if (["left", "width"].includes(arg)) {
+        if (typeof value === "number" && isNaN(value)) {
+          return;
+        }
+        const valueString = value.toString().trim();
+        if (["left", "width", "top"].includes(arg)) {
           // @ts-expect-error TODO: fix hell
-          el.style[arg] = value;
+          el.style[arg] = valueString;
         } else {
-          el.setAttribute(arg, value);
+          el.setAttribute(arg, valueString);
         }
       };
 

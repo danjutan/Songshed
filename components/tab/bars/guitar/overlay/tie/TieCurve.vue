@@ -2,41 +2,42 @@
 import { computed, useId } from "vue";
 import OverlaySelect from "../OverlaySelect.vue";
 import { reactiveComputed } from "@vueuse/core";
+import type { StackCoords } from "~/components/tab/providers/events/provide-resize-observer";
+import {
+  useCoordsDirective,
+  type ValueFn,
+} from "~/components/tab/hooks/use-coords-directive";
 
 const props = defineProps<{
-  x1: number;
-  x2: number;
+  fromPos: number;
+  toPos: number;
   y: number;
   close: boolean;
   shiftLabel?: boolean;
+  labelX: ValueFn<"from" | "to", number>;
+  labelY: ValueFn<"from" | "to", number>;
+  curveBottom: (center1: number, center2: number) => number;
 }>();
 
-const bottom = computed(() => {
-  return props.y + Math.min(Math.abs(props.x2 - props.x1) * 0.075, 12);
+const vCoords = useCoordsDirective({
+  from: computed(() => props.fromPos),
+  to: computed(() => props.toPos),
 });
 
-const curvePath = computed(() => {
-  const curvePointX = (props.x2 + props.x1) / 2;
-  const controlY = 2 * bottom.value - props.y; // from the derivative of the quadratic Bezier curve
+const curvePath: ValueFn<"from" | "to"> = ({ from, to }) => {
+  if (!from || !to) return;
+  const x1 = from.center;
+  const x2 = to.center;
+  const curvePointX = (x2 + x1) / 2;
+  const controlY = 2 * props.curveBottom(x1, x2) - props.y; // from the derivative of the quadratic Bezier curve
   const pathData = `
-    M ${props.x1},${props.y}
-    Q ${curvePointX},${controlY - 2} ${props.x2},${props.y}
-    Q ${curvePointX},${controlY + 2} ${props.x1},${props.y}
+    M ${x1},${props.y}
+    Q ${curvePointX},${controlY - 2} ${x2},${props.y}
+    Q ${curvePointX},${controlY + 2} ${x1},${props.y}
     Z`;
 
   return pathData;
-});
-
-const label = reactiveComputed(() => {
-  return {
-    x: (props.x2 + props.x1) / 2 - 1 + (props.shiftLabel ? 6 : -8),
-    y: bottom.value - 10,
-  };
-});
-
-defineExpose({
-  label,
-});
+};
 
 const id = useId();
 </script>
@@ -44,13 +45,18 @@ const id = useId();
 <template>
   <defs>
     <mask :id="`mask-${id}`">
-      <path :d="curvePath" />
-      <rect :x="label.x + 3" :y="bottom - 5" :width="11" :height="10" />
+      <path v-coords:d="curvePath" />
+      <rect
+        v-coords:x="(coords) => labelX(coords) + 3"
+        v-coords:y="(coords) => labelY(coords) + 5"
+        :width="11"
+        :height="10"
+      />
     </mask>
   </defs>
   <path
+    v-coords:d="curvePath"
     class="tie-curve"
-    :d="curvePath"
     :mask="!close ? `url(#mask-${id})` : undefined"
   />
 </template>

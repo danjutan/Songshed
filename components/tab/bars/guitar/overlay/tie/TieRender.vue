@@ -8,6 +8,10 @@ import { injectCellHoverEvents } from "~/components/tab/providers/events/provide
 import { TieType } from "~/model/data";
 import { injectTieAddState } from "~/components/tab/providers/state/provide-tie-add-state";
 import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
+import {
+  useCoordsDirective,
+  type ValueFn,
+} from "~/components/tab/hooks/use-coords-directive";
 
 const props = defineProps<{
   tie: Tie;
@@ -79,47 +83,82 @@ const hasSlide = computed(() =>
 );
 
 const tieCurve = useTemplateRef("tieCurve");
+
+const vCoords = useCoordsDirective({
+  from: computed(() => props.tie.from),
+  to: computed(() => props.tie.to),
+});
+
+const shiftLabel = computed(() => props.showLabel === "shift");
+
+const labelX: ValueFn<"from" | "to", number> = ({ from, to }) => {
+  if (!from || !to) return 0;
+  return (from.center + to.center) / 2 - 1 + (shiftLabel.value ? 6 : -8);
+};
+
+const labelY: ValueFn<"from" | "to", number> = ({ from, to }) => {
+  if (!from || !to) return 0;
+  return curveBottom(from.center, to.center) - 10;
+};
+
+const curveBottom = (center1: number, center2: number) => {
+  return (
+    startRowTop.value +
+    row.value * cellHeight.value -
+    1 +
+    Math.min(Math.abs(center2 - center1) * 0.075, 12)
+  );
+};
 </script>
 
 <template>
-  <OverlayCoords
-    v-slot="{ coords: [from, to] }"
-    :offset="dividerWidth"
-    :positions="[tie.from, tie.to]"
-  >
-    <svg v-if="from && to">
-      <TieCurve
-        v-if="hasTie"
-        ref="tieCurve"
-        :close="tie.type === TieType.TieSlide"
-        :x1="from.center"
-        :x2="to.center"
-        :y="startRowTop + row * cellHeight - 1"
-        :shift-label="showLabel === 'shift'"
-      />
-      <line
-        v-if="hasSlide"
-        :x1="from.center + (from.right - from.left) * 0.4"
-        :x2="to.center - (to.right - to.left) * 0.4"
-        :y1="startRowTop + slideRowStart * cellHeight"
-        :y2="startRowTop + slideRowEnd * cellHeight"
-      />
-      <TieSelect
-        v-if="showLabel && tie.to !== tie.from"
-        :active="selectActive"
-        :tie
-        :x="hasSlide ? (from.right + to.left) / 2 - 20 : tieCurve?.label.x ?? 0"
-        :y="
-          hasSlide
-            ? startRowTop + slideRowEnd * cellHeight
-            : tieCurve?.label.y ?? 0
-        "
-        :hide="hasSlide"
-        @mouseenter="() => (selectHovered = true)"
-        @mouseleave="() => (selectHovered = false)"
-      />
-    </svg>
-  </OverlayCoords>
+  <svg>
+    <TieCurve
+      v-if="hasTie"
+      ref="tieCurve"
+      :close="tie.type === TieType.TieSlide"
+      :from-pos="tie.from"
+      :to-pos="tie.to"
+      :y="startRowTop + row * cellHeight - 1"
+      :shift-label="shiftLabel"
+      :label-x="labelX"
+      :label-y="labelY"
+      :curve-bottom="curveBottom"
+    />
+    <line
+      v-if="hasSlide"
+      v-coords:x1="
+        ({ from }) => from && from.center + (from.right - from.left) * 0.4
+      "
+      v-coords:x2="({ to }) => to && to.center - (to.right - to.left) * 0.4"
+      :y1="startRowTop + slideRowStart * cellHeight"
+      :y2="startRowTop + slideRowEnd * cellHeight"
+    />
+    <TieSelect
+      v-if="showLabel && tie.to !== tie.from"
+      :active="selectActive"
+      :tie
+      :from-pos="tie.from"
+      :to-pos="tie.to"
+      :left-value="
+        (coords) =>
+          coords.from &&
+          coords.to &&
+          `${
+            hasSlide
+              ? (coords.from.right + coords.to.left) / 2 - 20
+              : labelX(coords)
+          }px`
+      "
+      :top-value="
+        (coords) =>
+          `${hasSlide ? startRowTop + slideRowEnd * cellHeight : labelY(coords)}px`
+      "
+      :hide="hasSlide"
+      @mouseenter="() => (selectHovered = true)"
+      @mouseleave="() => (selectHovered = false)"
+    />
+  </svg>
 </template>
 
 <style scoped>
