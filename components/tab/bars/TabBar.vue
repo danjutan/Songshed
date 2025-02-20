@@ -24,7 +24,13 @@ const props = defineProps<{
 
 const resizeObserver = injectStackResizeObserver();
 
-provideTabBarBounds(props.bar, resizeObserver);
+const overlayReference = useTemplateRef("overlayReference");
+
+provideTabBarBounds(
+  props.bar,
+  resizeObserver,
+  computed(() => overlayReference.value?.$el),
+);
 
 const firstInLine = computed(() =>
   resizeObserver.tablineStarts.includes(props.bar.start),
@@ -33,6 +39,7 @@ const firstInLine = computed(() =>
 
 <template>
   <div
+    ref="tabBar"
     class="tab-bar"
     :class="{ firstInLine }"
     :style="{ flex: flexGrow ? `${flexGrow} 0 0px` : undefined }"
@@ -44,6 +51,7 @@ const firstInLine = computed(() =>
     />
     <AnnotationsContainer class="annotations" :annotation-store />
     <GuitarBar
+      ref="overlayReference"
       class="guitar"
       :stack-data="bar.stacks"
       :tuning="guitarStore.tuning"

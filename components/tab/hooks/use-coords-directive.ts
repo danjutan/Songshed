@@ -16,7 +16,7 @@ import { injectSubUnit } from "../providers/provide-subunit";
 type ObjectKey = string | number | symbol;
 
 type CoordsMap<K extends ObjectKey> = {
-  [key in K]?: StackCoords;
+  [key in K]: StackCoords;
 };
 
 export type ValueFn<
@@ -31,22 +31,12 @@ export function useCoordsDirective<
 ): Directive<
   HTMLElement,
   ValueFn<keyof T>,
-  string, // unused
+  string,
   "left" | "width" | "top" | "x" | "x1" | "x2" | "y" | "y1" | "y2" | "d"
 > {
   const tabBarBounds = injectTabBarBounds();
   const resizeObserver = injectStackResizeObserver();
   const subUnit = injectSubUnit();
-
-  const cleanupFns: Array<() => void> = [];
-
-  function cleanup() {
-    for (const cleanupFn of cleanupFns) {
-      cleanupFn();
-    }
-  }
-
-  const coordsMap: CoordsMap<keyof T> = {};
 
   const getCoords = (position: number, coords: StackCoords) => {
     const tablineStartIndex = resizeObserver.tablineStarts.findLastIndex(
@@ -90,102 +80,77 @@ export function useCoordsDirective<
 
     return withOffset(coords, -(tabBarBounds.left ?? 0));
   };
-  return {
-    mounted: (el, binding) => {
-      const arg = binding.arg;
-      if (!arg) return;
 
-      const updateElement = () => {
-        const value = binding.value(coordsMap);
-        if (value === undefined) return;
-        if (typeof value === "number" && isNaN(value)) {
-          return;
-        }
-        const valueString = value.toString().trim();
-        if (["left", "width", "top"].includes(arg)) {
-          // @ts-expect-error TODO: fix hell
-          el.style[arg] = valueString;
-        } else {
-          el.setAttribute(arg, valueString);
-        }
-      };
+  const valueFns: Map<HTMLElement, { [attribute: string]: ValueFn<keyof T> }> =
+    new Map();
 
-      for (const name in positions) {
-        const registerListener = (position: number) => {
-          const cleanupFn = resizeObserver.registerListener(
-            position,
-            (rawCoords) => {
-              const coords = getCoords(position, rawCoords);
-              coordsMap[name] = coords;
-              updateElement();
-            },
-          );
-          return cleanupFn;
-        };
+  const coordsMapFromListener = (posToCoords: Record<number, StackCoords>) => {
+    return Object.fromEntries(
+      Object.entries(positions).map(([name, position]) => [
+        name,
+        getCoords(unref(position), posToCoords[unref(position)]),
+      ]),
+    ) as CoordsMap<keyof T>;
+  };
 
-        if (typeof positions[name] === "number") {
-          const cleanupFn = registerListener(positions[name]);
-          cleanupFns.push(cleanupFn);
-          return;
-        }
+  function updateElement(
+    el: HTMLElement,
+    attr: string,
+    value: string | number | undefined,
+  ) {
+    if (value === undefined) return;
+    const valueString = value.toString().trim();
+    if (["left", "width", "top"].includes(attr)) {
+      // @ts-expect-error TODO: fix hell
+      el.style[attr] = valueString;
+    } else {
+      el.setAttribute(attr, valueString);
+    }
+  }
 
-        watch(
-          positions[name],
-          (position) => {
-            const coords = resizeObserver.getStackCoords(position);
-            if (coords) {
-              coordsMap[name] = getCoords(position, coords);
-              updateElement();
+  watch(
+    () => positions,
+    (newPositions, oldPositions) => {
+      const unwrappedPositions = Object.values(newPositions).map(unref);
+      onWatcherCleanup(
+        resizeObserver.registerListener(unwrappedPositions, (posToCoords) => {
+          valueFns.forEach((attrToFn, el) => {
+            for (const attr in attrToFn) {
+              const fn = attrToFn[attr];
+              const value = fn(coordsMapFromListener(posToCoords));
+              updateElement(el, attr, value);
             }
-            const cleanupFn = registerListener(position);
-            onWatcherCleanup(cleanupFn);
-          },
-          { immediate: true },
+          });
+        }),
+      );
+
+      if (oldPositions) {
+        const coordsMap = coordsMapFromListener(
+          Object.fromEntries(
+            unwrappedPositions.map((position) => [
+              position,
+              resizeObserver.getStackCoords(position)!,
+            ]),
+          ),
         );
+        valueFns.forEach((attrToFn, el) => {
+          for (const attr in attrToFn) {
+            const fn = attrToFn[attr];
+            updateElement(el, attr, fn(coordsMap));
+          }
+        });
       }
-
-      // watch(
-      //   () => positions,
-      //   () => {
-      //     for (const name in positions) {
-      //       const position = positions[name];
-      //       coordsMap[name] = undefined;
-      //       const cleanupFn = resizeObserver.registerListener(
-      //         position,
-      //         (rawCoords) => {
-      //           const coords = getCoords(position, rawCoords);
-      //           coordsMap[name] = coords;
-      //           const value = binding.value(coordsMap);
-      //           if (value === undefined) return;
-      //           if (["left", "width"].includes(arg)) {
-      //             // @ts-expect-error TODO: fix hell
-      //             el.style[arg] = value;
-      //           } else {
-      //             el.setAttribute(arg, value);
-      //           }
-      //         },
-      //       );
-      //       cleanupFns.push(cleanupFn);
-      //     }
-
-      //     onWatcherCleanup(cleanup);
-      //   },
-      //   { immediate: true, deep: true },
-      // );
-      // if (binding.arg === undefined || !Object.keys(binding.modifiers).length)
-      //   return;
-      // const position = binding.arg;
-      // cleanupFn = resizeObserver.registerListener(position, (rawCoords) => {
-      //   const coords = getCoords(position, rawCoords);
-      //   const attrValue = binding.value(coords);
-      //   for (const modifier of Object.keys(binding.modifiers)) {
-      //     // @ts-expect-error TODO: figure this out
-      //     el.style[modifier] = attrValue.toString();
-      //   }
-      // });
     },
-    unmounted: () => {
-      cleanup();
+    { deep: true, immediate: true },
+  );
+
+  return {
+    created: (el, binding, vnode) => {
+      if (binding.arg && binding.value) {
+        const fnsArray = valueFns.get(el) || {};
+        fnsArray[binding.arg] = binding.value;
+        valueFns.set(el, fnsArray);
+      }
     },
   };
 }

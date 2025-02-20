@@ -92,12 +92,10 @@ const vCoords = useCoordsDirective({
 const shiftLabel = computed(() => props.showLabel === "shift");
 
 const labelX: ValueFn<"from" | "to", number> = ({ from, to }) => {
-  if (!from || !to) return 0;
   return (from.center + to.center) / 2 - 1 + (shiftLabel.value ? 6 : -8);
 };
 
 const labelY: ValueFn<"from" | "to", number> = ({ from, to }) => {
-  if (!from || !to) return 0;
   return curveBottom(from.center, to.center) - 10;
 };
 
@@ -127,10 +125,8 @@ const curveBottom = (center1: number, center2: number) => {
     />
     <line
       v-if="hasSlide"
-      v-coords:x1="
-        ({ from }) => from && from.center + (from.right - from.left) * 0.4
-      "
-      v-coords:x2="({ to }) => to && to.center - (to.right - to.left) * 0.4"
+      v-coords:x1="({ from }) => from.center + (from.right - from.left) * 0.4"
+      v-coords:x2="({ to }) => to.center - (to.right - to.left) * 0.4"
       :y1="startRowTop + slideRowStart * cellHeight"
       :y2="startRowTop + slideRowEnd * cellHeight"
     />
@@ -142,8 +138,6 @@ const curveBottom = (center1: number, center2: number) => {
       :to-pos="tie.to"
       :left-value="
         (coords) =>
-          coords.from &&
-          coords.to &&
           `${
             hasSlide
               ? (coords.from.right + coords.to.left) / 2 - 20

@@ -29,9 +29,16 @@ export function withOffset(coords: StackCoords, offset: number): StackCoords {
   };
 }
 
+type StackResizeListener = (coords: Record<number, StackCoords>) => void;
+
 export interface StackResizeObserver {
   registerStackRef: (pos: number, stack: HTMLElement) => void;
+  registerTabBarRef: (pos: number, tabBar: HTMLElement) => void;
   registerListener: (
+    positions: number[],
+    listener: StackResizeListener,
+  ) => () => void;
+  registerTabBarListener: (
     pos: number,
     listener: (coords: StackCoords) => void,
   ) => () => void;
@@ -42,12 +49,26 @@ export interface StackResizeObserver {
 const StackResizeObserverInjectionKey =
   Symbol() as InjectionKey<StackResizeObserver>;
 
+type ListenerId = number;
+
 export function provideStackResizeObserver() {
   let resizeObserver: ResizeObserver;
 
+  let nextId = 0;
+  const stackListeners = new Map<
+    ListenerId,
+    { positions: number[]; listener: StackResizeListener }
+  >();
+
   const stackElements = new Map<number, HTMLElement>();
-  const lastCoords = new Map<number, StackCoords>();
-  const stackListeners = new Map<number, ((coords: StackCoords) => void)[]>();
+  const lastStackCoords = new Map<number, StackCoords>();
+
+  const posStackListeners = new Map<number, ListenerId[]>();
+
+  const tabBarElements = new Map<number, HTMLElement>();
+  const lastTabBarCoords = new Map<number, StackCoords>();
+  const tabBarListeners = new Map<number, ((coords: StackCoords) => void)[]>();
+
   const sortedPositions: number[] = [];
 
   const tablineStarts = reactive<number[]>([]);
@@ -57,17 +78,45 @@ export function provideStackResizeObserver() {
   });
 
   function registerListener(
+    positions: number[],
+    listener: StackResizeListener,
+  ) {
+    const id = nextId;
+    stackListeners.set(id, { positions, listener });
+
+    positions.forEach((pos) => {
+      const posListeners = posStackListeners.get(pos) || [];
+      posListeners.push(id);
+      posStackListeners.set(pos, posListeners);
+    });
+
+    nextId++;
+    return () => {
+      stackListeners.delete(id);
+      positions.forEach((pos) => {
+        const currentListeners = posStackListeners.get(pos);
+        if (currentListeners) {
+          posStackListeners.set(
+            pos,
+            currentListeners.filter((l) => l !== id),
+          );
+        }
+      });
+    };
+  }
+
+  function registerTabBarListener(
     pos: number,
     listener: (coords: StackCoords) => void,
   ) {
-    const posListeners = stackListeners.get(pos) || [];
+    const posListeners = tabBarListeners.get(pos) || [];
     posListeners.push(listener);
-    stackListeners.set(pos, posListeners);
+    tabBarListeners.set(pos, posListeners);
 
     return () => {
-      const currentListeners = stackListeners.get(pos);
+      const currentListeners = tabBarListeners.get(pos);
       if (currentListeners) {
-        stackListeners.set(
+        tabBarListeners.set(
           pos,
           currentListeners.filter((l) => l !== listener),
         );
@@ -79,26 +128,64 @@ export function provideStackResizeObserver() {
     if (resizeObserver) return resizeObserver;
     resizeObserver = new ResizeObserver((entries) => {
       const tops: [position: number, top: number][] = [];
+      const triggered = new Set<ListenerId>();
       // We need to loop through every stack, not just the ones that were resized; a resized element can trigger another stack to move without resizing it
       sortedPositions.forEach((pos) => {
         const el = stackElements.get(pos);
         if (!el) return;
         const { top, left, right, width } = el.getBoundingClientRect();
-        tops.push([pos, top]);
+        // tops.push([pos, top]);
         const coords: StackCoords = {
           top,
           left,
           center: left + width / 2,
           right,
         };
-        if (!coordsEqual(lastCoords.get(pos), coords)) {
-          lastCoords.set(pos, coords);
-          const listeners = stackListeners.get(pos);
+        if (!coordsEqual(lastStackCoords.get(pos), coords)) {
+          // if not equal, look up the multifns for the coord
+          // we will get different functions associated with diff positions
+          // some fns will be associated with the same positions but will be from diff directive instances
+          // regardless, a fn with two positions only need to be fired once if each position changes
+          // so we need a way of tracking whether we've seen this fn before
+          // each fn is originally inserted under all its dependencies with the same id
+          // listeners only get tracked here if that id hasn't already been tracked
+
+          lastStackCoords.set(pos, coords);
+          const listeners = posStackListeners.get(pos);
           if (listeners) {
-            listeners.forEach((listener) => listener(coords));
+            listeners.forEach((id) => triggered.add(id));
+          }
+        }
+
+        if (tabBarElements.has(pos)) {
+          const el = tabBarElements.get(pos);
+          if (!el) return;
+          const { top, left, right, width } = el.getBoundingClientRect();
+          tops.push([pos, top]);
+          const coords: StackCoords = {
+            top,
+            left,
+            center: left + width / 2,
+            right,
+          };
+          if (!coordsEqual(lastTabBarCoords.get(pos), coords)) {
+            lastTabBarCoords.set(pos, coords);
+            const listeners = tabBarListeners.get(pos);
+            if (listeners) {
+              listeners.forEach((listener) => listener(coords));
+            }
           }
         }
       });
+
+      for (const id of triggered) {
+        const { positions, listener } = stackListeners.get(id)!;
+        const coords: Record<number, StackCoords> = {};
+        for (const pos of positions) {
+          coords[pos] = lastStackCoords.get(pos)!;
+        }
+        listener(coords);
+      }
       // Trigger an update only if the array is actually different
       tablineStarts.splice(
         0,
@@ -108,57 +195,26 @@ export function provideStackResizeObserver() {
           .map(([pos]) => pos),
         // tops[tops.length - 1]?.[0],
       );
-      // entries.forEach((entry) => {
-      // entries.forEach((entry) => {
-      //   const el = entry.target as HTMLElement;
-      //   const position = el.dataset.position;
-      //   if (!position) return;
-      //   const listeners = stackListeners.get(+position);
-      //   const { top, left, width, right } = el.getBoundingClientRect();
-      //   const coords: StackCoords = {
-      //     top,
-      //     left,
-      //     center: left + width / 2,
-      //     right,
-      //   };
-      //   lastCoords.set(+position, coords);
-      //   if (!listeners) {
-      //     return;
-      //   }
-      //   listeners.forEach((listener) => listener(coords));
-      // });
     });
     return resizeObserver;
   };
 
   function registerStackRef(startPos: number, stack: HTMLElement) {
-    stack.dataset.position = startPos.toString();
     stackElements.set(startPos, stack);
-    createResizeObserver().observe(stack);
+    // createResizeObserver().observe(stack);
     sortedPositions.push(startPos);
     sortedPositions.sort((a, b) => a - b);
   }
 
-  // const tablineStarts = computed(() => {
-  //   const entries = [...lastCoords.entries()]
-  //     .sort((a, b) => a[0] - b[0])
-  //     .map(([position, coords]) => ({ position, y: coords.top }));
-  //   const breaks: number[] = [];
-  //   if (entries.length === 0) return [0];
-
-  //   entries.forEach(({ position, y }, i: number) => {
-  //     if (i === 0) return;
-  //     const prevY = entries[i - 1].y;
-  //     if (y !== prevY) {
-  //       breaks.push(position);
-  //     }
-  //   });
-
-  //   return [0, ...breaks, entries[entries.length - 1].position];
-  // });
+  function registerTabBarRef(startPos: number, tabBar: HTMLElement) {
+    tabBarElements.set(startPos, tabBar);
+    createResizeObserver().observe(tabBar);
+    // sortedPositions.push(startPos);
+    // sortedPositions.sort((a, b) => a - b);
+  }
 
   function getStackCoords(pos: number) {
-    return lastCoords.get(pos);
+    return lastStackCoords.get(pos);
   }
 
   const stackResizeObserver: StackResizeObserver = {
@@ -166,6 +222,8 @@ export function provideStackResizeObserver() {
     registerStackRef,
     registerListener,
     getStackCoords,
+    registerTabBarRef,
+    registerTabBarListener,
   };
 
   provide(StackResizeObserverInjectionKey, stackResizeObserver);

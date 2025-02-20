@@ -15,6 +15,8 @@ import { injectAnnotationAddState } from "../providers/state/provide-annotation-
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
 import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
 import { useCoordsDirective } from "../hooks/use-coords-directive";
+import { injectSpacingsState } from "../providers/provide-spacings";
+import { injectTabBarBounds } from "../bars/provide-bar-bounds";
 
 const props = defineProps<{
   row: number;
@@ -26,7 +28,8 @@ const props = defineProps<{
 const { dragStart, dragEnd, newAnnotation } = injectAnnotationAddState();
 const resizeState = injectAnnotationResizeState();
 const hoverState = injectAnnotationHoverState();
-
+const spacings = injectSpacingsState();
+const tabBarBounds = injectTabBarBounds();
 const vCoords = useCoordsDirective({
   position: props.position,
 });
@@ -38,14 +41,12 @@ const isDragging = computed(
 );
 
 const left = (coords: { left: number }) => {
-  return props.firstInBar
-    ? `${coords.left}px`
-    : `calc(${coords.left}px + var(--divider-width))`;
+  return props.firstInBar ? "0px" : `${coords.left}px`;
 };
 
 const width = (coords: { left: number; right: number }) => {
   return props.firstInBar
-    ? `calc(${coords.right - coords.left}px + var(--divider-width))`
+    ? `${coords.right}px`
     : `${coords.right - coords.left}px`;
 };
 
@@ -85,8 +86,8 @@ watchEffect((cleanup) => {
 <template>
   <div
     ref="element"
-    v-coords:left="({ position }) => position && left(position)"
-    v-coords:width="({ position }) => position && width(position)"
+    v-coords:left="({ position }) => left(position)"
+    v-coords:width="({ position }) => width(position)"
     class="draggable"
     :class="{ dragging: isDragging }"
     @mousedown="dragStart(row, position)"
@@ -102,6 +103,8 @@ watchEffect((cleanup) => {
   position: absolute;
   top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
+
+  border: 1px solid red;
 
   &.dragging {
     height: 400%;

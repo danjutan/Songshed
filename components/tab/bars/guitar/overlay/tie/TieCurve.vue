@@ -25,7 +25,6 @@ const vCoords = useCoordsDirective({
 });
 
 const curvePath: ValueFn<"from" | "to"> = ({ from, to }) => {
-  if (!from || !to) return;
   const x1 = from.center;
   const x2 = to.center;
   const curvePointX = (x2 + x1) / 2;

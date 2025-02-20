@@ -103,14 +103,14 @@ const startsInFirstColumn = computed(() => {
 
 const left = (startCoords: StackCoords) => {
   if (startsInFirstColumn.value) {
-    return `${startCoords.left}px`;
+    return "0px";
   }
-  return `calc(var(--divider-width) + ${startCoords.left}px)`;
+  return `${startCoords.left}px`;
 };
 
 const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   if (startsInFirstColumn.value) {
-    return `calc(var(--divider-width) + ${endCoords.right - startCoords.left}px)`;
+    return `${endCoords.right}px`;
   }
   return `${endCoords.right - startCoords.left}px`;
 };
@@ -124,10 +124,8 @@ const vCoords = useCoordsDirective({
 <template>
   <div
     ref="annotation"
-    v-coords:left="(coords) => coords.start && left(coords.start)"
-    v-coords:width="
-      (coords) => coords.start && coords.end && width(coords.start, coords.end)
-    "
+    v-coords:left="(coords) => left(coords.start)"
+    v-coords:width="(coords) => width(coords.start, coords.end)"
     class="annotation"
     :class="{
       creating: props.creating,

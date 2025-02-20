@@ -21,16 +21,22 @@ const TabBarBoundsInjectionKey = Symbol() as InjectionKey<TabBarBounds>;
 export function provideTabBarBounds(
   bar: Bar,
   resizeObserver: StackResizeObserver,
+  tabBar: ComputedRef<HTMLElement | undefined>,
 ) {
-  const { tablineStarts, registerListener } = resizeObserver;
+  const { tablineStarts, registerTabBarRef, registerTabBarListener } =
+    resizeObserver;
 
   const coords = ref<StackCoords>();
+
+  onMounted(() => {
+    registerTabBarRef(bar.start, tabBar.value!);
+  });
 
   const tabBarBounds = reactiveComputed(() => {
     const tablineStartIndex =
       tablineStarts.findIndex((lineStart) => lineStart > bar.start) - 1;
 
-    registerListener(bar.start, (c) => {
+    registerTabBarListener(bar.start, (c) => {
       coords.value = c;
     });
 
