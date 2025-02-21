@@ -39,16 +39,6 @@ export function useCoordsDirective<
   const subUnit = injectSubUnit();
 
   const getCoords = (position: number, coords: StackCoords) => {
-    const tablineStartIndex = resizeObserver.tablineStarts.findLastIndex(
-      (start) => position > start,
-    );
-    if (tablineStartIndex < tabBarBounds.tabline.start) {
-      console.log("above");
-    }
-    if (tablineStartIndex > tabBarBounds.tabline.start) {
-      console.log("below");
-    }
-
     // if (coords.top < tabBarBounds.top!) {
     //   const lastLineEnd = resizeObserver.tablineStarts.find(
     //     (start) => start > position,

@@ -73,10 +73,6 @@ export function provideStackResizeObserver() {
 
   const tablineStarts = reactive<number[]>([]);
 
-  watch(tablineStarts, (newTablineStarts) => {
-    console.log("tablineStarts changed", newTablineStarts);
-  });
-
   function registerListener(
     positions: number[],
     listener: StackResizeListener,
@@ -186,15 +182,14 @@ export function provideStackResizeObserver() {
         }
         listener(coords);
       }
+
       // Trigger an update only if the array is actually different
-      console.log("tops", tops);
       tablineStarts.splice(
         0,
         tablineStarts.length,
         ...tops
           .filter(([pos, top], i) => tops[i - 1]?.[1] !== top)
           .map(([pos]) => pos),
-        // tops[tops.length - 1]?.[0],
       );
     });
     return resizeObserver;
