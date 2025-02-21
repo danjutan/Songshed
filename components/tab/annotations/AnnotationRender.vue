@@ -103,16 +103,16 @@ const startsInFirstColumn = computed(() => {
 
 const left = (startCoords: StackCoords) => {
   if (startsInFirstColumn.value) {
-    return "0px";
+    return 0;
   }
-  return `${startCoords.left}px`;
+  return startCoords.left;
 };
 
 const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   if (startsInFirstColumn.value) {
-    return `${endCoords.right}px`;
+    return endCoords.right;
   }
-  return `${endCoords.right - startCoords.left}px`;
+  return endCoords.right - startCoords.left;
 };
 
 const vCoords = useCoordsDirective({

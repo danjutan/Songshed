@@ -146,12 +146,12 @@ const tablineHasBends = computed(() => {
         </div>
       </div>
       <svg class="overlay">
-        <!-- <BendRender
+        <BendRender
           v-for="bend in bends"
           :key="`${bend.from}-${bend.string}`"
           :bend
           :show-label="inBounds(bend.to)"
-        /> -->
+        />
         <TieRender
           v-for="tie in ties"
           :key="`${tie.from}-${tie.string}`"

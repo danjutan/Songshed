@@ -138,15 +138,13 @@ const curveBottom = (center1: number, center2: number) => {
       :to-pos="tie.to"
       :left-value="
         (coords) =>
-          `${
-            hasSlide
-              ? (coords.from.right + coords.to.left) / 2 - 20
-              : labelX(coords)
-          }px`
+          hasSlide
+            ? (coords.from.right + coords.to.left) / 2 - 20
+            : labelX(coords)
       "
       :top-value="
         (coords) =>
-          `${hasSlide ? startRowTop + slideRowEnd * cellHeight : labelY(coords)}px`
+          hasSlide ? startRowTop + slideRowEnd * cellHeight : labelY(coords)
       "
       :hide="hasSlide"
       @mouseenter="() => (selectHovered = true)"

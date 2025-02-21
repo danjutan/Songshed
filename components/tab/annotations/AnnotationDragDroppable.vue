@@ -41,13 +41,11 @@ const isDragging = computed(
 );
 
 const left = (coords: { left: number }) => {
-  return props.firstInBar ? "0px" : `${coords.left}px`;
+  return props.firstInBar ? 0 : coords.left;
 };
 
 const width = (coords: { left: number; right: number }) => {
-  return props.firstInBar
-    ? `${coords.right}px`
-    : `${coords.right - coords.left}px`;
+  return props.firstInBar ? coords.right : coords.right - coords.left;
 };
 
 const element = useTemplateRef("element");
@@ -103,8 +101,6 @@ watchEffect((cleanup) => {
   position: absolute;
   top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
-
-  border: 1px solid red;
 
   &.dragging {
     height: 400%;

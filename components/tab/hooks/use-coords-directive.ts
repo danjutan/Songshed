@@ -25,7 +25,7 @@ export type ValueFn<
 > = (coordsMap: CoordsMap<K>) => V;
 
 export function useCoordsDirective<
-  T extends Record<string, number | ComputedRef<number>>,
+  T extends Record<string, number | ComputedRef<number | undefined>>,
 >(
   positions: T,
 ): Directive<
@@ -86,10 +86,17 @@ export function useCoordsDirective<
 
   const coordsMapFromListener = (posToCoords: Record<number, StackCoords>) => {
     return Object.fromEntries(
-      Object.entries(positions).map(([name, position]) => [
-        name,
-        getCoords(unref(position), posToCoords[unref(position)]),
-      ]),
+      Object.entries(positions)
+        .map(([name, position]) =>
+          unref(position) !== undefined ? [name, unref(position)] : undefined,
+        )
+        .filter(
+          (entry): entry is [keyof T & string, number] => entry !== undefined,
+        )
+        .map(([name, position]) => [
+          name,
+          getCoords(position, posToCoords[position]),
+        ]),
     ) as CoordsMap<keyof T>;
   };
 
@@ -99,11 +106,13 @@ export function useCoordsDirective<
     value: string | number | undefined,
   ) {
     if (value === undefined) return;
-    const valueString = value.toString().trim();
     if (["left", "width", "top"].includes(attr)) {
+      const valueString =
+        typeof value === "number" ? `${value}px` : value.trim();
       // @ts-expect-error TODO: fix hell
       el.style[attr] = valueString;
     } else {
+      const valueString = value.toString().trim();
       el.setAttribute(attr, valueString);
     }
   }
@@ -111,7 +120,9 @@ export function useCoordsDirective<
   watch(
     () => positions,
     (newPositions, oldPositions) => {
-      const unwrappedPositions = Object.values(newPositions).map(unref);
+      const unwrappedPositions = Object.values(newPositions)
+        .map(unref)
+        .filter((position) => position !== undefined);
       onWatcherCleanup(
         resizeObserver.registerListener(unwrappedPositions, (posToCoords) => {
           valueFns.forEach((attrToFn, el) => {

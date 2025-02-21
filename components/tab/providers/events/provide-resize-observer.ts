@@ -187,6 +187,7 @@ export function provideStackResizeObserver() {
         listener(coords);
       }
       // Trigger an update only if the array is actually different
+      console.log("tops", tops);
       tablineStarts.splice(
         0,
         tablineStarts.length,

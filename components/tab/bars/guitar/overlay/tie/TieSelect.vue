@@ -15,8 +15,8 @@ const props = defineProps<{
   tie: Tie;
   fromPos: number;
   toPos: number;
-  leftValue: ValueFn<"from" | "to", string | undefined>;
-  topValue: ValueFn<"from" | "to", string | undefined>;
+  leftValue: ValueFn<"from" | "to">;
+  topValue: ValueFn<"from" | "to">;
   hide?: boolean;
 }>();
 

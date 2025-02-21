@@ -6,14 +6,19 @@ import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { getBendEditDragData } from "~/components/tab/hooks/dnd/types";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
+import {
+  useCoordsDirective,
+  type ValueFn,
+} from "~/components/tab/hooks/use-coords-directive";
+import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
 
 const props = defineProps<{
   bend: Bend;
   mode: StartType;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  position: number;
+  leftFn: ValueFn<"position">;
+  widthFn: ValueFn<"position">;
+  topPx: string;
 }>();
 
 const emit = defineEmits<{
@@ -23,15 +28,14 @@ const emit = defineEmits<{
 }>();
 
 const { draggersSelector } = injectOverlayControlsTeleport();
-
-const left = computed(() => props.x + "px");
-const top = computed(() => props.y + "px");
-const width = computed(() => props.width + "px");
-const height = computed(() => props.height + "px");
+const { cellHeightPx } = injectSpacingsState();
 
 const dragger = useTemplateRef("dragger");
 const dragging = ref(false);
 
+const vCoords = useCoordsDirective({
+  position: computed(() => props.position),
+});
 watchEffect((cleanup) => {
   if (!dragger.value) {
     return;
@@ -65,6 +69,8 @@ watchEffect((cleanup) => {
     <Teleport :to="draggersSelector">
       <div
         ref="dragger"
+        v-coords:left="leftFn"
+        v-coords:width="widthFn"
         class="bend-dragger"
         :class="{ dragging }"
         @mouseenter="emit('mouseenter')"
@@ -78,10 +84,9 @@ watchEffect((cleanup) => {
 <style scoped>
 .bend-dragger {
   position: absolute;
-  left: v-bind(left);
-  top: v-bind(top);
-  width: v-bind(width);
-  height: v-bind(height);
+  top: v-bind(topPx);
+  height: v-bind(cellHeightPx);
+
   pointer-events: all;
 
   &.dragging {

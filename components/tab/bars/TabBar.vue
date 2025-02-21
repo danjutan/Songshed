@@ -72,8 +72,8 @@ const firstInLine = computed(() =>
 <style scoped>
 .tab-bar {
   display: grid;
-  /* min-width: min-content; */
-  /* flex: v-bind(flexGrow) 0 0px; */
+  /* TODO: investigate and write up why "auto" is problematic (makes first row too big)*/
+  grid-template-rows: min-content min-content;
   position: relative;
 }
 
