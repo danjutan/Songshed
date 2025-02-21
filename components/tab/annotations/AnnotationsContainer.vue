@@ -29,22 +29,18 @@ const renderRow = (row: number) => numRows.value - row - 1;
 const isFirstBar = computed(
   () => tabBarBounds.start === tabBarBounds.tabline.start,
 );
+
 function edgeProps(
   start: number,
   end: number,
 ): { startAtLeft?: number; endAtRight?: number } | false {
-  // const startLineIndex =
-
   if (tablineStarts.length === 0) {
     return false;
   }
-  // const startLineStart = tablineStarts[startLineIndex];
   const startLineStart = tablineStarts.findLast(
     (lineStart) => start >= lineStart,
-  );
-  if (startLineStart === undefined) {
-    throw "TablineStarts is fucked up - love, AnnotationsContainer";
-  }
+  )!;
+
   const endAtRight = tabBarBounds.tabline.end - subUnit.value;
 
   const startsInCurrentBar =

@@ -35,40 +35,58 @@ export function useCoordsDirective<
   "left" | "width" | "top" | "x" | "x1" | "x2" | "y" | "y1" | "y2" | "d"
 > {
   const tabBarBounds = injectTabBarBounds();
-  const resizeObserver = injectStackResizeObserver();
+  const { registerListener, getStackCoords, tablineStarts } =
+    injectStackResizeObserver();
   const subUnit = injectSubUnit();
 
   const getCoords = (position: number, coords: StackCoords) => {
-    // if (coords.top < tabBarBounds.top!) {
-    //   const lastLineEnd = resizeObserver.tablineStarts.find(
-    //     (start) => start > position,
-    //   )!;
-    //   const lastLineLast = lastLineEnd - subUnit.value;
-    //   const lastLineEndCoords = resizeObserver.getStackCoords(lastLineLast);
-    //   if (!lastLineEndCoords) return coords;
-    //   const lastLineEndX = lastLineEndCoords.right;
-    //   const offset = coords.left - lastLineEndX; // will be negative
-    //   return withOffset(
-    //     resizeObserver.getStackCoords(tabBarBounds.start)!,
-    //     offset,
-    //   );
-    // }
+    if (tablineStarts.length === 0 || tabBarBounds.left === undefined) {
+      return coords;
+    }
+    const tablineStartIndex = tablineStarts.findLastIndex(
+      (lineStart) => position >= lineStart,
+    );
 
-    // if (coords.top > tabBarBounds.top!) {
-    //   const nextLineIndex =
-    //     resizeObserver.tablineStarts.findIndex((start) => start > position) - 1;
-    //   const nextLineStart = resizeObserver.tablineStarts[nextLineIndex];
-    //   const nextLineStartCoords = resizeObserver.getStackCoords(nextLineStart);
-    //   if (!nextLineStartCoords) return coords;
-    //   const nextLineStartX = nextLineStartCoords.left;
-    //   const offset = coords.right - nextLineStartX; // will be positive;
-    //   return withOffset(
-    //     resizeObserver.getStackCoords(tabBarBounds.end - subUnit.value)!,
-    //     offset,
-    //   );
-    // }
+    const tablineStart = tablineStarts[tablineStartIndex];
 
-    return withOffset(coords, -(tabBarBounds.left ?? 0));
+    // Note that the following logic assumes that overlay renders only span two tablines
+    // i.e., if the position is on another tabline than the current bar, it is either on the previous or the next tabline
+    // If you do drag e.g. a tie across three tablines, it will work but won't look continuous
+    // TODO consider calculate the widths of the between tablines!
+
+    if (tablineStart < tabBarBounds.tabline.start) {
+      // The position is on an earlier tabline than the current bar
+      // We're going to start at the beginning of the current bar,
+      // and subtract the distance between the position and the end of its tabline
+      const tablineEnd = tablineStarts[tablineStartIndex + 1];
+      const tablineLast = tablineEnd - subUnit.value;
+      const tablineLastCoords = getStackCoords(tablineLast);
+      if (!tablineLastCoords) return coords;
+      const tablineEndX = tablineLastCoords.right;
+      const offset = coords.left - tablineEndX; // will be negative
+      return withOffset(
+        getStackCoords(tabBarBounds.start)!,
+        offset - tabBarBounds.left,
+      );
+    }
+
+    if (tablineStart > tabBarBounds.tabline.start) {
+      // The position is on a later tabline than the current bar
+      // We're going to start at the end of current bar,
+      // and add the distance between the position and the start of its tabline
+
+      const nextLineStart = tablineStarts[tablineStartIndex - 1];
+      const nextLineStartCoords = getStackCoords(nextLineStart);
+      if (!nextLineStartCoords) return coords;
+      const nextLineStartX = nextLineStartCoords.left;
+      const offset = coords.right - nextLineStartX; // will be positive;
+      return withOffset(
+        getStackCoords(tabBarBounds.end - subUnit.value)!,
+        offset - tabBarBounds.left,
+      );
+    }
+
+    return withOffset(coords, -tabBarBounds.left);
   };
 
   const valueFns: Map<HTMLElement, { [attribute: string]: ValueFn<keyof T> }> =
@@ -114,7 +132,7 @@ export function useCoordsDirective<
         .map(unref)
         .filter((position) => position !== undefined);
       onWatcherCleanup(
-        resizeObserver.registerListener(unwrappedPositions, (posToCoords) => {
+        registerListener(unwrappedPositions, (posToCoords) => {
           valueFns.forEach((attrToFn, el) => {
             for (const attr in attrToFn) {
               const fn = attrToFn[attr];
@@ -130,7 +148,7 @@ export function useCoordsDirective<
           Object.fromEntries(
             unwrappedPositions.map((position) => [
               position,
-              resizeObserver.getStackCoords(position)!,
+              getStackCoords(position)!,
             ]),
           ),
         );
