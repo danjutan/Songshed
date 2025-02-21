@@ -33,9 +33,18 @@ function edgeProps(
   start: number,
   end: number,
 ): { startAtLeft?: number; endAtRight?: number } | false {
-  const startLineIndex =
-    tablineStarts.findIndex((lineStart) => lineStart > start) - 1;
-  const startLineStart = tablineStarts[startLineIndex];
+  // const startLineIndex =
+
+  if (tablineStarts.length === 0) {
+    return false;
+  }
+  // const startLineStart = tablineStarts[startLineIndex];
+  const startLineStart = tablineStarts.findLast(
+    (lineStart) => start >= lineStart,
+  );
+  if (startLineStart === undefined) {
+    throw "TablineStarts is fucked up - love, AnnotationsContainer";
+  }
   const endAtRight = tabBarBounds.tabline.end - subUnit.value;
 
   const startsInCurrentBar =

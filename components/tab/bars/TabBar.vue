@@ -5,7 +5,10 @@ import type {
   GuitarStore,
   NotePosition,
 } from "~/model/stores";
-import type { Bar } from "../providers/state/provide-bar-management";
+import {
+  injectBarManagement,
+  type Bar,
+} from "../providers/state/provide-bar-management";
 import GuitarBar from "./guitar/GuitarBar.vue";
 import type { GuitarNote } from "~/model/data";
 import { injectSubUnit } from "../providers/provide-subunit";
@@ -29,6 +32,7 @@ const overlayReference = useTemplateRef("overlayReference");
 provideTabBarBounds(
   props.bar,
   resizeObserver,
+  injectBarManagement(),
   computed(() => overlayReference.value?.$el),
 );
 
@@ -72,8 +76,6 @@ const firstInLine = computed(() =>
 <style scoped>
 .tab-bar {
   display: grid;
-  /* TODO: investigate and write up why "auto" is problematic (makes first row too big)*/
-  grid-template-rows: min-content min-content;
   position: relative;
 }
 

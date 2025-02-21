@@ -136,6 +136,7 @@ export function provideTieAddState(
     const adding =
       mode.value === "bend" &&
       (within(validPositions.value.from) || within(validPositions.value.to));
+
     return (
       adding ||
       props.store.ties
