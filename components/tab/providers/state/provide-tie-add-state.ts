@@ -132,8 +132,6 @@ export function provideTieAddState(
   // }
 
   function hasBendsWithin(start: number, end: number): boolean {
-    // TODO: support for 3+ tablines
-    const within = (pos: number) => pos >= start && pos <= end;
     const adding =
       mode.value === "bend" &&
       validPositions.value.from <= end &&

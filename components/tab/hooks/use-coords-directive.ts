@@ -39,7 +39,6 @@ export function useCoordsDirective<
   const { registerListener, getStackCoords, tablineStarts } =
     injectStackResizeObserver();
   const subUnit = injectSubUnit();
-  const barManagement = injectBarManagement();
 
   const getCoords = (position: number, coords: StackCoords) => {
     if (tablineStarts.length === 0 || tabBarBounds.left === undefined) {
@@ -115,22 +114,6 @@ export function useCoordsDirective<
   const valueFns: Map<HTMLElement, { [attribute: string]: ValueFn<keyof T> }> =
     new Map();
 
-  const coordsMapFromListener = (posToCoords: Record<number, StackCoords>) => {
-    return Object.fromEntries(
-      Object.entries(positions)
-        .map(([name, position]) =>
-          unref(position) !== undefined ? [name, unref(position)] : undefined,
-        )
-        .filter(
-          (entry): entry is [keyof T & string, number] => entry !== undefined,
-        )
-        .map(([name, position]) => [
-          name,
-          getCoords(position, posToCoords[position]),
-        ]),
-    ) as CoordsMap<keyof T>;
-  };
-
   function updateElement(
     el: HTMLElement,
     attr: string,
@@ -148,39 +131,62 @@ export function useCoordsDirective<
     }
   }
 
+  function update(coordsMap: CoordsMap<keyof T>) {
+    valueFns.forEach((attrToFn, el) => {
+      for (const attr in attrToFn) {
+        const fn = attrToFn[attr];
+        updateElement(el, attr, fn(coordsMap));
+      }
+    });
+  }
+
+  function getCoordsMap() {
+    const unwrappedPositions = Object.values(positions)
+      .map(unref)
+      .filter((position) => position !== undefined);
+    const withCoords = unwrappedPositions.map((position) => [
+      position,
+      getStackCoords(position),
+    ]);
+    if (withCoords.some(([_, coords]) => coords === undefined)) {
+      return;
+    }
+    const coordsMap = coordsMapFromListener(Object.fromEntries(withCoords));
+    return coordsMap;
+  }
+
+  const coordsMapFromListener = (posToCoords: Record<number, StackCoords>) => {
+    return Object.fromEntries(
+      Object.entries(positions)
+        .map(([name, position]) =>
+          unref(position) !== undefined ? [name, unref(position)] : undefined,
+        )
+        .filter(
+          (entry): entry is [keyof T & string, number] => entry !== undefined,
+        )
+        .map(([name, position]) => [
+          name,
+          getCoords(position, posToCoords[position]),
+        ]),
+    ) as CoordsMap<keyof T>;
+  };
   watch(
-    () => positions,
-    (newPositions, oldPositions) => {
+    [() => positions, /* flagging to potentially revisit */ tablineStarts],
+    ([newPositions, oldPositions]) => {
       const unwrappedPositions = Object.values(newPositions)
         .map(unref)
         .filter((position) => position !== undefined);
       onWatcherCleanup(
         registerListener(unwrappedPositions, (posToCoords) => {
-          valueFns.forEach((attrToFn, el) => {
-            for (const attr in attrToFn) {
-              const fn = attrToFn[attr];
-              const value = fn(coordsMapFromListener(posToCoords));
-              updateElement(el, attr, value);
-            }
-          });
+          update(coordsMapFromListener(posToCoords));
         }),
       );
 
       if (oldPositions) {
-        const coordsMap = coordsMapFromListener(
-          Object.fromEntries(
-            unwrappedPositions.map((position) => [
-              position,
-              getStackCoords(position)!,
-            ]),
-          ),
-        );
-        valueFns.forEach((attrToFn, el) => {
-          for (const attr in attrToFn) {
-            const fn = attrToFn[attr];
-            updateElement(el, attr, fn(coordsMap));
-          }
-        });
+        const coordsMap = getCoordsMap();
+        if (coordsMap) {
+          update(coordsMap);
+        }
       }
     },
     { deep: true, immediate: true },
@@ -192,6 +198,12 @@ export function useCoordsDirective<
         const fnsArray = valueFns.get(el) || {};
         fnsArray[binding.arg] = binding.value;
         valueFns.set(el, fnsArray);
+      }
+    },
+    mounted: () => {
+      const coordsMap = getCoordsMap();
+      if (coordsMap) {
+        update(coordsMap);
       }
     },
   };
