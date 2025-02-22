@@ -194,7 +194,6 @@ const tablineHasBends = computed(() => {
 
 .flex-bar {
   grid-column: 1 / -1;
-  border: 1px solid yellow;
 }
 
 .has-bends .flex-bar {
@@ -202,7 +201,6 @@ const tablineHasBends = computed(() => {
 }
 
 .bend-bar {
-  border: 1px solid orange;
   grid-column: 1 / -1;
   grid-row: 1;
   height: var(--context-menu-height);

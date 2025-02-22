@@ -92,6 +92,7 @@ function focusText() {
   }
 }
 onMounted(() => {
+  console.log("mounted", start.value, end.value);
   if (!props.creating) {
     setTimeout(() => focusText(), 1);
   }

@@ -74,7 +74,7 @@ export function provideAnnotationAddState(
     props.store.createAnnotation(row, {
       start,
       end,
-      text: "",
+      text: "...",
     });
     rawAnnotation.value = undefined;
   }

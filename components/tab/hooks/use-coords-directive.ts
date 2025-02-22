@@ -12,6 +12,7 @@ import {
   type StackCoords,
 } from "../providers/events/provide-resize-observer";
 import { injectSubUnit } from "../providers/provide-subunit";
+import { injectBarManagement } from "../providers/state/provide-bar-management";
 
 type ObjectKey = string | number | symbol;
 
@@ -38,50 +39,72 @@ export function useCoordsDirective<
   const { registerListener, getStackCoords, tablineStarts } =
     injectStackResizeObserver();
   const subUnit = injectSubUnit();
+  const barManagement = injectBarManagement();
 
   const getCoords = (position: number, coords: StackCoords) => {
     if (tablineStarts.length === 0 || tabBarBounds.left === undefined) {
       return coords;
     }
+
+    /* When the position is on the same tabline, just return its coords (relative to the left edge, of course)
+     * When the position is on the next tabline, get its distance to *its* left edge, then add it to the coords of *our* right edge
+     * When the position is on the prev tabline, get its distance to *its right edge, then subtract it from the coords of *our* left edge
+     * When the position is on the next next tabline and beyond:
+     * - Get the distance between it and *its* left edge
+     * - Get the width of every full tabline in between
+     * - Add it to the coords of *our* right edge
+     * When the position is on the prev prev tabline and beyond:
+     * - Get the distance between it and *its* right edge
+     * - Get the width of every full tabline in between
+     * - Subtract it from the coords of *our* left edge
+     */
+
     const tablineStartIndex = tablineStarts.findLastIndex(
       (lineStart) => position >= lineStart,
     );
 
     const tablineStart = tablineStarts[tablineStartIndex];
 
-    // Note that the following logic assumes that overlay renders only span two tablines
-    // i.e., if the position is on another tabline than the current bar, it is either on the previous or the next tabline
-    // If you do drag e.g. a tie across three tablines, it will work but won't look continuous
-    // TODO consider calculate the widths of the between tablines!
-
     if (tablineStart < tabBarBounds.tabline.start) {
       // The position is on an earlier tabline than the current bar
-      // We're going to start at the beginning of the current bar,
-      // and subtract the distance between the position and the end of its tabline
       const tablineEnd = tablineStarts[tablineStartIndex + 1];
       const tablineLast = tablineEnd - subUnit.value;
       const tablineLastCoords = getStackCoords(tablineLast);
       if (!tablineLastCoords) return coords;
+      // The end of the position's tabline
       const tablineEndX = tablineLastCoords.right;
-      const offset = coords.left - tablineEndX; // will be negative
+      let offset = tablineEndX - coords.left;
+
+      tablineStarts
+        .slice(tablineStartIndex + 1, tabBarBounds.tabline.start - 1)
+        .forEach((start, i) => {
+          const startCoords = getStackCoords(start);
+          const nextStart = tablineStarts[i + 1];
+          const lastCoords = getStackCoords(nextStart - subUnit.value);
+          offset += lastCoords!.right - startCoords!.left;
+        });
       return withOffset(
-        getStackCoords(tabBarBounds.start)!,
-        offset - tabBarBounds.left,
+        getStackCoords(tabBarBounds.tabline.start)!,
+        -offset - tabBarBounds.left,
       );
     }
 
     if (tablineStart > tabBarBounds.tabline.start) {
       // The position is on a later tabline than the current bar
-      // We're going to start at the end of current bar,
-      // and add the distance between the position and the start of its tabline
 
-      const nextLineStart = tablineStarts[tablineStartIndex - 1];
-      const nextLineStartCoords = getStackCoords(nextLineStart);
-      if (!nextLineStartCoords) return coords;
-      const nextLineStartX = nextLineStartCoords.left;
-      const offset = coords.right - nextLineStartX; // will be positive;
+      const tablineStartCoords = getStackCoords(tablineStart);
+      if (!tablineStartCoords) return coords;
+      let offset = coords.right - tablineStartCoords.left;
+      tablineStarts
+        .slice(tabBarBounds.tabline.start + 1, tablineStartIndex - 1)
+        .forEach((start, i) => {
+          const startCoords = getStackCoords(start);
+          const nextStart = tablineStarts[i + 1];
+          const lastCoords = getStackCoords(nextStart - subUnit.value);
+          offset += lastCoords!.right - startCoords!.left;
+        });
       return withOffset(
-        getStackCoords(tabBarBounds.end - subUnit.value)!,
+        getStackCoords(tabBarBounds.tabline.end - subUnit.value)!,
         offset - tabBarBounds.left,
       );
     }
