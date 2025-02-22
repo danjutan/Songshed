@@ -89,6 +89,11 @@ function onTextBlur() {
 function focusText() {
   if (textEl.value) {
     textEl.value.focus();
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(textEl.value);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
   }
 }
 onMounted(() => {
@@ -141,7 +146,7 @@ const vCoords = useCoordsDirective({
     }"
     @mouseenter="hoverState.setHovered(props.row, props.annotation)"
     @mouseleave="if (!isDragging) hoverState.clearHovered();"
-    @click="console.log('click', start, end)"
+    @click="focusText"
   >
     <AnnotationResizeHandle
       v-show="!startAtLeft"
@@ -168,6 +173,7 @@ const vCoords = useCoordsDirective({
       spellcheck="false"
       @input="onTextInput"
       @blur="onTextBlur"
+      @click.stop
     >
       {{ annotation?.text }}
     </div>
@@ -211,12 +217,6 @@ const vCoords = useCoordsDirective({
     }
   }
 
-  /* &:has(.resize-handle:hover) {
-    & .text {
-      overflow: hidden;
-    }
-  } */
-
   &.any-hovered,
   &.any-creating {
     /* pointer-events: none; */
@@ -230,24 +230,6 @@ const vCoords = useCoordsDirective({
       border-left: none;
     }
   }
-
-  /* &:hover {
-    .center-line {
-      display: none;
-    }
-  } */
-
-  /* &:not(:hover):not(.dragging) {
-    background-color: transparent;
-    &:not(:has(.text:focus)) {
-      .resize-handle {
-        display: none;
-      }
-      .delete {
-        display: none;
-      }
-    }
-  } */
 }
 
 .creating {
@@ -257,6 +239,7 @@ const vCoords = useCoordsDirective({
 
 .text {
   font-size: var(--annotation-font-size);
+  max-width: min-content;
   display: flex;
   justify-content: center;
   align-self: center;
@@ -265,11 +248,6 @@ const vCoords = useCoordsDirective({
   height: min-content;
   text-align: center;
   outline: none;
-
-  /* pointer-events: none;
-  &:focus {
-    pointer-events: auto;
-  } */
 }
 
 .center-line {
@@ -286,20 +264,4 @@ const vCoords = useCoordsDirective({
   height: calc((var(--cell-height) - var(--note-font-size)) * 1.5);
   top: var(--note-font-size);
 }
-
-/* .delete {
-  cursor: pointer;
-  position: absolute;
-  margin-left: auto;
-  margin-right: auto;
-  width: min-content;
-  left: 0;
-  right: 0;
-  transform: translateY(-60%) translateX(50%);
-  color: darkred;
-
-  &:hover svg {
-    stroke-width: 3;
-  }
-} */
 </style>
