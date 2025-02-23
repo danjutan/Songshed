@@ -125,12 +125,12 @@ export function provideStackResizeObserver() {
     resizeObserver = new ResizeObserver((entries) => {
       const tops: [position: number, top: number][] = [];
       const triggered = new Set<ListenerId>();
-      // We need to loop through every stack, not just the ones that were resized; a resized element can trigger another stack to move without resizing it
-      sortedPositions.forEach((pos) => {
+
+      posStackListeners.forEach((listeners, pos) => {
         const el = stackElements.get(pos);
         if (!el) return;
         const { top, left, right, width } = el.getBoundingClientRect();
-        // tops.push([pos, top]);
+
         const coords: StackCoords = {
           top,
           left,
@@ -138,19 +138,8 @@ export function provideStackResizeObserver() {
           right,
         };
         if (!coordsEqual(lastStackCoords.get(pos), coords)) {
-          // if not equal, look up the multifns for the coord
-          // we will get different functions associated with diff positions
-          // some fns will be associated with the same positions but will be from diff directive instances
-          // regardless, a fn with two positions only need to be fired once if each position changes
-          // so we need a way of tracking whether we've seen this fn before
-          // each fn is originally inserted under all its dependencies with the same id
-          // listeners only get tracked here if that id hasn't already been tracked
-
           lastStackCoords.set(pos, coords);
-          const listeners = posStackListeners.get(pos);
-          if (listeners) {
-            listeners.forEach((id) => triggered.add(id));
-          }
+          listeners.forEach((id) => triggered.add(id));
         }
 
         if (tabBarElements.has(pos)) {
