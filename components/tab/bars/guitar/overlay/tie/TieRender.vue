@@ -82,8 +82,6 @@ const hasSlide = computed(() =>
   [TieType.Slide, TieType.TieSlide].includes(props.tie.type),
 );
 
-const tieCurve = useTemplateRef("tieCurve");
-
 const vCoords = useCoordsDirective({
   from: computed(() => props.tie.from),
   to: computed(() => props.tie.to),

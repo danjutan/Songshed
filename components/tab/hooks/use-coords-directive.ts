@@ -144,13 +144,16 @@ export function useCoordsDirective<
     const unwrappedPositions = Object.values(positions)
       .map(unref)
       .filter((position) => position !== undefined);
-    const withCoords = unwrappedPositions.map((position) => [
-      position,
-      getStackCoords(position),
-    ]);
-    if (withCoords.some(([_, coords]) => coords === undefined)) {
-      return;
+
+    const withCoords: [number, StackCoords][] = [];
+    for (const position of unwrappedPositions) {
+      const coords = getStackCoords(position);
+      if (coords === undefined) {
+        return;
+      }
+      withCoords.push([position, coords]);
     }
+
     const coordsMap = coordsMapFromListener(Object.fromEntries(withCoords));
     return coordsMap;
   }

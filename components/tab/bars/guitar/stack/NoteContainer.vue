@@ -320,14 +320,14 @@ const row = computed(() => props.notePosition.string + 1);
 
   container-type: size;
 
-  min-width: var(--cell-height);
+  min-width: calc(var(--cell-height) + 12px);
   &.collapsed {
     min-width: var(--collapsed-min-width);
   }
 
   &.tieable,
   &.tieing {
-    min-width: calc(var(--cell-height) + 12px);
+    /* min-width: calc(var(--cell-height) + 12px); */
   }
 
   &:hover,
