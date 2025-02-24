@@ -66,7 +66,7 @@ async function save(saveId: string) {
   --divider-width: v-bind(dividerWidthPx);
   --note-font-size: calc(var(--cell-height) * 0.8);
   --annotation-font-size: calc(var(--cell-height) * 0.7);
-  --substack-bg: rgba(255, 0, 0, 0.1);
+  --note-tie-dragger-size: calc(var(--cell-height) / 3);
   --pos-line-width: 1px;
   --string-width: 1px;
 

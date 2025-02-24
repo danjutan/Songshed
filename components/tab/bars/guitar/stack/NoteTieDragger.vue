@@ -54,8 +54,8 @@ onMounted(() => {
 
 <style scoped>
 .tie-dragger {
-  width: calc(var(--cell-height) / 3);
-  height: calc(var(--cell-height) / 3);
+  width: var(--note-tie-dragger-size);
+  height: var(--note-tie-dragger-size);
   border-radius: 50%;
   background-color: var(--tie-dragger-color);
   cursor: crosshair;

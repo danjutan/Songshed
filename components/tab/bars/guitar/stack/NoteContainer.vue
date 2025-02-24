@@ -320,7 +320,9 @@ const row = computed(() => props.notePosition.string + 1);
 
   container-type: size;
 
-  min-width: calc(var(--cell-height) + 12px);
+  min-width: calc(
+    var(--cell-height) + calc(var(--note-tie-dragger-size) * 1.5)
+  );
   &.collapsed {
     min-width: var(--collapsed-min-width);
   }
