@@ -74,10 +74,9 @@ const dragging = bendEditState.dragging;
 
 const vCoords = useCoordsDirective({
   from: props.bend.from,
-  to: props.bend.to,
+  to: computed(() => props.bend.to),
   upswingTo: upswingToPos,
-  through: throughPos,
-  next: props.bend.to + subunit.value,
+  next: computed(() => props.bend.to + subunit.value),
 });
 </script>
 
@@ -164,8 +163,8 @@ const vCoords = useCoordsDirective({
       <path
         v-if="bend.releaseType === 'connect'"
         v-coords:d="
-          ({ through, to }) =>
-            `M ${through.right} ${upswingToY + cellHeight * 0.35}
+          ({ upswingTo, to }) =>
+            `M ${upswingTo.right} ${upswingToY + cellHeight * 0.35}
                Q ${to.center} ${upswingToY + cellHeight * 0.35} ${to.center} ${startRowTop + (startRow - 0.95) * cellHeight}`
         "
         class="downswing-curve"
@@ -173,7 +172,7 @@ const vCoords = useCoordsDirective({
       />
       <line
         v-else
-        v-coords:x1="({ through }) => through.right"
+        v-coords:x1="({ upswingTo }) => upswingTo.right"
         v-coords:x2="({ to }) => to.center"
         class="hold-line"
         :y1="upswingToY + cellHeight * 0.35"
@@ -191,12 +190,11 @@ const vCoords = useCoordsDirective({
           ({ position }) => (hasThrough ? position.left : position.right)
         "
         :width-fn="({ position }) => position.right - position.left"
-        :y="
+        :top-px="`${
           hasThrough && bend.releaseType === 'connect'
             ? startRowTop + (startRow - 1.5) * cellHeight
             : upswingToY
-        "
-        :top-px="contextMenuHeight + 'px'"
+        }px`"
         @click="bendEditState.onReleaseGrabberClick(bend, bend.to + subunit)"
         @mouseenter="releaseArrowHover = true"
         @mouseleave="releaseArrowHover = false"

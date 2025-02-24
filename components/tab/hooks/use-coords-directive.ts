@@ -26,7 +26,7 @@ export type ValueFn<
 > = (coordsMap: CoordsMap<K>) => V;
 
 export function useCoordsDirective<
-  T extends Record<string, number | ComputedRef<number | undefined>>,
+  T extends Record<string, number | ComputedRef<number>>,
 >(
   positions: T,
 ): Directive<
@@ -141,9 +141,8 @@ export function useCoordsDirective<
   }
 
   function getCoordsMap() {
-    const unwrappedPositions = Object.values(positions)
-      .map(unref)
-      .filter((position) => position !== undefined);
+    const unwrappedPositions = Object.values(positions).map(unref);
+    // .filter((position) => position !== undefined);
 
     const withCoords: [number, StackCoords][] = [];
     for (const position of unwrappedPositions) {
@@ -159,29 +158,30 @@ export function useCoordsDirective<
   }
 
   const coordsMapFromListener = (posToCoords: Record<number, StackCoords>) => {
-    return Object.fromEntries(
-      Object.entries(positions)
-        .map(([name, position]) =>
-          unref(position) !== undefined ? [name, unref(position)] : undefined,
-        )
-        .filter(
-          (entry): entry is [keyof T & string, number] => entry !== undefined,
-        )
-        .map(([name, position]) => [
-          name,
-          getCoords(position, posToCoords[position]),
-        ]),
-    ) as CoordsMap<keyof T>;
+    const result: Partial<CoordsMap<keyof T>> = {};
+
+    for (const [name, position] of Object.entries(positions)) {
+      const unwrappedPosition = unref(position);
+      if (unwrappedPosition !== undefined) {
+        const coords = getCoords(
+          unwrappedPosition,
+          posToCoords[unwrappedPosition],
+        );
+        result[name as keyof T] = coords;
+      }
+    }
+
+    return result as CoordsMap<keyof T>;
   };
   watch(
     [() => positions, /* flagging to potentially revisit */ tablineStarts],
     ([newPositions, oldPositions]) => {
-      const unwrappedPositions = Object.values(newPositions)
-        .map(unref)
-        .filter((position) => position !== undefined);
+      const unwrappedPositions = Object.values(newPositions).map(unref);
+      // .filter((position) => position !== undefined);
       onWatcherCleanup(
         registerListener(unwrappedPositions, (posToCoords) => {
-          update(coordsMapFromListener(posToCoords));
+          const coordsMap = coordsMapFromListener(posToCoords);
+          update(coordsMap);
         }),
       );
 
