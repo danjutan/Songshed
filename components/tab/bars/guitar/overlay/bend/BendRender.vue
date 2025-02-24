@@ -10,6 +10,8 @@ import { injectEditingState } from "~/components/tab/providers/state/provide-edi
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import BendDragger from "./BendDragger.vue";
 import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
+import { injectSubUnit } from "~/components/tab/providers/provide-subunit";
+import { useCoordsDirective } from "~/components/tab/hooks/use-coords-directive";
 
 const props = defineProps<{
   bend: Bend;
@@ -19,9 +21,9 @@ const props = defineProps<{
 const bendEditState = injectBendEditState();
 const { selectsSelector } = injectOverlayControlsTeleport();
 const { editingNote } = injectEditingState();
-const { getNextStackPos } = injectStackResizeObserver();
 
 const { contextMenuHeight, cellHeight, dividerWidth } = injectSpacingsState();
+const subunit = injectSubUnit();
 
 const startRowTop = computed(() => contextMenuHeight.value + cellHeight.value);
 
@@ -70,155 +72,149 @@ const releaseArrowHover = ref(false);
 
 const dragging = bendEditState.dragging;
 
-// onUnmounted(() => {
-//   console.log("bend unmounted");
-// });
+const vCoords = useCoordsDirective({
+  from: props.bend.from,
+  to: props.bend.to,
+  upswingTo: upswingToPos,
+  through: throughPos,
+  next: props.bend.to + subunit.value,
+});
 </script>
 
 <template>
-  <OverlayCoords
-    v-slot="{ coords: [from, to, upswingTo, through, afterTo] }"
-    :offset="dividerWidth"
-    :positions="[
-      props.bend.from,
-      props.bend.to,
-      upswingToPos,
-      throughPos,
-      getNextStackPos(props.bend.to),
-    ]"
-  >
-    <g
-      v-if="from && to && upswingTo"
-      :class="`bend-${bend.from}-${bend.to}-s${bend.string}`"
+  <g :class="`bend-${bend.from}-${bend.to}-s${bend.string}`">
+    <marker
+      id="arrow"
+      viewBox="0 0 10 10"
+      refX="5"
+      refY="5"
+      markerWidth="6"
+      markerHeight="6"
+      orient="auto-start-reverse"
+      fill="var(--bend-color)"
     >
-      <marker
-        id="arrow"
-        viewBox="0 0 10 10"
-        refX="5"
-        refY="5"
-        markerWidth="6"
-        markerHeight="6"
-        orient="auto-start-reverse"
-        fill="var(--bend-color)"
-      >
-        <path d="M 0 0 L 10 5 L 0 10 z" />
-      </marker>
+      <path d="M 0 0 L 10 5 L 0 10 z" />
+    </marker>
 
-      <marker
-        id="hover-arrow"
-        viewBox="0 0 10 10"
-        refX="5"
-        refY="5"
-        markerWidth="8"
-        markerHeight="8"
-        orient="auto-start-reverse"
-        fill="var(--bend-color)"
-      >
-        <path d="M 0 0 L 10 5 L 0 10 z" />
-      </marker>
+    <marker
+      id="hover-arrow"
+      viewBox="0 0 10 10"
+      refX="5"
+      refY="5"
+      markerWidth="8"
+      markerHeight="8"
+      orient="auto-start-reverse"
+      fill="var(--bend-color)"
+    >
+      <path d="M 0 0 L 10 5 L 0 10 z" />
+    </marker>
 
-      <BendDragger
-        :bend="props.bend"
-        :mode="'upswing'"
-        :x="upswingTo.left"
-        :y="upswingToY + contextMenuHeight"
-        :width="upswingTo.right - upswingTo.left"
-        :height="cellHeight"
-        @mouseenter="upswingArrowHover = true"
-        @mouseleave="upswingArrowHover = false"
-      />
+    <BendDragger
+      :bend="props.bend"
+      :mode="'upswing'"
+      :position="upswingToPos"
+      :left-fn="({ position }) => position.left"
+      :width-fn="({ position }) => position.right - position.left"
+      :top-px="upswingToY + contextMenuHeight + 'px'"
+      :height="cellHeight"
+      @mouseenter="upswingArrowHover = true"
+      @mouseleave="upswingArrowHover = false"
+    />
 
-      <foreignObject>
-        <Teleport :to="selectsSelector">
-          <div
-            v-if="showLabel"
-            :style="{
-              position: 'absolute',
-              width: `${upswingTo.right - upswingTo.left}px`,
-              left: `${upswingTo.left}px`,
-              top: `${upswingToY - 2}px`,
-              display: 'flex',
-              justifyContent: 'center',
-            }"
-          >
-            <OverlaySelect
-              v-model="model"
-              :active="selectActive"
-              :options
-              class="select"
-              :pointer-events-none="dragging"
-              @mouseenter="labelHover = true"
-              @mouseleave="labelHover = false"
-              @delete-clicked="bendEditState.deleteBend(props.bend)"
-            />
-          </div>
-        </Teleport>
-      </foreignObject>
+    <foreignObject>
+      <Teleport :to="selectsSelector">
+        <div
+          v-if="showLabel"
+          v-coords:left="({ upswingTo }) => upswingTo.left - 2"
+          v-coords:width="({ upswingTo }) => upswingTo.right - upswingTo.left"
+          :style="{
+            position: 'absolute',
+            top: `${upswingToY - 4}px`,
+            display: 'flex',
+            justifyContent: 'center',
+          }"
+        >
+          <OverlaySelect
+            v-model="model"
+            :active="selectActive"
+            :options
+            class="select"
+            :pointer-events-none="dragging"
+            @mouseenter="labelHover = true"
+            @mouseleave="labelHover = false"
+            @delete-clicked="bendEditState.deleteBend(props.bend)"
+          />
+        </div>
+      </Teleport>
+    </foreignObject>
 
-      <path
-        class="upswing-curve"
-        :d="
+    <path
+      v-coords:d="
+        ({ from, upswingTo }) =>
           isPrebend
             ? `M ${from.center} ${startRowTop + (startRow - 0.85) * cellHeight} V ${upswingToY + cellHeight * 0.83}`
             : `M ${from.right} ${startRowTop + (startRow - 0.6) * cellHeight} 
                Q ${upswingTo.center} ${startRowTop + (startRow - 0.55) * cellHeight} ${upswingTo.center} ${upswingToY + cellHeight * 0.83}`
+      "
+      class="upswing-curve"
+      :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
+    />
+
+    <g v-if="throughPos">
+      <path
+        v-if="bend.releaseType === 'connect'"
+        v-coords:d="
+          ({ through, to }) =>
+            `M ${through.right} ${upswingToY + cellHeight * 0.35}
+               Q ${to.center} ${upswingToY + cellHeight * 0.35} ${to.center} ${startRowTop + (startRow - 0.95) * cellHeight}`
         "
-        :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
+        class="downswing-curve"
+        :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
       />
-
-      <g v-if="through">
-        <path
-          v-if="bend.releaseType === 'connect'"
-          class="downswing-curve"
-          :d="`M ${through.right} ${upswingToY + cellHeight * 0.35}
-               Q ${to.center} ${upswingToY + cellHeight * 0.35} ${to.center} ${startRowTop + (startRow - 0.95) * cellHeight}`"
-          :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
-        />
-        <line
-          v-else
-          class="hold-line"
-          :x1="through.right"
-          :x2="to.center"
-          :y1="upswingToY + cellHeight * 0.35"
-          :y2="upswingToY + cellHeight * 0.35"
-          :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : undefined"
-        />
-      </g>
-
-      <g v-if="!dragging">
-        <BendDragger
-          :bend="props.bend"
-          :mode="'release'"
-          :x="hasThrough ? to.left : to.right"
-          :y="
-            hasThrough && bend.releaseType === 'connect'
-              ? startRowTop + (startRow - 1.5) * cellHeight
-              : upswingToY
-          "
-          :width="to.right - to.left"
-          :height="contextMenuHeight"
-          @click="
-            bendEditState.onReleaseGrabberClick(bend, getNextStackPos(bend.to)!)
-          "
-          @mouseenter="releaseArrowHover = true"
-          @mouseleave="releaseArrowHover = false"
-        />
-        <line
-          v-if="
-            !hasThrough &&
-            (releaseArrowHover || upswingArrowHover || labelHover) &&
-            afterTo
-          "
-          :x1="to.right"
-          :y1="upswingToY + cellHeight * 0.35"
-          :x2="afterTo.center"
-          :y2="upswingToY + cellHeight * 0.35"
-          opacity="0.4"
-          :marker-end="'url(#arrow)'"
-        />
-      </g>
+      <line
+        v-else
+        v-coords:x1="({ through }) => through.right"
+        v-coords:x2="({ to }) => to.center"
+        class="hold-line"
+        :y1="upswingToY + cellHeight * 0.35"
+        :y2="upswingToY + cellHeight * 0.35"
+        :marker-end="releaseArrowHover ? 'url(#hover-arrow)' : undefined"
+      />
     </g>
-  </OverlayCoords>
+
+    <g v-if="!dragging">
+      <BendDragger
+        :bend="props.bend"
+        :mode="'release'"
+        :position="bend.to"
+        :left-fn="
+          ({ position }) => (hasThrough ? position.left : position.right)
+        "
+        :width-fn="({ position }) => position.right - position.left"
+        :y="
+          hasThrough && bend.releaseType === 'connect'
+            ? startRowTop + (startRow - 1.5) * cellHeight
+            : upswingToY
+        "
+        :top-px="contextMenuHeight + 'px'"
+        @click="bendEditState.onReleaseGrabberClick(bend, bend.to + subunit)"
+        @mouseenter="releaseArrowHover = true"
+        @mouseleave="releaseArrowHover = false"
+      />
+      <!--TODO: teleport this to OverlayControls so it works between bars -->
+      <line
+        v-if="
+          !hasThrough && (releaseArrowHover || upswingArrowHover || labelHover)
+        "
+        v-coords:x1="({ to }) => to.right"
+        v-coords:x2="({ next }) => next.center"
+        :y1="upswingToY + cellHeight * 0.35"
+        :y2="upswingToY + cellHeight * 0.35"
+        :opacity="0.4"
+        :marker-end="'url(#arrow)'"
+      />
+    </g>
+  </g>
 </template>
 
 <style scoped>

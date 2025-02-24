@@ -132,15 +132,19 @@ export function provideTieAddState(
   // }
 
   function hasBendsWithin(start: number, end: number): boolean {
-    const within = (pos: number) => pos >= start && pos <= end;
     const adding =
       mode.value === "bend" &&
-      (within(validPositions.value.from) || within(validPositions.value.to));
+      validPositions.value.from <= end &&
+      validPositions.value.to >= start;
+
+    /*
+    If a bend starts before the range ends and ends after the range starts, it's in range
+    */
     return (
       adding ||
       props.store.ties
         .getBends()
-        .some((bend) => within(bend.from) || within(bend.to))
+        .some((bend) => bend.from <= end && bend.to >= start)
     );
   }
 

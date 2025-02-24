@@ -80,6 +80,13 @@ const iconSize = 16;
     border: none;
     outline: none;
     box-shadow: none;
+    margin-top: var(--p-select-sm-padding-y);
+    margin-left: var(--p-select-sm-padding-x);
+
+    &:deep(.label) {
+      padding-block: 0px;
+      padding-inline: 0px;
+    }
 
     & .clear,
     & :deep(.dropdown) {

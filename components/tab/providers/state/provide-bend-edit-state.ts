@@ -1,24 +1,16 @@
 import type { Bend, NotePosition, TieStore } from "~/model/stores";
-import type {
-  CellHoverEvents,
-  HoveredRow,
-} from "../events/provide-cell-hover-events";
+import type { HoveredRow } from "../events/provide-cell-hover-events";
 import type { TieAddState } from "./provide-tie-add-state";
 
 export type StartType = "upswing" | "release";
 
 export function provideBendEditState(
   props: ReactiveComputed<{
-    cellHoverEvents: CellHoverEvents;
-    tieAddState: TieAddState;
-    // TODO: see if we can remove this dependency
     tieStore: TieStore | undefined;
   }>,
 ) {
   const dragging = ref<StartType | undefined>();
   const draggingBend = ref<Bend | undefined>();
-
-  const { cellHoverEvents, tieAddState } = props;
 
   function start(startType: StartType, editing: Bend) {
     dragging.value = startType;
@@ -58,14 +50,14 @@ export function provideBendEditState(
   }
 
   function dragBendBar(position: number) {
-    if (dragging.value && !tieAddState.dragging.value) {
+    if (dragging.value) {
       const updated = updateOnDrag("bend", position);
       props.tieStore!.updateBend(updated);
     }
   }
 
   function dragNoteInput(notePosition: NotePosition) {
-    if (dragging.value && !tieAddState.dragging.value) {
+    if (dragging.value) {
       const updated = updateOnDrag(notePosition.string, notePosition.position);
       props.tieStore!.updateBend(updated);
     }

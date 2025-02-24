@@ -5,7 +5,10 @@ import type {
   GuitarStore,
   NotePosition,
 } from "~/model/stores";
-import type { Bar } from "../providers/state/provide-bar-management";
+import {
+  injectBarManagement,
+  type Bar,
+} from "../providers/state/provide-bar-management";
 import GuitarBar from "./guitar/GuitarBar.vue";
 import type { GuitarNote } from "~/model/data";
 import { injectSubUnit } from "../providers/provide-subunit";
@@ -22,16 +25,25 @@ const props = defineProps<{
   highlight?: "delete" | false;
 }>();
 
-const { tablineStarts } = injectStackResizeObserver();
-provideTabBarBounds(props.bar, tablineStarts);
+const resizeObserver = injectStackResizeObserver();
+
+const overlayReference = useTemplateRef("overlayReference");
+
+provideTabBarBounds(
+  props.bar,
+  resizeObserver,
+  injectBarManagement(),
+  computed(() => overlayReference.value?.$el),
+);
 
 const firstInLine = computed(() =>
-  tablineStarts.value.includes(props.bar.start),
+  resizeObserver.tablineStarts.includes(props.bar.start),
 );
 </script>
 
 <template>
   <div
+    ref="tabBar"
     class="tab-bar"
     :class="{ firstInLine }"
     :style="{ flex: flexGrow ? `${flexGrow} 0 0px` : undefined }"
@@ -43,6 +55,7 @@ const firstInLine = computed(() =>
     />
     <AnnotationsContainer class="annotations" :annotation-store />
     <GuitarBar
+      ref="overlayReference"
       class="guitar"
       :stack-data="bar.stacks"
       :tuning="guitarStore.tuning"
@@ -63,8 +76,6 @@ const firstInLine = computed(() =>
 <style scoped>
 .tab-bar {
   display: grid;
-  /* min-width: min-content; */
-  /* flex: v-bind(flexGrow) 0 0px; */
   position: relative;
 }
 

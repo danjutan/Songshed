@@ -174,7 +174,7 @@ const barMinWidth = (bar: Bar) => {
 
   const firstBarBuffer = cellHeight.value;
   let total = stacks + dividerWidth.value;
-  if (tablineStarts.value.includes(bar.start)) {
+  if (tablineStarts.includes(bar.start)) {
     total += firstBarBuffer;
   }
   return total;

@@ -14,6 +14,9 @@ import OverlayCoords from "~/components/tab/bars/OverlayCoords.vue";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
 import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
+import { useCoordsDirective } from "../hooks/use-coords-directive";
+import { injectSpacingsState } from "../providers/provide-spacings";
+import { injectTabBarBounds } from "../bars/provide-bar-bounds";
 
 const props = defineProps<{
   row: number;
@@ -25,6 +28,11 @@ const props = defineProps<{
 const { dragStart, dragEnd, newAnnotation } = injectAnnotationAddState();
 const resizeState = injectAnnotationResizeState();
 const hoverState = injectAnnotationHoverState();
+const spacings = injectSpacingsState();
+const tabBarBounds = injectTabBarBounds();
+const vCoords = useCoordsDirective({
+  position: props.position,
+});
 
 const isDragging = computed(
   () =>
@@ -33,15 +41,11 @@ const isDragging = computed(
 );
 
 const left = (coords: { left: number }) => {
-  return props.firstInBar
-    ? `${coords.left}px`
-    : `calc(${coords.left}px + var(--divider-width))`;
+  return props.firstInBar ? 0 : coords.left;
 };
 
 const width = (coords: { left: number; right: number }) => {
-  return props.firstInBar
-    ? `calc(${coords.right - coords.left}px + var(--divider-width))`
-    : `${coords.right - coords.left}px`;
+  return props.firstInBar ? coords.right : coords.right - coords.left;
 };
 
 const element = useTemplateRef("element");
@@ -78,22 +82,17 @@ watchEffect((cleanup) => {
 </script>
 
 <template>
-  <OverlayCoords v-slot="{ coords: [coords] }" :positions="[position]">
-    <div
-      v-if="coords"
-      ref="element"
-      class="draggable"
-      :class="{ dragging: isDragging }"
-      :style="{
-        left: left(coords),
-        width: width(coords),
-      }"
-      @mousedown="dragStart(row, position)"
-      @click="dragEnd()"
-      @mouseenter="hoverState.setHovered(row)"
-      @mouseleave="hoverState.clearHovered()"
-    />
-  </OverlayCoords>
+  <div
+    ref="element"
+    v-coords:left="({ position }) => left(position)"
+    v-coords:width="({ position }) => width(position)"
+    class="draggable"
+    :class="{ dragging: isDragging }"
+    @mousedown="dragStart(row, position)"
+    @click="dragEnd()"
+    @mouseenter="hoverState.setHovered(row)"
+    @mouseleave="hoverState.clearHovered()"
+  />
 </template>
 
 <style scoped>

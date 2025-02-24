@@ -3,12 +3,16 @@ import type { Annotation } from "~/model/data";
 import { useTemplateRef } from "vue";
 import OverlayCoords from "../bars/OverlayCoords.vue";
 import { injectBarManagement } from "../providers/state/provide-bar-management";
-import { type StackCoords } from "../providers/events/provide-resize-observer";
+import {
+  coordsEqual,
+  type StackCoords,
+} from "../providers/events/provide-resize-observer";
 
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
 import AnnotationResizeHandle from "./AnnotationResizeHandle.vue";
+import { useCoordsDirective } from "../hooks/use-coords-directive";
 
 export interface AnnotationRenderProps {
   row: number;
@@ -85,9 +89,15 @@ function onTextBlur() {
 function focusText() {
   if (textEl.value) {
     textEl.value.focus();
+    const selection = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(textEl.value);
+    selection?.removeAllRanges();
+    selection?.addRange(range);
   }
 }
 onMounted(() => {
+  console.log("mounted", start.value, end.value);
   if (!props.creating) {
     setTimeout(() => focusText(), 1);
   }
@@ -99,89 +109,88 @@ const startsInFirstColumn = computed(() => {
 
 const left = (startCoords: StackCoords) => {
   if (startsInFirstColumn.value) {
-    return `${startCoords.left}px`;
+    return 0;
   }
-  return `calc(var(--divider-width) + ${startCoords.left}px)`;
+  return startCoords.left;
 };
 
 const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   if (startsInFirstColumn.value) {
-    return `calc(var(--divider-width) + ${endCoords.right - startCoords.left}px)`;
+    return endCoords.right;
   }
-  return `${endCoords.right - startCoords.left}px`;
+  return endCoords.right - startCoords.left;
 };
+
+const vCoords = useCoordsDirective({
+  start: start,
+  end: end,
+});
 </script>
 
 <template>
-  <OverlayCoords
-    v-slot="{ coords: [startCoords, endCoords] }"
-    :positions="[start, end]"
+  <div
+    ref="annotation"
+    v-coords:left="(coords) => left(coords.start)"
+    v-coords:width="(coords) => width(coords.start, coords.end)"
+    class="annotation"
+    :class="{
+      creating: props.creating,
+      dragging: isDragging,
+      'no-right-border': endAtRight,
+      'no-left-border': startAtLeft,
+      'any-creating': isAnyCreating,
+      hovered: isHovered,
+      'any-hovered': isAnyHovered,
+      'other-hovered': isOtherHovered,
+      // 'other-dragging': !isDragging && isAnyDragging,
+    }"
+    @mouseenter="hoverState.setHovered(props.row, props.annotation)"
+    @mouseleave="if (!isDragging) hoverState.clearHovered();"
+    @click="focusText"
   >
+    <AnnotationResizeHandle
+      v-show="!startAtLeft"
+      :row="row"
+      :annotation="annotation"
+      side="start"
+      :below="overflowing && !isDragging"
+      @drag-end="focusText"
+    />
+
+    <AnnotationResizeHandle
+      v-show="!endAtRight"
+      :row="row"
+      :annotation="annotation"
+      side="end"
+      :below="overflowing && !isDragging"
+      @drag-end="focusText"
+    />
+
     <div
-      v-if="startCoords && endCoords"
-      ref="annotation"
-      class="annotation"
-      :class="{
-        creating: props.creating,
-        dragging: isDragging,
-        'no-right-border': endAtRight,
-        'no-left-border': startAtLeft,
-        'any-creating': isAnyCreating,
-        hovered: isHovered,
-        'any-hovered': isAnyHovered,
-        'other-hovered': isOtherHovered,
-        // 'other-dragging': !isDragging && isAnyDragging,
-      }"
-      :style="{
-        left: left(startCoords),
-        width: width(startCoords, endCoords),
-      }"
-      @mouseenter="hoverState.setHovered(props.row, props.annotation)"
-      @mouseleave="if (!isDragging) hoverState.clearHovered();"
+      ref="text"
+      class="text"
+      contenteditable
+      spellcheck="false"
+      @input="onTextInput"
+      @blur="onTextBlur"
+      @click.stop
     >
-      <AnnotationResizeHandle
-        v-show="!startAtLeft"
-        :row="row"
-        :annotation="annotation"
-        side="start"
-        :below="overflowing && !isDragging"
-        @drag-end="focusText"
-      />
+      {{ annotation?.text }}
+    </div>
 
-      <AnnotationResizeHandle
-        v-show="!endAtRight"
-        :row="row"
-        :annotation="annotation"
-        side="end"
-        :below="overflowing && !isDragging"
-        @drag-end="focusText"
-      />
+    <div
+      v-if="annotation.start === annotation.end"
+      class="center-line pos-line"
+    />
 
-      <div
-        ref="text"
-        class="text"
-        contenteditable
-        spellcheck="false"
-        @input="onTextInput"
-        @blur="onTextBlur"
-      >
-        {{ annotation?.text }}
-      </div>
-
-      <div
-        v-if="annotation.start === annotation.end"
-        class="center-line pos-line"
-      />
-
-      <!-- <div class="delete" @click="emit('delete')">
+    <!-- <div class="delete" @click="emit('delete')">
         <X :size="16" />
       </div> -->
-      <!-- <template v-else>
+    <!-- <template v-else>
         <div class="left-line pos-line" />
         <div class="right-line pos-line" />
       </template> -->
-    </div>
-  </OverlayCoords>
+  </div>
 </template>
 
 <style scoped>
@@ -208,12 +217,6 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
     }
   }
 
-  /* &:has(.resize-handle:hover) {
-    & .text {
-      overflow: hidden;
-    }
-  } */
-
   &.any-hovered,
   &.any-creating {
     /* pointer-events: none; */
@@ -227,24 +230,6 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
       border-left: none;
     }
   }
-
-  /* &:hover {
-    .center-line {
-      display: none;
-    }
-  } */
-
-  /* &:not(:hover):not(.dragging) {
-    background-color: transparent;
-    &:not(:has(.text:focus)) {
-      .resize-handle {
-        display: none;
-      }
-      .delete {
-        display: none;
-      }
-    }
-  } */
 }
 
 .creating {
@@ -254,6 +239,7 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
 
 .text {
   font-size: var(--annotation-font-size);
+  max-width: min-content;
   display: flex;
   justify-content: center;
   align-self: center;
@@ -262,11 +248,6 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   height: min-content;
   text-align: center;
   outline: none;
-
-  /* pointer-events: none;
-  &:focus {
-    pointer-events: auto;
-  } */
 }
 
 .center-line {
@@ -283,20 +264,4 @@ const width = (startCoords: StackCoords, endCoords: StackCoords) => {
   height: calc((var(--cell-height) - var(--note-font-size)) * 1.5);
   top: var(--note-font-size);
 }
-
-/* .delete {
-  cursor: pointer;
-  position: absolute;
-  margin-left: auto;
-  margin-right: auto;
-  width: min-content;
-  left: 0;
-  right: 0;
-  transform: translateY(-60%) translateX(50%);
-  color: darkred;
-
-  &:hover svg {
-    stroke-width: 3;
-  }
-} */
 </style>

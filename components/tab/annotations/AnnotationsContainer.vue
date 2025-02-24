@@ -10,6 +10,7 @@ import { injectStackResizeObserver } from "../providers/events/provide-resize-ob
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 import type { NewAnnotationRenderProps } from "./NewAnnotationRender.vue";
 import NewAnnotationRender from "./NewAnnotationRender.vue";
+import { useCoordsDirective } from "../hooks/use-coords-directive";
 
 const props = defineProps<{
   annotationStore: AnnotationStore;
@@ -28,13 +29,18 @@ const renderRow = (row: number) => numRows.value - row - 1;
 const isFirstBar = computed(
   () => tabBarBounds.start === tabBarBounds.tabline.start,
 );
+
 function edgeProps(
   start: number,
   end: number,
 ): { startAtLeft?: number; endAtRight?: number } | false {
-  const startLineIndex =
-    tablineStarts.value.findIndex((lineStart) => lineStart > start) - 1;
-  const startLineStart = tablineStarts.value[startLineIndex];
+  if (tablineStarts.length === 0) {
+    return false;
+  }
+  const startLineStart = tablineStarts.findLast(
+    (lineStart) => start >= lineStart,
+  )!;
+
   const endAtRight = tabBarBounds.tabline.end - subUnit.value;
 
   const startsInCurrentBar =
