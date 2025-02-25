@@ -3,7 +3,6 @@ import type { NotePosition } from "~/model/stores";
 export type HoveredRow = number | "bend" | "annotation";
 
 type HoverListener = (row: HoveredRow, position: number) => void;
-type ReleaseListener = () => void;
 
 function createCellHoverEvents() {
   const hoveredCell = ref<
@@ -32,7 +31,7 @@ function createCellHoverEvents() {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
       debounced.value = true;
-    }, 50);
+    }, 80);
     hoverListeners.forEach((listener) => listener(row, position));
     hoveredCell.value = { row, position };
   }

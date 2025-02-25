@@ -24,6 +24,7 @@ import { injectSettingsState } from "~/components/tab/providers/state/provide-se
 import { injectNotePreviewState } from "~/components/tab/providers/state/provide-note-preview-state";
 import SelectionToolbar from "../selections/SelectionToolbar.vue";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
+import PositionLine from "./PositionLine.vue";
 
 const props = defineProps<{
   note: GuitarNote | undefined;
@@ -209,7 +210,10 @@ const isHoveredSpacing = computed(() => {
     return false;
   }
   const hoveredSpacing = largestSpacingDivisor(hoveredPosition)!;
-  if (Spacing[hoveredSpacing] === smallestSpacing.value) {
+  if (
+    !settings.colorSmallest &&
+    Spacing[hoveredSpacing] === smallestSpacing.value
+  ) {
     return false;
   }
   if (props.notePosition.position % Spacing[hoveredSpacing] === 0) {
@@ -254,7 +258,13 @@ const spacingColor = computed(() => {
   }
   if (settings.colorPositions === "always") {
     const currentSpacing = largestSpacingDivisor(props.notePosition.position)!;
-    if (!currentSpacing || Spacing[currentSpacing] === smallestSpacing.value) {
+    if (!currentSpacing) {
+      return false;
+    }
+    if (
+      !settings.colorSmallest &&
+      Spacing[currentSpacing] === smallestSpacing.value
+    ) {
       return false;
     }
     return colors[currentSpacing];
@@ -290,7 +300,6 @@ const isThickPos = computed(() => {
       collapsed,
       'any-tieing': dragging,
       'pos-line-center': settings.posLineCenter,
-      'thick-pos': isThickPos,
     }"
     :style="{ gridRow: notePosition.string + 1 }"
     @click="onClick"
@@ -324,10 +333,7 @@ const isThickPos = computed(() => {
     <div class="string left" />
     <div class="string right" />
 
-    <template v-if="settings.posLineCenter">
-      <div class="pos-line top" :style="{ backgroundColor: posLineColor }" />
-      <div class="pos-line bottom" :style="{ backgroundColor: posLineColor }" />
-    </template>
+    <PositionLine :position="notePosition.position" />
 
     <NoteInput
       v-show="!notePreview"
@@ -492,34 +498,6 @@ const isThickPos = computed(() => {
 
   &.right {
     grid-area: 2 / 3;
-  }
-}
-
-.pos-line {
-  width: var(--pos-line-width);
-  z-index: var(--pos-line-z-index);
-  height: 100%;
-  justify-self: center;
-
-  &.top {
-    grid-area: 1 / 2;
-  }
-
-  &.bottom {
-    grid-area: 3 / 2;
-  }
-}
-
-.fill-intersection {
-  grid-area: 2 / 2;
-  width: 1px;
-  height: 1px;
-}
-
-.thick-pos {
-  & .pos-line,
-  & .fill-intersection {
-    width: calc(var(--pos-line-width) + 1px);
   }
 }
 

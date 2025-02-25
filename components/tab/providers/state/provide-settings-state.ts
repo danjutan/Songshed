@@ -7,7 +7,8 @@ export function provideSettingsState() {
     cellHeight: 24,
     posLineCenter: true,
     colorPositions: true as true | false | "always",
-    onlyColorBar: false,
+    colorSmallest: false,
+    onlyColorBar: true,
   });
 
   provide(SettingsInjectionKey, settings);

@@ -101,11 +101,22 @@ async function save(saveId: string) {
     from var(--annotation-hover-background-color) r g b / 0.4
   );
 
-  --quarter-note-color: var(--p-surface-500);
-  --eighth-note-color: var(--p-yellow-500);
-  --sixteenth-note-color: var(--p-amber-600);
-  --thirty-second-note-color: var(--p-pink-600);
-  --sixty-fourth-note-color: var(--p-blue-400);
+  --pos-line-alpha: 0.7;
+  --quarter-note-color: rgb(
+    from var(--p-surface-500) r g b / var(--pos-line-alpha)
+  );
+  --eighth-note-color: rgb(
+    from var(--p-yellow-500) r g b / var(--pos-line-alpha)
+  );
+  --sixteenth-note-color: rgb(
+    from var(--p-amber-600) r g b / var(--pos-line-alpha)
+  );
+  --thirty-second-note-color: rgb(
+    from var(--p-pink-600) r g b / var(--pos-line-alpha)
+  );
+  --sixty-fourth-note-color: rgb(
+    from var(--p-blue-400) r g b / var(--pos-line-alpha)
+  );
   --one-twenty-eighth-note-color: var(--pos-line-color);
 
   --select-alpha: 0.3;
