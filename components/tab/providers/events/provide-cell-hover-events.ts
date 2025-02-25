@@ -23,16 +23,24 @@ function createCellHoverEvents() {
     };
   });
 
+  const debounced = ref(false);
   const hoverListeners = new Set<HoverListener>();
+  let timeout: NodeJS.Timeout | undefined;
 
   function hover(row: HoveredRow, position: number) {
-    // hoveredCell.value = { string, position };
+    debounced.value = false;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      debounced.value = true;
+    }, 50);
     hoverListeners.forEach((listener) => listener(row, position));
     hoveredCell.value = { row, position };
   }
 
   function clear() {
     hoveredCell.value = undefined;
+    debounced.value = false;
+    clearTimeout(timeout);
   }
 
   function addHoverListener(listener: HoverListener) {
@@ -42,6 +50,7 @@ function createCellHoverEvents() {
   return {
     hoveredCell,
     hoveredNote,
+    debounced,
     hover,
     addHoverListener,
     clear,

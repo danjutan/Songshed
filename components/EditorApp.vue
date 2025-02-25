@@ -101,11 +101,11 @@ async function save(saveId: string) {
     from var(--annotation-hover-background-color) r g b / 0.4
   );
 
-  --quarter-note-color: var(--p-red-600);
+  --quarter-note-color: var(--p-surface-500);
   --eighth-note-color: var(--p-yellow-500);
-  --sixteenth-note-color: var(--p-green-500);
-  --thirty-second-note-color: var(--p-blue-400);
-  --sixty-fourth-note-color: var(--p-purple-400);
+  --sixteenth-note-color: var(--p-amber-600);
+  --thirty-second-note-color: var(--p-pink-600);
+  --sixty-fourth-note-color: var(--p-blue-400);
   --one-twenty-eighth-note-color: var(--pos-line-color);
 
   --select-alpha: 0.3;

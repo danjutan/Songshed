@@ -48,8 +48,6 @@ const beatSize = provideBeatSize(props.tabStore);
 
 const barSize = computed(() => props.tabStore.beatsPerBar * beatSize.value);
 
-// const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
-
 const { tablineStarts } = provideStackResizeObserver();
 
 const cellHoverEvents = provideCellHoverEvents();
