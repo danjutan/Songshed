@@ -53,9 +53,9 @@ const colors: Record<keyof typeof Spacing, string> = {
 };
 
 const spacingColor = computed(() => {
-  if (isQuarterNote.value) {
-    return "var(--quarter-note-color)";
-  }
+  // if (isQuarterNote.value) {
+  //   return "var(--quarter-note-color)";
+  // }
   if (
     !settings.colorPositions ||
     (settings.onlyColorBar && !hoveredInBar.value)
@@ -96,6 +96,7 @@ const isThick = computed(() => isQuarterNote.value || spacingColor.value);
       class="pos-line top"
       :class="{
         'is-thick': isThick,
+        'is-quarter': isQuarterNote,
       }"
       :style="{ backgroundColor: lineColor }"
     />
@@ -103,6 +104,7 @@ const isThick = computed(() => isQuarterNote.value || spacingColor.value);
       class="pos-line bottom"
       :class="{
         'is-thick': isThick,
+        'is-quarter': isQuarterNote,
       }"
       :style="{ backgroundColor: lineColor }"
     />
@@ -111,6 +113,7 @@ const isThick = computed(() => isQuarterNote.value || spacingColor.value);
       class="fill-intersection"
       :class="{
         'is-thick': isThick,
+        'is-quarter': isQuarterNote,
       }"
       :style="{ backgroundColor: lineColor }"
     />
@@ -142,6 +145,11 @@ const isThick = computed(() => isQuarterNote.value || spacingColor.value);
 .pos-line,
 .fill-intersection {
   transition: background-color 0.15s ease;
+  opacity: var(--pos-line-alpha);
+}
+
+.is-quarter {
+  opacity: 1;
 }
 
 .is-thick {
