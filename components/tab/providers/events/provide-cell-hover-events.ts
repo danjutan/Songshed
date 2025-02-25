@@ -24,7 +24,6 @@ function createCellHoverEvents() {
   });
 
   const hoverListeners = new Set<HoverListener>();
-  const mouseupListeners = new Set<ReleaseListener>();
 
   function hover(row: HoveredRow, position: number) {
     // hoveredCell.value = { string, position };
@@ -36,10 +35,6 @@ function createCellHoverEvents() {
     hoveredCell.value = undefined;
   }
 
-  function mouseup() {
-    mouseupListeners.forEach((listener) => listener());
-  }
-
   function addHoverListener(listener: HoverListener) {
     hoverListeners.add(listener);
   }
@@ -48,7 +43,6 @@ function createCellHoverEvents() {
     hoveredCell,
     hoveredNote,
     hover,
-    mouseup,
     addHoverListener,
     clear,
   };

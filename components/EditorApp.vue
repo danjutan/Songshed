@@ -20,6 +20,8 @@ const {
   dividerWidthPx,
   contextMenuHeightPx,
   collapsedMinWidthPx,
+  noteTieDraggerSizePx,
+  expandedMinWidthPx,
 } = provideSpacings(settings);
 
 async function save(saveId: string) {
@@ -66,7 +68,8 @@ async function save(saveId: string) {
   --divider-width: v-bind(dividerWidthPx);
   --note-font-size: calc(var(--cell-height) * 0.8);
   --annotation-font-size: calc(var(--cell-height) * 0.7);
-  --note-tie-dragger-size: calc(var(--cell-height) / 3);
+  --note-tie-dragger-size: v-bind(noteTieDraggerSizePx);
+  --expanded-min-width: v-bind(expandedMinWidthPx);
   --pos-line-width: 1px;
   --string-width: 1px;
 

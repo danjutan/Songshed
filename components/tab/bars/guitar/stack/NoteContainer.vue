@@ -394,9 +394,7 @@ const posLineColor = computed(
 
   container-type: size;
 
-  min-width: calc(
-    var(--cell-height) + calc(var(--note-tie-dragger-size) * 1.5)
-  );
+  min-width: var(--expanded-min-width);
 
   &.collapsed {
     min-width: var(--collapsed-min-width);
