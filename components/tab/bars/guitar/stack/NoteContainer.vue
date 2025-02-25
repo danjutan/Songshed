@@ -184,6 +184,75 @@ const noteText = computed(() => {
 });
 
 const row = computed(() => props.notePosition.string + 1);
+
+// const spacing = computed(() =>
+//   largestSpacingDivisor(props.notePosition.position),
+// );
+
+// const shouldColorPosition = computed(() => {
+//   if (!settings.colorPositions) {
+//     return false;
+//   }
+//   const hoveredPosition = cellHoverState.hoveredNote?.value?.position;
+//   if (!hoveredPosition) {
+//     return false;
+//   }
+//   return largestSpacingDivisor(hoveredPosition) === spacing.value;
+// });
+
+const smallestSpacing = computed(() => 1 / settings.subdivisions);
+const isHoveredSpacing = computed(() => {
+  const hoveredPosition = cellHoverState.hoveredNote?.value?.position;
+  if (!hoveredPosition) {
+    return false;
+  }
+  const hoveredSpacing = largestSpacingDivisor(hoveredPosition);
+  if (!hoveredSpacing) {
+    return false;
+  }
+  if (Spacing[hoveredSpacing] === smallestSpacing.value) {
+    return false;
+  }
+  if (props.notePosition.position % Spacing[hoveredSpacing] === 0) {
+    return true;
+  }
+  return false;
+});
+
+const colors: Record<keyof typeof Spacing, string> = {
+  Quarter: "var(--quarter-note-color)",
+  Eighth: "var(--eighth-note-color)",
+  Sixteenth: "var(--sixteenth-note-color)",
+  ThirtySecond: "var(--thirty-second-note-color)",
+  SixtyFourth: "var(--sixty-fourth-note-color)",
+  OneTwentyEighth: "var(--one-twenty-eighth-note-color)",
+};
+
+const spacingColor = computed(() => {
+  if (!settings.colorPositions) {
+    return false;
+  }
+  if (settings.colorPositions === "always") {
+    const currentSpacing = largestSpacingDivisor(props.notePosition.position);
+    if (!currentSpacing || Spacing[currentSpacing] === smallestSpacing.value) {
+      return false;
+    }
+    return colors[currentSpacing];
+  }
+  const hoveredPosition = cellHoverState.hoveredNote?.value?.position;
+  if (!hoveredPosition) {
+    return false;
+  }
+  const hoveredSpacing = largestSpacingDivisor(hoveredPosition);
+  if (hoveredSpacing && isHoveredSpacing.value) {
+    return colors[hoveredSpacing];
+  }
+  return false;
+});
+
+const posLineColor = computed(
+  () => spacingColor.value || "var(--pos-line-color)",
+);
 </script>
 
 <template>
@@ -197,6 +266,7 @@ const row = computed(() => props.notePosition.string + 1);
       collapsed,
       'any-tieing': dragging,
       'pos-line-center': settings.posLineCenter,
+      'hovered-spacing': isHoveredSpacing,
     }"
     :style="{ gridRow: notePosition.string + 1 }"
     @click="onClick"
@@ -221,14 +291,18 @@ const row = computed(() => props.notePosition.string + 1);
     >
       {{ noteText }}
     </div>
-    <div v-else class="fill-intersection" />
+    <div
+      v-else
+      class="fill-intersection"
+      :style="{ backgroundColor: posLineColor }"
+    />
 
     <div class="string left" />
     <div class="string right" />
 
     <template v-if="settings.posLineCenter">
-      <div class="pos-line top" />
-      <div class="pos-line bottom" />
+      <div class="pos-line top" :style="{ backgroundColor: posLineColor }" />
+      <div class="pos-line bottom" :style="{ backgroundColor: posLineColor }" />
     </template>
 
     <NoteInput
@@ -323,13 +397,9 @@ const row = computed(() => props.notePosition.string + 1);
   min-width: calc(
     var(--cell-height) + calc(var(--note-tie-dragger-size) * 1.5)
   );
+
   &.collapsed {
     min-width: var(--collapsed-min-width);
-  }
-
-  &.tieable,
-  &.tieing {
-    /* min-width: calc(var(--cell-height) + 12px); */
   }
 
   &:hover,
@@ -407,7 +477,6 @@ const row = computed(() => props.notePosition.string + 1);
   width: var(--pos-line-width);
   z-index: var(--pos-line-z-index);
   height: 100%;
-  background-color: var(--pos-line-color);
   justify-self: center;
 
   &.top {
@@ -421,9 +490,15 @@ const row = computed(() => props.notePosition.string + 1);
 
 .fill-intersection {
   grid-area: 2 / 2;
-  background-color: var(--string-color);
   width: 1px;
   height: 1px;
+}
+
+.hovered-spacing {
+  & .pos-line,
+  & .fill-intersection {
+    width: calc(var(--pos-line-width) + 1px);
+  }
 }
 
 .select-action-overlay {

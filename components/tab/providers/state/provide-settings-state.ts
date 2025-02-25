@@ -6,6 +6,7 @@ export function provideSettingsState() {
     collapseAll: false,
     cellHeight: 24,
     posLineCenter: true,
+    colorPositions: true as true | false | "always",
   });
 
   provide(SettingsInjectionKey, settings);

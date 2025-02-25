@@ -131,15 +131,25 @@ export type Midi =
   | 126
   | 127;
 
-export enum Spacing {
-  Whole = 4,
-  Half = 2,
-  Quarter = 1,
-  Eighth = 0.5,
-  Sixteenth = 0.25,
-  ThirtySecond = 0.125,
-  SixtyFourth = 0.0625,
-  OneTwentyEighth = 0.03125,
+export const Spacing = {
+  Quarter: 1,
+  Eighth: 0.5,
+  Sixteenth: 0.25,
+  ThirtySecond: 0.125,
+  SixtyFourth: 0.0625,
+  OneTwentyEighth: 0.03125,
+};
+
+export function largestSpacingDivisor(
+  position: number,
+): keyof typeof Spacing | undefined {
+  const largest = Object.entries(Spacing)
+    .sort((a, b) => b[1] - a[1])
+    .find(([_, spacing]) => position % spacing === 0);
+
+  if (largest) {
+    return largest[0] as keyof typeof Spacing;
+  }
 }
 
 export const defaultTuning = ["E4", "B3", "G3", "D3", "A2", "E2"].map(toMidi);

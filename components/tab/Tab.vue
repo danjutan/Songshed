@@ -138,7 +138,7 @@ function onMouseUp() {
 }
 
 function onLeaveTab() {
-  cellHoverEvents.leaveTab();
+  cellHoverEvents.clear();
   editingState.blurEditing();
 }
 
