@@ -3,7 +3,6 @@ import type { NotePosition } from "~/model/stores";
 export type HoveredRow = number | "bend" | "annotation";
 
 type HoverListener = (row: HoveredRow, position: number) => void;
-type ReleaseListener = () => void;
 
 function createCellHoverEvents() {
   const hoveredCell = ref<
@@ -23,47 +22,37 @@ function createCellHoverEvents() {
     };
   });
 
+  const debounced = ref(false);
   const hoverListeners = new Set<HoverListener>();
-  const mouseupListeners = new Set<ReleaseListener>();
-
-  // probably remove once we make the tab extend vertically to the viewport when mousedown
-  const leaveTabListeners = new Set<ReleaseListener>();
+  let timeout: NodeJS.Timeout | undefined;
 
   function hover(row: HoveredRow, position: number) {
-    // hoveredCell.value = { string, position };
+    debounced.value = false;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      debounced.value = true;
+    }, 80);
     hoverListeners.forEach((listener) => listener(row, position));
     hoveredCell.value = { row, position };
   }
 
-  function mouseup() {
-    mouseupListeners.forEach((listener) => listener());
-  }
-
-  function leaveTab() {
-    leaveTabListeners.forEach((listener) => listener());
+  function clear() {
+    hoveredCell.value = undefined;
+    debounced.value = false;
+    clearTimeout(timeout);
   }
 
   function addHoverListener(listener: HoverListener) {
     hoverListeners.add(listener);
   }
 
-  function addMouseUpListener(listener: ReleaseListener) {
-    mouseupListeners.add(listener);
-  }
-
-  function addLeaveTabListener(listener: ReleaseListener) {
-    leaveTabListeners.add(listener);
-  }
-
   return {
     hoveredCell,
     hoveredNote,
+    debounced,
     hover,
-    mouseup,
-    leaveTab,
     addHoverListener,
-    addMouseUpListener,
-    addLeaveTabListener,
+    clear,
   };
 }
 

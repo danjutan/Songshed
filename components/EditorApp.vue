@@ -20,6 +20,8 @@ const {
   dividerWidthPx,
   contextMenuHeightPx,
   collapsedMinWidthPx,
+  noteTieDraggerSizePx,
+  expandedMinWidthPx,
 } = provideSpacings(settings);
 
 async function save(saveId: string) {
@@ -66,13 +68,14 @@ async function save(saveId: string) {
   --divider-width: v-bind(dividerWidthPx);
   --note-font-size: calc(var(--cell-height) * 0.8);
   --annotation-font-size: calc(var(--cell-height) * 0.7);
-  --note-tie-dragger-size: calc(var(--cell-height) / 3);
+  --note-tie-dragger-size: v-bind(noteTieDraggerSizePx);
+  --expanded-min-width: v-bind(expandedMinWidthPx);
   --pos-line-width: 1px;
   --string-width: 1px;
 
   --note-container-drag-extender-height: 100px;
 
-  --pos-line-color: var(--p-surface-300);
+  --pos-line-color: var(--p-surface-400);
   --string-color: var(--p-surface-400);
 
   --tie-color: var(--p-surface-900);
@@ -97,6 +100,14 @@ async function save(saveId: string) {
   --annotation-default-background-color: rgb(
     from var(--annotation-hover-background-color) r g b / 0.4
   );
+
+  --pos-line-alpha: 0.6;
+  --quarter-note-color: var(--p-surface-500);
+  --eighth-note-color: var(--p-yellow-500);
+  --sixteenth-note-color: var(--p-amber-600);
+  --thirty-second-note-color: var(--p-pink-600);
+  --sixty-fourth-note-color: var(--p-blue-400);
+  --one-twenty-eighth-note-color: var(--pos-line-color);
 
   --select-alpha: 0.3;
 

@@ -16,6 +16,10 @@ export interface SpacingsState {
   contextMenuHeightPx: ComputedRef<string>;
   collapsedMinWidth: ComputedRef<number>;
   collapsedMinWidthPx: ComputedRef<string>;
+  noteTieDraggerSize: ComputedRef<number>;
+  noteTieDraggerSizePx: ComputedRef<string>;
+  expandedMinWidth: ComputedRef<number>;
+  expandedMinWidthPx: ComputedRef<string>;
 }
 
 const SpacingsStateKey: InjectionKey<SpacingsState> = Symbol("SpacingsState");
@@ -25,11 +29,17 @@ export function provideSpacings(settings: SettingsState): SpacingsState {
   const dividerWidth = computed(() => settings.cellHeight / 3);
   const contextMenuHeight = computed(() => (settings.cellHeight * 3) / 4);
   const collapsedMinWidth = computed(() => settings.cellHeight / 2);
+  const noteTieDraggerSize = computed(() => settings.cellHeight / 3);
+  const expandedMinWidth = computed(
+    () => settings.cellHeight + noteTieDraggerSize.value * 1.5,
+  );
 
   const cellHeightPx = computed(() => `${cellHeight.value}px`);
   const dividerWidthPx = computed(() => `${dividerWidth.value}px`);
   const contextMenuHeightPx = computed(() => `${contextMenuHeight.value}px`);
   const collapsedMinWidthPx = computed(() => `${collapsedMinWidth.value}px`);
+  const noteTieDraggerSizePx = computed(() => `${noteTieDraggerSize.value}px`);
+  const expandedMinWidthPx = computed(() => `${expandedMinWidth.value}px`);
 
   const state: SpacingsState = {
     cellHeight,
@@ -40,6 +50,10 @@ export function provideSpacings(settings: SettingsState): SpacingsState {
     contextMenuHeightPx,
     collapsedMinWidth,
     collapsedMinWidthPx,
+    noteTieDraggerSize,
+    noteTieDraggerSizePx,
+    expandedMinWidth,
+    expandedMinWidthPx,
   };
 
   provide(SpacingsStateKey, state);

@@ -40,14 +40,13 @@ const props = defineProps<{
 }>();
 
 const settings = injectSettingsState();
-const { collapsedMinWidth, cellHeight, dividerWidth } = injectSpacingsState();
+const { collapsedMinWidth, cellHeight, dividerWidth, expandedMinWidth } =
+  injectSpacingsState();
 
 const subUnit = provideSubUnit(props.tabStore, settings);
 const beatSize = provideBeatSize(props.tabStore);
 
 const barSize = computed(() => props.tabStore.beatsPerBar * beatSize.value);
-
-// const columnsPerBar = computed(() => barSize.value / subUnit.value); // Doesn't include the one divider
 
 const { tablineStarts } = provideStackResizeObserver();
 
@@ -106,39 +105,8 @@ onMounted(() => {
   useAnnotationResizeMonitor(annotationResizeState);
 });
 
-// const columnsMap = provideColumnsMap(
-//   reactiveComputed(() => ({ tablines, subUnit, columnsPerBar })),
-// );
-
-// const collapsed = provideCollapsedState(
-//   reactiveComputed(() => ({
-//     editing: editingState,
-//     settings,
-//     stackData: props.tabStore.guitar!.getStacks(
-//       0,
-//       barSize.value * bars.value.length,
-//       subUnit.value,
-//     ),
-//     beatSize: props.tabStore.beatSize,
-//   })),
-// );
-
-// const annotationRenders = provideAnnotationRenderState(
-//   reactiveComputed(() => ({
-//     store: props.tabStore.annotations,
-//     subUnit: subUnit.value,
-//     newAnnotation: annotationAddState.newAnnotation,
-//     columnsMap,
-//   })),
-// );
-
-function onMouseUp() {
-  cellHoverEvents.mouseup();
-  // editingState.blurEditing();
-}
-
 function onLeaveTab() {
-  cellHoverEvents.leaveTab();
+  cellHoverEvents.clear();
   editingState.blurEditing();
 }
 
@@ -166,7 +134,7 @@ const barMinWidth = (bar: Bar) => {
         position % props.tabStore.beatSize === 0,
       )
         ? collapsedMinWidth.value
-        : cellHeight.value;
+        : expandedMinWidth.value;
       return total + width;
     },
     0,
@@ -235,7 +203,7 @@ const deletingBarStart = ref<number | undefined>(undefined);
 
 <template>
   <TabToolbar />
-  <div ref="tab" class="tab" @mouseup="onMouseUp" @mouseleave="onLeaveTab">
+  <div ref="tab" class="tab" @mouseleave="onLeaveTab">
     <template v-for="(bar, i) in barManagement.bars" :key="bar.start">
       <div v-if="tabStore.lineBreaks.has(bar.start)" class="line-break" />
 

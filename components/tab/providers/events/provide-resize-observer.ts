@@ -120,69 +120,73 @@ export function provideStackResizeObserver() {
     };
   }
 
+  const useRequestAnimationFrame = false;
   const createResizeObserver = () => {
     if (resizeObserver) return resizeObserver;
-    resizeObserver = new ResizeObserver((entries) =>
-      requestAnimationFrame(() => {
-        const tops: [position: number, top: number][] = [];
-        const triggered = new Set<ListenerId>();
+    const handler = () => {
+      const tops: [position: number, top: number][] = [];
+      const triggered = new Set<ListenerId>();
 
-        posStackListeners.forEach((listeners, pos) => {
-          const el = stackElements.get(pos);
+      posStackListeners.forEach((listeners, pos) => {
+        const el = stackElements.get(pos);
+        if (!el) return;
+        const { top, left, right, width } = el.getBoundingClientRect();
+
+        const coords: StackCoords = {
+          top,
+          left,
+          center: left + width / 2,
+          right,
+        };
+        if (!coordsEqual(lastStackCoords.get(pos), coords)) {
+          lastStackCoords.set(pos, coords);
+          listeners.forEach((id) => triggered.add(id));
+        }
+
+        if (tabBarElements.has(pos)) {
+          const el = tabBarElements.get(pos);
           if (!el) return;
           const { top, left, right, width } = el.getBoundingClientRect();
-
+          tops.push([pos, top]);
           const coords: StackCoords = {
             top,
             left,
             center: left + width / 2,
             right,
           };
-          if (!coordsEqual(lastStackCoords.get(pos), coords)) {
-            lastStackCoords.set(pos, coords);
-            listeners.forEach((id) => triggered.add(id));
-          }
-
-          if (tabBarElements.has(pos)) {
-            const el = tabBarElements.get(pos);
-            if (!el) return;
-            const { top, left, right, width } = el.getBoundingClientRect();
-            tops.push([pos, top]);
-            const coords: StackCoords = {
-              top,
-              left,
-              center: left + width / 2,
-              right,
-            };
-            if (!coordsEqual(lastTabBarCoords.get(pos), coords)) {
-              lastTabBarCoords.set(pos, coords);
-              const listeners = tabBarListeners.get(pos);
-              if (listeners) {
-                listeners.forEach((listener) => listener(coords));
-              }
+          if (!coordsEqual(lastTabBarCoords.get(pos), coords)) {
+            lastTabBarCoords.set(pos, coords);
+            const listeners = tabBarListeners.get(pos);
+            if (listeners) {
+              listeners.forEach((listener) => listener(coords));
             }
           }
-        });
-
-        for (const id of triggered) {
-          const { positions, listener } = stackListeners.get(id)!;
-          const coords: Record<number, StackCoords> = {};
-          for (const pos of positions) {
-            coords[pos] = lastStackCoords.get(pos)!;
-          }
-          listener(coords);
         }
+      });
 
-        // Trigger an update only if the array is actually different
-        tablineStarts.splice(
-          0,
-          tablineStarts.length,
-          ...tops
-            .filter(([pos, top], i) => tops[i - 1]?.[1] !== top)
-            .map(([pos]) => pos),
-        );
-      }),
-    );
+      for (const id of triggered) {
+        const { positions, listener } = stackListeners.get(id)!;
+        const coords: Record<number, StackCoords> = {};
+        for (const pos of positions) {
+          coords[pos] = lastStackCoords.get(pos)!;
+        }
+        listener(coords);
+      }
+
+      // Trigger an update only if the array is actually different
+      tablineStarts.splice(
+        0,
+        tablineStarts.length,
+        ...tops
+          .filter(([pos, top], i) => tops[i - 1]?.[1] !== top)
+          .map(([pos]) => pos),
+      );
+    };
+    if (useRequestAnimationFrame) {
+      resizeObserver = new ResizeObserver(() => requestAnimationFrame(handler));
+    } else {
+      resizeObserver = new ResizeObserver(handler);
+    }
     return resizeObserver;
   };
 
