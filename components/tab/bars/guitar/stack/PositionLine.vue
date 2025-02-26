@@ -6,6 +6,7 @@ import { SPACING, type ColoredSpacingName } from "~/composables/theory";
 
 const props = defineProps<{
   position: number;
+  fillIntersection: boolean;
 }>();
 
 const cellHoverState = injectCellHoverEvents();
@@ -111,6 +112,7 @@ const isThick = computed(() => isQuarterNote.value || spacingColor.value);
     />
 
     <div
+      v-if="fillIntersection"
       class="fill-intersection"
       :class="{
         'is-thick': isThick,

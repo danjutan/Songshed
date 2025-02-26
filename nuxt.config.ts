@@ -14,6 +14,7 @@ export default defineNuxtConfig({
     "@nuxthub/core",
     "@vueuse/nuxt",
     "@primevue/nuxt-module",
+    "@nuxt/fonts",
   ],
 
   primevue: {
