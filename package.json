@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "^0.3.13",
+    "@nuxt/fonts": "0.10.3",
     "@nuxthub/core": "^0.8.8",
     "@primevue/nuxt-module": "^4.2.5",
     "@vueuse/nuxt": "12.0.0",

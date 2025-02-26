@@ -62,6 +62,7 @@ async function save(saveId: string) {
 
 <style scoped>
 .editor-app {
+  font-family: "Bravura Text", serif;
   --cell-height: v-bind(cellHeightPx);
   --context-menu-height: v-bind(contextMenuHeightPx);
   --collapsed-min-width: v-bind(collapsedMinWidthPx);

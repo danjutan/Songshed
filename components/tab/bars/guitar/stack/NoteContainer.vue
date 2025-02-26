@@ -240,8 +240,10 @@ const row = computed(() => props.notePosition.string + 1);
     >
       {{ noteText }}
     </div>
-
-    <PositionLine v-else :position="notePosition.position" />
+    <PositionLine
+      :fill-intersection="!(note || notePreview)"
+      :position="notePosition.position"
+    />
 
     <div class="string left" />
     <div class="string right" />
