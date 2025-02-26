@@ -25,6 +25,7 @@ import { injectNotePreviewState } from "~/components/tab/providers/state/provide
 import SelectionToolbar from "../selections/SelectionToolbar.vue";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
 import PositionLine from "./PositionLine.vue";
+import { SPACING } from "~/composables/theory";
 
 const props = defineProps<{
   note: GuitarNote | undefined;
@@ -202,91 +203,6 @@ const row = computed(() => props.notePosition.string + 1);
 //   }
 //   return largestSpacingDivisor(hoveredPosition) === spacing.value;
 // });
-
-const smallestSpacing = computed(() => 1 / settings.subdivisions);
-const isHoveredSpacing = computed(() => {
-  const hoveredPosition = cellHoverState.hoveredNote?.value?.position;
-  if (!hoveredPosition || !cellHoverState.debounced.value) {
-    return false;
-  }
-  const hoveredSpacing = largestSpacingDivisor(hoveredPosition)!;
-  if (
-    !settings.colorSmallest &&
-    Spacing[hoveredSpacing] === smallestSpacing.value
-  ) {
-    return false;
-  }
-  if (props.notePosition.position % Spacing[hoveredSpacing] === 0) {
-    return true;
-  }
-  return false;
-});
-
-const hoveredInBar = computed(() => {
-  const hoveredPosition = cellHoverState.hoveredNote?.value?.position;
-  if (!hoveredPosition) {
-    return false;
-  }
-  return (
-    tabBarBounds.start <= hoveredPosition && hoveredPosition < tabBarBounds.end
-  );
-});
-
-const isQuarterNote = computed(() => {
-  const currentSpacing = largestSpacingDivisor(props.notePosition.position)!;
-  return currentSpacing === "Quarter";
-});
-
-const colors: Record<keyof typeof Spacing, string> = {
-  Quarter: "var(--quarter-note-color)",
-  Eighth: "var(--eighth-note-color)",
-  Sixteenth: "var(--sixteenth-note-color)",
-  ThirtySecond: "var(--thirty-second-note-color)",
-  SixtyFourth: "var(--sixty-fourth-note-color)",
-  OneTwentyEighth: "var(--one-twenty-eighth-note-color)",
-};
-
-const spacingColor = computed(() => {
-  if (isQuarterNote.value) {
-    return "var(--quarter-note-color)";
-  }
-  if (
-    !settings.colorPositions ||
-    (settings.onlyColorBar && !hoveredInBar.value)
-  ) {
-    return false;
-  }
-  if (settings.colorPositions === "always") {
-    const currentSpacing = largestSpacingDivisor(props.notePosition.position)!;
-    if (!currentSpacing) {
-      return false;
-    }
-    if (
-      !settings.colorSmallest &&
-      Spacing[currentSpacing] === smallestSpacing.value
-    ) {
-      return false;
-    }
-    return colors[currentSpacing];
-  }
-  const hoveredPosition = cellHoverState.hoveredNote?.value?.position;
-  if (!hoveredPosition) {
-    return false;
-  }
-  const hoveredSpacing = largestSpacingDivisor(hoveredPosition)!;
-  if (isHoveredSpacing.value) {
-    return colors[hoveredSpacing];
-  }
-  return false;
-});
-
-const posLineColor = computed(
-  () => spacingColor.value || "var(--pos-line-color)",
-);
-
-const isThickPos = computed(() => {
-  return isQuarterNote.value || spacingColor.value;
-});
 </script>
 
 <template>
@@ -324,16 +240,11 @@ const isThickPos = computed(() => {
     >
       {{ noteText }}
     </div>
-    <div
-      v-else
-      class="fill-intersection"
-      :style="{ backgroundColor: posLineColor }"
-    />
+
+    <PositionLine v-else :position="notePosition.position" />
 
     <div class="string left" />
     <div class="string right" />
-
-    <PositionLine :position="notePosition.position" />
 
     <NoteInput
       v-show="!notePreview"

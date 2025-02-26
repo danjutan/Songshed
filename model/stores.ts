@@ -12,11 +12,12 @@ import type {
   BendData,
   TieData,
 } from "./data";
+import { SPACING, type SpacingName } from "~/composables/theory";
 
 export interface TabStore {
   title: string;
   beatsPerBar: number;
-  beatSize: Spacing;
+  beatSize: SpacingName;
   lineBreaks: Set<number>;
   createGuitarTab: (
     tuning?: Midi[],
@@ -32,7 +33,7 @@ export interface TabStore {
 const defaults: Omit<TabData, "guitarData" | "annotations"> = {
   title: "new tab",
   beatsPerBar: 4,
-  beatSize: Spacing.Quarter,
+  beatSize: SPACING.Quarter,
   chordsData: {
     tuning: defaultTuning,
     chords: [{ title: "", notes: new Map() }],
@@ -83,7 +84,7 @@ export function createTabStore(
       return serializeTabData(data);
     },
     get guitar() {
-      return guitarStore.value;
+      return guitarStore.value!;
     },
     annotations: annotationStore,
     get chords() {
@@ -105,7 +106,7 @@ export function createTabStore(
     get beatSize() {
       return data.beatSize;
     },
-    set beatSize(beatSize: Spacing) {
+    set beatSize(beatSize: SpacingName) {
       data.beatSize = beatSize;
     },
     get lineBreaks() {

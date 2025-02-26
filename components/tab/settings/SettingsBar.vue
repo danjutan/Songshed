@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 import { injectSettingsState } from "../providers/state/provide-settings-state";
-
+import {
+  SPACING,
+  type SpacingName,
+  type SpacingValue,
+} from "~/composables/theory";
 const props = defineProps<{
   id: string;
 }>();
@@ -11,19 +15,34 @@ const emits = defineEmits<{
 
 const beatsPerBar = defineModel<number>("beatsPerBar");
 
-const beatSize = defineModel<Spacing>("beatSize");
+const beatSize = defineModel<SpacingValue>("beatSize");
 
 const beatSizeNumbers = [1, 2, 4, 8, 16, 32, 64, 128];
-const spacingValues = Object.values(Spacing).filter(Number) as Spacing[];
+const numberToSpacing: Record<number, SpacingValue> = {
+  1: SPACING.Quarter,
+  2: SPACING.Half,
+  4: SPACING.Quarter,
+  8: SPACING.Eighth,
+  16: SPACING.Sixteenth,
+  32: SPACING.ThirtySecond,
+  64: SPACING.SixtyFourth,
+  128: SPACING.OneTwentyEighth,
+};
+const spacingToNumber = Object.fromEntries(
+  Object.entries(numberToSpacing).map(([number, spacing]) => [
+    spacing,
+    +number,
+  ]),
+) as Record<SpacingValue, number>;
 
 const beatSizeNumber = computed(() => {
   if (!beatSize.value) return undefined;
-  return beatSizeNumbers[spacingValues.indexOf(beatSize.value)];
+  return spacingToNumber[beatSize.value];
 });
 
 function onBeatSizeSelect(event: Event) {
   const number = +(event.target as HTMLSelectElement).value;
-  beatSize.value = spacingValues[beatSizeNumbers.indexOf(number)];
+  beatSize.value = numberToSpacing[number];
 }
 
 const settings = injectSettingsState();
