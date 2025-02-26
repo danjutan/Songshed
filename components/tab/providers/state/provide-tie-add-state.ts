@@ -1,7 +1,7 @@
 import type { InjectionKey } from "vue";
 import type { Bend, GuitarStore, NotePosition, Tie } from "~/model/stores";
 import type { CellHoverEvents } from "../events/provide-cell-hover-events";
-import { TieType } from "~/model/data";
+import { TIE_TYPE } from "~/model/data";
 
 export function provideTieAddState(
   props: ReactiveComputed<{
@@ -14,7 +14,7 @@ export function provideTieAddState(
   const dragString = ref<number>(0);
   const rawFrom = ref<number>(0);
   const rawTo = ref<number>(0);
-  const defaultTieType = TieType.Hammer;
+  const defaultTieType = TIE_TYPE.Hammer;
 
   const validPositions = computed(() => {
     const string = dragString.value;

@@ -5,7 +5,7 @@ import TieCurve from "./TieCurve.vue";
 import TieSelect from "./TieSelect.vue";
 import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
-import { TieType } from "~/model/data";
+import { TIE_TYPE, type TieType } from "~/model/data";
 import { injectTieAddState } from "~/components/tab/providers/state/provide-tie-add-state";
 import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
 import {
@@ -76,10 +76,12 @@ watch(
 const startRowTop = computed(() => contextMenuHeight.value + cellHeight.value);
 
 const hasTie = computed(() =>
-  [TieType.Hammer, TieType.Tap, TieType.TieSlide].includes(props.tie.type),
+  ([TIE_TYPE.Hammer, TIE_TYPE.Tap, TIE_TYPE.TieSlide] as TieType[]).includes(
+    props.tie.type,
+  ),
 );
 const hasSlide = computed(() =>
-  [TieType.Slide, TieType.TieSlide].includes(props.tie.type),
+  ([TIE_TYPE.Slide, TIE_TYPE.TieSlide] as TieType[]).includes(props.tie.type),
 );
 
 const vCoords = useCoordsDirective({
@@ -112,7 +114,7 @@ const curveBottom = (center1: number, center2: number) => {
     <TieCurve
       v-if="hasTie"
       ref="tieCurve"
-      :close="tie.type === TieType.TieSlide"
+      :close="tie.type === TIE_TYPE.TieSlide"
       :from-pos="tie.from"
       :to-pos="tie.to"
       :y="startRowTop + row * cellHeight - 1"

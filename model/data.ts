@@ -9,12 +9,14 @@ export interface NoteData {
 }
 
 // "hammer" means hammer-on if going up, pull-off if going down
-export enum TieType {
-  Hammer = "hammer",
-  Tap = "tap",
-  Slide = "slide",
-  TieSlide = "tie-slide",
-}
+export const TIE_TYPE = {
+  Hammer: "hammer",
+  Tap: "tap",
+  Slide: "slide",
+  TieSlide: "tie-slide",
+} as const;
+
+export type TieType = (typeof TIE_TYPE)[keyof typeof TIE_TYPE];
 
 export type TieData = {
   type: TieType;
@@ -62,7 +64,7 @@ export interface ChordsData {
 export interface TabData {
   title: string;
   beatsPerBar: number;
-  beatSize: Spacing;
+  beatSize: SpacingValue;
   lineBreaks: Set<number>;
   guitarData?: GuitarTabData; // optional because we'll add more primary views in the future
   annotations: Map<number, Annotation[]>; // annotation row -> annotations on that row

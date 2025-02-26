@@ -2,7 +2,7 @@
 import OverlaySelect from "../OverlaySelect.vue";
 import type { Tie } from "~/model/stores";
 import { injectEditTie } from "../../provide-edit-tie";
-import { TieType } from "~/model/data";
+import { TIE_TYPE, type TieType } from "~/model/data";
 import { injectOverlayControlsTeleport } from "../../provide-overlay-controls-teleport";
 import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
 import {
@@ -67,10 +67,10 @@ const options = computed<[TieType, string][]>(() => {
   </svg>`;
 
   return [
-    [TieType.Hammer, hammerChar],
-    [TieType.Slide, slideIcon],
-    [TieType.TieSlide, tieSlideIcon],
-    [TieType.Tap, "T"],
+    [TIE_TYPE.Hammer, hammerChar],
+    [TIE_TYPE.Slide, slideIcon],
+    [TIE_TYPE.TieSlide, tieSlideIcon],
+    [TIE_TYPE.Tap, "T"],
   ];
 });
 
@@ -98,7 +98,10 @@ const emits = defineEmits<{
           :active
           :hide
           :options
-          :override-display="{ [TieType.Slide]: '', [TieType.TieSlide]: '' }"
+          :override-display="{
+            [TIE_TYPE.Slide]: '',
+            [TIE_TYPE.TieSlide]: '',
+          }"
           @delete-clicked="deleteTie(tie)"
           @mouseenter="$emit('mouseenter')"
           @mouseleave="$emit('mouseleave')"

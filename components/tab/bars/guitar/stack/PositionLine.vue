@@ -2,6 +2,7 @@
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
+import { SPACING, type ColoredSpacingName } from "~/composables/theory";
 
 const props = defineProps<{
   position: number;
@@ -36,14 +37,14 @@ const isHoveredSpacing = computed(() => {
   const hoveredSpacing = largestSpacingDivisor(hoveredPosition)!;
   if (
     !settings.colorSmallest &&
-    Spacing[hoveredSpacing] === smallestSpacing.value
+    SPACING[hoveredSpacing] === smallestSpacing.value
   ) {
     return false;
   }
-  return props.position % Spacing[hoveredSpacing] === 0;
+  return props.position % SPACING[hoveredSpacing] === 0;
 });
 
-const colors: Record<keyof typeof Spacing, string> = {
+const colors: Record<ColoredSpacingName, string> = {
   Quarter: "var(--quarter-note-color)",
   Eighth: "var(--eighth-note-color)",
   Sixteenth: "var(--sixteenth-note-color)",
@@ -69,7 +70,7 @@ const spacingColor = computed(() => {
     }
     if (
       !settings.colorSmallest &&
-      Spacing[currentSpacing] === smallestSpacing.value
+      SPACING[currentSpacing] === smallestSpacing.value
     ) {
       return false;
     }
