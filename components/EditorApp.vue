@@ -49,6 +49,7 @@ async function save(saveId: string) {
 
 <template>
   <div class="editor-app">
+    &#xE082;
     <Toolbar
       :id
       v-model:beats-per-bar="tabStore.beatsPerBar"
