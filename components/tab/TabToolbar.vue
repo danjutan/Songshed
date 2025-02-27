@@ -32,7 +32,7 @@ const optionsMap = computed(() => {
 <template>
   <Toolbar>
     <template #start>
-      <FloatLabel variant="on">
+      <FloatLabel variant="on" class="float-label">
         <Select
           id="subdivisions"
           v-model="settings.subdivisions"
@@ -41,6 +41,7 @@ const optionsMap = computed(() => {
           option-label="label"
           option-value="value"
           :options="subdivisionsOptions"
+          pt:dropdown:class="dropdown"
         >
           <template #option="{ option }">
             <span v-html="option.label" />
@@ -49,7 +50,7 @@ const optionsMap = computed(() => {
             <span v-html="optionsMap[value]" />
           </template>
         </Select>
-        <label for="subdivisions">Beat Columns</label>
+        <label for="subdivisions">Precision</label>
       </FloatLabel>
     </template>
     <template #center />
@@ -58,8 +59,14 @@ const optionsMap = computed(() => {
 </template>
 
 <style scoped>
+.float-label {
+  --p-floatlabel-position-x: 8px;
+}
 .select {
-  /* font-family: "Leland Text", serif !important; */
-  /* width: 100px; */
+  --p-select-sm-padding-x: 8px;
+  &:deep(.dropdown) {
+    width: min-content;
+    margin-right: var(--p-select-sm-padding-x);
+  }
 }
 </style>
