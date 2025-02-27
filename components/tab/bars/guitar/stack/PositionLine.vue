@@ -83,6 +83,9 @@ const spacingColor = computed(() => {
   }
   const hoveredSpacing = largestSpacingDivisor(hoveredPosition)!;
   if (isHoveredSpacing.value) {
+    if (settings.colorPositions === "gray") {
+      return colors.Quarter;
+    }
     return colors[hoveredSpacing];
   }
   return false;
@@ -90,6 +93,11 @@ const spacingColor = computed(() => {
 
 const lineColor = computed(() => spacingColor.value || "var(--pos-line-color)");
 const isThick = computed(() => isQuarterNote.value || spacingColor.value);
+const isOpaque = computed(
+  () =>
+    isQuarterNote.value ||
+    (isHoveredSpacing.value && settings.colorPositions === "gray"),
+);
 </script>
 
 <template>
@@ -98,7 +106,7 @@ const isThick = computed(() => isQuarterNote.value || spacingColor.value);
       class="pos-line top"
       :class="{
         'is-thick': isThick,
-        'is-quarter': isQuarterNote,
+        'is-opaque': isOpaque,
       }"
       :style="{ backgroundColor: lineColor }"
     />
@@ -106,7 +114,7 @@ const isThick = computed(() => isQuarterNote.value || spacingColor.value);
       class="pos-line bottom"
       :class="{
         'is-thick': isThick,
-        'is-quarter': isQuarterNote,
+        'is-opaque': isOpaque,
       }"
       :style="{ backgroundColor: lineColor }"
     />
@@ -116,7 +124,7 @@ const isThick = computed(() => isQuarterNote.value || spacingColor.value);
       class="fill-intersection"
       :class="{
         'is-thick': isThick,
-        'is-quarter': isQuarterNote,
+        'is-opaque': isOpaque,
       }"
       :style="{ backgroundColor: lineColor }"
     />
@@ -151,7 +159,7 @@ const isThick = computed(() => isQuarterNote.value || spacingColor.value);
   opacity: var(--pos-line-alpha);
 }
 
-.is-quarter {
+.is-opaque {
   opacity: 1;
 }
 
