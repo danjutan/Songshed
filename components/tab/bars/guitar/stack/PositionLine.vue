@@ -83,6 +83,12 @@ const spacingColor = computed(() => {
   }
   const hoveredSpacing = largestSpacingDivisor(hoveredPosition)!;
   if (isHoveredSpacing.value) {
+    if (settings.colorPositions === "gray") {
+      if (isQuarterNote.value) {
+        return colors.Quarter;
+      }
+      return "var(--gray-note-color)";
+    }
     return colors[hoveredSpacing];
   }
   return false;
@@ -90,35 +96,30 @@ const spacingColor = computed(() => {
 
 const lineColor = computed(() => spacingColor.value || "var(--pos-line-color)");
 const isThick = computed(() => isQuarterNote.value || spacingColor.value);
+const isOpaque = computed(
+  () => isQuarterNote.value && settings.colorPositions !== "always",
+);
+
+const classes = computed(() => ({
+  "is-thick": isThick.value,
+  "is-opaque": isOpaque.value,
+}));
+
+const style = computed(() => ({
+  backgroundColor: lineColor.value,
+}));
 </script>
 
 <template>
   <template v-if="settings.posLineCenter">
-    <div
-      class="pos-line top"
-      :class="{
-        'is-thick': isThick,
-        'is-quarter': isQuarterNote,
-      }"
-      :style="{ backgroundColor: lineColor }"
-    />
-    <div
-      class="pos-line bottom"
-      :class="{
-        'is-thick': isThick,
-        'is-quarter': isQuarterNote,
-      }"
-      :style="{ backgroundColor: lineColor }"
-    />
+    <div class="pos-line top" :class="classes" :style />
+    <div class="pos-line bottom" :class="classes" :style />
 
     <div
       v-if="fillIntersection"
       class="fill-intersection"
-      :class="{
-        'is-thick': isThick,
-        'is-quarter': isQuarterNote,
-      }"
-      :style="{ backgroundColor: lineColor }"
+      :class="classes"
+      :style
     />
   </template>
 </template>
@@ -151,7 +152,7 @@ const isThick = computed(() => isQuarterNote.value || spacingColor.value);
   opacity: var(--pos-line-alpha);
 }
 
-.is-quarter {
+.is-opaque {
   opacity: 1;
 }
 

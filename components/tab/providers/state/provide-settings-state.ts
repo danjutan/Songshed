@@ -6,7 +6,7 @@ export function provideSettingsState() {
     collapseAll: false,
     cellHeight: 24,
     posLineCenter: true,
-    colorPositions: true as true | false | "always",
+    colorPositions: "gray" as "hover" | false | "always" | "gray",
     colorSmallest: false,
     onlyColorBar: true,
   });

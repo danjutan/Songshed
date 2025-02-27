@@ -76,15 +76,14 @@ async function save(saveId: string) {
 
   --note-container-drag-extender-height: 100px;
 
-  --pos-line-color: var(--p-surface-400);
-  --string-color: var(--p-surface-400);
-
   --tie-color: var(--p-surface-900);
   --bend-color: var(--p-surface-900);
   --tie-dragger-color: var(--p-primary-700);
 
   --divider-color: var(--p-surface-900);
   --divider-icon-color: var(--p-surface-50);
+
+  --select-alpha: 0.3;
 
   --note-hover-color: var(--p-blue-200);
   --select-color: var(--p-blue-200);
@@ -102,6 +101,7 @@ async function save(saveId: string) {
     from var(--annotation-hover-background-color) r g b / 0.4
   );
 
+  --pos-line-color: var(--p-surface-400);
   --pos-line-alpha: 0.6;
   --quarter-note-color: var(--p-surface-500);
   --eighth-note-color: var(--p-yellow-500);
@@ -109,8 +109,9 @@ async function save(saveId: string) {
   --thirty-second-note-color: var(--p-pink-600);
   --sixty-fourth-note-color: var(--p-blue-400);
   --one-twenty-eighth-note-color: var(--pos-line-color);
+  --gray-note-color: var(--p-surface-500);
 
-  --select-alpha: 0.3;
+  --string-color: var(--p-surface-400);
 
   --pos-line-z-index: -1;
   --overlay-svg-z-index: 0;
@@ -129,6 +130,9 @@ async function save(saveId: string) {
 @media (prefers-color-scheme: dark) {
   .editor-app {
     --pos-line-color: var(--p-surface-600);
+    --quarter-note-color: var(--p-surface-400);
+    --gray-note-color: var(--p-surface-400);
+
     --string-color: var(--p-surface-700);
 
     --tie-color: var(--p-surface-300);
