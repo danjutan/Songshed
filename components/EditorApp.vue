@@ -49,6 +49,8 @@ async function save(saveId: string) {
 
 <template>
   <div class="editor-app">
+    <!-- <span class="text-petaluma">&#xE082; &#xE1D5; &#x2669;</span>
+    <span class="text-leland">&#xE082; &#xE1D5; &#x2669;</span> -->
     <Toolbar
       :id
       v-model:beats-per-bar="tabStore.beatsPerBar"
@@ -61,8 +63,13 @@ async function save(saveId: string) {
 </template>
 
 <style scoped>
+.text-petaluma {
+  font-family: "Petaluma", serif;
+}
+.text-leland {
+  font-family: "Leland Text", serif;
+}
 .editor-app {
-  font-family: "Bravura Text", serif;
   --cell-height: v-bind(cellHeightPx);
   --context-menu-height: v-bind(contextMenuHeightPx);
   --collapsed-min-width: v-bind(collapsedMinWidthPx);
