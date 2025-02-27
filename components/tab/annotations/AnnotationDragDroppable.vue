@@ -101,6 +101,11 @@ watchEffect((cleanup) => {
   position: absolute;
   top: calc(v-bind(renderRow) * var(--cell-height));
   height: var(--cell-height);
+  cursor: text;
+
+  &:hover:not(.dragging) {
+    background-color: var(--p-button-secondary-hover-background);
+  }
 
   &.dragging {
     height: 400%;

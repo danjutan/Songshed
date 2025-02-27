@@ -67,7 +67,7 @@ async function save(saveId: string) {
   font-family: "Petaluma", serif;
 }
 .text-leland {
-  font-family: "Leland", serif;
+  font-family: "Leland Text", serif;
 }
 .editor-app {
   --cell-height: v-bind(cellHeightPx);

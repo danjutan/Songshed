@@ -202,7 +202,7 @@ const deletingBarStart = ref<number | undefined>(undefined);
 </script>
 
 <template>
-  <TabToolbar />
+  <TabToolbar :min-subdivision="1 / props.tabStore.guitar.getMinSpacing()" />
   <div ref="tab" class="tab" @mouseleave="onLeaveTab">
     <template v-for="(bar, i) in barManagement.bars" :key="bar.start">
       <div v-if="tabStore.lineBreaks.has(bar.start)" class="line-break" />
