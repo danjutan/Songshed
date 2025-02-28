@@ -8,14 +8,14 @@ const props = defineProps<{
 const settings = injectSettingsState();
 
 const noteHTML = (unicode: string) =>
-  `<span style="font-family: 'Leland Text', serif; font-size: 20px; display: inline-block;">${unicode}</span>`;
+  `<span style="font-family: 'Leland', serif; font-size: 18px; line-height: 14px; vertical-align: top; display: inline-block; transform: translateY(9px)">${unicode}</span>`;
 
 const subdivisionsOptions = computed(() => {
   const options = [
-    { label: `1: ${noteHTML("&#x1D15F;")}`, value: 1 },
-    { label: `2: ${noteHTML("&#x1D160;")}`, value: 2 },
-    { label: `4: ${noteHTML("&#x1D161;")}`, value: 4 },
-    { label: `8: ${noteHTML("&#x1D162;")}`, value: 8 },
+    { label: `1: ${noteHTML("&#xE1D5;")}`, value: 1 },
+    { label: `2: ${noteHTML("&#xE1D7;")}`, value: 2 },
+    { label: `4: ${noteHTML("&#xE1D9;")}`, value: 4 },
+    { label: `8: ${noteHTML("&#xE1DB;")}`, value: 8 },
     // { label: `16: ${noteHTML("&#x1D163;")}`, value: 16 },
     // { label: `32: ${noteHTML("&#x1D164;")}`, value: 32 },
   ];
@@ -37,7 +37,6 @@ const optionsMap = computed(() => {
           id="subdivisions"
           v-model="settings.subdivisions"
           class="select"
-          size="small"
           option-label="label"
           option-value="value"
           :options="subdivisionsOptions"
@@ -60,7 +59,7 @@ const optionsMap = computed(() => {
 
 <style scoped>
 .float-label {
-  --p-floatlabel-position-x: 8px;
+  /* --p-floatlabel-position-x: 8px; */
 }
 .select {
   --p-select-sm-padding-x: 8px;
