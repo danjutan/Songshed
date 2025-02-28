@@ -393,7 +393,8 @@ svg:not(:hover) .arrow {
   stroke: rgb(from var(--p-content-color) r g b / 0.25);
 }
 .selected:hover {
-  fill: rgb(from var(--note-hover-color) r g b / 0.2);
+  /* fill: rgb(from var(--note-hover-color) r g b / 0.2);*/
+  stroke-width: 6;
   stroke: rgb(from var(--p-content-color) r g b / 0.25);
 }
 .open-group rect,
