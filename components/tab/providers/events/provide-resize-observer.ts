@@ -144,21 +144,22 @@ export function provideStackResizeObserver() {
         }
 
         if (tabBarElements.has(pos)) {
-          const el = tabBarElements.get(pos);
-          if (!el) return;
-          const { top, left, right, width } = el.getBoundingClientRect();
-          tops.push([pos, top]);
-          const coords: StackCoords = {
+          tops.push([pos, coords.top]);
+          const tabBarEl = tabBarElements.get(pos);
+          if (!tabBarEl) return;
+          const { top, left, right, width } = tabBarEl.getBoundingClientRect();
+          // tops.push([pos, top]);
+          const tabBarCoords: StackCoords = {
             top,
             left,
             center: left + width / 2,
             right,
           };
-          if (!coordsEqual(lastTabBarCoords.get(pos), coords)) {
-            lastTabBarCoords.set(pos, coords);
+          if (!coordsEqual(lastTabBarCoords.get(pos), tabBarCoords)) {
+            lastTabBarCoords.set(pos, tabBarCoords);
             const listeners = tabBarListeners.get(pos);
             if (listeners) {
-              listeners.forEach((listener) => listener(coords));
+              listeners.forEach((listener) => listener(tabBarCoords));
             }
           }
         }

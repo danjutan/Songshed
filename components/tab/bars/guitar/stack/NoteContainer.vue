@@ -188,21 +188,6 @@ const noteText = computed(() => {
 });
 
 const row = computed(() => props.notePosition.string + 1);
-
-// const spacing = computed(() =>
-//   largestSpacingDivisor(props.notePosition.position),
-// );
-
-// const shouldColorPosition = computed(() => {
-//   if (!settings.colorPositions) {
-//     return false;
-//   }
-//   const hoveredPosition = cellHoverState.hoveredNote?.value?.position;
-//   if (!hoveredPosition) {
-//     return false;
-//   }
-//   return largestSpacingDivisor(hoveredPosition) === spacing.value;
-// });
 </script>
 
 <template>

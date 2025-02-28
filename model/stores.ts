@@ -12,12 +12,12 @@ import type {
   BendData,
   TieData,
 } from "./data";
-import { SPACING, type SpacingName } from "~/composables/theory";
+import { SPACING, type SpacingValue } from "~/composables/theory";
 
 export interface TabStore {
   title: string;
   beatsPerBar: number;
-  beatSize: SpacingName;
+  beatSize: SpacingValue;
   lineBreaks: Set<number>;
   createGuitarTab: (
     tuning?: Midi[],
@@ -106,7 +106,7 @@ export function createTabStore(
     get beatSize() {
       return data.beatSize;
     },
-    set beatSize(beatSize: SpacingName) {
+    set beatSize(beatSize: SpacingValue) {
       data.beatSize = beatSize;
     },
     get lineBreaks() {
@@ -199,12 +199,22 @@ interface StackStore<N extends NoteData> {
   setStack: (position: number, stack: NoteStack<N>) => void;
   shiftFrom: (position: number, shiftBy: number) => void;
   getLastPosition: () => number;
+  getMinSpacing: () => number;
 }
 function createStackStore<N extends NoteData>(
   stacks: StackMap<N>,
 ): StackStore<N> {
   const getLastPosition = () =>
     [...stacks.keys()].sort((a, b) => b - a)[0] || 0;
+
+  const getMinSpacing = () => {
+    let minSpacing = Infinity;
+    for (const position of [...stacks.keys()]) {
+      const divisor = largestSpacingDivisor(position);
+      if (divisor) minSpacing = Math.min(minSpacing, SPACING[divisor]);
+    }
+    return minSpacing;
+  };
 
   function getStacks(start = 0, end?: number) {
     const subset: StackMap<N> = new Map();
@@ -259,6 +269,7 @@ function createStackStore<N extends NoteData>(
     getStacks,
     setStack,
     getLastPosition,
+    getMinSpacing,
     shiftFrom,
   };
 }
@@ -573,6 +584,19 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
       });
   }
 
+  function getMinSpacing() {
+    let minSpacing = noteStore.getMinSpacing();
+    for (const pos of tieStore
+      .getBends()
+      .flatMap((bend) =>
+        bend.through ? [bend.through[0], bend.to] : bend.to,
+      )) {
+      const divisor = largestSpacingDivisor(pos);
+      if (divisor) minSpacing = Math.min(minSpacing, SPACING[divisor]);
+    }
+    return minSpacing;
+  }
+
   function shiftFrom(position: number, shiftBy: number) {
     noteStore.shiftFrom(position, shiftBy);
     tieStore.shiftFrom(position, shiftBy);
@@ -588,6 +612,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     shiftFrom,
     moveNotes,
     getMovedNotes,
+    getMinSpacing,
     ...guitarData,
     ties: tieStore,
   };
