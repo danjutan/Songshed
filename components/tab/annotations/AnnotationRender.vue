@@ -13,6 +13,7 @@ import { injectAnnotationAddState } from "../providers/state/provide-annotation-
 import { injectAnnotationHoverState } from "../providers/state/provide-annotation-hover-state";
 import AnnotationResizeHandle from "./AnnotationResizeHandle.vue";
 import { useCoordsDirective } from "../hooks/use-coords-directive";
+import { injectSettingsState } from "../providers/state/provide-settings-state";
 
 export interface AnnotationRenderProps {
   row: number;
@@ -35,6 +36,7 @@ const barManagement = injectBarManagement();
 const resizeState = injectAnnotationResizeState();
 const annotationAddState = injectAnnotationAddState();
 const hoverState = injectAnnotationHoverState();
+const settings = injectSettingsState();
 
 const start = computed(() => props.startAtLeft ?? props.annotation.start);
 const end = computed(() => props.endAtRight ?? props.annotation.end);
@@ -124,6 +126,10 @@ const vCoords = useCoordsDirective({
   start: start,
   end: end,
 });
+
+const oneColumn = computed(() => {
+  return props.annotation.start === props.annotation.end;
+});
 </script>
 
 <template>
@@ -141,6 +147,8 @@ const vCoords = useCoordsDirective({
       hovered: isHovered,
       'any-hovered': isAnyHovered,
       'other-hovered': isOtherHovered,
+      'always-background': settings.showAnnotationBackground,
+      'one-column': oneColumn,
       // 'other-dragging': !isDragging && isAnyDragging,
     }"
     @mouseenter="hoverState.setHovered(props.row, props.annotation)"
@@ -228,6 +236,10 @@ const vCoords = useCoordsDirective({
     &.no-left-border {
       border-left: none;
     }
+  }
+
+  &.always-background:not(.one-column) {
+    background-color: var(--annotation-default-background-color);
   }
 }
 

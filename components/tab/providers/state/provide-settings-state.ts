@@ -5,6 +5,7 @@ export function provideSettingsState() {
     collapseEmpty: true,
     collapseAll: false,
     cellHeight: 24,
+    showAnnotationBackground: true,
     posLineCenter: true,
     colorPositions: "gray" as "hover" | false | "always" | "gray",
     colorSmallest: false,
