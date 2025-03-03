@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import type { GuitarNote } from "~/model/data";
-import Stack from "./stack/Stack.vue";
 import type { GuitarStack, NotePosition, TieStore } from "~/model/stores";
-import SelectionRegions from "./selections/SelectionRegions.vue";
-import BendDroppable from "./overlay/bend/BendDroppable.vue";
 
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectTabBarBounds } from "../provide-bar-bounds";
@@ -15,6 +12,10 @@ import { provideOverlayControlsTeleport } from "./provide-overlay-controls-telep
 import BendRender from "./overlay/bend/BendRender.vue";
 import TieRender from "./overlay/tie/TieRender.vue";
 import StringLine from "./stack/StringLine.vue";
+import Stack from "./stack/Stack.vue";
+import WidgetStack from "./stack/WidgetStack.vue";
+import SelectionRegions from "./selections/SelectionRegions.vue";
+import BendDroppable from "./overlay/bend/BendDroppable.vue";
 
 const settings = injectSettingsState();
 
@@ -41,7 +42,9 @@ const emit = defineEmits<{
   noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
 
-const numStacks = computed(() => props.stackData.length);
+const numStacks = computed(
+  () => props.stackData.length + (useSlots().widget ? 1 : 0),
+);
 
 // onBeforeUpdate(() => {
 //   console.log("updated bar");
@@ -121,6 +124,12 @@ const tablineHasBends = computed(() => {
           gridColumn: '1 / -1',
         }"
       />
+      <WidgetStack
+        v-if="$slots.widget"
+        style="grid-column: 1; grid-row: 1 / -1"
+      >
+        <slot name="widget" />
+      </WidgetStack>
       <Stack
         v-for="({ position, notes }, i) in stackData"
         :key="position"
@@ -128,7 +137,7 @@ const tablineHasBends = computed(() => {
         class="stack"
         :class="{ border: !settings.posLineCenter && i < stackData.length - 1 }"
         :style="{
-          gridColumn: i + 1,
+          gridColumn: i + ($slots.widget ? 2 : 1),
           gridRow: '1 / -1',
         }"
         :notes

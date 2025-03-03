@@ -229,6 +229,9 @@ const deletingBarStart = ref<number | undefined>(undefined);
             @end-drag="endDrag(i)"
           />
         </template>
+        <template v-if="i === 0" #widget>
+          <div>asdf</div>
+        </template>
       </TabBar>
     </template>
     <!-- TODO: re-evaluate; do I toss this down a slot? -->

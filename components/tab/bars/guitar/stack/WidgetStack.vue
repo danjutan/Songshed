@@ -2,7 +2,7 @@
 
 <template>
   <div class="stack">
-    <div class="test" />
+    <slot />
   </div>
 </template>
 
@@ -12,6 +12,10 @@
   grid-template-rows: subgrid;
 }
 
-.test {
-}
+/* .centered {
+  grid-row: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */
 </style>

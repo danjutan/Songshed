@@ -90,6 +90,9 @@ watchEffect((cleanup) => {
       <template #divider>
         <slot name="divider" />
       </template>
+      <template v-if="$slots.widget" #widget>
+        <slot name="widget" />
+      </template>
     </GuitarBar>
   </div>
 </template>
