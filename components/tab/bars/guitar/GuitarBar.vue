@@ -248,5 +248,6 @@ const tablineHasBends = computed(() => {
   height: 100%;
   background-color: var(--delete-color);
   opacity: var(--select-alpha);
+  z-index: var(--bar-overlay-z-index);
 }
 </style>

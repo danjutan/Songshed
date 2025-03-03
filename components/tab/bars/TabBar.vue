@@ -11,12 +11,12 @@ import {
 } from "../providers/state/provide-bar-management";
 import GuitarBar from "./guitar/GuitarBar.vue";
 import type { GuitarNote } from "~/model/data";
-import { injectSubUnit } from "../providers/provide-subunit";
 import { provideTabBarBounds } from "./provide-bar-bounds";
 import { injectStackResizeObserver } from "../providers/events/provide-resize-observer";
 import AnnotationsContainer from "../annotations/AnnotationsContainer.vue";
 import NewRowButton from "../annotations/NewRowButton.vue";
-
+import { injectBarHover } from "../providers/state/provide-bar-hover";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 const props = defineProps<{
   annotationStore: AnnotationStore;
   bar: Bar;
@@ -36,9 +36,28 @@ provideTabBarBounds(
   computed(() => overlayReference.value?.$el),
 );
 
+const { setHoveredBarStart, clearHoveredBarStart } = injectBarHover();
+
 const firstInLine = computed(() =>
   resizeObserver.tablineStarts.includes(props.bar.start),
 );
+
+const tabBar = useTemplateRef<HTMLDivElement>("tabBar");
+
+watchEffect((cleanup) => {
+  if (!tabBar.value) {
+    return;
+  }
+  cleanup(
+    dropTargetForElements({
+      element: tabBar.value,
+      // Because mouseover doesn't seem to fire during drag
+      onDropTargetChange: (dropTarget) => {
+        setHoveredBarStart(props.bar.start);
+      },
+    }),
+  );
+});
 </script>
 
 <template>
@@ -47,6 +66,8 @@ const firstInLine = computed(() =>
     class="tab-bar"
     :class="{ firstInLine }"
     :style="{ flex: flexGrow ? `${flexGrow} 0 0px` : undefined }"
+    @mouseover="setHoveredBarStart(bar.start)"
+    @mouseleave="clearHoveredBarStart"
   >
     <NewRowButton
       v-if="firstInLine"

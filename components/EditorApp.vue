@@ -86,6 +86,8 @@ async function save(saveId: string) {
 
   --note-container-drag-extender-height: 100px;
 
+  --tab-background-color: var(--p-surface-50);
+
   --tie-color: var(--p-surface-900);
   --bend-color: var(--p-surface-900);
   --tie-dragger-color: var(--p-primary-700);
@@ -123,22 +125,25 @@ async function save(saveId: string) {
 
   --string-color: var(--p-surface-400);
 
-  --pos-line-z-index: -1;
-  --overlay-svg-z-index: 0;
-  --bar-overlay-z-index: 1;
-  --annotation-dragger-z-index: 1;
-  --annotation-z-index: 2;
-  --divider-z-index: 3;
-  --overlay-controls-z-index: 4;
-  --annotation-current-z-index: 3;
-  --annotation-resize-dragger-z-index: 4;
-  --selection-toolbar-z-index: 4;
-  --note-container-drag-extender-z-index: 5;
-  --tie-dragger-z-index: 5;
+  --string-z-index: -1;
+  --pos-line-z-index: 1;
+  --overlay-svg-z-index: 2;
+  --bar-overlay-z-index: 3;
+  --annotation-dragger-z-index: 3;
+  --annotation-z-index: 4;
+  --divider-z-index: 5;
+  --overlay-controls-z-index: 6;
+  --annotation-current-z-index: 5;
+  --annotation-resize-dragger-z-index: 6;
+  --selection-toolbar-z-index: 6;
+  --note-container-drag-extender-z-index: 7;
+  --tie-dragger-z-index: 7;
 }
 
 @media (prefers-color-scheme: dark) {
   .editor-app {
+    --tab-background-color: var(--p-surface-900);
+
     --pos-line-color: var(--p-surface-600);
     --quarter-note-color: var(--p-surface-400);
     --gray-note-color: var(--p-surface-400);

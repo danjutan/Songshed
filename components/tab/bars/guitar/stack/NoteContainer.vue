@@ -26,13 +26,13 @@ import SelectionToolbar from "../selections/SelectionToolbar.vue";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
 import PositionLine from "./PositionLine.vue";
 import { SPACING } from "~/composables/theory";
+import StringLine from "./StringLine.vue";
 
 const props = defineProps<{
   note: GuitarNote | undefined;
   notePosition: NotePosition;
   tuning: Midi;
   frets: number;
-  collapsed: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -198,7 +198,6 @@ const row = computed(() => props.notePosition.string + 1);
       selected: isSelected && selectionState.action === 'none',
       tieable,
       tieing,
-      collapsed,
       'any-tieing': dragging,
       'pos-line-center': settings.posLineCenter,
     }"
@@ -230,8 +229,8 @@ const row = computed(() => props.notePosition.string + 1);
       :position="notePosition.position"
     />
 
-    <div class="string left" />
-    <div class="string right" />
+    <StringLine class="string left" />
+    <StringLine class="string right" />
 
     <NoteInput
       v-show="!notePreview"
@@ -322,12 +321,6 @@ const row = computed(() => props.notePosition.string + 1);
 
   container-type: size;
 
-  min-width: var(--expanded-min-width);
-
-  &.collapsed {
-    min-width: var(--collapsed-min-width);
-  }
-
   &:hover,
   &.tieable {
     .note-block:not(.preview) {
@@ -385,11 +378,6 @@ const row = computed(() => props.notePosition.string + 1);
 }
 
 .string {
-  height: 1px;
-  width: 100%;
-  background-color: var(--string-color);
-  align-self: center;
-
   &.left {
     grid-area: 2 / 1;
   }
