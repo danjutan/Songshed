@@ -4,7 +4,7 @@ import NoteContainer from "./NoteContainer.vue";
 import { injectStackResizeObserver } from "~/components/tab/providers/events/provide-resize-observer";
 import { useIsCollapsed } from "~/components/tab/hooks/use-collapsed";
 import { injectBeatSize } from "~/components/tab/providers/provide-beatsize";
-import { injectBarHover } from "../../../providers/state/provide-bar-hover";
+import { injectBarHoverState } from "../../../providers/state/provide-bar-hover-state";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
 import { injectSelectionState } from "~/components/tab/providers/state/provide-selection-state";
 import StringLine from "./StringLine.vue";
@@ -26,7 +26,7 @@ const emit = defineEmits<{
 
 const resizeState = injectStackResizeObserver();
 const beatSize = injectBeatSize();
-const { hoveredBarStart } = injectBarHover();
+const { hoveredBarStart } = injectBarHoverState();
 const tabBarBounds = injectTabBarBounds();
 const selectionState = injectSelectionState();
 

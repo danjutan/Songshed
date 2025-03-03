@@ -15,7 +15,7 @@ import { provideTabBarBounds } from "./provide-bar-bounds";
 import { injectStackResizeObserver } from "../providers/events/provide-resize-observer";
 import AnnotationsContainer from "../annotations/AnnotationsContainer.vue";
 import NewRowButton from "../annotations/NewRowButton.vue";
-import { injectBarHover } from "../providers/state/provide-bar-hover";
+import { injectBarHoverState } from "../providers/state/provide-bar-hover-state";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 const props = defineProps<{
   annotationStore: AnnotationStore;
@@ -36,7 +36,7 @@ provideTabBarBounds(
   computed(() => overlayReference.value?.$el),
 );
 
-const { setHoveredBarStart, clearHoveredBarStart } = injectBarHover();
+const { setHoveredBarStart, clearHoveredBarStart } = injectBarHoverState();
 
 const firstInLine = computed(() =>
   resizeObserver.tablineStarts.includes(props.bar.start),

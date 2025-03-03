@@ -6,7 +6,7 @@ export interface BarHoverState {
 
 const barHoverKey = Symbol() as InjectionKey<BarHoverState>;
 
-export function provideBarHover() {
+export function provideBarHoverState() {
   const hoveredBarStart = ref<number>();
 
   const setHoveredBarStart = (position: number) => {
@@ -23,6 +23,6 @@ export function provideBarHover() {
   return state;
 }
 
-export function injectBarHover() {
+export function injectBarHoverState() {
   return inject(barHoverKey) as BarHoverState;
 }
