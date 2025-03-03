@@ -127,7 +127,7 @@ const vCoords = useCoordsDirective({
   end: end,
 });
 
-const oneColumn = computed(() => {
+const isOneColumn = computed(() => {
   return props.annotation.start === props.annotation.end;
 });
 </script>
@@ -148,7 +148,7 @@ const oneColumn = computed(() => {
       'any-hovered': isAnyHovered,
       'other-hovered': isOtherHovered,
       'always-background': settings.showAnnotationBackground,
-      'one-column': oneColumn,
+      'one-column': isOneColumn,
       // 'other-dragging': !isDragging && isAnyDragging,
     }"
     @mouseenter="hoverState.setHovered(props.row, props.annotation)"
@@ -185,18 +185,7 @@ const oneColumn = computed(() => {
       {{ annotation?.text }}
     </div>
 
-    <div
-      v-if="annotation.start === annotation.end"
-      class="center-line pos-line"
-    />
-
-    <!-- <div class="delete" @click="emit('delete')">
-        <X :size="16" />
-      </div> -->
-    <!-- <template v-else>
-        <div class="left-line pos-line" />
-        <div class="right-line pos-line" />
-      </template> -->
+    <div v-if="isOneColumn" class="notch" />
   </div>
 </template>
 
@@ -261,18 +250,15 @@ const oneColumn = computed(() => {
   outline: none;
 }
 
-.center-line {
+.notch {
   position: absolute;
   margin-left: auto;
   margin-right: auto;
   left: 0;
   right: 0;
-}
-
-.pos-line {
-  width: var(--pos-line-width);
+  top: calc(var(--cell-height) * 0.85);
+  height: calc((var(--cell-height) * 0.3));
+  width: calc(var(--pos-line-width) + 1px);
   background: var(--annotation-notch-color);
-  height: calc((var(--cell-height) - var(--note-font-size)) * 1.5);
-  top: var(--note-font-size);
 }
 </style>
