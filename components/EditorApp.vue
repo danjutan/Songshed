@@ -125,7 +125,6 @@ async function save(saveId: string) {
 
   --string-color: var(--p-surface-400);
 
-  --string-z-index: -1;
   --pos-line-z-index: 1;
   --overlay-svg-z-index: 2;
   --bar-overlay-z-index: 3;

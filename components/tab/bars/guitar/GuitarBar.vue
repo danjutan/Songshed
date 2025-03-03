@@ -14,6 +14,7 @@ import { provideOverlayControlsTeleport } from "./provide-overlay-controls-telep
 
 import BendRender from "./overlay/bend/BendRender.vue";
 import TieRender from "./overlay/tie/TieRender.vue";
+import StringLine from "./stack/StringLine.vue";
 
 const settings = injectSettingsState();
 
@@ -112,6 +113,14 @@ const tablineHasBends = computed(() => {
       </template>
     </div>
     <div class="notes-grid">
+      <StringLine
+        v-for="(_, i) in tuning"
+        :key="i"
+        :style="{
+          gridRow: i + 1,
+          gridColumn: '1 / -1',
+        }"
+      />
       <Stack
         v-for="({ position, notes }, i) in stackData"
         :key="position"

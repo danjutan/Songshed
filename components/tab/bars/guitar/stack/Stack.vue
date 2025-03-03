@@ -86,7 +86,11 @@ const isCollapsed = useIsCollapsed(
 </script>
 
 <template>
-  <div ref="stack" class="stack" :class="{ collapsed: isCollapsed }">
+  <div
+    ref="stack"
+    class="stack"
+    :class="{ collapsed: isCollapsed, show: showNoteContainers }"
+  >
     <template v-if="showNoteContainers">
       <NoteContainer
         v-for="(note, string) in notes"
@@ -103,9 +107,6 @@ const isCollapsed = useIsCollapsed(
         "
       />
     </template>
-    <template v-else>
-      <StringLine v-for="string in tuning.length" :key="string" />
-    </template>
   </div>
 </template>
 
@@ -118,5 +119,9 @@ const isCollapsed = useIsCollapsed(
 
 .collapsed {
   min-width: var(--collapsed-min-width);
+}
+
+.show {
+  background-color: var(--tab-background-color);
 }
 </style>
