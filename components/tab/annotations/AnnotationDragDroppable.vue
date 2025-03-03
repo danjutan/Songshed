@@ -28,8 +28,6 @@ const props = defineProps<{
 const { dragStart, dragEnd, newAnnotation } = injectAnnotationAddState();
 const resizeState = injectAnnotationResizeState();
 const hoverState = injectAnnotationHoverState();
-const spacings = injectSpacingsState();
-const tabBarBounds = injectTabBarBounds();
 const vCoords = useCoordsDirective({
   position: props.position,
 });

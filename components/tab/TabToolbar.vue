@@ -30,7 +30,7 @@ const optionsMap = computed(() => {
 </script>
 
 <template>
-  <Toolbar>
+  <Toolbar class="toolbar">
     <template #start>
       <FloatLabel variant="on" class="float-label">
         <Select
@@ -58,6 +58,10 @@ const optionsMap = computed(() => {
 </template>
 
 <style scoped>
+.toolbar {
+  /* border: none; */
+  margin-bottom: 10px;
+}
 .float-label {
   /* --p-floatlabel-position-x: 8px; */
 }

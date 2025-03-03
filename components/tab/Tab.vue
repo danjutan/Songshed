@@ -35,6 +35,7 @@ import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-mo
 
 import { isCollapsed } from "./hooks/use-collapsed";
 import { injectSpacingsState } from "./providers/provide-spacings";
+import { provideBarHoverState } from "./providers/state/provide-bar-hover-state";
 const props = defineProps<{
   tabStore: TabStore;
 }>();
@@ -82,6 +83,8 @@ const barManagement = provideBarManagement(
     subUnit: subUnit.value,
   })),
 );
+
+provideBarHoverState();
 
 const copyState = provideCopyState(selectionState, props.tabStore.guitar);
 
