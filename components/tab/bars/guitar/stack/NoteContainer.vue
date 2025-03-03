@@ -198,6 +198,7 @@ const row = computed(() => props.notePosition.string + 1);
       selected: isSelected && selectionState.action === 'none',
       tieable,
       tieing,
+      editing: isEditing,
       'any-tieing': dragging,
       'pos-line-center': settings.posLineCenter,
     }"
@@ -322,6 +323,7 @@ const row = computed(() => props.notePosition.string + 1);
   container-type: size;
 
   &:hover,
+  &.editing,
   &.tieable {
     .note-block:not(.preview) {
       color: transparent;
