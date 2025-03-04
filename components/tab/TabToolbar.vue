@@ -8,7 +8,7 @@ const props = defineProps<{
 const settings = injectSettingsState();
 
 const noteHTML = (unicode: string) =>
-  `<span style="font-family: 'Leland', serif; font-size: 18px; line-height: 14px; vertical-align: top; display: inline-block; transform: translateY(9px)">${unicode}</span>`;
+  `<span class="precision-note-glyph">${unicode}</span>`;
 
 const subdivisionsOptions = computed(() => {
   const options = [
@@ -57,6 +57,16 @@ const optionsMap = computed(() => {
   </Toolbar>
 </template>
 
+<style>
+.precision-note-glyph {
+  font-family: Leland, serif;
+  font-size: 18px;
+  line-height: 14px;
+  vertical-align: top;
+  display: inline-block;
+  transform: translateY(9px);
+}
+</style>
 <style scoped>
 .toolbar {
   /* border: none; */

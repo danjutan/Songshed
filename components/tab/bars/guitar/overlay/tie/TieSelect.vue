@@ -102,6 +102,7 @@ const emits = defineEmits<{
             [TIE_TYPE.Slide]: '',
             [TIE_TYPE.TieSlide]: '',
           }"
+          show-clear
           @delete-clicked="deleteTie(tie)"
           @mouseenter="$emit('mouseenter')"
           @mouseleave="$emit('mouseleave')"

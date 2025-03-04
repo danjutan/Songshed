@@ -9,7 +9,6 @@
   height: 1px;
   width: 100%;
   background-color: var(--string-color);
-  z-index: var(--string-z-index);
   align-self: center;
 }
 </style>
