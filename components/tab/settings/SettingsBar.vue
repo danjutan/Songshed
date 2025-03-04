@@ -19,7 +19,7 @@ const beatSize = defineModel<SpacingValue>("beatSize");
 
 const beatSizeNumbers = [1, 2, 4, 8, 16, 32, 64, 128];
 const numberToSpacing: Record<number, SpacingValue> = {
-  1: SPACING.Quarter,
+  1: SPACING.Whole,
   2: SPACING.Half,
   4: SPACING.Quarter,
   8: SPACING.Eighth,
@@ -52,7 +52,7 @@ const saveId = ref(props.id);
 
 <template>
   <div class="toolbar">
-    Time:
+    <!-- Time:
     <div class="signature">
       <input v-model="beatsPerBar" type="number" />
       <div />
@@ -67,10 +67,9 @@ const saveId = ref(props.id);
         </option>
       </select>
     </div>
-    <!-- Bars per line:
-    <input v-model="settings.barsPerLine" type="number" /> -->
     Subdivisions:
     <input v-model="settings.subdivisions" type="number" />
+  -->
     <label for="collapse-subdivisions">Collapse subdivisions</label>
     <input
       id="collapse-subdivisions"

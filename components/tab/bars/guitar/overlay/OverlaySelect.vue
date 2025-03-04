@@ -6,10 +6,9 @@ import { injectSpacingsState } from "~/components/tab/providers/provide-spacings
 const props = defineProps<{
   options: Array<[value: string | number, label: string]>;
   active: boolean; // if false, becomes active on hover
-  placeholder?: string;
-  overrideDisplay?: { [value: string]: string };
   hide?: boolean;
   pointerEventsNone?: boolean;
+  showClear?: boolean;
 }>();
 
 const { cellHeightPx } = injectSpacingsState();
@@ -42,11 +41,10 @@ const iconSize = 16;
     option-label="label"
     option-value="value"
     size="small"
-    :placeholder="placeholder"
-    show-clear
+    :show-clear="showClear"
     pt:dropdown:class="dropdown"
     pt:label:class="label"
-    :pt:option="{ style: { fontSize: fontSizePx } }"
+    :pt:option="{ style: { fontSize: fontSizePx, lineHeight: fontSizePx } }"
   >
     <template #value="{ value }">
       <span v-html="optionsMap[value]" />

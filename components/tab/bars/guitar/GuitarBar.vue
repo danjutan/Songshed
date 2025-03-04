@@ -13,7 +13,7 @@ import BendRender from "./overlay/bend/BendRender.vue";
 import TieRender from "./overlay/tie/TieRender.vue";
 import StringLine from "./stack/StringLine.vue";
 import Stack from "./stack/Stack.vue";
-import WidgetStack from "./stack/WidgetStack.vue";
+import WidgetStack from "./stack/widgets/WidgetStack.vue";
 import SelectionRegions from "./selections/SelectionRegions.vue";
 import BendDroppable from "./overlay/bend/BendDroppable.vue";
 
@@ -42,8 +42,9 @@ const emit = defineEmits<{
   noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
 
+const slots = useSlots();
 const numStacks = computed(
-  () => props.stackData.length + (useSlots().widget ? 1 : 0),
+  () => props.stackData.length + (slots.widget ? 1 : 0),
 );
 
 // onBeforeUpdate(() => {

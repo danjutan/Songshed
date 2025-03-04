@@ -139,6 +139,7 @@ const vCoords = useCoordsDirective({
             :options
             class="select"
             :pointer-events-none="dragging"
+            show-clear
             @mouseenter="labelHover = true"
             @mouseleave="labelHover = false"
             @delete-clicked="bendEditState.deleteBend(props.bend)"

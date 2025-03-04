@@ -2,6 +2,8 @@
 import TabBar from "./bars/TabBar.vue";
 import TabToolbar from "./TabToolbar.vue";
 import BarDivider from "./bars/BarDivider.vue";
+import TimeSignatureWidget from "./bars/guitar/stack/widgets/TimeSignatureWidget.vue";
+
 import { Plus } from "lucide-vue-next";
 
 import type { TabStore } from "~/model/stores";
@@ -230,7 +232,10 @@ const deletingBarStart = ref<number | undefined>(undefined);
           />
         </template>
         <template v-if="i === 0" #widget>
-          <div>asdf</div>
+          <TimeSignatureWidget
+            v-model:beats="tabStore.beatsPerBar"
+            v-model:beat-value="tabStore.beatSize"
+          />
         </template>
       </TabBar>
     </template>
