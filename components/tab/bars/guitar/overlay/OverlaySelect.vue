@@ -5,7 +5,7 @@ import { injectSpacingsState } from "~/components/tab/providers/provide-spacings
 
 const props = defineProps<{
   options: Array<[value: string | number, label: string]>;
-  active: boolean; // if false, becomes active on hover
+  active: boolean;
   hide?: boolean;
   pointerEventsNone?: boolean;
   showClear?: boolean;
