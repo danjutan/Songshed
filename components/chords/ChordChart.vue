@@ -72,15 +72,15 @@ function decrementWindow() {
 
 // const fretLabelWidth = computed(() => (windowStart.value === 0 ? 0 : cellWidth));
 const gridStartX = computed(() => cellWidth);
-const gridStartY = computed(() => cellHeight);
+const gridStartY = computed(() => 0);
 const gridEndX = computed(
   () => gridStartX.value + (props.strings - 1) * cellWidth,
 );
 const gridEndY = computed(() => gridStartY.value + numFrets.value * cellHeight);
 
-const totalWidth = computed(() => gridEndX.value + cellWidth / 2);
+const totalWidth = computed(() => gridEndX.value);
 const totalHeight = computed(
-  () => cellHeight * (numFrets.value + 0.5) + gridStartY.value,
+  () => cellHeight * numFrets.value /*+ 0.5*/ + gridStartY.value,
 );
 
 const fretFontSize = computed(() => cellWidth / 2);
@@ -131,107 +131,73 @@ function onInputClick(e: Event) {
 </script>
 
 <template>
-  <svg :viewBox>
-    <rect
-      v-if="windowStart === 1"
-      :y="gridStartY - topEndHeight"
-      :height="topEndHeight"
-      :x="gridStartX - 0.5"
-      :width="gridEndX - gridStartX + 1"
-      fill="var(--p-content-color)"
-    />
+  <div class="container">
+    <svg class="chart-svg" :viewBox>
+      <rect
+        v-if="windowStart === 1"
+        :y="gridStartY - topEndHeight"
+        :height="topEndHeight"
+        :x="gridStartX - 0.5"
+        :width="gridEndX - gridStartX + 1"
+        fill="var(--p-content-color)"
+      />
 
-    <line
-      v-for="(_, i) in strings"
-      :x1="gridStartX + i * cellWidth"
-      :x2="gridStartX + i * cellWidth"
-      :y1="gridStartY"
-      :y2="gridEndY"
-      stroke="var(--p-content-color)"
-    />
+      <line
+        v-for="(_, i) in strings"
+        :x1="gridStartX + i * cellWidth"
+        :x2="gridStartX + i * cellWidth"
+        :y1="gridStartY"
+        :y2="gridEndY"
+        stroke="var(--p-content-color)"
+      />
 
-    <line
-      v-for="n in numFrets"
-      :x1="gridStartX"
-      :x2="gridEndX"
-      :y1="gridStartY + n * cellHeight - 0.5"
-      :y2="gridStartY + n * cellHeight - 0.5"
-      stroke="var(--p-content-color)"
-    />
+      <line
+        v-for="n in numFrets"
+        :x1="gridStartX"
+        :x2="gridEndX"
+        :y1="gridStartY + n * cellHeight - 0.5"
+        :y2="gridStartY + n * cellHeight - 0.5"
+        stroke="var(--p-content-color)"
+      />
 
-    <template v-for="(_, x) in strings">
-      <template v-for="(f, y) in numFrets">
-        <g
-          v-if="fingering[strings - x - 1]?.fret !== f + windowStart - 1"
-          class="selectable-group"
-          @click="setFret(strings - x - 1, f + windowStart - 1)"
-        >
-          <circle
-            class="selectable"
-            :cx="gridStartX + x * cellWidth"
-            :cy="gridStartY + y * cellHeight + cellHeight / 2"
-            :r="noteRadius"
-          />
-          <rect
-            :x="gridStartX + x * cellWidth - cellWidth / 2"
-            :y="gridStartY + y * cellHeight"
-            :width="cellWidth"
-            :height="cellHeight"
-            fill="transparent"
-          />
-        </g>
+      <template v-for="(_, x) in strings">
+        <template v-for="(f, y) in numFrets">
+          <g
+            v-if="fingering[strings - x - 1]?.fret !== f + windowStart - 1"
+            class="selectable-group"
+            @click="setFret(strings - x - 1, f + windowStart - 1)"
+          >
+            <circle
+              class="selectable"
+              :cx="gridStartX + x * cellWidth"
+              :cy="gridStartY + y * cellHeight + cellHeight / 2"
+              :r="noteRadius"
+            />
+            <rect
+              :x="gridStartX + x * cellWidth - cellWidth / 2"
+              :y="gridStartY + y * cellHeight"
+              :width="cellWidth"
+              :height="cellHeight"
+              fill="transparent"
+            />
+          </g>
+        </template>
       </template>
-    </template>
 
-    <template v-for="(_, string) in strings">
-      <template v-if="fingering[string]">
-        <g
-          v-if="fingering[string].fret === 0"
-          class="open-group"
-          @click="setFret(string, false)"
-        >
-          <circle
-            class="open"
-            :cx="gridStartX + (strings - string - 1) * cellWidth"
-            :cy="gridStartY - cellHeight * 0.65"
-            :r="noteRadius"
-            fill="transparent"
-            stroke="var(--p-content-color)"
-          />
-          <rect
-            :x="gridStartX + (strings - string - 1.5) * cellWidth"
-            :y="gridStartY - cellHeight"
-            :width="cellWidth"
-            :height="cellHeight"
-            fill="transparent"
-          />
-        </g>
-        <template
-          v-else-if="
-            fingering[string].fret >= windowStart &&
-            fingering[string].fret <= windowEnd
-          "
-        >
-          <!--TODO: replace with NoteView-->
-          <circle
-            class="selected"
-            :cx="gridStartX + (strings - string - 1) * cellWidth"
-            :cy="
-              gridStartY +
-              (fingering[string].fret - windowStart) * cellHeight +
-              cellHeight / 2
-            "
-            :r="noteRadius"
-            fill="var(--p-content-color)"
+      <template v-for="(_, string) in strings">
+        <template v-if="fingering[string]">
+          <g
+            v-if="fingering[string].fret === 0"
+            class="open-group"
             @click="setFret(string, false)"
-          />
-          <g class="selected-open-group" @click="setFret(string, 0)">
+          >
             <circle
               class="open"
               :cx="gridStartX + (strings - string - 1) * cellWidth"
               :cy="gridStartY - cellHeight * 0.65"
               :r="noteRadius"
               fill="transparent"
+              stroke="var(--p-content-color)"
             />
             <rect
               :x="gridStartX + (strings - string - 1.5) * cellWidth"
@@ -241,124 +207,232 @@ function onInputClick(e: Event) {
               fill="transparent"
             />
           </g>
+          <template
+            v-else-if="
+              fingering[string].fret >= windowStart &&
+              fingering[string].fret <= windowEnd
+            "
+          >
+            <!--TODO: replace with NoteView-->
+            <circle
+              class="selected"
+              :cx="gridStartX + (strings - string - 1) * cellWidth"
+              :cy="
+                gridStartY +
+                (fingering[string].fret - windowStart) * cellHeight +
+                cellHeight / 2
+              "
+              :r="noteRadius"
+              fill="var(--p-content-color)"
+              @click="setFret(string, false)"
+            />
+            <g class="selected-open-group" @click="setFret(string, 0)">
+              <circle
+                class="open"
+                :cx="gridStartX + (strings - string - 1) * cellWidth"
+                :cy="gridStartY - cellHeight * 0.65"
+                :r="noteRadius"
+                fill="transparent"
+              />
+              <rect
+                :x="gridStartX + (strings - string - 1.5) * cellWidth"
+                :y="gridStartY - cellHeight"
+                :width="cellWidth"
+                :height="cellHeight"
+                fill="transparent"
+              />
+            </g>
+          </template>
         </template>
+        <g v-else class="muted-group" @click="setFret(string, 0)">
+          <X
+            :size="(cellWidth * 2) / 3"
+            :x="gridStartX + (strings - string - 1.33) * cellWidth"
+            :y="gridStartY - cellHeight * 0.85"
+          />
+          <rect
+            :x="gridStartX + (strings - string - 1.5) * cellWidth"
+            :y="gridStartY - cellHeight"
+            :width="cellWidth"
+            :height="cellHeight"
+            fill="transparent"
+          />
+        </g>
       </template>
-      <g v-else class="muted-group" @click="setFret(string, 0)">
-        <X
-          :size="(cellWidth * 2) / 3"
-          :x="gridStartX + (strings - string - 1.33) * cellWidth"
-          :y="gridStartY - cellHeight * 0.85"
-        />
-        <rect
-          :x="gridStartX + (strings - string - 1.5) * cellWidth"
-          :y="gridStartY - cellHeight"
-          :width="cellWidth"
-          :height="cellHeight"
-          fill="transparent"
-        />
-      </g>
-    </template>
 
-    <template v-if="windowStart !== 1">
-      <text
-        v-for="(n, i) in numFrets"
-        class="fret-label"
-        text-anchor="middle"
-        :x="cellWidth / 3"
-        :y="gridStartY + n * cellHeight - cellWidth / 2"
-        font-family="sans-serif"
-        :font-size="fretFontSize"
+      <template v-if="windowStart !== 1">
+        <text
+          v-for="(n, i) in numFrets"
+          class="fret-label"
+          text-anchor="middle"
+          :x="cellWidth * 0.48"
+          :y="gridStartY + n * cellHeight - cellWidth / 2"
+          font-family="sans-serif"
+          :font-size="fretFontSize"
+        >
+          {{ windowStart + i }}
+        </text>
+      </template>
+
+      <!-- <foreignObject
+        v-if="windowStart > 1"
+        :x="-2"
+        :y="gridStartY - cellHeight / 2"
+        :width="cellWidth"
+        :height="cellHeight"
       >
-        {{ windowStart + i }}
-      </text>
-    </template>
+        <Button text @click="decrementWindow">
+          <template #icon>
+            <ChevronUp class="arrow" :size="fretFontSize * 1.5" />
+          </template>
+        </Button>
+      </foreignObject>
 
-    <foreignObject
-      v-if="windowStart > 1"
-      :x="-2"
-      :y="gridStartY - cellHeight / 2"
-      :width="cellWidth"
-      :height="cellHeight"
-    >
-      <Button text @click="decrementWindow">
-        <template #icon>
-          <ChevronUp class="arrow" :size="fretFontSize * 1.5" />
-        </template>
-      </Button>
-    </foreignObject>
-
-    <rect
-      class="bottom-edge"
-      :x="gridStartX - cellWidth"
-      :y="gridEndY"
-      :width="gridEndX - gridStartX"
-      :height="cellHeight"
-      fill="transparent"
-      @click="incrementWindow"
-    />
-
-    <foreignObject
-      :x="-2"
-      :y="gridEndY - cellHeight / 3 + 1"
-      :width="cellWidth"
-      :height="cellHeight"
-    >
-      <Button text @click="incrementWindow">
-        <template #icon>
-          <ChevronDown class="arrow" :size="fretFontSize * 1.5" />
-        </template>
-      </Button>
-    </foreignObject>
-
-    <foreignObject
-      :x="-7"
-      :y="gridStartY + cellHeight / 8 + 1"
-      :width="cellWidth"
-      :height="cellHeight"
-    >
-      <InputNumber
-        :model-value="windowStart"
-        class="fret-input"
-        pt:pcInputText:class="fret-input-text"
-        @input="onInput"
-        @blur="onInputBlur"
-        @click="onInputClick"
+      <rect
+        class="bottom-edge"
+        :x="gridStartX - cellWidth"
+        :y="gridEndY"
+        :width="gridEndX - gridStartX"
+        :height="cellHeight"
+        fill="transparent"
+        @click="incrementWindow"
       />
-    </foreignObject>
-  </svg>
+
+      <foreignObject
+        :x="-2"
+        :y="gridEndY - cellHeight / 3 + 1"
+        :width="cellWidth"
+        :height="cellHeight"
+      >
+        <Button :style="{ position: 'fixed' }" text @click="incrementWindow">
+          <template #icon>
+            <ChevronDown class="arrow" :size="fretFontSize * 1.5" />
+          </template>
+        </Button>
+      </foreignObject>
+
+      <foreignObject
+        :x="-7"
+        :y="gridStartY + cellHeight / 8 + 1"
+        :width="cellWidth"
+        :height="cellHeight"
+      >
+        <InputNumber
+          :model-value="windowStart"
+          class="fret-input"
+          pt:pcInputText:class="fret-input-text"
+          @input="onInput"
+          @blur="onInputBlur"
+          @click="onInputClick"
+        />
+      </foreignObject> -->
+    </svg>
+    <div class="window-controls">
+      <div class="window-decrement-container">
+        <Button class="window-button decrement" text @click="decrementWindow">
+          <template #icon>
+            <ChevronUp class="arrow" />
+          </template>
+        </Button>
+        <InputNumber
+          :model-value="windowStart"
+          class="fret-input"
+          pt:pcInputText:class="fret-input-text"
+          @input="onInput"
+          @blur="onInputBlur"
+          @click="onInputClick"
+        />
+      </div>
+      <Button class="window-button increment" text @click="incrementWindow">
+        <template #icon>
+          <ChevronDown class="arrow" />
+        </template>
+      </Button>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-svg {
-  /* border: 1px solid black; */
+.container {
+  overflow: visible;
+  padding-bottom: var(--cell-height);
+  margin-bottom: var(--cell-height);
+  position: relative;
+}
+
+.chart-svg {
+  width: 100%;
+  transform: translateY(var(--cell-height));
   user-select: none;
   overflow: visible;
 }
 
-svg:not(:hover) .fret-input {
+.window-controls {
+  position: absolute;
+  top: var(--cell-height);
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(v-bind(numFrets), 1fr);
+  justify-items: center;
+  height: calc(100% - var(--cell-height));
+  width: calc(100% / v-bind(strings));
+}
+
+.chart-svg:not(:hover) + div .fret-input {
   display: none;
 }
 
-svg:not(:hover) .arrow {
+.chart-svg:not(:hover) .arrow {
   fill: transparent;
-}
-
-.fret-input:deep(input) {
-  /* If we ever care about changing the cellWidth, this won't scale right*/
-  width: calc(v-bind(fretFontSizePx) * 2 - 2px);
-  padding-inline: 0px;
-  text-align: center;
-  font-family: sans-serif;
-  font-size: v-bind(fretFontSizePx);
 }
 
 .fret-label {
   fill: rgb(from var(--p-content-color) r g b / 0.7);
 }
 
+.window-button {
+  width: var(--cell-height);
+  height: var(--cell-height);
+}
+
+.window-button.increment {
+  grid-row: -1;
+  transform: translateY(calc(var(--cell-height) * 0.8));
+}
+
+.window-decrement-container {
+  width: 100%;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  justify-items: center;
+  align-items: center;
+  /* transform: translateY(calc(var(--cell-height) * -0.8)); */
+
+  & .window-button,
+  & .fret-input {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  & .window-button {
+    transform: translateY(calc(var(--cell-height) * -0.8));
+  }
+
+  & .fret-input:deep(input) {
+    width: var(--cell-height);
+    height: var(--cell-height);
+    transform: translateX(-1px) translateY(calc(var(--cell-height) * 0.2));
+    padding-inline: 0px;
+    text-align: center;
+    font-family: sans-serif;
+    font-size: calc(var(--note-font-size) * 0.8);
+  }
+}
+
 .arrow {
   color: var(--p-content-color);
-  cursor: pointer;
 }
 
 .arrow:hover,

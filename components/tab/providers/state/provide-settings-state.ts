@@ -7,9 +7,10 @@ export function provideSettingsState() {
     cellHeight: 24,
     showAnnotationBackground: true,
     posLineCenter: true,
-    colorPositions: "gray" as "hover" | false | "always" | "gray",
-    colorSmallest: false,
-    onlyColorBar: true,
+
+    colorPositions: "hover" as "hover" | false | "always" | "gray",
+    colorSmallest: true,
+    onlyColorBar: false,
   });
 
   provide(SettingsInjectionKey, settings);

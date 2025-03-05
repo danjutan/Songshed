@@ -67,16 +67,13 @@ const props = defineProps<{
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-right: 10px;
   &:hover {
     & .delete {
       opacity: 1;
     }
     /* & .chart {
       width: 200px;
-    }
-    & .title {
-      font-size: 24px;
-      width: 96px;
     } */
   }
 }
