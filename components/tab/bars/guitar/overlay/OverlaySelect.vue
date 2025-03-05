@@ -9,6 +9,7 @@ const props = defineProps<{
   hide?: boolean;
   pointerEventsNone?: boolean;
   showClear?: boolean;
+  optionStyles?: Record<string, string>;
 }>();
 
 const { cellHeightPx } = injectSpacingsState();
@@ -44,13 +45,19 @@ const iconSize = 16;
     :show-clear="showClear"
     pt:dropdown:class="dropdown"
     pt:label:class="label"
-    :pt:option="{ style: { fontSize: fontSizePx, lineHeight: fontSizePx } }"
   >
     <template #value="{ value }">
       <span v-html="optionsMap[value]" />
     </template>
     <template #option="{ option }">
-      <span v-html="option.label" />
+      <span
+        :style="{
+          fontSize: fontSizePx,
+          lineHeight: fontSizePx,
+          ...optionStyles,
+        }"
+        v-html="option.label"
+      />
     </template>
     <template #dropdownicon>
       <ChevronDown :size="iconSize" />

@@ -1,5 +1,8 @@
 <script lang="ts" setup>
 import OverlaySelect from "@/components/tab/bars/guitar/overlay/OverlaySelect.vue";
+import { injectSpacingsState } from "@/components/tab/providers/provide-spacings";
+
+const { cellHeightPx } = injectSpacingsState();
 
 const beatsGlyphs = [
   "&#xE081;",
@@ -73,15 +76,27 @@ const beatValue = defineModel<number>("beatValue", {
     return numberToSpacing[value];
   },
 });
+
+const optionStyles = computed(() => ({
+  fontSize: `calc(${cellHeightPx.value})`,
+  lineHeight: `calc(${cellHeightPx.value} * 0.35)`,
+  transform: `translateY(calc(${cellHeightPx.value} * -0.12))`,
+}));
 </script>
 
 <template>
   <div class="widget">
-    <OverlaySelect v-model="beats" :options="beatsOptions" :active="false" />
+    <OverlaySelect
+      v-model="beats"
+      :options="beatsOptions"
+      :active="false"
+      :option-styles="optionStyles"
+    />
     <OverlaySelect
       v-model="beatValue"
       :options="beatValueOptions"
       :active="false"
+      :option-styles="optionStyles"
     />
   </div>
 </template>
