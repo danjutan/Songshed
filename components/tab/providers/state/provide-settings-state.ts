@@ -9,7 +9,7 @@ export function provideSettingsState() {
     posLineCenter: true,
 
     colorPositions: "hover" as "hover" | false | "always" | "gray",
-    colorSmallest: true,
+    colorSmallest: false,
     onlyColorBar: false,
   });
 

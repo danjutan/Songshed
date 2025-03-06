@@ -112,8 +112,13 @@ const style = computed(() => ({
 
 <template>
   <template v-if="settings.posLineCenter">
-    <div class="pos-line top" :class="classes" :style />
-    <div class="pos-line bottom" :class="classes" :style />
+    <!-- Allows us to easily apply a transition deep inside the stack, but doesn't allow a leave transition-->
+    <Transition appear>
+      <div class="pos-line top" :class="classes" :style />
+    </Transition>
+    <Transition appear>
+      <div class="pos-line bottom" :class="classes" :style />
+    </Transition>
 
     <div
       v-if="fillIntersection"
@@ -158,6 +163,14 @@ const style = computed(() => ({
 
 .is-thick {
   width: calc(var(--pos-line-width) + 1px);
+}
+
+.v-enter-active {
+  transition: opacity 0.15s ease;
+}
+
+.v-enter-from {
+  opacity: 0;
 }
 
 @container (aspect-ratio < 0.45) {

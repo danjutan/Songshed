@@ -91,22 +91,24 @@ const isCollapsed = useIsCollapsed(
     class="stack"
     :class="{ collapsed: isCollapsed, show: showNoteContainers }"
   >
-    <template v-if="showNoteContainers">
-      <NoteContainer
-        v-for="(note, string) in notes"
-        :key="string"
-        class="note-container"
-        :note="note"
-        :note-position="{ string, position }"
-        :tuning="tuning[string]"
-        :frets="frets"
-        @click="console.log(position)"
-        @note-delete="emit('noteDelete', string)"
-        @note-change="
-          (updated: GuitarNote) => emit('noteChange', string, updated)
-        "
-      />
-    </template>
+    <Transition>
+      <div v-if="showNoteContainers" class="contents">
+        <NoteContainer
+          v-for="(note, string) in notes"
+          :key="string"
+          class="note-container"
+          :note="note"
+          :note-position="{ string, position }"
+          :tuning="tuning[string]"
+          :frets="frets"
+          @click="console.log(position)"
+          @note-delete="emit('noteDelete', string)"
+          @note-change="
+            (updated: GuitarNote) => emit('noteChange', string, updated)
+          "
+        />
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -123,5 +125,11 @@ const isCollapsed = useIsCollapsed(
 
 .show {
   background-color: var(--tab-background-color);
+}
+
+.contents {
+  display: grid;
+  grid-row: 1 / -1;
+  grid-template-rows: subgrid;
 }
 </style>
