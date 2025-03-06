@@ -378,7 +378,7 @@ function onInputClick(e: Event) {
   width: calc(100% / v-bind(strings));
 }
 
-.chart-svg:not(:hover) + div .fret-input {
+.container:not(:hover) .fret-input {
   display: none;
 }
 
