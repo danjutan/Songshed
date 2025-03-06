@@ -11,7 +11,8 @@ export interface BarManagementState {
   bars: Bar[];
   newBarStart: number;
   deleteBar: (start: number) => void;
-  insertBar: (start: number) => void;
+  insertBar: (start: number) => number;
+  reorderBar: (fromBarStart: number, to: number) => number;
   insertBreak: (start: number) => void;
   joinBreak: (start: number) => void;
   newBarClick: () => void;
@@ -58,6 +59,37 @@ export function provideBarManagement(
 
   function insertBar(start: number) {
     props.tabStore.guitar.shiftFrom(start, barSize.value);
+    return barSize.value;
+  }
+
+  function reorderBar(fromBarStart: number, to: number) {
+    // const toBarStart = to > fromBarStart ? to + barSize.value : to;
+    // Moving forwards
+    if (to > fromBarStart) {
+      const shiftedBy = insertBar(to - barSize.value);
+      const nextBar = bars.value.find((b) => b.start === to + shiftedBy)!;
+      const notesToMove = nextBar.stacks.flatMap((stack) =>
+        stack.notes.map((note, i) => ({
+          position: stack.position,
+          string: i,
+        })),
+      );
+      props.tabStore.guitar.moveNotes(notesToMove, 0, -shiftedBy - shiftedBy);
+      deleteBar(to + shiftedBy);
+      return to + shiftedBy;
+    } else {
+      const shiftedBy = insertBar(to);
+      const bar = bars.value.find((b) => b.start === fromBarStart + shiftedBy)!;
+      const notesToMove = bar.stacks.flatMap((stack) =>
+        stack.notes.map((note, i) => ({
+          position: stack.position,
+          string: i,
+        })),
+      );
+      props.tabStore.guitar.moveNotes(notesToMove, 0, -shiftedBy - shiftedBy);
+      deleteBar(fromBarStart + shiftedBy);
+      return to;
+    }
   }
 
   function insertBreak(start: number) {
@@ -78,6 +110,7 @@ export function provideBarManagement(
     newBarStart,
     deleteBar,
     insertBar,
+    reorderBar,
     insertBreak,
     joinBreak,
     newBarClick,

@@ -17,6 +17,7 @@ import AnnotationsContainer from "../annotations/AnnotationsContainer.vue";
 import NewRowButton from "../annotations/NewRowButton.vue";
 import { injectBarHoverState } from "../providers/state/provide-bar-hover-state";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { getInsertBarDropData } from "../hooks/dnd/types";
 const props = defineProps<{
   annotationStore: AnnotationStore;
   bar: Bar;
@@ -51,6 +52,7 @@ watchEffect((cleanup) => {
   cleanup(
     dropTargetForElements({
       element: tabBar.value,
+      getData: () => getInsertBarDropData({ position: props.bar.start }),
       // Because mouseover doesn't seem to fire during drag
       onDropTargetChange: (dropTarget) => {
         setHoveredBarStart(props.bar.start);

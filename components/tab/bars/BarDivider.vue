@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/types";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
 import {
@@ -11,8 +12,10 @@ import {
   CornerDownLeft,
 } from "lucide-vue-next";
 import { injectBarManagement } from "~/components/tab/providers/state/provide-bar-management";
+import { getBarDragData } from "../hooks/dnd/types";
 
-const draggerRef = useTemplateRef("dragger");
+const resizeRef = useTemplateRef("resize");
+const moveRef = useTemplateRef("move");
 const { insertBar, deleteBar, insertBreak, joinBreak } = injectBarManagement();
 
 const props = defineProps<{
@@ -31,36 +34,46 @@ const emit = defineEmits<{
 
 onMounted(() => {
   watchEffect((cleanup) => {
-    if (props.startOfLine) return;
     cleanup(
-      draggable({
-        element: draggerRef.value!,
-        onGenerateDragPreview({ nativeSetDragImage }) {
-          disableNativeDragPreview({ nativeSetDragImage });
-          preventUnhandled.start();
-        },
-        onDragStart() {
-          emit("startDrag");
-        },
-        onDrag({ location }) {
-          const diffX =
-            location.current.input.clientX - location.initial.input.clientX;
-          emit("resize", diffX);
-        },
-        onDrop() {
-          preventUnhandled.stop();
-          emit("endDrag");
-        },
-      }),
+      combine(
+        draggable({
+          element: resizeRef.value!,
+          onGenerateDragPreview({ nativeSetDragImage }) {
+            disableNativeDragPreview({ nativeSetDragImage });
+            preventUnhandled.start();
+          },
+          onDragStart() {
+            emit("startDrag");
+          },
+          onDrag({ location }) {
+            if (props.startOfLine) return;
+            const diffX =
+              location.current.input.clientX - location.initial.input.clientX;
+            emit("resize", diffX);
+          },
+          onDrop() {
+            preventUnhandled.stop();
+            emit("endDrag");
+          },
+        }),
+        draggable({
+          element: moveRef.value!,
+          onGenerateDragPreview: ({ nativeSetDragImage }) => {
+            disableNativeDragPreview({ nativeSetDragImage });
+            preventUnhandled.start();
+          },
+          getInitialData: () => getBarDragData({ barStart: props.barStart }),
+        }),
+      ),
     );
   });
 });
 </script>
 
 <template>
-  <div ref="dragger" class="divider" :class="{ first: startOfLine }">
+  <div ref="resize" class="divider" :class="{ first: startOfLine }">
     <div class="thicc">
-      <div v-if="!startOfLine" class="grip">
+      <div ref="move" class="grip">
         <GripVertical />
       </div>
       <div class="button insert" @click="insertBar(barStart)">
@@ -102,10 +115,12 @@ onMounted(() => {
 .thicc {
   display: grid;
   grid-template-rows: repeat(6, var(--cell-height));
+  justify-items: center;
+  align-items: center;
   height: 100%;
   position: absolute;
   background: var(--divider-color);
-  width: var(--note-font-size);
+  width: calc(var(--note-font-size) + 3px);
   transform: translateX(-25%);
   z-index: var(--divider-z-index);
 }
@@ -123,6 +138,7 @@ onMounted(() => {
 
 .grip {
   grid-area: 1 / 1;
+  cursor: move;
 }
 
 .button {

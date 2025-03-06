@@ -82,10 +82,7 @@ export function useCoordsDirective<
           const lastCoords = getStackCoords(nextStart - subUnit.value);
           offset += lastCoords!.right - startCoords!.left;
         });
-      return withOffset(
-        getStackCoords(tabBarBounds.tabline.start)!,
-        -offset - tabBarBounds.left,
-      );
+      return withOffset(getStackCoords(tabBarBounds.tabline.start)!, -offset);
     }
 
     if (tablineStart > tabBarBounds.tabline.start) {

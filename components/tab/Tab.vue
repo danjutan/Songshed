@@ -34,6 +34,7 @@ import { useMoveMonitor } from "./hooks/dnd/use-move-monitor";
 import { useBendEditMonitor } from "./hooks/dnd/use-bend-edit-monitor";
 import { useAnnotationAddMonitor } from "./hooks/dnd/use-annotation-add-monitor";
 import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-monitor";
+import { useBarDragMonitor } from "./hooks/dnd/use-bar-drag-monitor";
 
 import { isCollapsed } from "./hooks/use-collapsed";
 import { injectSpacingsState } from "./providers/provide-spacings";
@@ -108,6 +109,7 @@ onMounted(() => {
   useBendEditMonitor(bendEditState);
   useAnnotationAddMonitor(annotationAddState);
   useAnnotationResizeMonitor(annotationResizeState);
+  useBarDragMonitor(barManagement);
 });
 
 function onLeaveTab() {

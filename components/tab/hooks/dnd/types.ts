@@ -1,6 +1,7 @@
 import type { Annotation, GuitarNote } from "~/model/data";
 import type { Bend } from "~/model/stores";
 import type { StartType } from "../../providers/state/provide-bend-edit-state";
+import type { Bar } from "../../providers/state/provide-bar-management";
 
 export type DragType = "select" | /*"tie-add" |*/ "move";
 
@@ -15,11 +16,23 @@ const annotationDragDataPrivateKey = Symbol("Annotation drag data");
 const annotationResizeDragDataPrivateKey = Symbol(
   "Annotation resize drag data",
 );
+const barDragDataPrivateKey = Symbol("Bar drag data");
+const insertBarDropDataPrivateKey = Symbol("Insert bar drop data");
+
 export type NoteInputDragDataProps = {
   position: number;
   string: number;
   data?: GuitarNote;
   dragType: DragType;
+};
+
+export type NoteInputDropDataProps = {
+  position: number;
+  string: number;
+};
+
+export type BendBarDropDataProps = {
+  position: number;
 };
 
 export type TieAddDragDataProps = {
@@ -45,6 +58,14 @@ export type AnnotationResizeDragDataProps = {
   side: "start" | "end";
 };
 
+export type BarDragDataProps = {
+  barStart: number;
+};
+
+export type InsertBarDropDataProps = {
+  position: number;
+};
+
 type NoteInputDragData = {
   [noteInputDragDataPrivateKey]: true;
 } & NoteInputDragDataProps;
@@ -67,14 +88,19 @@ type AnnotationResizeDragData = {
 
 type NoteInputDropData = {
   [noteInputDropDataPrivateKey]: true;
-  position: number;
-  string: number;
-};
+} & NoteInputDropDataProps;
 
 type BendBarDropData = {
   [bendBarDropDataPrivateKey]: true;
-  position: number;
-};
+} & BendBarDropDataProps;
+
+type BarDragData = {
+  [barDragDataPrivateKey]: true;
+} & BarDragDataProps;
+
+type InsertBarDropData = {
+  [insertBarDropDataPrivateKey]: true;
+} & InsertBarDropDataProps;
 
 export function getNoteInputDragData(params: NoteInputDragDataProps) {
   return {
@@ -139,6 +165,16 @@ export function getAnnotationResizeDragData(
   };
 }
 
+export function getBarDragData(params: BarDragDataProps): BarDragData {
+  return { [barDragDataPrivateKey]: true, ...params };
+}
+
+export function getInsertBarDropData(
+  params: InsertBarDropDataProps,
+): InsertBarDropData {
+  return { [insertBarDropDataPrivateKey]: true, ...params };
+}
+
 export function isNoteInputDragData(
   data: Record<string | symbol, unknown>,
 ): data is NoteInputDragData {
@@ -179,4 +215,16 @@ export function isAnnotationResizeDragData(
   data: Record<string | symbol, unknown>,
 ): data is AnnotationResizeDragData {
   return !!data[annotationResizeDragDataPrivateKey];
+}
+
+export function isBarDragData(
+  data: Record<string | symbol, unknown>,
+): data is BarDragData {
+  return !!data[barDragDataPrivateKey];
+}
+
+export function isInsertBarDropData(
+  data: Record<string | symbol, unknown>,
+): data is InsertBarDropData {
+  return !!data[insertBarDropDataPrivateKey];
 }
