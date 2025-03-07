@@ -36,26 +36,26 @@ onMounted(() => {
   watchEffect((cleanup) => {
     cleanup(
       combine(
-        draggable({
-          element: resizeRef.value!,
-          onGenerateDragPreview({ nativeSetDragImage }) {
-            disableNativeDragPreview({ nativeSetDragImage });
-            preventUnhandled.start();
-          },
-          onDragStart() {
-            emit("startDrag");
-          },
-          onDrag({ location }) {
-            if (props.startOfLine) return;
-            const diffX =
-              location.current.input.clientX - location.initial.input.clientX;
-            emit("resize", diffX);
-          },
-          onDrop() {
-            preventUnhandled.stop();
-            emit("endDrag");
-          },
-        }),
+        // draggable({
+        //   element: resizeRef.value!,
+        //   onGenerateDragPreview({ nativeSetDragImage }) {
+        //     disableNativeDragPreview({ nativeSetDragImage });
+        //     preventUnhandled.start();
+        //   },
+        //   onDragStart() {
+        //     emit("startDrag");
+        //   },
+        //   onDrag({ location }) {
+        //     if (props.startOfLine) return;
+        //     const diffX =
+        //       location.current.input.clientX - location.initial.input.clientX;
+        //     emit("resize", diffX);
+        //   },
+        //   onDrop() {
+        //     preventUnhandled.stop();
+        //     emit("endDrag");
+        //   },
+        // }),
         draggable({
           element: moveRef.value!,
           onGenerateDragPreview: ({ nativeSetDragImage }) => {
