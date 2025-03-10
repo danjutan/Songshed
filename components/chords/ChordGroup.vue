@@ -1,24 +1,38 @@
 <script setup lang="ts">
 import type { ChordStore } from "~/model/stores";
 import ChordChart from "./ChordChart.vue";
-import type { Chord } from "~/model/data";
-import { Check, X, Plus } from "lucide-vue-next";
+import { Check, X, Plus, Grip } from "lucide-vue-next";
+
+// TODO: all of the chord stuff should be independent of cellHeight
 
 const props = defineProps<{
   data: ChordStore;
 }>();
+
+const mightDeleteChord = ref<number | undefined>(undefined);
+const mightMoveChord = ref<number | undefined>(undefined);
+
+const inplaceOpened = ref(false);
 </script>
 
 <template>
   <div class="container">
-    <div v-for="(chord, i) of data.chords" class="chord">
+    <div v-if="data.chords.length === 0" class="empty-chords-label">
+      Chords:
+    </div>
+    <div
+      v-for="(chord, i) of data.chords"
+      class="chord"
+      :class="{ 'inplace-opened': inplaceOpened }"
+    >
       <div class="title-row">
         <div class="left-filler" />
-        <!--TODO: use PrimeVue's Inplace-->
         <Inplace
           class="inplace"
           pt:display:class="inplace-display"
           pt:content:class="inplace-content"
+          @open="inplaceOpened = true"
+          @close="inplaceOpened = false"
         >
           <template #display>
             {{ chord.title || "..." }}
@@ -33,16 +47,31 @@ const props = defineProps<{
           </template>
         </Inplace>
 
-        <Button class="delete icon-button" text @click="data.deleteChord(i)">
-          <template #icon>
-            <X :size="16" />
-          </template>
-        </Button>
+        <div class="buttons-container">
+          <Button
+            class="delete icon-button"
+            text
+            @mouseenter="mightDeleteChord = i"
+            @mouseleave="mightDeleteChord = undefined"
+            @click="
+              () => {
+                mightDeleteChord = undefined;
+                data.deleteChord(i);
+              }
+            "
+          >
+            <template #icon>
+              <X :size="16" />
+            </template>
+          </Button>
+          <Grip class="move-handle" :size="16" />
+        </div>
       </div>
       <ChordChart
         class="chart"
         :notes="chord.notes"
         :tuning="data.tuning"
+        :highlight="mightDeleteChord === i && 'might-delete'"
         @update-string="(string, note) => chord.notes.set(string, note)"
         @mute-string="(string) => chord.notes.delete(string)"
       />
@@ -60,6 +89,7 @@ const props = defineProps<{
 .container {
   display: flex;
   align-items: center;
+  gap: 10px;
 }
 
 .chord {
@@ -67,9 +97,8 @@ const props = defineProps<{
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-right: 10px;
-  &:hover {
-    & .delete {
+  &:hover:not(.inplace-opened) {
+    & .buttons-container {
       opacity: 1;
     }
     /* & .chart {
@@ -78,35 +107,22 @@ const props = defineProps<{
   }
 }
 
-.overlay {
-  position: absolute;
-  pointer-events: none;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.chord:has(.delete:hover) {
-  .overlay {
-    background: rgb(from var(--delete-color) r g b / var(--select-alpha));
-  }
+.empty-chords-label {
+  font-size: var(--note-font-size);
+  font-weight: bold;
 }
 
 .title-row {
   display: flex;
-  width: 100%;
-  justify-content: center;
-}
-
-.text {
-  border-bottom: 1px solid var(--p-text-color);
-  width: 50px;
-  text-align: center;
+  margin-left: var(--cell-height);
+  width: calc(100% - var(--cell-height));
+  justify-content: space-between;
+  align-items: center;
 }
 
 :deep(.inplace-display) {
-  padding: 6px;
+  width: 96px;
+  text-align: center;
 }
 
 :deep(.inplace-content) {
@@ -128,8 +144,12 @@ const props = defineProps<{
   padding: 0px;
 }
 
-.delete {
+.buttons-container {
   opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.delete {
   cursor: pointer;
   color: var(--p-red-600);
   &:hover {
@@ -137,9 +157,14 @@ const props = defineProps<{
   }
 }
 
+.move-handle {
+  cursor: move;
+}
+
 .left-filler {
   width: 24px;
 }
+
 .chart {
   width: 150px;
   /* border: 1px solid blue;

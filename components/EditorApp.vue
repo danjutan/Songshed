@@ -51,18 +51,25 @@ async function save(saveId: string) {
   <div class="editor-app">
     <!-- <span class="text-petaluma">&#xE1D9;</span>
     <span class="text-leland">&#xE1D9;</span> -->
-    <Toolbar
-      :id
-      v-model:beats-per-bar="tabStore.beatsPerBar"
-      v-model:beat-size="tabStore.beatSize"
-      @save="save"
-    />
-    <ChordGroup :data="tabStore.chords" />
-    <Tab :tab-store="tabStore" />
+    <div class="flex">
+      <Toolbar
+        :id
+        v-model:beats-per-bar="tabStore.beatsPerBar"
+        v-model:beat-size="tabStore.beatSize"
+        @save="save"
+      />
+      <ChordGroup :data="tabStore.chords" />
+      <Tab :tab-store="tabStore" />
+    </div>
   </div>
 </template>
 
 <style scoped>
+.flex {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .text-petaluma {
   font-family: "Petaluma", serif;
   font-size: 20px;

@@ -5,12 +5,14 @@ import type {
   InputNumberInputEvent,
 } from "primevue/inputnumber";
 import { X, ChevronDown, ChevronUp } from "lucide-vue-next";
+import type { BarHighlightType } from "../tab/bars/TabBar.vue";
 
 const props = withDefaults(
   defineProps<{
     strings?: number;
     notes: NoteStack<ChordNote>;
     tuning: Midi[];
+    highlight?: BarHighlightType | false;
   }>(),
   {
     strings: 6,
@@ -132,6 +134,7 @@ function onInputClick(e: Event) {
 
 <template>
   <div class="container">
+    <div v-if="highlight" :class="highlight" class="overlay" />
     <svg class="chart-svg" :viewBox>
       <rect
         v-if="windowStart === 1"
@@ -357,7 +360,34 @@ function onInputClick(e: Event) {
   overflow: visible;
   padding-bottom: var(--cell-height);
   margin-bottom: var(--cell-height);
+  padding-right: 10px;
   position: relative;
+}
+
+.overlay {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 100%;
+  height: calc(100% + var(--cell-height));
+  pointer-events: none;
+  opacity: var(--select-alpha);
+
+  &.might-delete {
+    background: var(--delete-color);
+  }
+
+  &.might-move {
+    background: var(--might-move-color);
+  }
+
+  &.move {
+    background: var(--move-color);
+  }
+
+  &.move-target {
+    background: var(--move-target-color);
+  }
 }
 
 .chart-svg {
@@ -378,8 +408,12 @@ function onInputClick(e: Event) {
   width: calc(100% / v-bind(strings));
 }
 
+.fret-input {
+  transition: opacity 0.15s ease-in-out;
+}
+
 .container:not(:hover) .fret-input {
-  display: none;
+  opacity: 0;
 }
 
 .chart-svg:not(:hover) .arrow {

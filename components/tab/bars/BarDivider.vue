@@ -5,7 +5,7 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
 import {
-  GripVertical,
+  Grip,
   Plus,
   Delete,
   CornerRightUp,
@@ -39,23 +39,23 @@ onMounted(() => {
   watchEffect((cleanup) => {
     cleanup(
       combine(
-        draggable({
-          element: resizeRef.value!,
-          onGenerateDragPreview({ nativeSetDragImage }) {
-            disableNativeDragPreview({ nativeSetDragImage });
-            preventUnhandled.start();
-          },
-          onDragStart() {},
-          onDrag({ location }) {
-            if (props.startOfLine) return;
-            const diffX =
-              location.current.input.clientX - location.initial.input.clientX;
-            emit("resize", diffX);
-          },
-          onDrop() {
-            preventUnhandled.stop();
-          },
-        }),
+        // draggable({
+        //   element: resizeRef.value!,
+        //   onGenerateDragPreview({ nativeSetDragImage }) {
+        //     disableNativeDragPreview({ nativeSetDragImage });
+        //     preventUnhandled.start();
+        //   },
+        //   onDragStart() {},
+        //   onDrag({ location }) {
+        //     if (props.startOfLine) return;
+        //     const diffX =
+        //       location.current.input.clientX - location.initial.input.clientX;
+        //     emit("resize", diffX);
+        //   },
+        //   onDrop() {
+        //     preventUnhandled.stop();
+        //   },
+        // }),
         draggable({
           element: moveRef.value!,
           onGenerateDragPreview: ({ nativeSetDragImage }) => {
@@ -93,7 +93,7 @@ onMounted(() => {
         @mouseenter="emit('moveHoverStart')"
         @mouseleave="emit('moveHoverEnd')"
       >
-        <GripVertical />
+        <Grip />
       </div>
       <div class="button insert" @click="insertBar(barStart)">
         <Plus />
@@ -126,9 +126,9 @@ onMounted(() => {
   padding: 0;
   position: relative;
   z-index: var(--divider-z-index);
-  &:not(.first) {
+  /* &:not(.first) {
     cursor: ew-resize;
-  }
+  } */
 }
 
 .thicc {

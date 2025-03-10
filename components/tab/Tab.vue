@@ -205,7 +205,7 @@ function endDrag(i: number) {
   lastDiffX = 0;
 }
 
-const deletingBarStart = ref<number | undefined>(undefined);
+const mightDeleteBarStart = ref<number | undefined>(undefined);
 const mightMoveBarStart = ref<number | undefined>(undefined);
 const movingBarStart = ref<number | undefined>(undefined);
 const moveTargetBarStart = ref<number | undefined>(undefined);
@@ -224,7 +224,7 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
         :annotation-store="props.tabStore.annotations"
         :guitar-store="props.tabStore.guitar"
         :highlight="
-          (deletingBarStart === bar.start && 'might-delete') ||
+          (mightDeleteBarStart === bar.start && 'might-delete') ||
           (mightMoveBarStart === bar.start && 'might-move') ||
           (movingBarStart === bar.start && 'move') ||
           (moveTargetBarStart === bar.start && 'move-target')
@@ -236,8 +236,8 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
             :bar-start="bar.start"
             :joinable="tabStore.lineBreaks.has(bar.start)"
             @resize="(diffX: number) => onResize(i, diffX)"
-            @delete-hover-start="deletingBarStart = bar.start"
-            @delete-hover-end="deletingBarStart = undefined"
+            @delete-hover-start="mightDeleteBarStart = bar.start"
+            @delete-hover-end="mightDeleteBarStart = undefined"
             @end-drag="endDrag(i)"
             @move-hover-start="mightMoveBarStart = bar.start"
             @move-hover-end="mightMoveBarStart = undefined"
