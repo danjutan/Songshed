@@ -12,7 +12,7 @@ import {
   CornerDownLeft,
 } from "lucide-vue-next";
 import { injectBarManagement } from "~/components/tab/providers/state/provide-bar-management";
-import { getBarDragData } from "../hooks/dnd/types";
+import { getBarDragData, isInsertBarDropData } from "../hooks/dnd/types";
 
 const resizeRef = useTemplateRef("resize");
 const moveRef = useTemplateRef("move");
@@ -25,42 +25,56 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  startDrag: [];
   resize: [diffX: number];
-  endDrag: [];
   deleteHoverStart: [];
   deleteHoverEnd: [];
+  moveHoverStart: [];
+  moveHoverEnd: [];
+  moveDragStart: [];
+  moveDragEnd: [];
+  insertingInto: [number];
 }>();
 
 onMounted(() => {
   watchEffect((cleanup) => {
     cleanup(
       combine(
-        // draggable({
-        //   element: resizeRef.value!,
-        //   onGenerateDragPreview({ nativeSetDragImage }) {
-        //     disableNativeDragPreview({ nativeSetDragImage });
-        //     preventUnhandled.start();
-        //   },
-        //   onDragStart() {
-        //     emit("startDrag");
-        //   },
-        //   onDrag({ location }) {
-        //     if (props.startOfLine) return;
-        //     const diffX =
-        //       location.current.input.clientX - location.initial.input.clientX;
-        //     emit("resize", diffX);
-        //   },
-        //   onDrop() {
-        //     preventUnhandled.stop();
-        //     emit("endDrag");
-        //   },
-        // }),
+        draggable({
+          element: resizeRef.value!,
+          onGenerateDragPreview({ nativeSetDragImage }) {
+            disableNativeDragPreview({ nativeSetDragImage });
+            preventUnhandled.start();
+          },
+          onDragStart() {},
+          onDrag({ location }) {
+            if (props.startOfLine) return;
+            const diffX =
+              location.current.input.clientX - location.initial.input.clientX;
+            emit("resize", diffX);
+          },
+          onDrop() {
+            preventUnhandled.stop();
+          },
+        }),
         draggable({
           element: moveRef.value!,
           onGenerateDragPreview: ({ nativeSetDragImage }) => {
             disableNativeDragPreview({ nativeSetDragImage });
             preventUnhandled.start();
+          },
+          onDragStart() {
+            emit("moveDragStart");
+          },
+          onDrop() {
+            emit("moveDragEnd");
+          },
+          onDropTargetChange(args) {
+            const insertBarTarget = args.location.current.dropTargets.find(
+              (target) => isInsertBarDropData(target.data),
+            );
+            if (insertBarTarget && isInsertBarDropData(insertBarTarget.data)) {
+              emit("insertingInto", insertBarTarget.data.position);
+            }
           },
           getInitialData: () => getBarDragData({ barStart: props.barStart }),
         }),
@@ -73,7 +87,12 @@ onMounted(() => {
 <template>
   <div ref="resize" class="divider" :class="{ first: startOfLine }">
     <div class="thicc">
-      <div ref="move" class="grip">
+      <div
+        ref="move"
+        class="grip"
+        @mouseenter="emit('moveHoverStart')"
+        @mouseleave="emit('moveHoverEnd')"
+      >
         <GripVertical />
       </div>
       <div class="button insert" @click="insertBar(barStart)">
@@ -120,7 +139,7 @@ onMounted(() => {
   height: 100%;
   position: absolute;
   background: var(--divider-color);
-  width: calc(var(--note-font-size) + 3px);
+  width: calc(var(--note-font-size) + 4px);
   transform: translateX(-25%);
   z-index: var(--divider-z-index);
 }
@@ -139,6 +158,7 @@ onMounted(() => {
 .grip {
   grid-area: 1 / 1;
   cursor: move;
+  transform: translateY(2px);
 }
 
 .button {

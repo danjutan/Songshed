@@ -206,6 +206,9 @@ function endDrag(i: number) {
 }
 
 const deletingBarStart = ref<number | undefined>(undefined);
+const mightMoveBarStart = ref<number | undefined>(undefined);
+const movingBarStart = ref<number | undefined>(undefined);
+const moveTargetBarStart = ref<number | undefined>(undefined);
 </script>
 
 <template>
@@ -220,7 +223,12 @@ const deletingBarStart = ref<number | undefined>(undefined);
         :flex-grow="barFlexGrow[i]"
         :annotation-store="props.tabStore.annotations"
         :guitar-store="props.tabStore.guitar"
-        :highlight="deletingBarStart === bar.start && 'delete'"
+        :highlight="
+          (deletingBarStart === bar.start && 'might-delete') ||
+          (mightMoveBarStart === bar.start && 'might-move') ||
+          (movingBarStart === bar.start && 'move') ||
+          (moveTargetBarStart === bar.start && 'move-target')
+        "
       >
         <template #divider>
           <BarDivider
@@ -231,6 +239,13 @@ const deletingBarStart = ref<number | undefined>(undefined);
             @delete-hover-start="deletingBarStart = bar.start"
             @delete-hover-end="deletingBarStart = undefined"
             @end-drag="endDrag(i)"
+            @move-hover-start="mightMoveBarStart = bar.start"
+            @move-hover-end="mightMoveBarStart = undefined"
+            @move-drag-start="movingBarStart = bar.start"
+            @move-drag-end="movingBarStart = moveTargetBarStart = undefined"
+            @inserting-into="
+              (position: number) => (moveTargetBarStart = position)
+            "
           />
         </template>
         <template v-if="i === 0" #widget>

@@ -10,20 +10,26 @@ import {
   type Bar,
 } from "../providers/state/provide-bar-management";
 import GuitarBar from "./guitar/GuitarBar.vue";
-import type { GuitarNote } from "~/model/data";
 import { provideTabBarBounds } from "./provide-bar-bounds";
 import { injectStackResizeObserver } from "../providers/events/provide-resize-observer";
 import AnnotationsContainer from "../annotations/AnnotationsContainer.vue";
 import NewRowButton from "../annotations/NewRowButton.vue";
 import { injectBarHoverState } from "../providers/state/provide-bar-hover-state";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { getInsertBarDropData } from "../hooks/dnd/types";
+import { getInsertBarDropData, isBarDragData } from "../hooks/dnd/types";
+
+export type BarHighlightType =
+  | "might-delete"
+  | "might-move"
+  | "move"
+  | "move-target";
+
 const props = defineProps<{
   annotationStore: AnnotationStore;
   bar: Bar;
   guitarStore: GuitarStore;
   flexGrow?: number;
-  highlight?: "delete" | false;
+  highlight?: BarHighlightType | false;
 }>();
 
 const resizeObserver = injectStackResizeObserver();
@@ -54,8 +60,11 @@ watchEffect((cleanup) => {
       element: tabBar.value,
       getData: () => getInsertBarDropData({ position: props.bar.start }),
       // Because mouseover doesn't seem to fire during drag
-      onDropTargetChange: (dropTarget) => {
+      onDropTargetChange: (args) => {
         setHoveredBarStart(props.bar.start);
+        // if (isBarDragData(args.source.data)) {
+        //   console.log("bar drag data", props.bar.start, args.source.data);
+        // }
       },
     }),
   );

@@ -102,6 +102,7 @@ async function save(saveId: string) {
   --might-move-color: var(--p-amber-300);
   --moving-color: var(--p-amber-400);
   --delete-color: var(--p-red-300);
+  --bar-move-target-color: var(--select-color);
 
   --annotation-row-line-color: var(--p-surface-300);
   --annotation-border: var(--p-surface-300);
