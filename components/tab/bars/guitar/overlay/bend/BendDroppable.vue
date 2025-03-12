@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { getBendBarDropData } from "~/components/tab/hooks/dnd/types";
+import { getBendBarDropData } from "~/components/tab/hooks/dnd/dnd-types";
 
 const props = defineProps<{
   position: number;

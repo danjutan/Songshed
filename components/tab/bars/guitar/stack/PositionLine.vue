@@ -113,13 +113,14 @@ const style = computed(() => ({
 <template>
   <template v-if="settings.posLineCenter">
     <!-- Allows us to easily apply a transition deep inside the stack, but doesn't allow a leave transition-->
-    <Transition appear>
-      <div class="pos-line top" :class="classes" :style />
-    </Transition>
-    <Transition appear>
-      <div class="pos-line bottom" :class="classes" :style />
-    </Transition>
-
+    <ClientOnly>
+      <Transition appear>
+        <div class="pos-line top" :class="classes" :style />
+      </Transition>
+      <Transition appear>
+        <div class="pos-line bottom" :class="classes" :style />
+      </Transition>
+    </ClientOnly>
     <div
       v-if="fillIntersection"
       class="fill-intersection"

@@ -34,6 +34,7 @@ import { useMoveMonitor } from "./hooks/dnd/use-move-monitor";
 import { useBendEditMonitor } from "./hooks/dnd/use-bend-edit-monitor";
 import { useAnnotationAddMonitor } from "./hooks/dnd/use-annotation-add-monitor";
 import { useAnnotationResizeMonitor } from "./hooks/dnd/use-annotation-resize-monitor";
+import { useBarDragMonitor } from "./hooks/dnd/use-bar-drag-monitor";
 
 import { isCollapsed } from "./hooks/use-collapsed";
 import { injectSpacingsState } from "./providers/provide-spacings";
@@ -108,6 +109,7 @@ onMounted(() => {
   useBendEditMonitor(bendEditState);
   useAnnotationAddMonitor(annotationAddState);
   useAnnotationResizeMonitor(annotationResizeState);
+  useBarDragMonitor(barManagement);
 });
 
 function onLeaveTab() {
@@ -203,7 +205,10 @@ function endDrag(i: number) {
   lastDiffX = 0;
 }
 
-const deletingBarStart = ref<number | undefined>(undefined);
+const mightDeleteBarStart = ref<number | undefined>(undefined);
+const mightMoveBarStart = ref<number | undefined>(undefined);
+const movingBarStart = ref<number | undefined>(undefined);
+const moveTargetBarStart = ref<number | undefined>(undefined);
 </script>
 
 <template>
@@ -218,7 +223,12 @@ const deletingBarStart = ref<number | undefined>(undefined);
         :flex-grow="barFlexGrow[i]"
         :annotation-store="props.tabStore.annotations"
         :guitar-store="props.tabStore.guitar"
-        :highlight="deletingBarStart === bar.start && 'delete'"
+        :highlight="
+          (mightDeleteBarStart === bar.start && 'might-delete') ||
+          (mightMoveBarStart === bar.start && 'might-move') ||
+          (movingBarStart === bar.start && 'moving') ||
+          (moveTargetBarStart === bar.start && 'move-target')
+        "
       >
         <template #divider>
           <BarDivider
@@ -226,9 +236,16 @@ const deletingBarStart = ref<number | undefined>(undefined);
             :bar-start="bar.start"
             :joinable="tabStore.lineBreaks.has(bar.start)"
             @resize="(diffX: number) => onResize(i, diffX)"
-            @delete-hover-start="deletingBarStart = bar.start"
-            @delete-hover-end="deletingBarStart = undefined"
+            @delete-hover-start="mightDeleteBarStart = bar.start"
+            @delete-hover-end="mightDeleteBarStart = undefined"
             @end-drag="endDrag(i)"
+            @move-hover-start="mightMoveBarStart = bar.start"
+            @move-hover-end="mightMoveBarStart = undefined"
+            @move-drag-start="movingBarStart = bar.start"
+            @move-drag-end="movingBarStart = moveTargetBarStart = undefined"
+            @inserting-into="
+              (position: number) => (moveTargetBarStart = position)
+            "
           />
         </template>
         <template v-if="i === 0" #widget>

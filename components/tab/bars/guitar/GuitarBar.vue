@@ -16,6 +16,7 @@ import Stack from "./stack/Stack.vue";
 import WidgetStack from "./stack/widgets/WidgetStack.vue";
 import SelectionRegions from "./selections/SelectionRegions.vue";
 import BendDroppable from "./overlay/bend/BendDroppable.vue";
+import type { BarHighlightType } from "../TabBar.vue";
 
 const settings = injectSettingsState();
 
@@ -25,7 +26,7 @@ const props = defineProps<{
   frets: number;
   numStrings: number;
   tieStore: TieStore;
-  highlight?: "delete" | false;
+  highlight?: BarHighlightType | false;
 }>();
 
 const tieAddState = injectTieAddState();
@@ -99,8 +100,7 @@ const tablineHasBends = computed(() => {
 <template>
   <div class="guitar-bar" :class="{ 'has-bends': tablineHasBends }">
     <slot name="divider" />
-    <!-- TODO: confirm that this is the best component to put this in-->
-    <div v-if="highlight === 'delete'" class="highlight" />
+    <div v-if="highlight" class="highlight" :class="highlight" />
     <div class="toolbar">
       <div class="flex-bar" />
       <template v-if="tablineHasBends">
@@ -186,7 +186,11 @@ const tablineHasBends = computed(() => {
 .guitar-bar {
   display: grid;
   width: 100%;
-  grid-template-columns: min-content repeat(v-bind(numStacks), 1fr);
+  grid-template-columns: min-content repeat(
+      v-bind(numStacks),
+      minmax(auto, var(--expanded-min-width))
+        /* expanded-min-width is also the max width */
+    );
   grid-template-rows: auto min-content;
 
   & :deep(.divider) {
@@ -265,8 +269,20 @@ const tablineHasBends = computed(() => {
   pointer-events: none;
   width: 100%;
   height: 100%;
-  background-color: var(--delete-color);
   opacity: var(--select-alpha);
   z-index: var(--bar-overlay-z-index);
+
+  &.might-delete {
+    background-color: var(--delete-color);
+  }
+  &.might-move {
+    background-color: var(--might-move-color);
+  }
+  &.moving {
+    background-color: var(--moving-color);
+  }
+  &.move-target {
+    background-color: var(--move-target-color);
+  }
 }
 </style>

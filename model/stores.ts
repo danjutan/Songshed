@@ -116,7 +116,7 @@ export function createTabStore(
 }
 
 function createChordStore({ tuning, chords }: ChordsData) {
-  // TODO: edit tuning, swap chords, etc
+  // TODO: edit tuning
   return {
     // the array is deeply reactive, so you can set notes directly
     chords,
@@ -134,6 +134,11 @@ function createChordStore({ tuning, chords }: ChordsData) {
     },
     deleteChord(index: number) {
       chords.splice(index);
+    },
+    moveChord(from: number, to: number) {
+      const chord = chords[from];
+      chords.splice(from, 1);
+      chords.splice(to, 0, chord);
     },
   };
 }

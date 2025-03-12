@@ -7,7 +7,7 @@ import {
   getTieAddDragData,
   type NoteInputDragDataProps,
   type TieAddDragDataProps,
-} from "~/components/tab/hooks/dnd/types";
+} from "~/components/tab/hooks/dnd/dnd-types";
 
 const props = defineProps<{
   mode: "tie" | "bend";

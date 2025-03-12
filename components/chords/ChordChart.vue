@@ -5,12 +5,14 @@ import type {
   InputNumberInputEvent,
 } from "primevue/inputnumber";
 import { X, ChevronDown, ChevronUp } from "lucide-vue-next";
+import type { BarHighlightType } from "../tab/bars/TabBar.vue";
 
 const props = withDefaults(
   defineProps<{
     strings?: number;
     notes: NoteStack<ChordNote>;
     tuning: Midi[];
+    highlight?: BarHighlightType | false;
   }>(),
   {
     strings: 6,
@@ -132,6 +134,7 @@ function onInputClick(e: Event) {
 
 <template>
   <div class="container">
+    <div v-if="highlight" :class="highlight" class="overlay" />
     <svg class="chart-svg" :viewBox>
       <rect
         v-if="windowStart === 1"
@@ -265,7 +268,7 @@ function onInputClick(e: Event) {
           v-for="(n, i) in numFrets"
           class="fret-label"
           text-anchor="middle"
-          :x="cellWidth * 0.48"
+          :x="cellWidth * 0.4"
           :y="gridStartY + n * cellHeight - cellWidth / 2"
           font-family="sans-serif"
           :font-size="fretFontSize"
@@ -273,59 +276,6 @@ function onInputClick(e: Event) {
           {{ windowStart + i }}
         </text>
       </template>
-
-      <!-- <foreignObject
-        v-if="windowStart > 1"
-        :x="-2"
-        :y="gridStartY - cellHeight / 2"
-        :width="cellWidth"
-        :height="cellHeight"
-      >
-        <Button text @click="decrementWindow">
-          <template #icon>
-            <ChevronUp class="arrow" :size="fretFontSize * 1.5" />
-          </template>
-        </Button>
-      </foreignObject>
-
-      <rect
-        class="bottom-edge"
-        :x="gridStartX - cellWidth"
-        :y="gridEndY"
-        :width="gridEndX - gridStartX"
-        :height="cellHeight"
-        fill="transparent"
-        @click="incrementWindow"
-      />
-
-      <foreignObject
-        :x="-2"
-        :y="gridEndY - cellHeight / 3 + 1"
-        :width="cellWidth"
-        :height="cellHeight"
-      >
-        <Button :style="{ position: 'fixed' }" text @click="incrementWindow">
-          <template #icon>
-            <ChevronDown class="arrow" :size="fretFontSize * 1.5" />
-          </template>
-        </Button>
-      </foreignObject>
-
-      <foreignObject
-        :x="-7"
-        :y="gridStartY + cellHeight / 8 + 1"
-        :width="cellWidth"
-        :height="cellHeight"
-      >
-        <InputNumber
-          :model-value="windowStart"
-          class="fret-input"
-          pt:pcInputText:class="fret-input-text"
-          @input="onInput"
-          @blur="onInputBlur"
-          @click="onInputClick"
-        />
-      </foreignObject> -->
     </svg>
     <div class="window-controls">
       <div class="window-decrement-container">
@@ -354,10 +304,37 @@ function onInputClick(e: Event) {
 
 <style scoped>
 .container {
+  position: relative;
   overflow: visible;
   padding-bottom: var(--cell-height);
   margin-bottom: var(--cell-height);
-  position: relative;
+  padding-right: 10px;
+}
+
+.overlay {
+  position: absolute;
+  top: -8px;
+  left: 6px;
+  width: 100%;
+  height: calc(100% + var(--cell-height));
+  pointer-events: none;
+  opacity: var(--select-alpha);
+
+  &.might-delete {
+    background: var(--delete-color);
+  }
+
+  &.might-move {
+    background: var(--might-move-color);
+  }
+
+  &.moving {
+    background: var(--moving-color);
+  }
+
+  &.move-target {
+    background: var(--move-target-color);
+  }
 }
 
 .chart-svg {
@@ -370,6 +347,7 @@ function onInputClick(e: Event) {
 .window-controls {
   position: absolute;
   top: var(--cell-height);
+  left: -3px;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(v-bind(numFrets), 1fr);
@@ -378,12 +356,15 @@ function onInputClick(e: Event) {
   width: calc(100% / v-bind(strings));
 }
 
-.container:not(:hover) .fret-input {
-  display: none;
+.fret-input,
+.arrow {
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
 }
 
-.chart-svg:not(:hover) .arrow {
-  fill: transparent;
+.container:hover .fret-input,
+.container:hover .arrow {
+  opacity: 1;
 }
 
 .fret-label {
@@ -423,7 +404,7 @@ function onInputClick(e: Event) {
   & .fret-input:deep(input) {
     width: var(--cell-height);
     height: var(--cell-height);
-    transform: translateX(-1px) translateY(calc(var(--cell-height) * 0.2));
+    transform: translateY(calc(var(--cell-height) * 0.2));
     padding-inline: 0px;
     text-align: center;
     font-family: sans-serif;

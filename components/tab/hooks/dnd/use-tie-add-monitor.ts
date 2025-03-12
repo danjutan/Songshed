@@ -1,5 +1,5 @@
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { isNoteInputDropData, isTieAddDragData } from "./types";
+import { isNoteInputDropData, isTieAddDragData } from "./dnd-types";
 import type { TieAddState } from "../../providers/state/provide-tie-add-state";
 
 export function useTieAddMonitor(tieAddState: TieAddState) {

@@ -3,7 +3,7 @@ import type { StartType } from "~/components/tab/providers/state/provide-bend-ed
 import type { Bend } from "~/model/stores";
 import { injectOverlayControlsTeleport } from "../../provide-overlay-controls-teleport";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { getBendEditDragData } from "~/components/tab/hooks/dnd/types";
+import { getBendEditDragData } from "~/components/tab/hooks/dnd/dnd-types";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
 import {

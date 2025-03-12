@@ -1,5 +1,5 @@
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { isAnnotationDragData, isAnnotationResizeDragData } from "./types";
+import { isAnnotationDragData, isAnnotationResizeDragData } from "./dnd-types";
 import type { AnnotationResizeState } from "../../providers/state/provide-annotation-resize-state";
 
 export function useAnnotationResizeMonitor(resizeState: AnnotationResizeState) {

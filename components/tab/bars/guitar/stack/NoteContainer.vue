@@ -15,7 +15,7 @@ import {
   getNoteInputDragData,
   getNoteInputDropData,
   type TieAddDragDataProps,
-} from "~/components/tab/hooks/dnd/types";
+} from "~/components/tab/hooks/dnd/dnd-types";
 import NoteTieDragger from "./NoteTieDragger.vue";
 import { X } from "lucide-vue-next";
 import { injectTieAddState } from "~/components/tab/providers/state/provide-tie-add-state";
