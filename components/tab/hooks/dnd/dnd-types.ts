@@ -1,9 +1,8 @@
 import type { Annotation, GuitarNote } from "~/model/data";
 import type { Bend } from "~/model/stores";
 import type { StartType } from "../../providers/state/provide-bend-edit-state";
-import type { Bar } from "../../providers/state/provide-bar-management";
 
-export type DragType = "select" | /*"tie-add" |*/ "move";
+export type NoteDragType = "select" | /*"tie-add" |*/ "move";
 
 // https://atlassian.design/components/pragmatic-drag-and-drop/core-package/recipes/typing-data/
 
@@ -23,7 +22,7 @@ export type NoteInputDragDataProps = {
   position: number;
   string: number;
   data?: GuitarNote;
-  dragType: DragType;
+  dragType: NoteDragType;
 };
 
 export type NoteInputDropDataProps = {

@@ -1,6 +1,6 @@
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import type { AnnotationAddState } from "../../providers/state/provide-annotation-add-state";
-import { isAnnotationDragData } from "./types";
+import { isAnnotationDragData } from "./dnd-types";
 
 export function useAnnotationAddMonitor(
   annotationAddState: AnnotationAddState,

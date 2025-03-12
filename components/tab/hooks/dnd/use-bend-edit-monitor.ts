@@ -3,7 +3,7 @@ import {
   isBendEditDragData,
   isBendBarDropData,
   isNoteInputDropData,
-} from "./types";
+} from "./dnd-types";
 import type { BendEditState } from "../../providers/state/provide-bend-edit-state";
 
 export function useBendEditMonitor(bendEditState: BendEditState) {

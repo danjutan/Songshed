@@ -24,6 +24,12 @@ export default withNuxt(
     files: ["**/*.vue"],
     rules: {
       "vue/require-v-for-key": "off",
+      "vue/no-mutating-props": [
+        "error",
+        {
+          shallowOnly: true,
+        },
+      ],
       "vue/html-self-closing": [
         "error",
         {

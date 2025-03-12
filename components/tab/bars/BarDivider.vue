@@ -5,14 +5,14 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
 import {
-  Grip,
+  GripVertical,
   Plus,
   Delete,
   CornerRightUp,
   CornerDownLeft,
 } from "lucide-vue-next";
 import { injectBarManagement } from "~/components/tab/providers/state/provide-bar-management";
-import { getBarDragData, isInsertBarDropData } from "../hooks/dnd/types";
+import { getBarDragData, isInsertBarDropData } from "../hooks/dnd/dnd-types";
 
 const resizeRef = useTemplateRef("resize");
 const moveRef = useTemplateRef("move");
@@ -93,7 +93,7 @@ onMounted(() => {
         @mouseenter="emit('moveHoverStart')"
         @mouseleave="emit('moveHoverEnd')"
       >
-        <Grip />
+        <GripVertical />
       </div>
       <div class="button insert" @click="insertBar(barStart)">
         <Plus />

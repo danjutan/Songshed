@@ -186,7 +186,11 @@ const tablineHasBends = computed(() => {
 .guitar-bar {
   display: grid;
   width: 100%;
-  grid-template-columns: min-content repeat(v-bind(numStacks), 1fr);
+  grid-template-columns: min-content repeat(
+      v-bind(numStacks),
+      minmax(auto, var(--expanded-min-width))
+        /* expanded-min-width is also the max width */
+    );
   grid-template-rows: auto min-content;
 
   & :deep(.divider) {
@@ -274,11 +278,11 @@ const tablineHasBends = computed(() => {
   &.might-move {
     background-color: var(--might-move-color);
   }
-  &.move {
+  &.moving {
     background-color: var(--moving-color);
   }
   &.move-target {
-    background-color: var(--bar-move-target-color);
+    background-color: var(--move-target-color);
   }
 }
 </style>

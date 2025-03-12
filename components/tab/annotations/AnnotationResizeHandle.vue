@@ -3,7 +3,7 @@ import type { Annotation } from "~/model/data";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { disableNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview";
 import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unhandled";
-import { getAnnotationResizeDragData } from "../hooks/dnd/types";
+import { getAnnotationResizeDragData } from "../hooks/dnd/dnd-types";
 
 const props = defineProps<{
   row: number;

@@ -226,7 +226,7 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
         :highlight="
           (mightDeleteBarStart === bar.start && 'might-delete') ||
           (mightMoveBarStart === bar.start && 'might-move') ||
-          (movingBarStart === bar.start && 'move') ||
+          (movingBarStart === bar.start && 'moving') ||
           (moveTargetBarStart === bar.start && 'move-target')
         "
       >

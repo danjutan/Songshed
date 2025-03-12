@@ -1,5 +1,5 @@
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { isNoteInputDragData, isNoteInputDropData } from "./types";
+import { isNoteInputDragData, isNoteInputDropData } from "./dnd-types";
 import type { SelectionState } from "../../providers/state/provide-selection-state";
 
 export function useMoveMonitor(selectionState: SelectionState) {

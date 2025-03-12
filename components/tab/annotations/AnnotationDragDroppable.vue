@@ -9,7 +9,7 @@ import { preventUnhandled } from "@atlaskit/pragmatic-drag-and-drop/prevent-unha
 import {
   getAnnotationDragData,
   getNoteInputDropData,
-} from "../hooks/dnd/types";
+} from "../hooks/dnd/dnd-types";
 import OverlayCoords from "~/components/tab/bars/OverlayCoords.vue";
 import { injectAnnotationAddState } from "../providers/state/provide-annotation-add-state";
 import { injectAnnotationResizeState } from "../providers/state/provide-annotation-resize-state";

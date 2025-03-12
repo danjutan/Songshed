@@ -16,12 +16,12 @@ import AnnotationsContainer from "../annotations/AnnotationsContainer.vue";
 import NewRowButton from "../annotations/NewRowButton.vue";
 import { injectBarHoverState } from "../providers/state/provide-bar-hover-state";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { getInsertBarDropData, isBarDragData } from "../hooks/dnd/types";
+import { getInsertBarDropData, isBarDragData } from "../hooks/dnd/dnd-types";
 
 export type BarHighlightType =
   | "might-delete"
   | "might-move"
-  | "move"
+  | "moving"
   | "move-target";
 
 const props = defineProps<{

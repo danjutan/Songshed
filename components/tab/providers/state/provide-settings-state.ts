@@ -3,7 +3,7 @@ export function provideSettingsState() {
     subdivisions: 4, // per beat
     collapseSubdivisions: false,
     collapseEmpty: true,
-    collapseAll: true,
+    collapseAll: false,
     cellHeight: 24,
     showAnnotationBackground: true,
     posLineCenter: true,
