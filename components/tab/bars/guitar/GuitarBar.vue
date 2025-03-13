@@ -44,8 +44,9 @@ const emit = defineEmits<{
 }>();
 
 const slots = useSlots();
+const hasWidget = computed(() => slots.widget);
 const numStacks = computed(
-  () => props.stackData.length + (slots.widget ? 1 : 0),
+  () => props.stackData.length + (hasWidget.value ? 1 : 0),
 );
 
 // onBeforeUpdate(() => {
@@ -98,7 +99,10 @@ const tablineHasBends = computed(() => {
 </script>
 
 <template>
-  <div class="guitar-bar" :class="{ 'has-bends': tablineHasBends }">
+  <div
+    class="guitar-bar"
+    :class="{ 'has-bends': tablineHasBends, 'has-widget': hasWidget }"
+  >
     <slot name="divider" />
     <div v-if="highlight" class="highlight" :class="highlight" />
     <div class="toolbar">
@@ -125,10 +129,7 @@ const tablineHasBends = computed(() => {
           gridColumn: '1 / -1',
         }"
       />
-      <WidgetStack
-        v-if="$slots.widget"
-        style="grid-column: 1; grid-row: 1 / -1"
-      >
+      <WidgetStack v-if="hasWidget" style="grid-column: 1; grid-row: 1 / -1">
         <slot name="widget" />
       </WidgetStack>
       <Stack
@@ -138,7 +139,7 @@ const tablineHasBends = computed(() => {
         class="stack"
         :class="{ border: !settings.posLineCenter && i < stackData.length - 1 }"
         :style="{
-          gridColumn: i + ($slots.widget ? 2 : 1),
+          gridColumn: i + (hasWidget ? 2 : 1),
           gridRow: '1 / -1',
         }"
         :notes
@@ -192,6 +193,13 @@ const tablineHasBends = computed(() => {
         /* expanded-min-width is also the max width */
     );
   grid-template-rows: auto min-content;
+
+  &.has-widget {
+    grid-template-columns: min-content min-content repeat(
+        v-bind(numStacks),
+        minmax(auto, var(--expanded-min-width))
+      );
+  }
 
   & :deep(.divider) {
     grid-column: 1;
