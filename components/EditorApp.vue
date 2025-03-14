@@ -139,8 +139,8 @@ async function save(saveId: string) {
   --annotation-dragger-z-index: 3;
   --annotation-z-index: 4;
   --divider-z-index: 5;
-  --overlay-controls-z-index: 6;
   --annotation-current-z-index: 5;
+  --overlay-controls-z-index: 6;
   --annotation-resize-dragger-z-index: 6;
   --selection-toolbar-z-index: 6;
   --note-container-drag-extender-z-index: 7;

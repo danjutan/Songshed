@@ -24,7 +24,6 @@ const props = defineProps<{
   stackData: GuitarStack[];
   tuning: Midi[];
   frets: number;
-  numStrings: number;
   tieStore: TieStore;
   highlight?: BarHighlightType | false;
 }>();
@@ -48,6 +47,8 @@ const hasWidget = computed(() => slots.widget);
 const numStacks = computed(
   () => props.stackData.length + (hasWidget.value ? 1 : 0),
 );
+
+const numStrings = computed(() => props.tuning.length);
 
 // onBeforeUpdate(() => {
 //   console.log("updated bar");

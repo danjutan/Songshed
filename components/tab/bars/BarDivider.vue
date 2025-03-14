@@ -133,7 +133,7 @@ onMounted(() => {
 
 .thicc {
   display: grid;
-  grid-template-rows: repeat(6, var(--cell-height));
+  grid-template-rows: repeat(5, 1fr);
   justify-items: center;
   align-items: center;
   height: 100%;
@@ -170,7 +170,7 @@ onMounted(() => {
 }
 
 .insert {
-  grid-row: 1 / -1;
+  grid-row: -4;
   align-self: center;
 }
 .delete {

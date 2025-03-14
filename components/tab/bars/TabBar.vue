@@ -92,7 +92,6 @@ watchEffect((cleanup) => {
       :stack-data="bar.stacks"
       :tuning="guitarStore.tuning"
       :frets="guitarStore.frets"
-      :num-strings="guitarStore.strings"
       :tie-store="guitarStore.ties"
       :highlight
       @note-delete="(pos) => guitarStore.deleteNote(pos)"

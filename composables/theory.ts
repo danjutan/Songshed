@@ -184,6 +184,15 @@ export function getNoteInfo(nameOrMidi: string | number) {
   return noteData;
 }
 
+export function getNameAndOctave(midi: number) {
+  const note = Note.fromMidi(midi);
+  const enharmonic = Note.enharmonic(note);
+  return {
+    name: Note.pitchClass(enharmonic),
+    octave: Note.octave(enharmonic),
+  };
+}
+
 export function toMidi(note: string): Midi {
   const conversion = Midi.toMidi(note);
   if (!validMidi(conversion)) {

@@ -19,11 +19,7 @@ export interface TabStore {
   beatsPerBar: number;
   beatSize: SpacingValue;
   lineBreaks: Set<number>;
-  createGuitarTab: (
-    tuning?: Midi[],
-    strings?: number,
-    frets?: number,
-  ) => GuitarStore;
+  createGuitarTab: (tuning?: Midi[], frets?: number) => GuitarStore;
   guitar: GuitarStore;
   annotations: AnnotationStore;
   chords: ChordStore;
@@ -64,11 +60,10 @@ export function createTabStore(
   const annotationStore = createAnnotationStore(data.annotations);
   const chordStore = createChordStore(data.chordsData);
 
-  function createGuitarTab(tuning = defaultTuning, strings = 6, frets = 24) {
+  function createGuitarTab(tuning = defaultTuning, frets = 24) {
     const stacks: StackMap<GuitarNote> = new Map();
     data.guitarData = {
       ties: new Map(),
-      strings,
       tuning,
       frets,
       stacks,
@@ -453,6 +448,8 @@ export interface GuitarStore
   ) => NotePosition[];
   deleteStacks: (start: number, end: number) => void;
   getStacks: (start: number, end: number, subunit: number) => GuitarStack[];
+  insertString: (position?: number) => void;
+  removeString: (position?: number) => void;
   ties: TieStore;
 }
 
@@ -460,12 +457,83 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
   const noteStore = createStackStore(guitarData.stacks);
   const tieStore = createTieStore(guitarData);
 
+  function insertString(position = guitarData.tuning.length) {
+    let newTuningNote;
+    if (position === guitarData.tuning.length) {
+      newTuningNote = guitarData.tuning[position - 1] - 5;
+    } else if (position === 0) {
+      newTuningNote = guitarData.tuning[0] + 5;
+    } else {
+      newTuningNote = guitarData.tuning[position];
+    }
+    guitarData.tuning.splice(position, 0, newTuningNote as Midi);
+
+    // Shift notes up
+    guitarData.stacks.forEach((stack) => {
+      // Shift all notes at or above the insertion position up by one string
+      for (let i = guitarData.tuning.length - 2; i >= position; i--) {
+        const note = stack.get(i);
+        if (note) {
+          stack.set(i + 1, note);
+          stack.delete(i);
+        }
+      }
+    });
+
+    // Shift ties/bends up
+    const tieEntries = [...guitarData.ties.entries()]
+      .filter(([string, _]) => string >= position)
+      .sort(([stringA], [stringB]) => stringB - stringA); // Process from highest string to lowest
+
+    for (const [string, ties] of tieEntries) {
+      guitarData.ties.set(string + 1, ties);
+      guitarData.ties.delete(string);
+    }
+  }
+
+  function removeString(position = guitarData.tuning.length - 1) {
+    if (guitarData.tuning.length <= 1) return; // Don't remove the last string
+
+    // Remove the tuning note
+    guitarData.tuning.splice(position, 1);
+
+    // Remove notes on the removed string and shift higher strings down
+    guitarData.stacks.forEach((stack) => {
+      // Delete the note at the removed position
+      stack.delete(position);
+
+      // Shift all notes above the removed position down by one string
+      for (let i = position + 1; i < guitarData.tuning.length + 1; i++) {
+        const note = stack.get(i);
+        if (note) {
+          stack.set(i - 1, note);
+          stack.delete(i);
+        }
+      }
+    });
+
+    // Remove any ties/bends on the removed string
+    const stringTies = guitarData.ties.get(position);
+    if (stringTies) {
+      guitarData.ties.delete(position);
+    }
+
+    // Shift ties/bends from higher strings down
+    for (let i = position + 1; i < guitarData.tuning.length + 1; i++) {
+      const ties = guitarData.ties.get(i);
+      if (ties) {
+        guitarData.ties.set(i - 1, ties);
+        guitarData.ties.delete(i);
+      }
+    }
+  }
+
   function getNote({ position, string }: NotePosition): GuitarNote | undefined {
     return guitarData.stacks.get(position)?.get(string);
   }
 
   function setNote({ position, string }: NotePosition, data: GuitarNote): void {
-    if (position >= 0 && string >= 0 && string < guitarData.strings) {
+    if (position >= 0 && string >= 0 && string < guitarData.tuning.length) {
       let stack = guitarData.stacks.get(position);
 
       if (!stack) {
@@ -486,21 +554,6 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
       tieStore.deleteAt(string, position);
     }
   }
-
-  // function moveNote(from: NotePosition, to: NotePosition) {
-  //   const note = guitarData.stacks.get(from.position)?.get(from.string);
-  //   if (!note) return;
-  //   // Convert note's midi to the right value for the new string's tuning
-  //   let newNote: Midi | "muted" = note.note;
-  //   if (note.note !== undefined && note.note !== "muted") {
-  //     const fromTuning = guitarData.tuning[from.string];
-  //     const toTuning = guitarData.tuning[to.string];
-  //     const tuningDiff = toTuning - fromTuning;
-  //     newNote = (note.note - tuningDiff) as Midi;
-  //   }
-  //   deleteNote(from);
-  //   setNote(to, { ...note, note: newNote });
-  // }
 
   function moveNotes(
     positions: NotePosition[],
@@ -582,7 +635,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
       .filter(([position, _]) => position % subunit === 0)
       .map(([position, stack]) => {
         const stackArray = [];
-        for (let i = 0; i < guitarData.strings; i++) {
+        for (let i = 0; i < guitarData.tuning.length; i++) {
           stackArray[i] = stack.get(i) || undefined;
         }
         return { position, notes: stackArray };
@@ -609,6 +662,8 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
 
   return {
     ...noteStore,
+    insertString,
+    removeString,
     getNote,
     getStacks,
     setNote,

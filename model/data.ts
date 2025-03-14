@@ -49,7 +49,6 @@ export type StackMap<N extends NoteData> = Map<number, NoteStack<N>>;
 export type Chord = { title: string; notes: NoteStack<ChordNote> };
 
 export interface GuitarTabData {
-  strings: number;
   tuning: Midi[];
   frets: number;
   stacks: StackMap<GuitarNote>;

@@ -3,6 +3,7 @@ import TabBar from "./bars/TabBar.vue";
 import TabToolbar from "./TabToolbar.vue";
 import BarDivider from "./bars/BarDivider.vue";
 import TimeSignatureWidget from "./bars/guitar/stack/widgets/TimeSignatureWidget.vue";
+import TuningWidget from "./bars/guitar/stack/widgets/TuningWidget.vue";
 
 import { Plus } from "lucide-vue-next";
 
@@ -249,6 +250,13 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
           />
         </template>
         <template v-if="i === 0" #widget>
+          <TuningWidget
+            v-model="tabStore.guitar.tuning"
+            @add-bottom="tabStore.guitar.insertString()"
+            @add-top="tabStore.guitar.insertString(0)"
+            @remove-bottom="tabStore.guitar.removeString()"
+            @remove-top="tabStore.guitar.removeString(0)"
+          />
           <TimeSignatureWidget
             v-model:beats="tabStore.beatsPerBar"
             v-model:beat-value="tabStore.beatSize"

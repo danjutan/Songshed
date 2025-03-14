@@ -193,7 +193,7 @@ export function provideStackResizeObserver() {
 
   function registerStackRef(startPos: number, stack: HTMLElement) {
     stackElements.set(startPos, stack);
-    // createResizeObserver().observe(stack);
+    createResizeObserver().observe(stack);
     sortedPositions.push(startPos);
     sortedPositions.sort((a, b) => a - b);
   }
