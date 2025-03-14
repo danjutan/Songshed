@@ -124,6 +124,7 @@ const updateNote = (index: number, newValue: Midi) => {
 }
 
 .buttons {
+  grid-column: 1;
   display: flex;
   justify-content: center;
   gap: 1px;
@@ -133,7 +134,6 @@ const updateNote = (index: number, newValue: Midi) => {
 
   &.top {
     grid-row: 1;
-    grid-column: 1;
     transform: translateY(calc(-75% - 2px));
   }
 
@@ -149,6 +149,7 @@ const updateNote = (index: number, newValue: Midi) => {
 
 .button {
   height: 75%;
+  width: 22px;
   padding: 0px;
   /* border-color: var(--p-button-outlined-secondary-border-color); */
 }
