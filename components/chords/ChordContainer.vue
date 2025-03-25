@@ -153,6 +153,7 @@ onMounted(() => {
 
 <style scoped>
 .chart-container {
+  --control-width: 24px;
   /* position: relative; */
   display: flex;
   flex-direction: column;
@@ -174,8 +175,8 @@ onMounted(() => {
 
 .title-row {
   display: flex;
-  margin-left: var(--cell-height);
-  width: calc(100% - var(--cell-height));
+  margin-left: var(--control-width);
+  width: calc(100% - var(--control-width));
   justify-content: space-between;
   align-items: center;
 }

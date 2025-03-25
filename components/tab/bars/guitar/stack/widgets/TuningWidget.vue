@@ -21,6 +21,7 @@ const updateNote = (index: number, newValue: Midi) => {
           v-show="tuning.length > 4"
           size="small"
           class="button"
+          pt:root:style="width: var(--note-font-size)"
           severity="contrast"
           @click="emit('removeTop')"
         >
@@ -31,6 +32,7 @@ const updateNote = (index: number, newValue: Midi) => {
         <Button
           size="small"
           class="button"
+          pt:root:style="width: var(--note-font-size)"
           severity="contrast"
           @click="emit('addTop')"
         >
@@ -43,6 +45,7 @@ const updateNote = (index: number, newValue: Midi) => {
         v-for="(note, i) in tuning"
         :key="i"
         class="input"
+        :font-size="'calc(var(--note-font-size) * 0.8)'"
         :model-value="note"
         :style="{ gridRow: i + 1 }"
         @update:model-value="(value) => updateNote(i, value)"
@@ -52,6 +55,7 @@ const updateNote = (index: number, newValue: Midi) => {
           v-show="tuning.length > 4"
           size="small"
           class="button"
+          pt:root:style="width: var(--note-font-size)"
           severity="contrast"
           @click="emit('removeBottom')"
         >
@@ -62,6 +66,7 @@ const updateNote = (index: number, newValue: Midi) => {
         <Button
           size="small"
           class="button"
+          pt:root:style="width: var(--note-font-size)"
           severity="contrast"
           @click="emit('addBottom')"
         >
@@ -89,7 +94,8 @@ const updateNote = (index: number, newValue: Midi) => {
   grid-row: 1 / -1;
   display: grid;
   grid-template-rows: subgrid;
-  padding: 0px 10px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .input-container,
@@ -116,17 +122,18 @@ const updateNote = (index: number, newValue: Midi) => {
 .tuning-widget:hover {
   & .input-container {
     opacity: 1;
-    width: 44px;
+    width: calc(var(--note-font-size) * 2.5);
   }
   & .display-container {
     opacity: 0;
+    /* TODO: explore transitioning to width: 0px, maybe using Vue transitions */
   }
 }
 
 .buttons {
   grid-column: 1;
   display: flex;
-  justify-content: center;
+  justify-content: space-evenly;
   gap: 1px;
   height: var(--cell-height);
   z-index: var(--overlay-controls-z-index);
@@ -149,13 +156,14 @@ const updateNote = (index: number, newValue: Midi) => {
 
 .button {
   height: 75%;
-  width: 22px;
+  width: var(--note-font-size);
   padding: 0px;
   /* border-color: var(--p-button-outlined-secondary-border-color); */
 }
 
 .display {
   font-family: sans-serif;
+  font-size: var(--note-font-size);
   margin-top: 2px;
 }
 </style>

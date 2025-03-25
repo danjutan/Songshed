@@ -8,7 +8,7 @@ export function provideSettingsState() {
     showAnnotationBackground: true,
     posLineCenter: true,
 
-    colorPositions: "hover" as "hover" | false | "always" | "gray",
+    colorPositions: "gray" as "hover" | false | "always" | "gray",
     colorSmallest: false,
     onlyColorBar: false,
   });

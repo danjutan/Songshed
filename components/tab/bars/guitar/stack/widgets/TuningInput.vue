@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-const test = ref("E");
-const testOctave = ref(4);
+const props = defineProps<{
+  fontSize: string;
+}>();
 
 const notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
 const octaves = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -64,6 +65,7 @@ const orderedNotes = computed(() => {
       class="select octave"
       editable
       pt:dropdown:class="dropdown"
+      pt:label:class="label"
       pt:optionLabel:style="font-family: sans-serif"
       :options="octaves"
     >
@@ -84,6 +86,8 @@ const orderedNotes = computed(() => {
   --p-select-padding-y: 3px;
   &:deep(.label) {
     text-align: center;
+    text-overflow: clip;
+    font-size: v-bind(fontSize);
   }
   &:deep(.dropdown) {
     width: 100%;
@@ -98,16 +102,13 @@ const orderedNotes = computed(() => {
 }
 
 .note {
-  width: 28px;
   border-right: none;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
 .octave {
-  width: 18px;
   border-left: none;
   border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
 }
 </style>

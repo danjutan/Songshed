@@ -7,22 +7,18 @@ import type {
 import { X, ChevronDown, ChevronUp } from "lucide-vue-next";
 import type { BarHighlightType } from "../tab/bars/TabBar.vue";
 
-const props = withDefaults(
-  defineProps<{
-    strings?: number;
-    notes: NoteStack<ChordNote>;
-    tuning: Midi[];
-    highlight?: BarHighlightType | false;
-  }>(),
-  {
-    strings: 6,
-  },
-);
+const props = defineProps<{
+  notes: NoteStack<ChordNote>;
+  tuning: Midi[];
+  highlight?: BarHighlightType | false;
+}>();
 
 const emit = defineEmits<{
   updateString: [string: number, data: ChordNote];
   muteString: [string: number];
 }>();
+
+const strings = computed(() => props.tuning.length);
 
 const fingering = computed(() => {
   const fingering: {
@@ -76,7 +72,7 @@ function decrementWindow() {
 const gridStartX = computed(() => cellWidth);
 const gridStartY = computed(() => 0);
 const gridEndX = computed(
-  () => gridStartX.value + (props.strings - 1) * cellWidth,
+  () => gridStartX.value + (strings.value - 1) * cellWidth,
 );
 const gridEndY = computed(() => gridStartY.value + numFrets.value * cellHeight);
 
@@ -306,8 +302,8 @@ function onInputClick(e: Event) {
 .container {
   position: relative;
   overflow: visible;
-  padding-bottom: var(--cell-height);
-  margin-bottom: var(--cell-height);
+  padding-bottom: var(--control-width);
+  margin-bottom: var(--control-width);
   padding-right: 10px;
 }
 
@@ -316,7 +312,7 @@ function onInputClick(e: Event) {
   top: -8px;
   left: 6px;
   width: 100%;
-  height: calc(100% + var(--cell-height));
+  height: calc(100% + var(--control-width));
   pointer-events: none;
   opacity: var(--select-alpha);
 
@@ -339,20 +335,20 @@ function onInputClick(e: Event) {
 
 .chart-svg {
   width: 100%;
-  transform: translateY(var(--cell-height));
+  transform: translateY(var(--control-width));
   user-select: none;
   overflow: visible;
 }
 
 .window-controls {
   position: absolute;
-  top: var(--cell-height);
+  top: var(--control-width);
   left: -3px;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(v-bind(numFrets), 1fr);
   justify-items: center;
-  height: calc(100% - var(--cell-height));
+  height: calc(100% - var(--control-width));
   width: calc(100% / v-bind(strings));
 }
 
@@ -372,13 +368,13 @@ function onInputClick(e: Event) {
 }
 
 .window-button {
-  width: var(--cell-height);
-  height: var(--cell-height);
+  width: var(--control-width);
+  height: var(--control-width);
 }
 
 .window-button.increment {
   grid-row: -1;
-  transform: translateY(calc(var(--cell-height) * 0.8));
+  transform: translateY(calc(var(--control-width) * 0.8));
 }
 
 .window-decrement-container {
@@ -389,7 +385,7 @@ function onInputClick(e: Event) {
   grid-template-rows: 1fr;
   justify-items: center;
   align-items: center;
-  /* transform: translateY(calc(var(--cell-height) * -0.8)); */
+  /* transform: translateY(calc(var(--control-width) * -0.8)); */
 
   & .window-button,
   & .fret-input {
@@ -398,17 +394,17 @@ function onInputClick(e: Event) {
   }
 
   & .window-button {
-    transform: translateY(calc(var(--cell-height) * -0.8));
+    transform: translateY(calc(var(--control-width) * -0.8));
   }
 
   & .fret-input:deep(input) {
-    width: var(--cell-height);
-    height: var(--cell-height);
-    transform: translateY(calc(var(--cell-height) * 0.2));
+    width: var(--control-width);
+    height: var(--control-width);
+    transform: translateY(calc(var(--control-width) * 0.2));
     padding-inline: 0px;
     text-align: center;
     font-family: sans-serif;
-    font-size: calc(var(--note-font-size) * 0.8);
+    font-size: calc(var(--control-width) * 0.64);
   }
 }
 

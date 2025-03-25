@@ -276,6 +276,7 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
   user-select: none;
   display: flex;
   flex-wrap: wrap;
+  row-gap: calc(var(--cell-height) / 2);
 }
 
 .line-break {

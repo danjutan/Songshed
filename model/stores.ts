@@ -31,7 +31,7 @@ const defaults: Omit<TabData, "guitarData" | "annotations"> = {
   beatsPerBar: 4,
   beatSize: SPACING.Quarter,
   chordsData: {
-    tuning: defaultTuning,
+    tuning: Array.from(defaultTuning),
     chords: [{ title: "", notes: new Map() }],
   },
   lineBreaks: new Set(),
@@ -60,7 +60,7 @@ export function createTabStore(
   const annotationStore = createAnnotationStore(data.annotations);
   const chordStore = createChordStore(data.chordsData);
 
-  function createGuitarTab(tuning = defaultTuning, frets = 24) {
+  function createGuitarTab(tuning = Array.from(defaultTuning), frets = 24) {
     const stacks: StackMap<GuitarNote> = new Map();
     data.guitarData = {
       ties: new Map(),

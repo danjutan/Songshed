@@ -6,8 +6,6 @@ import { Check, X, Plus, GripVertical } from "lucide-vue-next";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { isChordDragData, isChordInsertDropData } from "./dnd-types";
 
-// TODO: all of the chord stuff should be independent of cellHeight
-
 const props = defineProps<{
   data: ChordStore;
 }>();
