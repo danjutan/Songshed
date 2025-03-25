@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { ZoomIn, ZoomOut } from "lucide-vue-next";
 import { injectSettingsState } from "./providers/state/provide-settings-state";
 
 const props = defineProps<{
@@ -53,7 +54,30 @@ const optionsMap = computed(() => {
       </FloatLabel>
     </template>
     <template #center />
-    <template #end />
+    <template #end>
+      <div class="flex">
+        <Button
+          severity="secondary"
+          outlined
+          :disabled="settings.cellHeight <= 8"
+          @click="settings.cellHeight -= 4"
+        >
+          <template #icon>
+            <ZoomOut :size="16" />
+          </template>
+        </Button>
+        <Button
+          severity="secondary"
+          outlined
+          :disabled="settings.cellHeight >= 48"
+          @click="settings.cellHeight += 4"
+        >
+          <template #icon>
+            <ZoomIn :size="16" />
+          </template>
+        </Button>
+      </div>
+    </template>
   </Toolbar>
 </template>
 
@@ -72,8 +96,10 @@ const optionsMap = computed(() => {
   /* border: none; */
   margin-bottom: 10px;
 }
-.float-label {
-  /* --p-floatlabel-position-x: 8px; */
+
+.flex {
+  display: flex;
+  gap: 4px;
 }
 .select {
   --p-select-sm-padding-x: 8px;

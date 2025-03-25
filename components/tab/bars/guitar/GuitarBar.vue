@@ -193,7 +193,7 @@ const tablineHasBends = computed(() => {
       minmax(auto, var(--expanded-min-width))
         /* expanded-min-width is also the max width */
     );
-  grid-template-rows: auto min-content;
+  grid-template-rows: auto calc(v-bind(numStrings) * var(--cell-height));
 
   &.has-widget {
     grid-template-columns: min-content min-content repeat(

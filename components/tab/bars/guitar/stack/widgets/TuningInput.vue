@@ -82,7 +82,7 @@ const orderedNotes = computed(() => {
 }
 .select {
   /* position: relative; */
-  --p-select-padding-x: 4px;
+  --p-select-padding-x: calc(var(--cell-height) / 6);
   --p-select-padding-y: 3px;
   &:deep(.label) {
     text-align: center;

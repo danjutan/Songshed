@@ -122,7 +122,7 @@ const updateNote = (index: number, newValue: Midi) => {
 .tuning-widget:hover {
   & .input-container {
     opacity: 1;
-    width: calc(var(--note-font-size) * 2.5);
+    width: calc(var(--cell-height) * 2.4);
   }
   & .display-container {
     opacity: 0;
@@ -137,7 +137,7 @@ const updateNote = (index: number, newValue: Midi) => {
   gap: 1px;
   height: var(--cell-height);
   z-index: var(--overlay-controls-z-index);
-  --p-button-sm-icon-only-width: 22px;
+  /* --p-button-sm-icon-only-width: 22px; */
 
   &.top {
     grid-row: 1;
@@ -156,7 +156,7 @@ const updateNote = (index: number, newValue: Midi) => {
 
 .button {
   height: 75%;
-  width: var(--note-font-size);
+  width: var(--cell-height);
   padding: 0px;
   /* border-color: var(--p-button-outlined-secondary-border-color); */
 }
