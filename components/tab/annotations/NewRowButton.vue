@@ -9,19 +9,17 @@ const props = defineProps<{
 
 <template>
   <div class="new-row-button">
-    <Pencil :size="16" class="pencil" />
-    <Plus :size="11" class="plus" />
+    <Pencil class="pencil" />
+    <Plus class="plus" />
   </div>
 </template>
 
 <style scoped>
 .new-row-button {
-  grid-row: 1;
-  grid-column: 1;
-  font-size: var(--cell-height);
   border-right: none;
   width: min-content;
   cursor: pointer;
+  height: var(--cell-height);
 
   display: grid;
   grid-template-columns: 1fr;
@@ -36,13 +34,17 @@ const props = defineProps<{
   & .pencil {
     grid-area: 1 / 1;
     align-self: center;
+    width: calc(var(--cell-height) * 2 / 3);
+    height: calc(var(--cell-height) * 2 / 3);
   }
 
   & .plus {
     grid-area: 1 / 1;
     align-self: center;
     justify-self: end;
-    transform: translateX(20%) translateY(40%);
+    transform: translateX(20%) translateY(calc(var(--cell-height) / 4));
+    width: calc(var(--cell-height) / 2);
+    height: calc(var(--cell-height) / 2);
     /* align-self: center;
     justify-self: start;
     transform: translateX(-25%) translateY(-10%); */
