@@ -7,7 +7,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { isChordDragData, isChordInsertDropData } from "./dnd-types";
 
 const props = defineProps<{
-  data: ChordStore;
+  store: ChordStore;
 }>();
 
 onMounted(() => {
@@ -23,7 +23,7 @@ onMounted(() => {
             isChordInsertDropData(dropData) &&
             isChordDragData(args.source.data)
           ) {
-            props.data.moveChord(args.source.data.index, dropData.index);
+            props.store.moveChord(args.source.data.index, dropData.index);
           }
         },
       }),
@@ -34,18 +34,19 @@ onMounted(() => {
 
 <template>
   <div class="group">
-    <div v-if="data.chords.length === 0" class="empty-chords-label">
+    <div v-if="store.chords.length === 0" class="empty-chords-label">
       Chords:
     </div>
     <ChordContainer
-      v-for="(chord, i) of data.chords"
+      v-for="(chord, i) of store.chords"
       :key="i"
       :index="i"
       :chord="chord"
-      :tuning="data.tuning"
+      :tuning="store.tuning"
+      @delete="store.deleteChord(i)"
     />
 
-    <Button class="add" severity="secondary" outlined @click="data.addChord()">
+    <Button class="add" severity="secondary" outlined @click="store.addChord()">
       <template #icon>
         <Plus :size="24" />
       </template>

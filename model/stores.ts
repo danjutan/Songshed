@@ -128,7 +128,7 @@ function createChordStore({ tuning, chords }: ChordsData) {
       chords.push(chord);
     },
     deleteChord(index: number) {
-      chords.splice(index);
+      chords.splice(index, 1);
     },
     moveChord(from: number, to: number) {
       const chord = chords[from];
