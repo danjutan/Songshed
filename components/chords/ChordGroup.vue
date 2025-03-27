@@ -1,8 +1,15 @@
 <script setup lang="ts">
 import type { ChordStore } from "~/model/stores";
-import ChordChart from "./ChordChart.vue";
+import ChordsTuning from "./ChordsTuning.vue";
 import ChordContainer from "./ChordContainer.vue";
-import { Check, X, Plus, GripVertical } from "lucide-vue-next";
+import {
+  Check,
+  X,
+  Plus,
+  GripVertical,
+  ChevronRight,
+  ChevronDown,
+} from "lucide-vue-next";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { isChordDragData, isChordInsertDropData } from "./dnd-types";
 
@@ -33,36 +40,51 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="group">
-    <div v-if="store.chords.length === 0" class="empty-chords-label">
-      Chords:
-    </div>
-    <ChordContainer
-      v-for="(chord, i) of store.chords"
-      :key="i"
-      :index="i"
-      :chord="chord"
-      :tuning="store.tuning"
-      @delete="store.deleteChord(i)"
-    />
+  <Panel class="panel" header="Chords" toggleable pt:header:class="header">
+    <template #toggleicon="{ collapsed }">
+      <ChevronRight v-if="collapsed" :size="16" />
+      <ChevronDown v-else :size="16" />
+    </template>
+    <ChordsTuning v-model="store.tuning" />
+    <div class="group">
+      <ChordContainer
+        v-for="(chord, i) of store.chords"
+        :key="i"
+        :index="i"
+        :chord="chord"
+        :tuning="store.tuning"
+        @delete="store.deleteChord(i)"
+      />
 
-    <Button class="add" severity="secondary" outlined @click="store.addChord()">
-      <template #icon>
-        <Plus :size="24" />
-      </template>
-    </Button>
-  </div>
+      <Button
+        class="add"
+        severity="secondary"
+        outlined
+        @click="store.addChord()"
+      >
+        <template #icon>
+          <Plus :size="24" />
+        </template>
+      </Button>
+    </div>
+  </Panel>
 </template>
 
 <style scoped>
+.panel {
+  --p-panel-toggleable-header-padding: 0px 1.125rem;
+  border: 0px;
+
+  &:deep(.header) {
+    justify-content: flex-start;
+    /* justify-content: flex-end;
+    flex-direction: row-reverse; */
+  }
+}
+
 .group {
   display: flex;
   align-items: center;
-}
-
-.empty-chords-label {
-  font-size: var(--note-font-size);
-  font-weight: bold;
 }
 
 .add {

@@ -261,6 +261,7 @@ const tablineHasBends = computed(() => {
 
 .overlay,
 .overlay-controls > div {
+  /* overflow: hidden; */
   pointer-events: none;
   grid-column: 1 / -1;
   grid-row: 2;

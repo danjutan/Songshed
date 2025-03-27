@@ -175,7 +175,8 @@ onMounted(() => {
 
 .title-row {
   display: flex;
-  margin-left: var(--control-width);
+  /* margin-left: var(--control-width); */
+  transform: translateX(var(--control-width));
   width: calc(100% - var(--control-width));
   justify-content: space-between;
   align-items: center;

@@ -59,7 +59,7 @@ const optionsMap = computed(() => {
         <Button
           severity="secondary"
           outlined
-          :disabled="settings.cellHeight <= 8"
+          :disabled="settings.cellHeight <= 12"
           @click="settings.cellHeight -= 4"
         >
           <template #icon>

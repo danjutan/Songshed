@@ -110,5 +110,6 @@ const orderedNotes = computed(() => {
 .octave {
   border-left: none;
   border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 </style>

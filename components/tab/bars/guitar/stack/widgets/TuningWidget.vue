@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import TuningInput from "./TuningInput.vue";
 import { Plus, Minus } from "lucide-vue-next";
-const test = ref<Midi>(toMidi("E4"));
 
 const tuning = defineModel<Midi[]>({ required: true });
 const emit = defineEmits(["addTop", "addBottom", "removeTop", "removeBottom"]);
