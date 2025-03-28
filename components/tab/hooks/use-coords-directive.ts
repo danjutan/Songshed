@@ -148,6 +148,7 @@ export function useCoordsDirective<
     for (const position of unwrappedPositions) {
       const coords = getStackCoords(position);
       if (coords === undefined) {
+        // TODO: don't fail silently (just printing an error here also prints when things are going as expected)
         return;
       }
       withCoords.push([position, coords]);

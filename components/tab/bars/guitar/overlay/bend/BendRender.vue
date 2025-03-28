@@ -76,8 +76,11 @@ const vCoords = useCoordsDirective({
   from: props.bend.from,
   to: computed(() => props.bend.to),
   upswingTo: upswingToPos,
-  next: computed(() => props.bend.to + subunit.value),
 });
+
+// watchEffect(() => {
+//   console.log(upswingToPos.value);
+// });
 </script>
 
 <template>
@@ -206,7 +209,7 @@ const vCoords = useCoordsDirective({
           !hasThrough && (releaseArrowHover || upswingArrowHover || labelHover)
         "
         v-coords:x1="({ to }) => to.right"
-        v-coords:x2="({ next }) => next.center"
+        v-coords:x2="({ to }) => to.right + to.right - to.center"
         :y1="upswingToY + cellHeight * 0.35"
         :y2="upswingToY + cellHeight * 0.35"
         :opacity="0.4"
