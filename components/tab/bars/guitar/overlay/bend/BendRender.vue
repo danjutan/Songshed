@@ -37,7 +37,7 @@ const throughPos = computed(() =>
 const upswingToPos = computed(() => throughPos.value ?? props.bend.to);
 const upswingToY = contextMenuHeight.value / 3;
 
-const isPrebend = computed(() => props.bend.from === props.bend.to);
+const isPrebend = computed(() => props.bend.from === upswingToPos.value);
 
 const options: Array<[value: number, label: string]> = [
   [0.5, "&half;"],
