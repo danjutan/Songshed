@@ -102,7 +102,10 @@ const tablineHasBends = computed(() => {
 <template>
   <div
     class="guitar-bar"
-    :class="{ 'has-bends': tablineHasBends, 'has-widget': hasWidget }"
+    :class="{
+      'has-bends': tablineHasBends,
+      'has-widget': hasWidget,
+    }"
   >
     <slot name="divider" />
     <div v-if="highlight" class="highlight" :class="highlight" />
@@ -255,13 +258,12 @@ const tablineHasBends = computed(() => {
 }
 .overlay-controls > div {
   position: relative; /* somehow makes the VueSelect hover events work right */
-  overflow: visible;
+  /* overflow: visible; */
   z-index: var(--overlay-controls-z-index);
 }
 
 .overlay,
 .overlay-controls > div {
-  /* overflow: hidden; */
   pointer-events: none;
   grid-column: 1 / -1;
   grid-row: 2;

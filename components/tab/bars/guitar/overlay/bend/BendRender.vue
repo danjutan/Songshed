@@ -112,6 +112,7 @@ const vCoords = useCoordsDirective({
     </marker>
 
     <BendDragger
+      v-if="showLabel"
       :bend="props.bend"
       :mode="'upswing'"
       :position="upswingToPos"
@@ -187,6 +188,7 @@ const vCoords = useCoordsDirective({
 
     <g v-if="!dragging">
       <BendDragger
+        v-if="showLabel"
         :bend="props.bend"
         :mode="'release'"
         :position="bend.to"
