@@ -2,6 +2,8 @@
 import TuningInput from "~/components/tab/bars/guitar/stack/widgets/TuningInput.vue";
 
 const tuning = defineModel<Midi[]>({ required: true });
+const syncTuning = defineModel<boolean>("syncTuning", { required: true });
+
 const emit = defineEmits(["addTop", "addBottom", "removeTop", "removeBottom"]);
 
 const updateNote = (index: number, newValue: Midi) => {
@@ -15,7 +17,7 @@ const updateNote = (index: number, newValue: Midi) => {
   <div class="tuning-container">
     <!--row-reverse-->
     <div class="sync-box">
-      <Checkbox input-id="sync" binary />
+      <Checkbox v-model="syncTuning" input-id="sync" binary />
       <label for="sync">Sync with Tab</label>
     </div>
     <TuningInput

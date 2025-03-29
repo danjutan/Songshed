@@ -14,11 +14,11 @@ import type {
 } from "./data";
 import { SPACING, type SpacingValue } from "~/composables/theory";
 
-export interface TabStore {
-  title: string;
-  beatsPerBar: number;
-  beatSize: SpacingValue;
-  lineBreaks: Set<number>;
+export interface TabStore
+  extends Pick<
+    TabData,
+    "title" | "beatsPerBar" | "beatSize" | "syncTuning" | "lineBreaks"
+  > {
   createGuitarTab: (tuning?: Midi[], frets?: number) => GuitarStore;
   guitar: GuitarStore;
   annotations: AnnotationStore;
@@ -27,9 +27,10 @@ export interface TabStore {
 }
 
 const defaults: Omit<TabData, "guitarData" | "annotations"> = {
-  title: "new tab",
+  title: "New Song",
   beatsPerBar: 4,
   beatSize: SPACING.Quarter,
+  syncTuning: true,
   chordsData: {
     tuning: Array.from(defaultTuning),
     chords: [{ title: "", notes: new Map() }],
@@ -73,6 +74,35 @@ export function createTabStore(
     return guitarStore.value;
   }
 
+  watch(
+    () => data.syncTuning,
+    (syncTuning) => {
+      if (syncTuning && guitarStore.value) {
+        chordStore.tuning = guitarStore.value.tuning;
+      }
+    },
+    { immediate: true },
+  );
+
+  watch(
+    data.chordsData.tuning,
+    (tuning) => {
+      if (guitarStore.value && data.syncTuning) {
+        guitarStore.value.tuning = tuning;
+      }
+    },
+    { deep: true },
+  );
+
+  watch(
+    () => guitarStore.value?.tuning,
+    (tuning) => {
+      if (tuning && data.syncTuning) {
+        chordStore.tuning = tuning;
+      }
+    },
+  );
+
   return {
     createGuitarTab,
     serialize() {
@@ -104,6 +134,12 @@ export function createTabStore(
     set beatSize(beatSize: SpacingValue) {
       data.beatSize = beatSize;
     },
+    get syncTuning() {
+      return data.syncTuning;
+    },
+    set syncTuning(syncTuning: boolean) {
+      data.syncTuning = syncTuning;
+    },
     get lineBreaks() {
       return data.lineBreaks;
     },
@@ -111,14 +147,15 @@ export function createTabStore(
 }
 
 function createChordStore({ tuning, chords }: ChordsData) {
-  // TODO: edit tuning
   return {
     // the array is deeply reactive, so you can set notes directly
     chords,
-    tuning,
-    // TODO: delete if unused
-    setChord(index: number, chord: Chord) {
-      chords[index] = chord;
+    // So it can be used with v-model
+    get tuning() {
+      return tuning;
+    },
+    set tuning(newTuning: Midi[]) {
+      tuning.splice(0, tuning.length, ...newTuning);
     },
     addChord() {
       const chord: Chord = {

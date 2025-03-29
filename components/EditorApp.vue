@@ -58,7 +58,10 @@ async function save(saveId: string) {
         v-model:beat-size="tabStore.beatSize"
         @save="save"
       />
-      <ChordGroup :store="tabStore.chords" />
+      <ChordGroup
+        v-model:sync-tuning="tabStore.syncTuning"
+        :store="tabStore.chords"
+      />
       <Tab :tab-store="tabStore" />
     </div>
   </div>

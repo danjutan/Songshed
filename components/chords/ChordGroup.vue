@@ -17,6 +17,8 @@ const props = defineProps<{
   store: ChordStore;
 }>();
 
+const syncTuning = defineModel<boolean>("syncTuning", { required: true });
+
 onMounted(() => {
   watchEffect((cleanup) => {
     cleanup(
@@ -45,7 +47,7 @@ onMounted(() => {
       <ChevronRight v-if="collapsed" :size="16" />
       <ChevronDown v-else :size="16" />
     </template>
-    <ChordsTuning v-model="store.tuning" />
+    <ChordsTuning v-model="store.tuning" v-model:sync-tuning="syncTuning" />
     <div class="group">
       <ChordContainer
         v-for="(chord, i) of store.chords"
