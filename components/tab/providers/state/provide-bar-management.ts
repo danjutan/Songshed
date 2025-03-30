@@ -28,7 +28,7 @@ export function provideBarManagement(
 ) {
   const newBarStart = ref(0);
   const barSize = computed(
-    () => props.tabStore.beatsPerBar * props.tabStore.beatSize,
+    () => props.tabStore.time.beatsPerBar * props.tabStore.time.beatSize,
   );
 
   const bars = computed<Bar[]>(() => {

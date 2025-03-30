@@ -255,8 +255,8 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
             :update-tuning="tabStore.updateTuning.guitar"
           />
           <TimeSignatureWidget
-            v-model:beats="tabStore.beatsPerBar"
-            v-model:beat-value="tabStore.beatSize"
+            v-model:beats="tabStore.time.beatsPerBar"
+            v-model:beat-value="tabStore.time.beatSize"
           />
         </template>
       </TabBar>

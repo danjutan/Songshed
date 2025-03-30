@@ -48,7 +48,7 @@ export function useTemplateColumns(
         const width = isCollapsed(
           props.settings,
           bar.stacks.get(position)!,
-          position % props.beatSize === 0,
+          position % props.tabline[0].time.beatSize === 0,
         )
           ? collapsedMinWidth
           : expandedMinWidth;

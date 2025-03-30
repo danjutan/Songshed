@@ -11,15 +11,13 @@ import type {
   Chord,
   BendData,
   TieData,
+  TimeSignature,
 } from "./data";
 import { SPACING, type SpacingValue } from "~/composables/theory";
 import { syncTuning } from "./sync-tuning";
 
 export interface TabStore
-  extends Pick<
-    TabData,
-    "title" | "beatsPerBar" | "beatSize" | "doesSyncTuning" | "lineBreaks"
-  > {
+  extends Pick<TabData, "title" | "time" | "doesSyncTuning" | "lineBreaks"> {
   createGuitarTab: (tuning?: Midi[], frets?: number) => GuitarStore;
   guitar: GuitarStore;
   annotations: AnnotationStore;
@@ -33,14 +31,14 @@ export interface TabStore
 
 const defaults: Omit<TabData, "guitarData" | "annotations"> = {
   title: "New Song",
-  beatsPerBar: 4,
-  beatSize: SPACING.Quarter,
+  time: { beatsPerBar: 4, beatSize: SPACING.Quarter },
   doesSyncTuning: true,
   chordsData: {
     tuning: Array.from(defaultTuning),
     chords: [{ title: "", notes: new Map() }],
   },
   lineBreaks: new Set(),
+  timeChanges: new Map(),
 };
 
 export function createTabStore(tabData: TabData): TabStore;
@@ -171,17 +169,11 @@ export function createTabStore(
     set title(title: string) {
       data.title = title;
     },
-    get beatsPerBar() {
-      return data.beatsPerBar;
+    get time() {
+      return data.time;
     },
-    set beatsPerBar(beatsPerBar: number) {
-      data.beatsPerBar = beatsPerBar;
-    },
-    get beatSize() {
-      return data.beatSize;
-    },
-    set beatSize(beatSize: SpacingValue) {
-      data.beatSize = beatSize;
+    set time(time: TimeSignature) {
+      data.time = time;
     },
     get doesSyncTuning() {
       return data.doesSyncTuning;

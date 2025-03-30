@@ -189,6 +189,7 @@ onMounted(() => {
   & .delete {
     height: 16px;
     margin-top: 6px;
+    transform: rotate(180deg);
   }
 
   & .more {
@@ -240,17 +241,4 @@ svg {
   color: var(--divider-icon-color);
   width: var(--context-menu-height);
 }
-
-.delete {
-  transform: rotate(180deg);
-}
-
-/* .divider::before {
-  content: "";
-  display: block;
-  width: 4px;
-  height: 100%;
-  background: red;
-  margin: 0 auto;
-} */
 </style>
