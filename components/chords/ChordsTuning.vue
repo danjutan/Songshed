@@ -1,16 +1,14 @@
 <script lang="ts" setup>
 import TuningInput from "~/components/tab/bars/guitar/stack/widgets/TuningInput.vue";
+import { Plus, Minus } from "lucide-vue-next";
+import type { UpdateTuning } from "~/model/stores";
 
-const tuning = defineModel<Midi[]>({ required: true });
+const props = defineProps<{
+  tuning: Midi[];
+  updateTuning: UpdateTuning;
+}>();
+
 const syncTuning = defineModel<boolean>("syncTuning", { required: true });
-
-const emit = defineEmits(["addTop", "addBottom", "removeTop", "removeBottom"]);
-
-const updateNote = (index: number, newValue: Midi) => {
-  const newTuning = [...tuning.value];
-  newTuning[index] = newValue;
-  tuning.value = newTuning;
-};
 </script>
 
 <template>
@@ -20,6 +18,31 @@ const updateNote = (index: number, newValue: Midi) => {
       <Checkbox v-model="syncTuning" input-id="sync" binary />
       <label for="sync">Sync with Tab</label>
     </div>
+    <div class="buttons">
+      <Button
+        v-show="tuning.length > 4"
+        outlined
+        size="small"
+        class="button"
+        severity="contrast"
+        @click="updateTuning.removeTop()"
+      >
+        <template #icon>
+          <Minus :size="16" />
+        </template>
+      </Button>
+      <Button
+        outlined
+        size="small"
+        class="button"
+        severity="contrast"
+        @click="updateTuning.addTop()"
+      >
+        <template #icon>
+          <Plus :size="16" />
+        </template>
+      </Button>
+    </div>
     <TuningInput
       v-for="(note, i) in tuning"
       :key="i"
@@ -27,8 +50,33 @@ const updateNote = (index: number, newValue: Midi) => {
       :font-size="'16px'"
       :model-value="note"
       :style="{ gridRow: i + 1 }"
-      @update:model-value="(value) => updateNote(i, value)"
+      @update:model-value="(value) => updateTuning.setTuningNote(i, value)"
     />
+    <div class="buttons">
+      <Button
+        outlined
+        size="small"
+        class="button"
+        severity="contrast"
+        @click="updateTuning.addBottom()"
+      >
+        <template #icon>
+          <Plus :size="16" />
+        </template>
+      </Button>
+      <Button
+        v-show="tuning.length > 4"
+        outlined
+        size="small"
+        class="button"
+        severity="contrast"
+        @click="updateTuning.removeBottom()"
+      >
+        <template #icon>
+          <Minus :size="16" />
+        </template>
+      </Button>
+    </div>
     <strong>Tuning:</strong>
   </div>
 </template>
@@ -54,5 +102,16 @@ const updateNote = (index: number, newValue: Midi) => {
 
 strong {
   margin-right: 10px;
+}
+
+.buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.button {
+  height: 20px;
+  --p-button-sm-padding-x: 0px;
+  --p-button-sm-icon-only-width: 24px;
 }
 </style>

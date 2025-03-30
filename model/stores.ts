@@ -13,16 +13,21 @@ import type {
   TieData,
 } from "./data";
 import { SPACING, type SpacingValue } from "~/composables/theory";
+import { syncTuning } from "./sync-tuning";
 
 export interface TabStore
   extends Pick<
     TabData,
-    "title" | "beatsPerBar" | "beatSize" | "syncTuning" | "lineBreaks"
+    "title" | "beatsPerBar" | "beatSize" | "doesSyncTuning" | "lineBreaks"
   > {
   createGuitarTab: (tuning?: Midi[], frets?: number) => GuitarStore;
   guitar: GuitarStore;
   annotations: AnnotationStore;
   chords: ChordStore;
+  updateTuning: {
+    chords: UpdateTuning;
+    guitar: UpdateTuning;
+  };
   serialize: () => string;
 }
 
@@ -30,7 +35,7 @@ const defaults: Omit<TabData, "guitarData" | "annotations"> = {
   title: "New Song",
   beatsPerBar: 4,
   beatSize: SPACING.Quarter,
-  syncTuning: true,
+  doesSyncTuning: true,
   chordsData: {
     tuning: Array.from(defaultTuning),
     chords: [{ title: "", notes: new Map() }],
@@ -75,32 +80,13 @@ export function createTabStore(
   }
 
   watch(
-    () => data.syncTuning,
-    (syncTuning) => {
-      if (syncTuning && guitarStore.value) {
-        chordStore.tuning = guitarStore.value.tuning;
+    () => data.doesSyncTuning,
+    (doesSync) => {
+      if (doesSync && guitarStore.value) {
+        syncTuning(chordStore, guitarStore.value);
       }
     },
     { immediate: true },
-  );
-
-  watch(
-    data.chordsData.tuning,
-    (tuning) => {
-      if (guitarStore.value && data.syncTuning) {
-        guitarStore.value.tuning = tuning;
-      }
-    },
-    { deep: true },
-  );
-
-  watch(
-    () => guitarStore.value?.tuning,
-    (tuning) => {
-      if (tuning && data.syncTuning) {
-        chordStore.tuning = tuning;
-      }
-    },
   );
 
   return {
@@ -114,6 +100,69 @@ export function createTabStore(
     annotations: annotationStore,
     get chords() {
       return chordStore;
+    },
+    updateTuning: {
+      chords: {
+        setTuningNote: (string: number, note: Midi) => {
+          chordStore.setTuningNote(string, note);
+          if (data.doesSyncTuning && guitarStore.value) {
+            guitarStore.value.setTuningNote(string, note);
+          }
+        },
+        addTop: () => {
+          chordStore.insertString(0);
+          if (data.doesSyncTuning && guitarStore.value) {
+            guitarStore.value.insertString(0);
+          }
+        },
+        addBottom: () => {
+          chordStore.insertString();
+          if (data.doesSyncTuning && guitarStore.value) {
+            guitarStore.value.insertString();
+          }
+        },
+        removeTop: () => {
+          chordStore.removeString(0);
+          if (data.doesSyncTuning && guitarStore.value) {
+            guitarStore.value.removeString(0);
+          }
+        },
+        removeBottom: () => {
+          chordStore.removeString();
+          if (data.doesSyncTuning && guitarStore.value) {
+            guitarStore.value.removeString();
+          }
+        },
+      },
+      guitar: {
+        setTuningNote: (string: number, note: Midi) => {
+          guitarStore.value!.setTuningNote(string, note);
+        },
+        addTop: () => {
+          guitarStore.value!.insertString(0);
+          if (data.doesSyncTuning) {
+            chordStore.insertString(0);
+          }
+        },
+        addBottom: () => {
+          guitarStore.value!.insertString();
+          if (data.doesSyncTuning) {
+            chordStore.insertString();
+          }
+        },
+        removeTop: () => {
+          guitarStore.value!.removeString(0);
+          if (data.doesSyncTuning) {
+            chordStore.removeString(0);
+          }
+        },
+        removeBottom: () => {
+          guitarStore.value!.removeString();
+          if (data.doesSyncTuning) {
+            chordStore.removeString();
+          }
+        },
+      },
     },
     // TODO: validation?
     get title() {
@@ -134,16 +183,24 @@ export function createTabStore(
     set beatSize(beatSize: SpacingValue) {
       data.beatSize = beatSize;
     },
-    get syncTuning() {
-      return data.syncTuning;
+    get doesSyncTuning() {
+      return data.doesSyncTuning;
     },
-    set syncTuning(syncTuning: boolean) {
-      data.syncTuning = syncTuning;
+    set doesSyncTuning(syncTuning: boolean) {
+      data.doesSyncTuning = syncTuning;
     },
     get lineBreaks() {
       return data.lineBreaks;
     },
   };
+}
+
+export interface UpdateTuning {
+  addTop: () => void;
+  addBottom: () => void;
+  removeTop: () => void;
+  removeBottom: () => void;
+  setTuningNote: (string: number, note: Midi) => void;
 }
 
 function createChordStore({ tuning, chords }: ChordsData) {
@@ -154,9 +211,12 @@ function createChordStore({ tuning, chords }: ChordsData) {
     get tuning() {
       return tuning;
     },
-    set tuning(newTuning: Midi[]) {
-      tuning.splice(0, tuning.length, ...newTuning);
+    setTuningNote(string: number, note: Midi) {
+      tuning[string] = note;
     },
+    // set tuning(newTuning: Midi[]) {
+    //   tuning.splice(0, tuning.length, ...newTuning);
+    // },
     addChord() {
       const chord: Chord = {
         title: "",
@@ -171,6 +231,87 @@ function createChordStore({ tuning, chords }: ChordsData) {
       const chord = chords[from];
       chords.splice(from, 1);
       chords.splice(to, 0, chord);
+    },
+    insertString(position = tuning.length) {
+      let newTuningNote;
+      if (position === tuning.length) {
+        // Add to bottom
+        newTuningNote = (tuning[position - 1] - 5) as Midi;
+        tuning.push(newTuningNote);
+      } else if (position === 0) {
+        // Add to top
+        newTuningNote = (tuning[0] + 5) as Midi;
+        tuning.unshift(newTuningNote);
+
+        // Shift existing notes down
+        for (const chord of chords) {
+          const oldNotes = new Map(chord.notes);
+          chord.notes.clear();
+
+          for (const [string, note] of oldNotes.entries()) {
+            chord.notes.set(string + 1, note);
+          }
+        }
+      } else {
+        // Add in middle
+        newTuningNote = tuning[position];
+        tuning.splice(position, 0, newTuningNote as Midi);
+
+        // Shift notes below the insertion point
+        for (const chord of chords) {
+          const oldNotes = new Map(chord.notes);
+          chord.notes.clear();
+
+          for (const [string, note] of oldNotes.entries()) {
+            if (string >= position) {
+              chord.notes.set(string + 1, note);
+            } else {
+              chord.notes.set(string, note);
+            }
+          }
+        }
+      }
+    },
+    removeString(position = tuning.length - 1) {
+      // Don't remove the last string
+      if (tuning.length <= 1) return;
+
+      if (position === 0) {
+        // Remove from top
+        tuning.shift();
+
+        for (const chord of chords) {
+          chord.notes.delete(0);
+
+          const oldNotes = new Map(chord.notes);
+          chord.notes.clear();
+
+          for (const [string, note] of oldNotes.entries()) {
+            if (string > 0) {
+              chord.notes.set(string - 1, note);
+            }
+          }
+        }
+      } else {
+        // Remove from bottom or middle
+        tuning.splice(position, 1);
+
+        // Remove notes on the removed string and shift higher strings down
+        for (const chord of chords) {
+          chord.notes.delete(position);
+
+          const oldNotes = new Map(chord.notes);
+          chord.notes.clear();
+
+          for (const [string, note] of oldNotes.entries()) {
+            if (string > position) {
+              chord.notes.set(string - 1, note);
+            } else if (string < position) {
+              chord.notes.set(string, note);
+            }
+          }
+        }
+      }
     },
   };
 }
@@ -487,6 +628,7 @@ export interface GuitarStore
   getStacks: (start: number, end: number, subunit: number) => GuitarStack[];
   insertString: (position?: number) => void;
   removeString: (position?: number) => void;
+  setTuningNote: (string: number, note: Midi) => void;
   ties: TieStore;
 }
 
@@ -563,6 +705,10 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
         guitarData.ties.delete(i);
       }
     }
+  }
+
+  function setTuningNote(string: number, note: Midi) {
+    guitarData.tuning[string] = note;
   }
 
   function getNote({ position, string }: NotePosition): GuitarNote | undefined {
@@ -702,6 +848,7 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     insertString,
     removeString,
     getNote,
+    setTuningNote,
     getStacks,
     setNote,
     deleteNote,
@@ -711,6 +858,9 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     getMovedNotes,
     getMinSpacing,
     ...guitarData,
+    get tuning() {
+      return guitarData.tuning;
+    },
     ties: tieStore,
   };
 }

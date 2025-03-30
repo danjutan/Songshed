@@ -251,11 +251,8 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
         </template>
         <template v-if="i === 0" #widget>
           <TuningWidget
-            v-model="tabStore.guitar.tuning"
-            @add-bottom="tabStore.guitar.insertString()"
-            @add-top="tabStore.guitar.insertString(0)"
-            @remove-bottom="tabStore.guitar.removeString()"
-            @remove-top="tabStore.guitar.removeString(0)"
+            :tuning="tabStore.guitar.tuning"
+            :update-tuning="tabStore.updateTuning.guitar"
           />
           <TimeSignatureWidget
             v-model:beats="tabStore.beatsPerBar"

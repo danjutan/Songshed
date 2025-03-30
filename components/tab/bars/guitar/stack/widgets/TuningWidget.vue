@@ -1,14 +1,23 @@
 <script lang="ts" setup>
+import type { UpdateTuning } from "~/model/stores";
 import TuningInput from "./TuningInput.vue";
 import { Plus, Minus } from "lucide-vue-next";
 
-const tuning = defineModel<Midi[]>({ required: true });
-const emit = defineEmits(["addTop", "addBottom", "removeTop", "removeBottom"]);
+const props = defineProps<{
+  tuning: Midi[];
+  updateTuning: UpdateTuning;
+}>();
+
+const emit = defineEmits([
+  "updateNote",
+  "addTop",
+  "addBottom",
+  "removeTop",
+  "removeBottom",
+]);
 
 const updateNote = (index: number, newValue: Midi) => {
-  const newTuning = [...tuning.value];
-  newTuning[index] = newValue;
-  tuning.value = newTuning;
+  emit("updateNote", index, newValue);
 };
 </script>
 
@@ -17,26 +26,24 @@ const updateNote = (index: number, newValue: Midi) => {
     <div class="input-container">
       <div class="buttons top">
         <Button
-          v-show="tuning.length > 4"
           size="small"
           class="button"
-          pt:root:style="width: var(--note-font-size)"
           severity="contrast"
-          @click="emit('removeTop')"
-        >
-          <template #icon>
-            <Minus :size="16" />
-          </template>
-        </Button>
-        <Button
-          size="small"
-          class="button"
-          pt:root:style="width: var(--note-font-size)"
-          severity="contrast"
-          @click="emit('addTop')"
+          @click="updateTuning.addTop()"
         >
           <template #icon>
             <Plus :size="16" />
+          </template>
+        </Button>
+        <Button
+          v-show="tuning.length > 4"
+          size="small"
+          class="button"
+          severity="contrast"
+          @click="updateTuning.removeTop()"
+        >
+          <template #icon>
+            <Minus :size="16" />
           </template>
         </Button>
       </div>
@@ -47,30 +54,28 @@ const updateNote = (index: number, newValue: Midi) => {
         :font-size="'calc(var(--note-font-size) * 0.8)'"
         :model-value="note"
         :style="{ gridRow: i + 1 }"
-        @update:model-value="(value) => updateNote(i, value)"
+        @update:model-value="(value) => updateTuning.setTuningNote(i, value)"
       />
       <div class="buttons bottom">
+        <Button
+          size="small"
+          class="button"
+          severity="contrast"
+          @click="updateTuning.addBottom()"
+        >
+          <template #icon>
+            <Plus :size="16" />
+          </template>
+        </Button>
         <Button
           v-show="tuning.length > 4"
           size="small"
           class="button"
-          pt:root:style="width: var(--note-font-size)"
           severity="contrast"
-          @click="emit('removeBottom')"
+          @click="updateTuning.removeBottom()"
         >
           <template #icon>
             <Minus :size="16" />
-          </template>
-        </Button>
-        <Button
-          size="small"
-          class="button"
-          pt:root:style="width: var(--note-font-size)"
-          severity="contrast"
-          @click="emit('addBottom')"
-        >
-          <template #icon>
-            <Plus :size="16" />
           </template>
         </Button>
       </div>
@@ -155,8 +160,8 @@ const updateNote = (index: number, newValue: Midi) => {
 
 .button {
   height: 75%;
-  width: var(--cell-height);
   padding: 0px;
+  --p-button-sm-icon-only-width: var(--note-font-size);
   /* border-color: var(--p-button-outlined-secondary-border-color); */
 }
 

@@ -59,8 +59,9 @@ async function save(saveId: string) {
         @save="save"
       />
       <ChordGroup
-        v-model:sync-tuning="tabStore.syncTuning"
+        v-model:sync-tuning="tabStore.doesSyncTuning"
         :store="tabStore.chords"
+        :update-tuning="tabStore.updateTuning.chords"
       />
       <Tab :tab-store="tabStore" />
     </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ChordStore } from "~/model/stores";
+import type { ChordStore, UpdateTuning } from "~/model/stores";
 import ChordsTuning from "./ChordsTuning.vue";
 import ChordContainer from "./ChordContainer.vue";
 import {
@@ -15,6 +15,7 @@ import { isChordDragData, isChordInsertDropData } from "./dnd-types";
 
 const props = defineProps<{
   store: ChordStore;
+  updateTuning: UpdateTuning;
 }>();
 
 const syncTuning = defineModel<boolean>("syncTuning", { required: true });
@@ -47,7 +48,11 @@ onMounted(() => {
       <ChevronRight v-if="collapsed" :size="16" />
       <ChevronDown v-else :size="16" />
     </template>
-    <ChordsTuning v-model="store.tuning" v-model:sync-tuning="syncTuning" />
+    <ChordsTuning
+      v-model:sync-tuning="syncTuning"
+      :tuning="store.tuning"
+      :update-tuning="updateTuning"
+    />
     <div class="group">
       <ChordContainer
         v-for="(chord, i) of store.chords"
@@ -92,5 +97,6 @@ onMounted(() => {
 .add {
   width: none;
   padding: 2px;
+  margin: 12px;
 }
 </style>
