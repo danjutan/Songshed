@@ -22,7 +22,6 @@ import {
   provideBarManagement,
   type Bar,
 } from "./providers/state/provide-bar-management";
-import { provideBeatSize } from "./providers/provide-beatsize";
 import { provideCopyState } from "./providers/state/provide-copy-state";
 import { provideAnnotationResizeState } from "./providers/state/provide-annotation-resize-state";
 import { provideAnnotationHoverState } from "./providers/state/provide-annotation-hover-state";
@@ -49,9 +48,13 @@ const { collapsedMinWidth, cellHeight, dividerWidth, expandedMinWidth } =
   injectSpacingsState();
 
 const subUnit = provideSubUnit(props.tabStore, settings);
-const beatSize = provideBeatSize(props.tabStore);
 
-const barSize = computed(() => props.tabStore.beatsPerBar * beatSize.value);
+const barManagement = provideBarManagement(
+  reactiveComputed(() => ({
+    tabStore: props.tabStore,
+    subUnit: subUnit.value,
+  })),
+);
 
 const { tablineStarts } = provideStackResizeObserver();
 
@@ -60,7 +63,7 @@ const selectionState = provideSelectionState(
   reactiveComputed(() => ({
     guitar: props.tabStore.guitar,
     subUnit,
-    barSize,
+    getBarIndexAt: barManagement.getBarIndexAt,
   })),
 );
 const editingState = provideEditingState();
@@ -78,13 +81,6 @@ const bendEditState = provideBendEditState(
     cellHoverEvents,
     tieAddState,
     tieStore: props.tabStore.guitar?.ties,
-  })),
-);
-
-const barManagement = provideBarManagement(
-  reactiveComputed(() => ({
-    tabStore: props.tabStore,
-    subUnit: subUnit.value,
   })),
 );
 
@@ -249,15 +245,23 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
             "
           />
         </template>
-        <template v-if="i === 0" #widget>
-          <TuningWidget
-            :tuning="tabStore.guitar.tuning"
-            :update-tuning="tabStore.updateTuning.guitar"
-          />
-          <TimeSignatureWidget
-            v-model:beats="tabStore.time.beatsPerBar"
-            v-model:beat-value="tabStore.time.beatSize"
-          />
+        <template #widget>
+          <template v-if="i === 0">
+            <TuningWidget
+              :tuning="tabStore.guitar.tuning"
+              :update-tuning="tabStore.updateTuning.guitar"
+            />
+            <TimeSignatureWidget
+              v-model:beats="tabStore.time.beatsPerBar"
+              v-model:beat-value="tabStore.time.beatSize"
+            />
+          </template>
+          <template v-else-if="tabStore.timeChanges.has(bar.start)">
+            <TimeSignatureWidget
+              v-model:beats="tabStore.timeChanges.get(bar.start)!.beatsPerBar"
+              v-model:beat-value="tabStore.timeChanges.get(bar.start)!.beatSize"
+            />
+          </template>
         </template>
       </TabBar>
     </template>

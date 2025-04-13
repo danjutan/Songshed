@@ -17,7 +17,8 @@ import { getBarDragData, isInsertBarDropData } from "../hooks/dnd/dnd-types";
 
 const resizeRef = useTemplateRef("resize");
 const moveRef = useTemplateRef("move");
-const { insertBar, deleteBar, insertBreak, joinBreak } = injectBarManagement();
+const { insertBar, deleteBar, insertBreak, joinBreak, insertTimeChange } =
+  injectBarManagement();
 
 const props = defineProps<{
   startOfLine: boolean;
@@ -121,7 +122,7 @@ onMounted(() => {
       </div>
     </div>
     <div v-if="expanded" class="expanded">
-      <div class="button time">
+      <div class="button time" @click="insertTimeChange(barStart)">
         <div>&#xE084;</div>
         <div>&#xE084;</div>
       </div>
@@ -177,6 +178,7 @@ onMounted(() => {
     font-family: "Leland", serif;
     font-size: 16px;
     line-height: 9px;
+    margin-bottom: 4px;
   }
 }
 

@@ -17,7 +17,10 @@ import { SPACING, type SpacingValue } from "~/composables/theory";
 import { syncTuning } from "./sync-tuning";
 
 export interface TabStore
-  extends Pick<TabData, "title" | "time" | "doesSyncTuning" | "lineBreaks"> {
+  extends Pick<
+    TabData,
+    "title" | "time" | "doesSyncTuning" | "lineBreaks" | "timeChanges"
+  > {
   createGuitarTab: (tuning?: Midi[], frets?: number) => GuitarStore;
   guitar: GuitarStore;
   annotations: AnnotationStore;
@@ -183,6 +186,9 @@ export function createTabStore(
     },
     get lineBreaks() {
       return data.lineBreaks;
+    },
+    get timeChanges() {
+      return data.timeChanges;
     },
   };
 }

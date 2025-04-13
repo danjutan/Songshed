@@ -3,7 +3,6 @@ import {
   isWithinRegion,
   type RegionBounds,
 } from "~/components/tab/providers/state/provide-selection-state";
-import { injectColumnsMap } from "~/components/tab/providers/provide-columns-map";
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import SelectionToolbar from "./SelectionToolbar.vue";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
@@ -22,11 +21,12 @@ const oneColumnAdjustment = computed(() => {
 });
 
 const startColumn = computed(
-  () => (props.region.minPosition - tabBarBounds.start) / subUnit.value + 1,
+  // TODO: why did we have to change this from +1 to +2
+  () => (props.region.minPosition - tabBarBounds.start) / subUnit.value + 2,
 );
 
 const endColumn = computed(
-  () => (props.region.maxPosition - tabBarBounds.start) / subUnit.value + 2,
+  () => (props.region.maxPosition - tabBarBounds.start) / subUnit.value + 3,
 );
 const startRow = computed(() => props.region.minString + 1);
 
@@ -56,7 +56,6 @@ const isHovering = computed(() => {
 
 <style scoped>
 .selection-region {
-  /* background: red; */
   grid-column: v-bind(startColumn) / v-bind(endColumn);
   grid-row: v-bind(startRow) / span 1;
   pointer-events: none;

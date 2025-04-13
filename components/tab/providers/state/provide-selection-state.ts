@@ -72,7 +72,7 @@ export function provideSelectionState(
   props: ReactiveComputed<{
     guitar: GuitarStore;
     subUnit: number;
-    barSize: number;
+    getBarIndexAt: (position: number) => number;
   }>,
 ): SelectionState {
   let currentSelectionStart: NotePosition | undefined;
@@ -108,9 +108,7 @@ export function provideSelectionState(
     }
 
     function isCrossingBar(position1: number, position2: number): boolean {
-      const barIndex1 = Math.floor(position1 / props.barSize);
-      const barIndex2 = Math.floor(position2 / props.barSize);
-      return barIndex1 !== barIndex2;
+      return props.getBarIndexAt(position1) !== props.getBarIndexAt(position2);
     }
 
     function findRegion(start: NotePosition): NotePosition[] {
@@ -246,7 +244,7 @@ export function provideSelectionState(
 
     if (
       minString + deltaString + stringDiff < 0 ||
-      maxString + deltaString + stringDiff >= props.guitar.strings ||
+      maxString + deltaString + stringDiff >= props.guitar.tuning.length ||
       minPosition + deltaPosition + positionDiff < 0
     ) {
       return;

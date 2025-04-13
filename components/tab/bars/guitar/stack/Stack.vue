@@ -3,11 +3,10 @@ import type { GuitarNote, NoteStack } from "~/model/data";
 import NoteContainer from "./NoteContainer.vue";
 import { injectStackResizeObserver } from "~/components/tab/providers/events/provide-resize-observer";
 import { useIsCollapsed } from "~/components/tab/hooks/use-collapsed";
-import { injectBeatSize } from "~/components/tab/providers/provide-beatsize";
 import { injectBarHoverState } from "../../../providers/state/provide-bar-hover-state";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
 import { injectSelectionState } from "~/components/tab/providers/state/provide-selection-state";
-import StringLine from "./StringLine.vue";
+import { injectBarManagement } from "~/components/tab/providers/state/provide-bar-management";
 
 const props = withDefaults(
   defineProps<{
@@ -25,10 +24,10 @@ const emit = defineEmits<{
 }>();
 
 const resizeState = injectStackResizeObserver();
-const beatSize = injectBeatSize();
 const { hoveredBarStart } = injectBarHoverState();
 const tabBarBounds = injectTabBarBounds();
 const selectionState = injectSelectionState();
+const { getTimeSignatureAt } = injectBarManagement();
 
 const stackRef = useTemplateRef<HTMLDivElement>("stack");
 
@@ -81,7 +80,9 @@ const showNoteContainers = computed(() => {
 
 const isCollapsed = useIsCollapsed(
   computed(() => props.notes),
-  props.position % beatSize.value === 0,
+  computed(
+    () => props.position % getTimeSignatureAt(props.position).beatSize === 0,
+  ),
 );
 </script>
 
