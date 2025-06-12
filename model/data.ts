@@ -67,7 +67,6 @@ export interface TimeSignature {
 
 export interface TabData {
   title: string;
-  time: TimeSignature;
   doesSyncTuning: boolean;
   lineBreaks: Set<number>;
   timeChanges: Map<number, TimeSignature>;

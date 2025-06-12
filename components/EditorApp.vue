@@ -52,12 +52,7 @@ async function save(saveId: string) {
     <!-- <span class="text-petaluma">&#xE1D9;</span>
     <span class="text-leland">&#xE1D9;</span> -->
     <div class="flex">
-      <Toolbar
-        :id
-        v-model:beats-per-bar="tabStore.beatsPerBar"
-        v-model:beat-size="tabStore.beatSize"
-        @save="save"
-      />
+      <Toolbar :id @save="save" />
       <ChordGroup
         v-model:sync-tuning="tabStore.doesSyncTuning"
         :store="tabStore.chords"

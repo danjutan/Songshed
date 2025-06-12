@@ -5,7 +5,7 @@ const SubunitInjectionKey = Symbol() as InjectionKey<Ref<number>>;
 
 export function provideSubUnit(tabStore: TabStore, settings: SettingsState) {
   const subUnit = computed(
-    () => tabStore.time.beatSize / settings.subdivisions,
+    () => tabStore.timeChanges.get(0)!.beatSize / settings.subdivisions,
   );
   provide(SubunitInjectionKey, subUnit);
   return subUnit;

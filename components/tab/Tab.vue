@@ -135,7 +135,7 @@ const barMinWidth = (bar: Bar) => {
       const width = isCollapsed(
         settings,
         bar.stacks[position].notes,
-        position % props.tabStore.beatSize === 0,
+        position % barManagement.getTimeSignatureAt(position).beatSize === 0,
       )
         ? collapsedMinWidth.value
         : expandedMinWidth.value;
@@ -209,8 +209,7 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
 </script>
 
 <template>
-  <TabToolbar :min-subdivision="1 / props.tabStore.guitar.getMinSpacing()" />
-  <div ref="tab" class="tab" @mouseleave="onLeaveTab">
+  <div v-if="barManagement" ref="tab" class="tab" @mouseleave="onLeaveTab">
     <template v-for="(bar, i) in barManagement.bars" :key="bar.start">
       <div v-if="tabStore.lineBreaks.has(bar.start)" class="line-break" />
 
@@ -251,12 +250,8 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
               :tuning="tabStore.guitar.tuning"
               :update-tuning="tabStore.updateTuning.guitar"
             />
-            <TimeSignatureWidget
-              v-model:beats="tabStore.time.beatsPerBar"
-              v-model:beat-value="tabStore.time.beatSize"
-            />
           </template>
-          <template v-else-if="tabStore.timeChanges.has(bar.start)">
+          <template v-if="tabStore.timeChanges.has(bar.start)">
             <TimeSignatureWidget
               v-model:beats="tabStore.timeChanges.get(bar.start)!.beatsPerBar"
               v-model:beat-value="tabStore.timeChanges.get(bar.start)!.beatSize"

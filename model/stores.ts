@@ -11,15 +11,14 @@ import type {
   Chord,
   BendData,
   TieData,
-  TimeSignature,
 } from "./data";
-import { SPACING, type SpacingValue } from "~/composables/theory";
+import { SPACING } from "~/composables/theory";
 import { syncTuning } from "./sync-tuning";
 
 export interface TabStore
   extends Pick<
     TabData,
-    "title" | "time" | "doesSyncTuning" | "lineBreaks" | "timeChanges"
+    "title" | "doesSyncTuning" | "lineBreaks" | "timeChanges"
   > {
   createGuitarTab: (tuning?: Midi[], frets?: number) => GuitarStore;
   guitar: GuitarStore;
@@ -34,14 +33,13 @@ export interface TabStore
 
 const defaults: Omit<TabData, "guitarData" | "annotations"> = {
   title: "New Song",
-  time: { beatsPerBar: 4, beatSize: SPACING.Quarter },
   doesSyncTuning: true,
   chordsData: {
     tuning: Array.from(defaultTuning),
     chords: [{ title: "", notes: new Map() }],
   },
   lineBreaks: new Set(),
-  timeChanges: new Map(),
+  timeChanges: new Map([[0, { beatsPerBar: 4, beatSize: SPACING.Quarter }]]),
 };
 
 export function createTabStore(tabData: TabData): TabStore;
@@ -171,12 +169,6 @@ export function createTabStore(
     },
     set title(title: string) {
       data.title = title;
-    },
-    get time() {
-      return data.time;
-    },
-    set time(time: TimeSignature) {
-      data.time = time;
     },
     get doesSyncTuning() {
       return data.doesSyncTuning;
@@ -623,7 +615,7 @@ export interface GuitarStore
     copy?: boolean,
   ) => NotePosition[];
   deleteStacks: (start: number, end: number) => void;
-  getStacks: (start: number, end: number, subunit: number) => GuitarStack[];
+  getStacks: (start: number, end: number, subunit?: number) => GuitarStack[];
   insertString: (position?: number) => void;
   removeString: (position?: number) => void;
   setTuningNote: (string: number, note: Midi) => void;
@@ -803,24 +795,29 @@ function createGuitarStore(guitarData: GuitarTabData): GuitarStore {
     }
   }
 
-  function getStacks(start = 0, end: number, subunit: number) {
+  function getStacks(start = 0, end: number, subunit?: number) {
     const subset = noteStore.getStacks(start, end);
-    for (let i = start; i < end; i += subunit) {
-      if (!subset.has(i)) {
-        subset.set(i, new Map());
+    if (subunit) {
+      // Make sure there's a stack at every subunit notch
+      for (let i = start; i < end; i += subunit) {
+        if (!subset.has(i)) {
+          subset.set(i, new Map());
+        }
       }
     }
 
-    return [...subset.entries()]
-      .sort((a, b) => a[0] - b[0])
-      .filter(([position, _]) => position % subunit === 0)
-      .map(([position, stack]) => {
-        const stackArray = [];
-        for (let i = 0; i < guitarData.tuning.length; i++) {
-          stackArray[i] = stack.get(i) || undefined;
-        }
-        return { position, notes: stackArray };
-      });
+    const sorted = [...subset.entries()].sort((a, b) => a[0] - b[0]);
+    const filtered = subunit
+      ? sorted.filter(([position, _]) => position % subunit === 0)
+      : sorted;
+
+    return filtered.map(([position, stack]) => {
+      const stackArray = [];
+      for (let i = 0; i < guitarData.tuning.length; i++) {
+        stackArray[i] = stack.get(i) || undefined;
+      }
+      return { position, notes: stackArray };
+    });
   }
 
   function getMinSpacing() {
