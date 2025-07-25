@@ -31,7 +31,10 @@ export function useBarDragMonitor(barManagement: BarManagementState) {
             isInsertBarDropData(insertBarData.data)
           ) {
             const dragStart = sourceData.barStart;
-            if (dragStart && dragStart !== insertBarData.data.position) {
+            if (
+              dragStart !== undefined &&
+              dragStart !== insertBarData.data.position
+            ) {
               barManagement.reorderBar(dragStart, insertBarData.data.position);
             }
           }

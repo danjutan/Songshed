@@ -57,6 +57,10 @@ export function provideBarManagement(
     return timeSignature;
   }
 
+  function timeChangesEqual(a: TimeSignature, b: TimeSignature) {
+    return a.beatsPerBar === b.beatsPerBar && a.beatSize === b.beatSize;
+  }
+
   function getBarSizeAt(position: number, before: boolean = false) {
     const timeSignature = getTimeSignatureAt(position, before);
     return timeSignature.beatsPerBar * timeSignature.beatSize;
@@ -128,6 +132,13 @@ export function provideBarManagement(
     for (const [pos, timeChange] of timeChangesToUpdate.entries()) {
       props.tabStore.timeChanges.set(pos, timeChange);
     }
+
+    if (!props.tabStore.timeChanges.has(0)) {
+      props.tabStore.timeChanges.set(0, {
+        beatsPerBar: 4,
+        beatSize: SPACING.Quarter,
+      });
+    }
   }
 
   function insertBar(start: number) {
@@ -150,38 +161,54 @@ export function provideBarManagement(
   /*
   Example cases:
   1.
-        v-----
-  0 1 2 3 | (3/4) 4 5 6 | 7 8 9 -> (3/4) 4 5 6 | (4/4) 0 1 2 3 | (3/4) 7 8 9
+                          v------
+  (4/4) 0 1 2 3 | (3/4) 4 5 6 | (4/4) 7 8 9 10 -> (4/4) 0 1 2 3 | 7 8 9 10 | (3/4) 4 5 6
   2.
-        -----v
-  0 1 2 3 | (3/4) 4 5 6 | 7 8 9 -> (3/4) 4 5 6 | (4/4) 0 1 2 3 | (3/4) 7 8 9
+              -----v
+  (4/4) 0 1 2 3 | (3/4) 4 5 6 | 7 8 9 -> (3/4) 4 5 6 | (4/4) 0 1 2 3 | (3/4) 7 8 9
   3.
-        v------------------
-  0 1 2 3 | (3/4) 4 5 6 | 7 8 9 -> (3/4) 7 8 9 | (4/4) 0 1 2 3 | (3/4) 4 5 6
+             v------------------
+  (4/4) 0 1 2 3 | (3/4) 4 5 6 | 7 8 9 -> (3/4) 7 8 9 | (4/4) 0 1 2 3 | (3/4) 4 5 6
 
-  Let's look at example #2:
-  Step 0: Implicit (4/4)
-  (4/4) 0 1 2 3 | (3/4) 4 5 6 | 7 8 9
-  Step 1.1: Shift notes by getBarSizeAt(from) (moving forward: insert after the to bar)
+  Let's look at example #1:
+  Step 1: Shift notes by getBarSizeAt(from) (moving backward: insert before the "to" bar)
+  (4/4) 0 1 2 3 | (3/4) - - - | (4/4) - 4 5 6 | 7 8 9 10 
+  Step 2: Shift time changes at or after insertion point by getBarSizeAt(from)
+  (4/4) 0 1 2 3 | - - - - | (3/4) 4 5 6 | (4/4) 7 8 9 10 
+  Step 3: Determine and copy time signature from "from" bar to insertion point
+  (4/4) 0 1 2 3 | (4/4) - - - - | (3/4) 4 5 6 | (4/4) 7 8 9 10 
+  But this would be redundant, so leave it as before
+  (4/4) 0 1 2 3 | - - - - | (3/4) 4 5 6 | (4/4) 7 8 9 10 
+  Step 4: Restore implicit time change broken by the insertion (none)
+  Step 5: Move notes
+  (4/4) 0 1 2 3 | 7 8 9 10 | (3/4) 4 5 6 | (4/4) - - - - 
+  Step 6: Delete original notes and time signature
+  (4/4) 0 1 2 3 | 7 8 9 10 | (3/4) 4 5 6
+
+  Example #2:
+  Step 1: Shift notes by getBarSizeAt(from) (moving forward: insert after the "to" bar)
   (4/4) 0 1 2 3 | (3/4) 4 5 6 | - - - | - 7 8 | 9
-  Step 1.2: Shift time changes after insertion point by getBarSizeAt(from) (none)
-  Step 1.3: Restore implicit time change broken by the insertion
-  (4/4) 0 1 2 3 | (3/4) 4 5 6 | - - - | (3/4) - 7 8 | 9
-  Step 2: 
+  Step 2: Shift time changes at or after insertion point by getBarSizeAt(from) (none)
+  Step 3: Determine and copy time signature from "from" bar to insertion point
+  (4/4) 0 1 2 3 | (3/4) 4 5 6 | (4/4) - - - - | 7 8 9
+  Step 4: Restore implicit time change broken by the insertion
+  (4/4) 0 1 2 3 | (3/4) 4 5 6 | (4/4) - - - - | (3/4) 7 8 9
+  Step 5: Move notes
+  (4/4) _ _ _ _ | (3/4) 4 5 6 | (4/4) 0 1 2 3 | (3/4) 7 8 9
+  Step 6: Delete original notes and time signature
+  (3/4) 4 5 6 | (4/4) 0 1 2 3 | (3/4) 7 8 9
 
   Example #3:
-  Step 0: Implicit (4/4):
-  (4/4) 0 1 2 3 | (3/4) 4 5 6 | 7 8 9
-  Step 1.1: Shift notes by getBarSizeAt(from) (moving backward: insert before the to bar)
+  Step 1: Shift notes by getBarSizeAt(from) (moving backward: insert before the "to" bar)
   (4/4) - - - 0 | (3/4) 1 2 3 | 4 5 6 | 7 8 9
-  Step 1.2: Shift time changes after insertion point by getBarSizeAt(from)
+  Step 2: Shift time changes at or after insertion point by getBarSizeAt(from)
   - - - (4/4) 0 1 2 3 | (3/4) 4 5 6 | 7 8 9
-  Step 1.3: Restore implicit time change broken by the insertion (none)
-  Step 2: Determine and move time signature
+  Step 3: Determine and copy time signature from "from" bar to insertion point
   (3/4) - - - (4/4) 0 1 2 3 | (3/4) 4 5 6 | 7 8 9
-  Step 3: Move notes
+  Step 4: Restore implicit time change broken by insertion (none)
+  Step 5: Move notes
   (3/4) 7 8 9 | (4/4) 0 1 2 3 | (3/4) 4 5 6 | - - -
-  Step 4: Delete original notes
+  Step 6: Delete original notes
   (3/4) 7 8 9 | (4/4) 0 1 2 3 | (3/4) 4 5 6
 
   Operation retains original bars, just moves them
@@ -189,7 +216,6 @@ export function provideBarManagement(
 
   function reorderBar(fromBarStart: number, to: number) {
     console.log("moving", fromBarStart, "to", to);
-    printBars("before");
     // const timeChangeAtFrom = props.tabStore.timeChanges.get(fromBarStart);
     // if (timeChange) {
     //   console.log("deleting time change at", fromBarStart);
@@ -199,18 +225,69 @@ export function provideBarManagement(
     const fromSize = getBarSizeAt(fromBarStart);
     const toSize = getBarSizeAt(to);
 
-    console.log("fromSize", fromSize, "toSize", toSize);
+    // Step 1: Shift notes by getBarSizeAt(from) (if moving backward: shift from before the "to" bar)
     const movingForward = to > fromBarStart;
-    const insertAt = movingForward ? to + toSize : to;
+    const insertionPoint = movingForward ? to + toSize : to;
     const shiftBy = fromSize;
-    props.tabStore.guitar.shiftFrom(insertAt, shiftBy);
-    shiftTimeChanges(insertAt, shiftBy);
-    printBars("inserted");
+    props.tabStore.guitar.shiftFrom(insertionPoint, shiftBy);
+    // Step 2: Shift time changes at or after insertion point by getBarSizeAt(from)
+    console.log(
+      "before time change shift",
+      [...props.tabStore.timeChanges.entries()].map(([pos, timeChange]) => [
+        pos,
+        timeChange.beatsPerBar,
+        timeChange.beatSize,
+      ]),
+    );
+    shiftTimeChanges(insertionPoint, shiftBy);
+    console.log(
+      "after time change shift",
+      [...props.tabStore.timeChanges.entries()].map(([pos, timeChange]) => [
+        pos,
+        timeChange.beatsPerBar,
+        timeChange.beatSize,
+      ]),
+    );
+
     const fromBarShiftedPos = movingForward
       ? fromBarStart
       : fromBarStart + shiftBy;
 
-    // const fromBar = bars.value.find((b) => b.start === fromBarShiftedPos)!;
+    // Step 3: Determine and copy time signature from "from" bar to insertion point
+    const fromBarTimeSignature = getTimeSignatureAt(fromBarShiftedPos);
+    const insertionTimeSignature = getTimeSignatureAt(insertionPoint);
+
+    if (!timeChangesEqual(fromBarTimeSignature, insertionTimeSignature)) {
+      props.tabStore.timeChanges.set(insertionPoint, fromBarTimeSignature);
+    }
+    //Step 4: Restore implicit time change broken by the insertion
+    const afterInsertionTimeChange = props.tabStore.timeChanges.get(
+      insertionPoint + shiftBy,
+    );
+    const beforeInsertionTimeSignature = getTimeSignatureAt(
+      insertionPoint,
+      true,
+    );
+
+    if (
+      !afterInsertionTimeChange &&
+      timeChangesEqual(beforeInsertionTimeSignature, insertionTimeSignature)
+    ) {
+      props.tabStore.timeChanges.set(
+        insertionPoint + shiftBy,
+        beforeInsertionTimeSignature,
+      );
+    }
+
+    // Remove duplicate consecutive time change that could have been caused by Step 3
+    if (
+      afterInsertionTimeChange &&
+      timeChangesEqual(afterInsertionTimeChange, fromBarTimeSignature)
+    ) {
+      props.tabStore.timeChanges.delete(insertionPoint + shiftBy);
+    }
+
+    // Step 5: Move notes
     const notesToMove = props.tabStore.guitar
       .getStacks(fromBarShiftedPos, fromBarShiftedPos + fromSize)
       .flatMap((stack) =>
@@ -219,71 +296,25 @@ export function provideBarManagement(
           string: i,
         })),
       );
-    // const notesToMove = fromBar.stacks.flatMap((stack) =>
-    //   stack.notes.map((note, i) => ({
-    //     position: stack.position,
-    //     string: i,
-    //   })),
-    // );
-    const fromBarTimeChange = props.tabStore.timeChanges.get(fromBarShiftedPos);
-    if (fromBarTimeChange) {
-      props.tabStore.timeChanges.set(to, fromBarTimeChange);
-      props.tabStore.timeChanges.delete(fromBarShiftedPos);
-    }
+
     const moveDelta = to - fromBarStart + (movingForward ? toSize : -fromSize);
     props.tabStore.guitar.moveNotes(notesToMove, 0, moveDelta);
-    printBars("moved");
-    // if (!movingForward) {
-    //   console.log("time changes before shift", props.tabStore.timeChanges);
-    //   shiftTimeChanges(to, getBarSizeAt(to, true));
-    //   console.log("time changes after shift", props.tabStore.timeChanges);
-    // }
+
+    // Step 6: Delete
     if (movingForward) {
       deleteBar(fromBarStart);
     } else {
       deleteBar(fromBarStart + shiftBy);
     }
-    printBars("deleted");
-    // if (timeChange) {
-    //   console.log("time changes before set", props.tabStore.timeChanges);
-    //   console.log("setting time change", timeChange, "at", to);
-    //   props.tabStore.timeChanges.set(to, timeChange);
-    // }
-    // printBars("time change");
-    // // Moving forwards
-    // if (to > fromBarStart) {
-    //   const timeChange = props.tabStore.timeChanges.get(fromBarStart);
-    //   const shiftedBy = insertBar(to - getBarSizeAt(to - getBarSizeAt(to)));
-    //   const nextBar = bars.value.find((b) => b.start === to + shiftedBy)!;
-    //   const notesToMove = nextBar.stacks.flatMap((stack) =>
-    //     stack.notes.map((note, i) => ({
-    //       position: stack.position,
-    //       string: i,
-    //     })),
-    //   );
-    //   props.tabStore.guitar.moveNotes(notesToMove, 0, -shiftedBy - shiftedBy);
-    //   deleteBar(to + shiftedBy);
-    //   if (timeChange) {
-    //     props.tabStore.timeChanges.set(to, timeChange);
-    //   }
-    //   return to + shiftedBy;
-    // } else {
-    //   const timeChange = props.tabStore.timeChanges.get(fromBarStart);
-    //   const shiftedBy = insertBar(to);
-    //   const bar = bars.value.find((b) => b.start === fromBarStart + shiftedBy)!;
-    //   const notesToMove = bar.stacks.flatMap((stack) =>
-    //     stack.notes.map((note, i) => ({
-    //       position: stack.position,
-    //       string: i,
-    //     })),
-    //   );
-    //   props.tabStore.guitar.moveNotes(notesToMove, 0, -shiftedBy - shiftedBy);
-    //   deleteBar(fromBarStart + shiftedBy);
-    //   if (timeChange) {
-    //     props.tabStore.timeChanges.set(to, timeChange);
-    //   }
-    //   return to;
-    // }
+
+    console.log(
+      "after delete",
+      [...props.tabStore.timeChanges.entries()].map(([pos, timeChange]) => [
+        pos,
+        timeChange.beatsPerBar,
+        timeChange.beatSize,
+      ]),
+    );
   }
 
   function insertBreak(start: number) {

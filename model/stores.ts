@@ -372,6 +372,7 @@ interface StackStore<N extends NoteData> {
 function createStackStore<N extends NoteData>(
   stacks: StackMap<N>,
 ): StackStore<N> {
+  // Last filled position
   const getLastPosition = () =>
     [...stacks.keys()].sort((a, b) => b - a)[0] || 0;
 
