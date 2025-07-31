@@ -122,6 +122,8 @@ async function save(saveId: string) {
 
   --pos-line-color: var(--p-surface-400);
   --pos-line-alpha: 0.6;
+
+  /* If beatSize is Eighth, eigth notes will use the quarter note color etc */
   --quarter-note-color: var(--p-surface-500);
   --eighth-note-color: var(--p-yellow-500);
   --sixteenth-note-color: var(--p-amber-600);

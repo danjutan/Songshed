@@ -215,13 +215,6 @@ export function provideBarManagement(
   */
 
   function reorderBar(fromBarStart: number, to: number) {
-    console.log("moving", fromBarStart, "to", to);
-    // const timeChangeAtFrom = props.tabStore.timeChanges.get(fromBarStart);
-    // if (timeChange) {
-    //   console.log("deleting time change at", fromBarStart);
-    //   props.tabStore.timeChanges.delete(fromBarStart);
-    //   printBars("after deleting time change");
-    // }
     const fromSize = getBarSizeAt(fromBarStart);
     const toSize = getBarSizeAt(to);
 
@@ -230,25 +223,9 @@ export function provideBarManagement(
     const insertionPoint = movingForward ? to + toSize : to;
     const shiftBy = fromSize;
     props.tabStore.guitar.shiftFrom(insertionPoint, shiftBy);
-    // Step 2: Shift time changes at or after insertion point by getBarSizeAt(from)
-    console.log(
-      "before time change shift",
-      [...props.tabStore.timeChanges.entries()].map(([pos, timeChange]) => [
-        pos,
-        timeChange.beatsPerBar,
-        timeChange.beatSize,
-      ]),
-    );
-    shiftTimeChanges(insertionPoint, shiftBy);
-    console.log(
-      "after time change shift",
-      [...props.tabStore.timeChanges.entries()].map(([pos, timeChange]) => [
-        pos,
-        timeChange.beatsPerBar,
-        timeChange.beatSize,
-      ]),
-    );
 
+    // Step 2: Shift time changes at or after insertion point by getBarSizeAt(from)
+    shiftTimeChanges(insertionPoint, shiftBy);
     const fromBarShiftedPos = movingForward
       ? fromBarStart
       : fromBarStart + shiftBy;
@@ -279,7 +256,7 @@ export function provideBarManagement(
       );
     }
 
-    // Remove duplicate consecutive time change that could have been caused by Step 3
+    // Remove duplicate consecutive time change that could have been caused by Step 3 - if insertion bar and next bar are the same, remove time change in the next bar
     if (
       afterInsertionTimeChange &&
       timeChangesEqual(afterInsertionTimeChange, fromBarTimeSignature)
@@ -306,15 +283,6 @@ export function provideBarManagement(
     } else {
       deleteBar(fromBarStart + shiftBy);
     }
-
-    console.log(
-      "after delete",
-      [...props.tabStore.timeChanges.entries()].map(([pos, timeChange]) => [
-        pos,
-        timeChange.beatsPerBar,
-        timeChange.beatSize,
-      ]),
-    );
   }
 
   function insertBreak(start: number) {
