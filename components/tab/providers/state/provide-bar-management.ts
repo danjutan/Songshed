@@ -208,32 +208,36 @@ export function provideBarManagement(
 
     if (!timeChangesEqual(fromBarTimeSignature, insertionTimeSignature)) {
       tabStore.timeChanges.set(insertionPoint, fromBarTimeSignature);
-    }
-    //Step 4: Restore implicit time change broken by the insertion
-    const afterInsertionTimeChange = tabStore.timeChanges.get(
-      insertionPoint + shiftBy,
-    );
-    const beforeInsertionTimeSignature = getTimeSignatureAt(
-      insertionPoint,
-      true,
-    );
 
-    if (
-      !afterInsertionTimeChange &&
-      timeChangesEqual(beforeInsertionTimeSignature, insertionTimeSignature)
-    ) {
-      tabStore.timeChanges.set(
+      //Step 4: Restore implicit time change broken by the insertion
+      const afterInsertionPointTimeChange = tabStore.timeChanges.get(
         insertionPoint + shiftBy,
-        beforeInsertionTimeSignature,
       );
-    }
+      const beforeInsertionPointTimeSignature = getTimeSignatureAt(
+        insertionPoint,
+        true,
+      );
 
-    // Remove duplicate consecutive time change that could have been caused by Step 3 - if insertion bar and next bar are the same, remove time change in the next bar
-    if (
-      afterInsertionTimeChange &&
-      timeChangesEqual(afterInsertionTimeChange, fromBarTimeSignature)
-    ) {
-      tabStore.timeChanges.delete(insertionPoint + shiftBy);
+      if (
+        !afterInsertionPointTimeChange &&
+        timeChangesEqual(
+          beforeInsertionPointTimeSignature,
+          insertionTimeSignature,
+        )
+      ) {
+        tabStore.timeChanges.set(
+          insertionPoint + shiftBy,
+          beforeInsertionPointTimeSignature,
+        );
+      }
+
+      // Remove duplicate consecutive time change that could have been caused by Step 3 - if insertion bar and next bar are the same, remove time change in the next bar
+      if (
+        afterInsertionPointTimeChange &&
+        timeChangesEqual(afterInsertionPointTimeChange, fromBarTimeSignature)
+      ) {
+        tabStore.timeChanges.delete(insertionPoint + shiftBy);
+      }
     }
 
     // Step 5: Move notes
