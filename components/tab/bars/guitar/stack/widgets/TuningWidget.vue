@@ -1,7 +1,12 @@
 <script lang="ts" setup>
 import type { UpdateTuning } from "~/model/stores";
 import TuningInput from "./TuningInput.vue";
-import { Plus, Minus } from "lucide-vue-next";
+import {
+  Plus,
+  Minus,
+  MoreHorizontal,
+  ArrowLeftFromLine,
+} from "lucide-vue-next";
 
 const props = defineProps<{
   tuning: Midi[];
@@ -16,14 +21,30 @@ const emit = defineEmits([
   "removeBottom",
 ]);
 
+const isEditing = ref(false);
+
 const updateNote = (index: number, newValue: Midi) => {
   emit("updateNote", index, newValue);
 };
 </script>
 
 <template>
-  <div class="tuning-widget">
-    <div class="input-container">
+  <div class="tuning-widget" :class="{ editing: isEditing }">
+    <div class="edit-button-container">
+      <Button
+        size="small"
+        class="button"
+        severity="contrast"
+        outlined
+        @click="isEditing = !isEditing"
+      >
+        <template #icon>
+          <MoreHorizontal v-if="!isEditing" :size="14" />
+          <ArrowLeftFromLine v-else :size="14" />
+        </template>
+      </Button>
+    </div>
+    <div class="input-container" :class="{ editing: isEditing }">
       <div class="buttons top">
         <Button
           size="small"
@@ -80,7 +101,7 @@ const updateNote = (index: number, newValue: Midi) => {
         </Button>
       </div>
     </div>
-    <div class="display-container">
+    <div class="display-container" :class="{ hidden: isEditing }">
       <div
         v-for="(note, i) in tuning"
         :key="i"
@@ -100,6 +121,21 @@ const updateNote = (index: number, newValue: Midi) => {
   grid-template-rows: subgrid;
   padding-left: 10px;
   padding-right: 10px;
+  position: relative;
+}
+
+.edit-button-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -26px;
+  z-index: var(--overlay-controls-z-index);
+  transition: all 0.15s ease-out;
+  height: var(--cell-height);
+}
+
+.tuning-widget.editing .edit-button-container {
+  left: 0px;
 }
 
 .input-container,
@@ -114,6 +150,11 @@ const updateNote = (index: number, newValue: Midi) => {
   width: 0px;
   transition: all 0.15s ease-out;
 
+  &.editing {
+    opacity: 1;
+    width: calc(var(--cell-height) * 2.4);
+  }
+
   & .input {
     grid-column: 1;
   }
@@ -121,16 +162,9 @@ const updateNote = (index: number, newValue: Midi) => {
 
 .display-container {
   transition: all 0.1s ease;
-}
 
-.tuning-widget:hover {
-  & .input-container {
-    opacity: 1;
-    width: calc(var(--cell-height) * 2.4);
-  }
-  & .display-container {
+  &.hidden {
     opacity: 0;
-    /* TODO: explore transitioning to width: 0px, maybe using Vue transitions */
   }
 }
 

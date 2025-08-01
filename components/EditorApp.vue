@@ -139,14 +139,13 @@ async function save(saveId: string) {
   --bar-overlay-z-index: 3;
   --annotation-dragger-z-index: 3;
   --annotation-z-index: 4;
-  --divider-z-index: 5;
   --annotation-current-z-index: 5;
   --overlay-controls-z-index: 6;
   --annotation-resize-dragger-z-index: 6;
   --selection-toolbar-z-index: 6;
+  --divider-z-index: 7;
   --note-container-drag-extender-z-index: 7;
   --tie-dragger-z-index: 7;
-  --time-signature-select-z-index: 7;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -3,6 +3,10 @@ import OverlaySelect from "@/components/tab/bars/guitar/overlay/OverlaySelect.vu
 import { injectSpacingsState } from "@/components/tab/providers/provide-spacings";
 import { X } from "lucide-vue-next";
 
+const props = defineProps<{
+  first?: boolean;
+}>();
+
 const { cellHeightPx } = injectSpacingsState();
 
 const emit = defineEmits<{
@@ -91,7 +95,7 @@ const optionStyles = computed(() => ({
 
 <template>
   <div class="widget">
-    <X :size="16" class="delete-button" @click="emit('delete')" />
+    <X v-if="!first" :size="16" class="delete-button" @click="emit('delete')" />
     <OverlaySelect
       v-model="beats"
       class="overlay-select"
@@ -142,7 +146,6 @@ const optionStyles = computed(() => ({
 }
 
 .overlay-select {
-  z-index: var(--time-signature-select-z-index);
   --p-select-sm-padding-y: 0px;
   padding: 2px;
 }
@@ -152,7 +155,6 @@ const optionStyles = computed(() => ({
   position: absolute;
   left: calc(var(--cell-height) - var(--cell-height) / 4);
   top: 0px;
-  z-index: var(--overlay-controls-z-index);
   background-color: var(--tab-background-color);
   color: var(--gray-note-color);
   &:hover {
