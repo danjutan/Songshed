@@ -264,6 +264,7 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
             <TimeSignatureWidget
               v-model:beats="tabStore.timeChanges.get(bar.start)!.beatsPerBar"
               v-model:beat-value="tabStore.timeChanges.get(bar.start)!.beatSize"
+              @delete="tabStore.timeChanges.delete(bar.start)"
             />
           </template>
         </template>

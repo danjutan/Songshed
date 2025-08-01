@@ -1,8 +1,13 @@
 <script lang="ts" setup>
 import OverlaySelect from "@/components/tab/bars/guitar/overlay/OverlaySelect.vue";
 import { injectSpacingsState } from "@/components/tab/providers/provide-spacings";
+import { X } from "lucide-vue-next";
 
 const { cellHeightPx } = injectSpacingsState();
+
+const emit = defineEmits<{
+  delete: [];
+}>();
 
 const beatsGlyphs = [
   "&#xE081;",
@@ -86,14 +91,17 @@ const optionStyles = computed(() => ({
 
 <template>
   <div class="widget">
+    <X :size="16" class="delete-button" @click="emit('delete')" />
     <OverlaySelect
       v-model="beats"
+      class="overlay-select"
       :options="beatsOptions"
       :active="false"
       :option-styles="optionStyles"
     />
     <OverlaySelect
       v-model="beatValue"
+      class="overlay-select"
       :options="beatValueOptions"
       :active="false"
       :option-styles="optionStyles"
@@ -120,5 +128,39 @@ const optionStyles = computed(() => ({
   pointer-events: auto;
   display: flex;
   flex-direction: column;
+  position: relative;
+  padding-top: 14px;
+  margin-top: -14px;
+
+  &:deep(.label) {
+    background-color: var(--tab-background-color);
+  }
+
+  &:not(:hover) .delete-button {
+    display: none;
+  }
+}
+
+.overlay-select {
+  z-index: var(--time-signature-select-z-index);
+  --p-select-sm-padding-y: 0px;
+  padding: 2px;
+}
+
+.delete-button {
+  cursor: pointer;
+  position: absolute;
+  left: calc(var(--cell-height) - var(--cell-height) / 4);
+  top: 0px;
+  z-index: var(--overlay-controls-z-index);
+  background-color: var(--tab-background-color);
+  color: var(--gray-note-color);
+  &:hover {
+    color: var(--p-content-color);
+  }
+  /* position: absolute;
+  top: -8px;
+  right: -8px;
+  z-index: 10; */
 }
 </style>

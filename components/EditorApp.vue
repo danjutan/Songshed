@@ -146,6 +146,7 @@ async function save(saveId: string) {
   --selection-toolbar-z-index: 6;
   --note-container-drag-extender-z-index: 7;
   --tie-dragger-z-index: 7;
+  --time-signature-select-z-index: 7;
 }
 
 @media (prefers-color-scheme: dark) {
