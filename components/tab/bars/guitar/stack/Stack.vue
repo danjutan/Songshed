@@ -6,7 +6,7 @@ import { useIsCollapsed } from "~/components/tab/hooks/use-collapsed";
 import { injectBarHoverState } from "../../../providers/state/provide-bar-hover-state";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
 import { injectSelectionState } from "~/components/tab/providers/state/provide-selection-state";
-import { injectBarManagement } from "~/components/tab/providers/state/provide-bar-management";
+import { injectTimeSignature } from "~/components/tab/providers/provide-time-signature";
 
 const props = withDefaults(
   defineProps<{
@@ -27,7 +27,7 @@ const resizeState = injectStackResizeObserver();
 const { hoveredBarStart } = injectBarHoverState();
 const tabBarBounds = injectTabBarBounds();
 const selectionState = injectSelectionState();
-const { getTimeSignatureAt } = injectBarManagement();
+const { getTimeSignatureAt } = injectTimeSignature();
 
 const stackRef = useTemplateRef<HTMLDivElement>("stack");
 

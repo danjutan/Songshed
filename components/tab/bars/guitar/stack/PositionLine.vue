@@ -2,7 +2,7 @@
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
-import { injectBarManagement } from "~/components/tab/providers/state/provide-bar-management";
+import { injectTimeSignature } from "~/components/tab/providers/provide-time-signature";
 import { SPACING, type ColoredSpacingName } from "~/composables/theory";
 
 const props = defineProps<{
@@ -13,11 +13,9 @@ const props = defineProps<{
 const cellHoverState = injectCellHoverEvents();
 const settings = injectSettingsState();
 const tabBarBounds = injectTabBarBounds();
-const barManagement = injectBarManagement();
+const { getTimeSignatureAt } = injectTimeSignature();
 
-const timeSignature = computed(() =>
-  barManagement.getTimeSignatureAt(props.position),
-);
+const timeSignature = computed(() => getTimeSignatureAt(props.position));
 
 const beatSize = computed(() => timeSignature.value.beatSize);
 

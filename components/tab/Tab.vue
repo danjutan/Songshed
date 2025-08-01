@@ -25,6 +25,7 @@ import {
   provideBarManagement,
   type Bar,
 } from "./providers/state/provide-bar-management";
+import { provideTimeSignature } from "./providers/provide-time-signature";
 import { provideCopyState } from "./providers/state/provide-copy-state";
 import { provideAnnotationResizeState } from "./providers/state/provide-annotation-resize-state";
 import { provideAnnotationHoverState } from "./providers/state/provide-annotation-hover-state";
@@ -50,16 +51,18 @@ const settings = injectSettingsState();
 const { collapsedMinWidth, cellHeight, dividerWidth, expandedMinWidth } =
   injectSpacingsState();
 
+const { getTimeSignatureAt } = provideTimeSignature(props.tabStore);
+
 const { getSubUnitForPosition, getPreviousPosition } = provideSubUnit(
   props.tabStore,
   settings,
+  getTimeSignatureAt,
 );
 
 const barManagement = provideBarManagement(
-  reactiveComputed(() => ({
-    tabStore: props.tabStore,
-    getSubUnitForPosition,
-  })),
+  props.tabStore,
+  getSubUnitForPosition,
+  getTimeSignatureAt,
 );
 
 const { tablineStarts } = provideStackResizeObserver();
@@ -141,7 +144,7 @@ const barMinWidth = (bar: Bar) => {
       const width = isCollapsed(
         settings,
         bar.stacks[position].notes,
-        position % barManagement.getTimeSignatureAt(position).beatSize === 0,
+        position % getTimeSignatureAt(position).beatSize === 0,
       )
         ? collapsedMinWidth.value
         : expandedMinWidth.value;

@@ -17,45 +17,17 @@ export interface BarManagementState {
   joinBreak: (start: number) => void;
   insertTimeChange: (start: number) => void;
   newBarClick: () => void;
-  getTimeSignatureAt: (position: number, before?: boolean) => TimeSignature;
   getBarIndexAt: (position: number) => number;
 }
 
 const BarManagementInjectionKey = Symbol() as InjectionKey<BarManagementState>;
 
 export function provideBarManagement(
-  props: ReactiveComputed<{
-    tabStore: TabStore;
-    getSubUnitForPosition: (position: number) => number;
-  }>,
+  tabStore: TabStore,
+  getSubUnitForPosition: (position: number) => number,
+  getTimeSignatureAt: (position: number, before?: boolean) => TimeSignature,
 ) {
   const newBarStart = ref(0);
-
-  // Helper function to calculate a bar's size at a specific position
-  function getTimeSignatureAt(position: number, before: boolean = false) {
-    if (props.tabStore.timeChanges.size === 0) {
-      throw new Error("No time changes found");
-    }
-
-    // Sort all time change positions
-    const timeChangePositions = [...props.tabStore.timeChanges.keys()].sort(
-      (a, b) => a - b,
-    );
-
-    const condition = before
-      ? (changePos: number) => changePos < position
-      : (changePos: number) => changePos <= position;
-    let timeSignature = props.tabStore.timeChanges.get(0)!;
-    for (const changePos of timeChangePositions) {
-      if (condition(changePos)) {
-        timeSignature = props.tabStore.timeChanges.get(changePos)!;
-      } else {
-        break; // Stop once we've gone past our position
-      }
-    }
-
-    return timeSignature;
-  }
 
   function timeChangesEqual(a: TimeSignature, b: TimeSignature) {
     return a.beatsPerBar === b.beatsPerBar && a.beatSize === b.beatSize;
@@ -67,13 +39,13 @@ export function provideBarManagement(
   }
 
   const bars = computed<Bar[]>(() => {
-    if (!props.tabStore.guitar) return [];
+    if (!tabStore.guitar) return [];
     const bars: Bar[] = [];
 
     // Maximum position we need to consider
     const maxPosition = Math.max(
       newBarStart.value,
-      props.tabStore.guitar.getLastPosition(),
+      tabStore.guitar.getLastPosition(),
     );
 
     // Start with position 0 and the default time signature
@@ -86,10 +58,10 @@ export function provideBarManagement(
       bars.push({
         start: currentPosition,
         end: currentPosition + barSize,
-        stacks: props.tabStore.guitar.getStacks(
+        stacks: tabStore.guitar.getStacks(
           currentPosition,
           currentPosition + barSize,
-          props.getSubUnitForPosition(currentPosition),
+          getSubUnitForPosition(currentPosition),
         ),
       });
 
@@ -101,40 +73,40 @@ export function provideBarManagement(
 
   function deleteBar(start: number) {
     const barSize = getBarSizeAt(start);
-    props.tabStore.guitar.deleteStacks(start, start + barSize);
-    props.tabStore.guitar.shiftFrom(start, -barSize);
+    tabStore.guitar.deleteStacks(start, start + barSize);
+    tabStore.guitar.shiftFrom(start, -barSize);
 
-    props.tabStore.timeChanges.delete(start);
+    tabStore.timeChanges.delete(start);
     // Update time changes after this position
     const timeChangesToUpdate = new Map();
-    for (const [pos, timeChange] of props.tabStore.timeChanges.entries()) {
+    for (const [pos, timeChange] of tabStore.timeChanges.entries()) {
       // should this be >=?
       if (pos > start) {
         timeChangesToUpdate.set(pos - barSize, timeChange);
-        props.tabStore.timeChanges.delete(pos);
+        tabStore.timeChanges.delete(pos);
       }
     }
 
     // Apply the updates to time changes
     for (const [pos, timeChange] of timeChangesToUpdate.entries()) {
-      props.tabStore.timeChanges.set(pos, timeChange);
+      tabStore.timeChanges.set(pos, timeChange);
     }
   }
 
   function shiftTimeChanges(start: number, shiftBy: number) {
     const timeChangesToUpdate = new Map();
-    for (const [pos, timeChange] of props.tabStore.timeChanges.entries()) {
+    for (const [pos, timeChange] of tabStore.timeChanges.entries()) {
       if (pos >= start) {
         timeChangesToUpdate.set(pos + shiftBy, timeChange);
-        props.tabStore.timeChanges.delete(pos);
+        tabStore.timeChanges.delete(pos);
       }
     }
     for (const [pos, timeChange] of timeChangesToUpdate.entries()) {
-      props.tabStore.timeChanges.set(pos, timeChange);
+      tabStore.timeChanges.set(pos, timeChange);
     }
 
-    if (!props.tabStore.timeChanges.has(0)) {
-      props.tabStore.timeChanges.set(0, {
+    if (!tabStore.timeChanges.has(0)) {
+      tabStore.timeChanges.set(0, {
         beatsPerBar: 4,
         beatSize: SPACING.Quarter,
       });
@@ -143,7 +115,7 @@ export function provideBarManagement(
 
   function insertBar(start: number) {
     const barSize = getBarSizeAt(start, true);
-    props.tabStore.guitar.shiftFrom(start, barSize);
+    tabStore.guitar.shiftFrom(start, barSize);
 
     shiftTimeChanges(start, barSize);
 
@@ -222,7 +194,7 @@ export function provideBarManagement(
     const movingForward = to > fromBarStart;
     const insertionPoint = movingForward ? to + toSize : to;
     const shiftBy = fromSize;
-    props.tabStore.guitar.shiftFrom(insertionPoint, shiftBy);
+    tabStore.guitar.shiftFrom(insertionPoint, shiftBy);
 
     // Step 2: Shift time changes at or after insertion point by getBarSizeAt(from)
     shiftTimeChanges(insertionPoint, shiftBy);
@@ -235,10 +207,10 @@ export function provideBarManagement(
     const insertionTimeSignature = getTimeSignatureAt(insertionPoint);
 
     if (!timeChangesEqual(fromBarTimeSignature, insertionTimeSignature)) {
-      props.tabStore.timeChanges.set(insertionPoint, fromBarTimeSignature);
+      tabStore.timeChanges.set(insertionPoint, fromBarTimeSignature);
     }
     //Step 4: Restore implicit time change broken by the insertion
-    const afterInsertionTimeChange = props.tabStore.timeChanges.get(
+    const afterInsertionTimeChange = tabStore.timeChanges.get(
       insertionPoint + shiftBy,
     );
     const beforeInsertionTimeSignature = getTimeSignatureAt(
@@ -250,7 +222,7 @@ export function provideBarManagement(
       !afterInsertionTimeChange &&
       timeChangesEqual(beforeInsertionTimeSignature, insertionTimeSignature)
     ) {
-      props.tabStore.timeChanges.set(
+      tabStore.timeChanges.set(
         insertionPoint + shiftBy,
         beforeInsertionTimeSignature,
       );
@@ -261,11 +233,11 @@ export function provideBarManagement(
       afterInsertionTimeChange &&
       timeChangesEqual(afterInsertionTimeChange, fromBarTimeSignature)
     ) {
-      props.tabStore.timeChanges.delete(insertionPoint + shiftBy);
+      tabStore.timeChanges.delete(insertionPoint + shiftBy);
     }
 
     // Step 5: Move notes
-    const notesToMove = props.tabStore.guitar
+    const notesToMove = tabStore.guitar
       .getStacks(fromBarShiftedPos, fromBarShiftedPos + fromSize)
       .flatMap((stack) =>
         stack.notes.map((note, i) => ({
@@ -275,7 +247,7 @@ export function provideBarManagement(
       );
 
     const moveDelta = to - fromBarStart + (movingForward ? toSize : -fromSize);
-    props.tabStore.guitar.moveNotes(notesToMove, 0, moveDelta);
+    tabStore.guitar.moveNotes(notesToMove, 0, moveDelta);
 
     // Step 6: Delete
     if (movingForward) {
@@ -286,17 +258,17 @@ export function provideBarManagement(
   }
 
   function insertBreak(start: number) {
-    props.tabStore.lineBreaks.add(start);
+    tabStore.lineBreaks.add(start);
   }
 
   function joinBreak(start: number) {
-    props.tabStore.lineBreaks.delete(start);
+    tabStore.lineBreaks.delete(start);
   }
 
   function insertTimeChange(start: number) {
-    props.tabStore.timeChanges.set(
+    tabStore.timeChanges.set(
       start,
-      Object.assign({}, props.tabStore.timeChanges.get(0)!),
+      Object.assign({}, tabStore.timeChanges.get(0)!),
     );
   }
 
@@ -323,7 +295,6 @@ export function provideBarManagement(
     joinBreak,
     newBarClick,
     insertTimeChange,
-    getTimeSignatureAt,
     getBarIndexAt,
   }));
 
