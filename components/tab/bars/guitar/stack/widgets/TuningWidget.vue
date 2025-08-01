@@ -13,19 +13,9 @@ const props = defineProps<{
   updateTuning: UpdateTuning;
 }>();
 
-const emit = defineEmits([
-  "updateNote",
-  "addTop",
-  "addBottom",
-  "removeTop",
-  "removeBottom",
-]);
+const emit = defineEmits(["addTop", "addBottom", "removeTop", "removeBottom"]);
 
 const isEditing = ref(false);
-
-const updateNote = (index: number, newValue: Midi) => {
-  emit("updateNote", index, newValue);
-};
 </script>
 
 <template>
@@ -34,8 +24,7 @@ const updateNote = (index: number, newValue: Midi) => {
       <Button
         size="small"
         class="button"
-        severity="contrast"
-        outlined
+        :severity="isEditing ? 'contrast' : 'secondary'"
         @click="isEditing = !isEditing"
       >
         <template #icon>
@@ -73,6 +62,7 @@ const updateNote = (index: number, newValue: Midi) => {
         :key="i"
         class="input"
         :font-size="'calc(var(--note-font-size) * 0.8)'"
+        :show-octave="isEditing"
         :model-value="note"
         :style="{ gridRow: i + 1 }"
         @update:model-value="(value) => updateTuning.setTuningNote(i, value)"
@@ -120,8 +110,14 @@ const updateNote = (index: number, newValue: Midi) => {
   display: grid;
   grid-template-rows: subgrid;
   padding-left: 10px;
-  padding-right: 10px;
+  padding-right: 5px;
   position: relative;
+
+  &:not(:hover):not(.editing) .edit-button-container {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
 }
 
 .edit-button-container {
@@ -129,7 +125,7 @@ const updateNote = (index: number, newValue: Midi) => {
   left: 50%;
   transform: translateX(-50%);
   bottom: -26px;
-  z-index: var(--overlay-controls-z-index);
+  z-index: 10;
   transition: all 0.15s ease-out;
   height: var(--cell-height);
 }
@@ -149,10 +145,14 @@ const updateNote = (index: number, newValue: Midi) => {
   opacity: 0;
   width: 0px;
   transition: all 0.15s ease-out;
+  transform: translateX(
+    -10px
+  ); /* So that the input overlaps with the display text when not in expanded mode */
 
   &.editing {
     opacity: 1;
     width: calc(var(--cell-height) * 2.4);
+    transform: none;
   }
 
   & .input {
@@ -203,5 +203,6 @@ const updateNote = (index: number, newValue: Midi) => {
   font-family: sans-serif;
   font-size: var(--note-font-size);
   margin-top: 2px;
+  background-color: var(--tab-background-color);
 }
 </style>

@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 const props = defineProps<{
   fontSize: string;
+  showOctave: boolean;
 }>();
 
 const notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
@@ -61,6 +62,7 @@ const orderedNotes = computed(() => {
       </template>
     </Select>
     <Select
+      v-if="showOctave"
       v-model="octave"
       class="select octave"
       editable
