@@ -22,10 +22,10 @@ export interface TabBarBounds {
 const TabBarBoundsInjectionKey = Symbol() as InjectionKey<TabBarBounds>;
 
 export function provideTabBarBounds(
-  bar: Bar,
   resizeObserver: StackResizeObserver,
   barManagement: BarManagementState,
-  tabBar: ComputedRef<HTMLElement | undefined>,
+  bar: ComputedRef<Bar>,
+  tabBarEl: ComputedRef<HTMLElement | undefined>,
 ) {
   const { tablineStarts, registerTabBarRef, registerTabBarListener } =
     resizeObserver;
@@ -33,23 +33,23 @@ export function provideTabBarBounds(
   const coords = ref<StackCoords>();
 
   onMounted(() => {
-    registerTabBarRef(bar.start, tabBar.value!);
+    registerTabBarRef(bar.value.start, tabBarEl.value!);
   });
 
   const tabBarBounds = reactiveComputed(() => {
     const tablineBounds = [...tablineStarts, barManagement.bars.at(-1)!.end];
     const tablineStartIndex = Math.max(
-      tablineBounds.findIndex((lineStart) => lineStart > bar.start) - 1,
+      tablineBounds.findIndex((lineStart) => lineStart > bar.value.start) - 1,
       0,
     );
 
-    registerTabBarListener(bar.start, (c) => {
+    registerTabBarListener(bar.value.start, (c) => {
       coords.value = c;
     });
 
     return {
-      start: bar.start,
-      end: bar.end,
+      start: bar.value.start,
+      end: bar.value.end,
       tabline: {
         start: tablineBounds[tablineStartIndex],
         end: tablineBounds[tablineStartIndex + 1],

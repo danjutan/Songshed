@@ -26,7 +26,7 @@ const BarManagementInjectionKey = Symbol() as InjectionKey<BarManagementState>;
 export function provideBarManagement(
   props: ReactiveComputed<{
     tabStore: TabStore;
-    subUnit: number;
+    getSubUnitForPosition: (position: number) => number;
   }>,
 ) {
   const newBarStart = ref(0);
@@ -89,7 +89,7 @@ export function provideBarManagement(
         stacks: props.tabStore.guitar.getStacks(
           currentPosition,
           currentPosition + barSize,
-          props.subUnit,
+          props.getSubUnitForPosition(currentPosition),
         ),
       });
 

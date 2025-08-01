@@ -17,7 +17,10 @@ import { provideBendEditState } from "./providers/state/provide-bend-edit-state"
 import { provideStackResizeObserver } from "./providers/events/provide-resize-observer";
 import { provideAnnotationAddState } from "./providers/state/provide-annotation-add-state";
 import { provideNotePreviewState } from "./providers/state/provide-note-preview-state";
-import { provideSubUnit } from "./providers/provide-subunit";
+import {
+  provideSubUnit,
+  injectSubUnitFunctions,
+} from "./providers/provide-subunit";
 import {
   provideBarManagement,
   type Bar,
@@ -47,12 +50,15 @@ const settings = injectSettingsState();
 const { collapsedMinWidth, cellHeight, dividerWidth, expandedMinWidth } =
   injectSpacingsState();
 
-const subUnit = provideSubUnit(props.tabStore, settings);
+const { getSubUnitForPosition, getPreviousPosition } = provideSubUnit(
+  props.tabStore,
+  settings,
+);
 
 const barManagement = provideBarManagement(
   reactiveComputed(() => ({
     tabStore: props.tabStore,
-    subUnit: subUnit.value,
+    getSubUnitForPosition,
   })),
 );
 
@@ -62,8 +68,8 @@ const cellHoverEvents = provideCellHoverEvents();
 const selectionState = provideSelectionState(
   reactiveComputed(() => ({
     guitar: props.tabStore.guitar,
-    subUnit,
     getBarIndexAt: barManagement.getBarIndexAt,
+    subunitFunctions: { getSubUnitForPosition, getPreviousPosition },
   })),
 );
 const editingState = provideEditingState();
@@ -72,7 +78,7 @@ const tieAddState = provideTieAddState(
   reactiveComputed(() => ({
     cellHoverEvents,
     store: props.tabStore.guitar,
-    subUnit,
+    getSubUnitForPosition,
   })),
 );
 
@@ -92,7 +98,7 @@ provideNotePreviewState(selectionState, copyState, props.tabStore.guitar);
 
 const annotationProps = reactiveComputed(() => ({
   store: props.tabStore.annotations,
-  subUnit: subUnit.value,
+  getSubUnitForPosition,
 }));
 
 const annotationAddState = provideAnnotationAddState(annotationProps);

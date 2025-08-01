@@ -5,7 +5,7 @@ import type { GuitarStack, NotePosition, TieStore } from "~/model/stores";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectTabBarBounds } from "../provide-bar-bounds";
 import { injectTieAddState } from "../../providers/state/provide-tie-add-state";
-import { injectSubUnit } from "../../providers/provide-subunit";
+import { injectSubUnitFunctions } from "../../providers/provide-subunit";
 import { provideEditTie } from "./provide-edit-tie";
 import { provideOverlayControlsTeleport } from "./provide-overlay-controls-teleport";
 
@@ -30,7 +30,7 @@ const props = defineProps<{
 
 const tieAddState = injectTieAddState();
 const tabBarBounds = injectTabBarBounds();
-const subUnit = injectSubUnit();
+const { getSubUnitForPosition } = injectSubUnitFunctions();
 
 const { uniqueId, draggersClass, selectsClass } =
   provideOverlayControlsTeleport();
@@ -49,10 +49,6 @@ const numStacks = computed(
 );
 
 const numStrings = computed(() => props.tuning.length);
-
-// onBeforeUpdate(() => {
-//   console.log("updated bar");
-// });
 
 const inBounds = (position: number) =>
   position >= tabBarBounds.start && position < tabBarBounds.end;
@@ -82,7 +78,7 @@ const showTieLabel = (from: number, to: number): boolean | "shift" => {
     return true;
   }
 
-  const middle = (from + to + subUnit.value) / 2;
+  const middle = (from + to + getSubUnitForPosition(to)) / 2;
 
   if (middle === tabBarBounds.start) {
     return "shift";

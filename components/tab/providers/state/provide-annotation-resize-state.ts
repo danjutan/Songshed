@@ -25,7 +25,7 @@ export interface AnnotationResizeState {
 export function provideAnnotationResizeState(
   props: ReactiveComputed<{
     store: AnnotationStore;
-    subUnit: number;
+    getSubUnitForPosition: (position: number) => number;
   }>,
 ): AnnotationResizeState {
   const draggingFrom = ref<DraggingFrom>();
@@ -59,7 +59,8 @@ export function provideAnnotationResizeState(
         (ann) => ann.start > annotation.start && position >= ann.start,
       );
       if (blockingRight) {
-        position = blockingRight.start - props.subUnit;
+        position =
+          blockingRight.start - props.getSubUnitForPosition(annotation.start);
       }
     }
     if (side === "start") {
@@ -67,7 +68,7 @@ export function provideAnnotationResizeState(
         (ann) => ann.start < annotation.start && ann.end >= position,
       );
       if (blockingLeft) {
-        position = blockingLeft.end + props.subUnit;
+        position = blockingLeft.end + props.getSubUnitForPosition(position);
       }
     }
     annotation[side] = position;

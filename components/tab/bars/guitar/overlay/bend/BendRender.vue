@@ -10,7 +10,7 @@ import { injectEditingState } from "~/components/tab/providers/state/provide-edi
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import BendDragger from "./BendDragger.vue";
 import { injectSpacingsState } from "~/components/tab/providers/provide-spacings";
-import { injectSubUnit } from "~/components/tab/providers/provide-subunit";
+import { injectSubUnitFunctions } from "~/components/tab/providers/provide-subunit";
 import { useCoordsDirective } from "~/components/tab/hooks/use-coords-directive";
 
 const props = defineProps<{
@@ -23,7 +23,7 @@ const { selectsSelector } = injectOverlayControlsTeleport();
 const { editingNote } = injectEditingState();
 
 const { contextMenuHeight, cellHeight, dividerWidth } = injectSpacingsState();
-const subunit = injectSubUnit();
+const { getSubUnitForPosition } = injectSubUnitFunctions();
 
 const startRowTop = computed(() => contextMenuHeight.value + cellHeight.value);
 
@@ -201,7 +201,12 @@ const vCoords = useCoordsDirective({
             ? startRowTop + (startRow - 1.5) * cellHeight
             : upswingToY
         }px`"
-        @click="bendEditState.onReleaseGrabberClick(bend, bend.to + subunit)"
+        @click="
+          bendEditState.onReleaseGrabberClick(
+            bend,
+            bend.to + getSubUnitForPosition(bend.to),
+          )
+        "
         @mouseenter="releaseArrowHover = true"
         @mouseleave="releaseArrowHover = false"
       />

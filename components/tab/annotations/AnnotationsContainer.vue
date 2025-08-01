@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { AnnotationStore } from "~/model/stores";
 import { injectTabBarBounds } from "../bars/provide-bar-bounds";
-import { injectSubUnit } from "../providers/provide-subunit";
+import { injectSubUnitFunctions } from "../providers/provide-subunit";
 import AnnotationDragDroppable from "./AnnotationDragDroppable.vue";
 import AnnotationRender, {
   type AnnotationRenderProps,
@@ -19,7 +19,7 @@ const props = defineProps<{
 const annotationAddState = injectAnnotationAddState();
 const tabBarBounds = injectTabBarBounds();
 const { tablineStarts } = injectStackResizeObserver();
-const subUnit = injectSubUnit();
+const { getSubUnitForPosition, getPreviousPosition } = injectSubUnitFunctions();
 
 const rows = computed(() => props.annotationStore.getRows());
 const numRows = computed(() => rows.value.length);
@@ -41,7 +41,7 @@ function edgeProps(
     (lineStart) => start >= lineStart,
   )!;
 
-  const endAtRight = tabBarBounds.tabline.end - subUnit.value;
+  const endAtRight = getPreviousPosition(tabBarBounds.tabline.end);
 
   const startsInCurrentBar =
     start >= tabBarBounds.start && start < tabBarBounds.end;
@@ -106,20 +106,30 @@ const newAnnotationRender = computed<NewAnnotationRenderProps | false>(() => {
   }
   return false;
 });
+
+// Calculate droppable positions for each row
+const droppablePositions = computed(() => {
+  const positions: number[] = [];
+  let currentPosition = tabBarBounds.start;
+
+  while (currentPosition < tabBarBounds.end) {
+    positions.push(currentPosition);
+    currentPosition += getSubUnitForPosition(currentPosition);
+  }
+
+  return positions;
+});
 </script>
 
 <template>
   <div class="annotations-container">
     <div class="line" />
     <template v-for="row in rows" :key="row">
-      <template
-        v-for="(_, i) in (tabBarBounds.end - tabBarBounds.start) / subUnit"
-        :key="i"
-      >
+      <template v-for="(position, i) in droppablePositions" :key="i">
         <AnnotationDragDroppable
           :row="row"
           :render-row="renderRow(row)"
-          :position="tabBarBounds.start + subUnit * i"
+          :position="position"
           :first-in-bar="i === 0"
         />
       </template>

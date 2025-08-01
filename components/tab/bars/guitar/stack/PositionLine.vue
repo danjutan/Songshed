@@ -15,15 +15,14 @@ const settings = injectSettingsState();
 const tabBarBounds = injectTabBarBounds();
 const barManagement = injectBarManagement();
 
-// Get the time signature at the current position to determine the beat size
 const timeSignature = computed(() =>
   barManagement.getTimeSignatureAt(props.position),
 );
+
 const beatSize = computed(() => timeSignature.value.beatSize);
 
 const smallestSpacing = computed(() => beatSize.value / settings.subdivisions);
 
-// Check if the current position aligns with the beat size
 const isBeatSpacing = computed(() => {
   return props.position % beatSize.value === 0;
 });

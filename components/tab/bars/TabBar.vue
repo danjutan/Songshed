@@ -37,9 +37,9 @@ const resizeObserver = injectStackResizeObserver();
 const overlayReference = useTemplateRef("overlayReference");
 
 provideTabBarBounds(
-  props.bar,
   resizeObserver,
   injectBarManagement(),
+  computed(() => props.bar),
   computed(() => overlayReference.value?.$el),
 );
 
