@@ -17,11 +17,11 @@ export function isCollapsed(
 
 export function useIsCollapsed(
   stack: ComputedRef<Array<GuitarNote | undefined>>,
-  onBeat: boolean,
+  onBeat: ComputedRef<boolean>,
 ) {
   const settings = injectSettingsState();
 
   return computed(() => {
-    return isCollapsed(settings, stack.value, onBeat);
+    return isCollapsed(settings, stack.value, onBeat.value);
   });
 }

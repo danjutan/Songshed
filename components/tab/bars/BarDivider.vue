@@ -10,13 +10,15 @@ import {
   Delete,
   CornerRightUp,
   CornerDownLeft,
+  Ellipsis,
 } from "lucide-vue-next";
 import { injectBarManagement } from "~/components/tab/providers/state/provide-bar-management";
 import { getBarDragData, isInsertBarDropData } from "../hooks/dnd/dnd-types";
 
 const resizeRef = useTemplateRef("resize");
 const moveRef = useTemplateRef("move");
-const { insertBar, deleteBar, insertBreak, joinBreak } = injectBarManagement();
+const { insertBar, deleteBar, insertBreak, joinBreak, insertTimeChange } =
+  injectBarManagement();
 
 const props = defineProps<{
   startOfLine: boolean;
@@ -34,6 +36,8 @@ const emit = defineEmits<{
   moveDragEnd: [];
   insertingInto: [number];
 }>();
+
+const expanded = ref(false);
 
 onMounted(() => {
   watchEffect((cleanup) => {
@@ -85,7 +89,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div ref="resize" class="divider" :class="{ first: startOfLine }">
+  <div
+    ref="resize"
+    class="divider"
+    :class="{ first: startOfLine }"
+    @mouseleave="expanded = false"
+  >
     <div class="thicc">
       <div
         ref="move"
@@ -98,13 +107,24 @@ onMounted(() => {
       <div class="button insert" @click="insertBar(barStart)">
         <Plus />
       </div>
-      <div
-        class="button delete"
-        @click="deleteBar(barStart)"
-        @mouseenter="emit('deleteHoverStart')"
-        @mouseleave="emit('deleteHoverEnd')"
-      >
-        <Delete />
+      <div class="bottom-buttons">
+        <div
+          class="button delete"
+          @click="deleteBar(barStart)"
+          @mouseenter="emit('deleteHoverStart')"
+          @mouseleave="emit('deleteHoverEnd')"
+        >
+          <Delete />
+        </div>
+        <div class="button more" @mouseenter="expanded = !expanded">
+          <Ellipsis />
+        </div>
+      </div>
+    </div>
+    <div v-if="expanded" class="expanded">
+      <div class="button time" @click="insertTimeChange(barStart)">
+        <div>&#xE084;</div>
+        <div>&#xE084;</div>
       </div>
       <template v-if="startOfLine">
         <div v-if="joinable" class="button join" @click="joinBreak(barStart)">
@@ -131,19 +151,53 @@ onMounted(() => {
   } */
 }
 
-.thicc {
-  display: grid;
-  grid-template-rows: repeat(5, 1fr);
-  justify-items: center;
+.thicc,
+.expanded {
+  /* display: grid;
+  grid-template-rows: repeat(4, 1fr); */
+  display: flex;
+  flex-direction: column;
   align-items: center;
   height: 100%;
   position: absolute;
   background: var(--divider-color);
   width: calc(var(--note-font-size) + 4px);
-  transform: translateX(-25%);
   z-index: var(--divider-z-index);
+  transform: translateX(-25%);
 }
 
+.thicc {
+  justify-content: space-between;
+}
+
+.expanded {
+  left: calc(var(--note-font-size) + 3px);
+  justify-content: flex-end;
+
+  & .time {
+    font-family: "Leland", serif;
+    font-size: 16px;
+    line-height: 9px;
+    margin-bottom: 4px;
+  }
+}
+
+.bottom-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  & .delete {
+    height: 16px;
+    margin-top: 6px;
+    transform: rotate(180deg);
+  }
+
+  & .more {
+    margin-top: -2px;
+  }
+}
 /* .divider.first {
   justify-self: end;
   & .thicc {
@@ -164,12 +218,15 @@ onMounted(() => {
 .button {
   cursor: pointer;
   grid-column: 1;
-  &:hover svg {
-    stroke-width: 3;
+  &:hover {
+    font-weight: bold;
+    & svg {
+      stroke-width: 3;
+    }
   }
 }
 
-.insert {
+/* .insert {
   grid-row: -4;
   align-self: center;
 }
@@ -180,23 +237,10 @@ onMounted(() => {
 .break,
 .join {
   grid-row: -2;
-}
+} */
 
 svg {
   color: var(--divider-icon-color);
   width: var(--context-menu-height);
 }
-
-.delete {
-  transform: rotate(180deg);
-}
-
-/* .divider::before {
-  content: "";
-  display: block;
-  width: 4px;
-  height: 100%;
-  background: red;
-  margin: 0 auto;
-} */
 </style>

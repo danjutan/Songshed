@@ -11,7 +11,7 @@ import {
   withOffset,
   type StackCoords,
 } from "../providers/events/provide-resize-observer";
-import { injectSubUnit } from "../providers/provide-subunit";
+import { injectSubUnitFunctions } from "../providers/provide-subunit";
 import { injectBarManagement } from "../providers/state/provide-bar-management";
 
 type ObjectKey = string | number | symbol;
@@ -38,7 +38,7 @@ export function useCoordsDirective<
   const tabBarBounds = injectTabBarBounds();
   const { registerListener, getStackCoords, tablineStarts } =
     injectStackResizeObserver();
-  const subUnit = injectSubUnit();
+  const { getPreviousPosition } = injectSubUnitFunctions();
 
   const getCoords = (position: number, coords: StackCoords) => {
     if (tablineStarts.length === 0 || tabBarBounds.left === undefined) {
@@ -67,7 +67,7 @@ export function useCoordsDirective<
     if (tablineStart < tabBarBounds.tabline.start) {
       // The position is on an earlier tabline than the current bar
       const tablineEnd = tablineStarts[tablineStartIndex + 1];
-      const tablineLast = tablineEnd - subUnit.value;
+      const tablineLast = getPreviousPosition(tablineEnd);
       const tablineLastCoords = getStackCoords(tablineLast);
       if (!tablineLastCoords) return coords;
       // The end of the position's tabline
@@ -79,7 +79,7 @@ export function useCoordsDirective<
         .forEach((start, i) => {
           const startCoords = getStackCoords(start);
           const nextStart = tablineStarts[i + 1];
-          const lastCoords = getStackCoords(nextStart - subUnit.value);
+          const lastCoords = getStackCoords(getPreviousPosition(nextStart));
           offset += lastCoords!.right - startCoords!.left;
         });
       return withOffset(
@@ -99,11 +99,11 @@ export function useCoordsDirective<
         .forEach((start, i) => {
           const startCoords = getStackCoords(start);
           const nextStart = tablineStarts[i + 1];
-          const lastCoords = getStackCoords(nextStart - subUnit.value);
+          const lastCoords = getStackCoords(getPreviousPosition(nextStart));
           offset += lastCoords!.right - startCoords!.left;
         });
       return withOffset(
-        getStackCoords(tabBarBounds.tabline.end - subUnit.value)!,
+        getStackCoords(getPreviousPosition(tabBarBounds.tabline.end))!,
         offset - tabBarBounds.left,
       );
     }

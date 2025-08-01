@@ -17,7 +17,7 @@ export interface AnnotationAddState {
 export function provideAnnotationAddState(
   props: ReactiveComputed<{
     store: AnnotationStore;
-    subUnit: number;
+    getSubUnitForPosition: (position: number) => number;
   }>,
 ): AnnotationAddState {
   const rawAnnotation = ref<{
@@ -37,7 +37,9 @@ export function provideAnnotationAddState(
       return {
         row,
         start,
-        end: blockingRight ? blockingRight.start - props.subUnit : end,
+        end: blockingRight
+          ? blockingRight.start - props.getSubUnitForPosition(start)
+          : end,
       };
     }
     if (end < start) {
@@ -46,7 +48,9 @@ export function provideAnnotationAddState(
       );
       return {
         row,
-        start: blockingLeft ? blockingLeft.end + props.subUnit : end,
+        start: blockingLeft
+          ? blockingLeft.end + props.getSubUnitForPosition(end)
+          : end,
         end: start,
       };
     }

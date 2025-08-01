@@ -60,12 +60,16 @@ export interface ChordsData {
   chords: Chord[];
 }
 
-export interface TabData {
-  title: string;
+export interface TimeSignature {
   beatsPerBar: number;
   beatSize: SpacingValue;
+}
+
+export interface TabData {
+  title: string;
   doesSyncTuning: boolean;
   lineBreaks: Set<number>;
+  timeChanges: Map<number, TimeSignature>;
   guitarData?: GuitarTabData; // optional because we'll add more primary views in the future
   annotations: Map<number, Annotation[]>; // annotation row -> annotations on that row
   chordsData: ChordsData;

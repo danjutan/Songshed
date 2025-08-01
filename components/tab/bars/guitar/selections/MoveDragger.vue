@@ -10,11 +10,11 @@ import {
 } from "~/components/tab/providers/state/provide-selection-state";
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import type { NotePosition } from "~/model/stores";
-import { injectSubUnit } from "~/components/tab/providers/provide-subunit";
+import { injectSubUnitFunctions } from "~/components/tab/providers/provide-subunit";
 
 const draggableRef = useTemplateRef("dragger");
 const selectionState = injectSelectionState();
-const subUnit = injectSubUnit();
+const { getSubUnitForPosition } = injectSubUnitFunctions();
 const props = defineProps<{
   region: RegionBounds;
 }>();
@@ -31,12 +31,13 @@ watchEffect((cleanup) => {
         preventUnhandled.start();
       },
       getInitialData: (args) => {
+        // Regions are split across barlines, so both minPosition and maxPosition are in the same bar
+        const subunit = getSubUnitForPosition(props.region.minPosition);
+
         const midPosition =
           Math.round(
-            (props.region.minPosition + props.region.maxPosition) /
-              2 /
-              subUnit.value,
-          ) * subUnit.value;
+            (props.region.minPosition + props.region.maxPosition) / 2 / subunit,
+          ) * subunit;
 
         const anchor: NotePosition = {
           string: props.region.minString,

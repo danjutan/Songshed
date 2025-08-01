@@ -52,12 +52,7 @@ async function save(saveId: string) {
     <!-- <span class="text-petaluma">&#xE1D9;</span>
     <span class="text-leland">&#xE1D9;</span> -->
     <div class="flex">
-      <Toolbar
-        :id
-        v-model:beats-per-bar="tabStore.beatsPerBar"
-        v-model:beat-size="tabStore.beatSize"
-        @save="save"
-      />
+      <Toolbar :id @save="save" />
       <ChordGroup
         v-model:sync-tuning="tabStore.doesSyncTuning"
         :store="tabStore.chords"
@@ -127,6 +122,8 @@ async function save(saveId: string) {
 
   --pos-line-color: var(--p-surface-400);
   --pos-line-alpha: 0.6;
+
+  /* If beatSize is Eighth, eigth notes will use the quarter note color etc */
   --quarter-note-color: var(--p-surface-500);
   --eighth-note-color: var(--p-yellow-500);
   --sixteenth-note-color: var(--p-amber-600);

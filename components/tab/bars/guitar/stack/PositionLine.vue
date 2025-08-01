@@ -2,6 +2,7 @@
 import { injectCellHoverEvents } from "~/components/tab/providers/events/provide-cell-hover-events";
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
+import { injectBarManagement } from "~/components/tab/providers/state/provide-bar-management";
 import { SPACING, type ColoredSpacingName } from "~/composables/theory";
 
 const props = defineProps<{
@@ -12,12 +13,18 @@ const props = defineProps<{
 const cellHoverState = injectCellHoverEvents();
 const settings = injectSettingsState();
 const tabBarBounds = injectTabBarBounds();
+const barManagement = injectBarManagement();
 
-const smallestSpacing = computed(() => 1 / settings.subdivisions);
+const timeSignature = computed(() =>
+  barManagement.getTimeSignatureAt(props.position),
+);
 
-const isQuarterNote = computed(() => {
-  const currentSpacing = largestSpacingDivisor(props.position)!;
-  return currentSpacing === "Quarter";
+const beatSize = computed(() => timeSignature.value.beatSize);
+
+const smallestSpacing = computed(() => beatSize.value / settings.subdivisions);
+
+const isBeatSpacing = computed(() => {
+  return props.position % beatSize.value === 0;
 });
 
 const hoveredInBar = computed(() => {
@@ -45,19 +52,27 @@ const isHoveredSpacing = computed(() => {
   return props.position % SPACING[hoveredSpacing] === 0;
 });
 
-const colors: Record<ColoredSpacingName, string> = {
-  Quarter: "var(--quarter-note-color)",
-  Eighth: "var(--eighth-note-color)",
-  Sixteenth: "var(--sixteenth-note-color)",
-  ThirtySecond: "var(--thirty-second-note-color)",
-  SixtyFourth: "var(--sixty-fourth-note-color)",
-  OneTwentyEighth: "var(--one-twenty-eighth-note-color)",
-};
+// If beatSize is Eighth, eigth notes will use the quarter note color etc
+const colors: string[] = [
+  "var(--quarter-note-color)",
+  "var(--eighth-note-color)",
+  "var(--sixteenth-note-color)",
+  "var(--thirty-second-note-color)",
+  "var(--sixty-fourth-note-color)",
+  "var(--one-twenty-eighth-note-color)",
+];
+
+function getRelativeColorIndex(spacingValue: number): number {
+  const ratio = spacingValue / beatSize.value;
+  const thresholds = [1, 0.5, 0.25, 0.125, 0.0625];
+  return thresholds.findIndex((threshold) => ratio == threshold);
+}
+
+function getColor(spacing: ColoredSpacingName): string {
+  return colors[getRelativeColorIndex(SPACING[spacing])];
+}
 
 const spacingColor = computed(() => {
-  // if (isQuarterNote.value) {
-  //   return "var(--quarter-note-color)";
-  // }
   if (
     !settings.colorPositions ||
     (settings.onlyColorBar && !hoveredInBar.value)
@@ -75,7 +90,7 @@ const spacingColor = computed(() => {
     ) {
       return false;
     }
-    return colors[currentSpacing];
+    return getColor(currentSpacing);
   }
   const hoveredPosition = cellHoverState.hoveredNote?.value?.position;
   if (!hoveredPosition) {
@@ -84,20 +99,20 @@ const spacingColor = computed(() => {
   const hoveredSpacing = largestSpacingDivisor(hoveredPosition)!;
   if (isHoveredSpacing.value) {
     if (settings.colorPositions === "gray") {
-      if (isQuarterNote.value) {
-        return colors.Quarter;
+      if (isBeatSpacing.value) {
+        return getColor("Quarter");
       }
       return "var(--gray-note-color)";
     }
-    return colors[hoveredSpacing];
+    return getColor(hoveredSpacing);
   }
   return false;
 });
 
 const lineColor = computed(() => spacingColor.value || "var(--pos-line-color)");
-const isThick = computed(() => isQuarterNote.value || spacingColor.value);
+const isThick = computed(() => isBeatSpacing.value || spacingColor.value);
 const isOpaque = computed(
-  () => isQuarterNote.value && settings.colorPositions !== "always",
+  () => isBeatSpacing.value && settings.colorPositions !== "always",
 );
 
 const classes = computed(() => ({

@@ -13,38 +13,6 @@ const emits = defineEmits<{
   save: [id: string];
 }>();
 
-const beatsPerBar = defineModel<number>("beatsPerBar");
-
-const beatSize = defineModel<SpacingValue>("beatSize");
-
-const beatSizeNumbers = [1, 2, 4, 8, 16, 32, 64, 128];
-const numberToSpacing: Record<number, SpacingValue> = {
-  1: SPACING.Whole,
-  2: SPACING.Half,
-  4: SPACING.Quarter,
-  8: SPACING.Eighth,
-  16: SPACING.Sixteenth,
-  32: SPACING.ThirtySecond,
-  64: SPACING.SixtyFourth,
-  128: SPACING.OneTwentyEighth,
-};
-const spacingToNumber = Object.fromEntries(
-  Object.entries(numberToSpacing).map(([number, spacing]) => [
-    spacing,
-    +number,
-  ]),
-) as Record<SpacingValue, number>;
-
-const beatSizeNumber = computed(() => {
-  if (!beatSize.value) return undefined;
-  return spacingToNumber[beatSize.value];
-});
-
-function onBeatSizeSelect(event: Event) {
-  const number = +(event.target as HTMLSelectElement).value;
-  beatSize.value = numberToSpacing[number];
-}
-
 const settings = injectSettingsState();
 
 const saveId = ref(props.id);

@@ -7,7 +7,7 @@ export function provideTieAddState(
   props: ReactiveComputed<{
     cellHoverEvents: CellHoverEvents;
     store: GuitarStore;
-    subUnit: number;
+    getSubUnitForPosition: (position: number) => number;
   }>,
 ) {
   const mode = ref<"tie" | "bend" | undefined>();
@@ -29,13 +29,14 @@ export function provideTieAddState(
     // "Collisions"
     if (to !== from) {
       const direction = to < from ? -1 : 1;
-      const start = from + direction * props.subUnit;
+      const start =
+        from + direction * props.getSubUnitForPosition(Math.min(to, from));
       const end = to;
 
       for (
         let i = start;
         direction > 0 ? i <= end : i >= end;
-        i += direction * props.subUnit
+        i += direction * props.getSubUnitForPosition(i)
       ) {
         const stack = props.store.stacks.get(i);
         if (stack?.get(string)) {

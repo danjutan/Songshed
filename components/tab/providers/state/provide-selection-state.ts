@@ -1,5 +1,6 @@
 import type { GuitarNote } from "~/model/data";
 import type { GuitarStore, NotePosition } from "~/model/stores";
+import type { SubunitFunctions } from "../provide-subunit";
 
 export type NotePositionKey = `${number}-${number}`;
 export const notePositionKey = (position: NotePosition): NotePositionKey =>
@@ -71,12 +72,13 @@ export interface SelectionState {
 export function provideSelectionState(
   props: ReactiveComputed<{
     guitar: GuitarStore;
-    subUnit: number;
-    barSize: number;
+    getBarIndexAt: (position: number) => number;
+    subunitFunctions: SubunitFunctions;
   }>,
 ): SelectionState {
   let currentSelectionStart: NotePosition | undefined;
   let currentSelectionEnd: NotePosition | undefined;
+  const { getSubUnitForPosition, getPreviousPosition } = props.subunitFunctions;
 
   const selections = reactive<Set<NotePositionKey>>(new Set());
   const selectedPositions = reactiveComputed<NotePosition[]>(() => {
@@ -103,14 +105,13 @@ export function provideSelectionState(
     function areAdjacent(note1: NotePosition, note2: NotePosition): boolean {
       return (
         Math.abs(note1.string - note2.string) <= 1 &&
-        Math.abs(note1.position - note2.position) <= props.subUnit
+        getPreviousPosition(Math.max(note1.position, note2.position)) ===
+          Math.min(note1.position, note2.position)
       );
     }
 
     function isCrossingBar(position1: number, position2: number): boolean {
-      const barIndex1 = Math.floor(position1 / props.barSize);
-      const barIndex2 = Math.floor(position2 / props.barSize);
-      return barIndex1 !== barIndex2;
+      return props.getBarIndexAt(position1) !== props.getBarIndexAt(position2);
     }
 
     function findRegion(start: NotePosition): NotePosition[] {
@@ -159,6 +160,10 @@ export function provideSelectionState(
     return outputRegions;
   });
 
+  // watch(regions, (newRegions) => {
+  //   console.log(newRegions.map((r) => `${r.minPosition}-${r.maxPosition}`));
+  // });
+
   function isEmpty(): boolean {
     if (!props.guitar) return true;
     return selectedPositions
@@ -187,7 +192,7 @@ export function provideSelectionState(
       for (
         let position = bounds.minPosition;
         position <= bounds.maxPosition;
-        position += props.subUnit
+        position += getSubUnitForPosition(position)
       ) {
         selectNote({ string, position });
       }
@@ -200,7 +205,7 @@ export function provideSelectionState(
       for (
         let position = bounds.minPosition;
         position <= bounds.maxPosition;
-        position += props.subUnit
+        position += getSubUnitForPosition(position)
       ) {
         unselectNote({ string, position });
       }
@@ -246,7 +251,7 @@ export function provideSelectionState(
 
     if (
       minString + deltaString + stringDiff < 0 ||
-      maxString + deltaString + stringDiff >= props.guitar.strings ||
+      maxString + deltaString + stringDiff >= props.guitar.tuning.length ||
       minPosition + deltaPosition + positionDiff < 0
     ) {
       return;
