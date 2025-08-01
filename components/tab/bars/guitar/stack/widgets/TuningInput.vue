@@ -1,8 +1,13 @@
 <script lang="ts" setup>
-const props = defineProps<{
-  fontSize: string;
-  showOctave: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    fontSize: string;
+    showOctave: boolean;
+  }>(),
+  {
+    showOctave: true,
+  },
+);
 
 const notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
 const octaves = [1, 2, 3, 4, 5, 6, 7, 8];
