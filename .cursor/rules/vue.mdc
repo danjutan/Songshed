@@ -1,0 +1,7 @@
+---
+description: Details about how we're using Vue 3 in the project
+globs:
+alwaysApply: true
+---
+
+- Never attempt to call an `inject...` function outside of a component.
