@@ -218,7 +218,7 @@ onMounted(() => {
 .button {
   cursor: pointer;
   grid-column: 1;
-  color: var(--p-button-contrast-color);
+  color: var(--p-surface-50);
   &:hover {
     font-weight: bold;
     & svg {

@@ -2,7 +2,7 @@
 const props = withDefaults(
   defineProps<{
     fontSize: string;
-    showOctave: boolean;
+    showOctave?: boolean;
   }>(),
   {
     showOctave: true,

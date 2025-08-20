@@ -25,6 +25,7 @@ const isEditing = ref(false);
         size="small"
         class="button"
         :severity="isEditing ? 'contrast' : 'secondary'"
+        outlined
         @click="isEditing = !isEditing"
       >
         <template #icon>
