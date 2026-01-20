@@ -15,7 +15,7 @@ import TieRender from "./overlay/tie/TieRender.vue";
 import StringLine from "./stack/StringLine.vue";
 import Stack from "./stack/Stack.vue";
 import WidgetStack from "./stack/widgets/WidgetStack.vue";
-import SelectionRegions from "./selections/SelectionRegions.vue";
+import SelectionToolbarRegions from "./selections/SelectionToolbarRegions.vue";
 import BendDroppable from "./overlay/bend/BendDroppable.vue";
 import type { BarHighlightType } from "../TabBar.vue";
 
@@ -156,7 +156,7 @@ const tablineHasBends = computed(() => {
           (string: number) => emit('noteDelete', { position, string })
         "
       />
-      <SelectionRegions />
+      <SelectionToolbarRegions />
     </div>
     <ClientOnly>
       <div :id="uniqueId" class="overlay-controls">

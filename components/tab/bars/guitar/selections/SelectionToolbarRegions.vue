@@ -4,7 +4,7 @@ import {
   type RegionBounds,
 } from "~/components/tab/providers/state/provide-selection-state";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
-import SelectionRegion from "./SelectionRegion.vue";
+import SelectionToolbarRegion from "./SelectionToolbarRegion.vue";
 
 const selectionState = injectSelectionState();
 const tabBarBounds = injectTabBarBounds();
@@ -21,7 +21,7 @@ const oneNote = computed(() => selectionState.selections.size === 1);
 
 <template>
   <template v-if="!oneNote">
-    <SelectionRegion
+    <SelectionToolbarRegion
       v-for="region in selectionState.regions.filter(inBounds)"
       :key="`${region.minString}-${region.minPosition}-${region.maxString}-${region.maxPosition}`"
       :region="region"

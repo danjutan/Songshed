@@ -58,13 +58,13 @@ const isHovering = computed(() => {
 </script>
 
 <template>
-  <div class="selection-region">
+  <div class="selection-toolbar-region">
     <SelectionToolbar v-show="isHovering" :region />
   </div>
 </template>
 
 <style scoped>
-.selection-region {
+.selection-toolbar-region {
   grid-column: v-bind(startColumn) / v-bind(endColumn);
   grid-row: v-bind(startRow) / span 1;
   pointer-events: none;
