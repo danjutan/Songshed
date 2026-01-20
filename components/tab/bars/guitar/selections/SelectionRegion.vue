@@ -7,6 +7,7 @@ import { injectCellHoverEvents } from "~/components/tab/providers/events/provide
 import SelectionToolbar from "./SelectionToolbar.vue";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
 import { injectSubUnitFunctions } from "~/components/tab/providers/provide-subunit";
+import { injectHasWidget } from "../provide-has-widget";
 
 const props = defineProps<{
   region: RegionBounds;
@@ -15,20 +16,26 @@ const props = defineProps<{
 const cellHoverEvents = injectCellHoverEvents();
 const { getSubUnitForPosition } = injectSubUnitFunctions();
 const tabBarBounds = injectTabBarBounds();
+const hasWidget = injectHasWidget();
 
 const oneColumnAdjustment = computed(() => {
   return props.region.minPosition === props.region.maxPosition ? 1 : 0;
 });
 
 const subunit = computed(() => getSubUnitForPosition(tabBarBounds.start));
+const columnOffset = computed(() => (hasWidget.value ? 2 : 1));
 
 const startColumn = computed(
-  // TODO: why did we have to change this from +1 to +2
-  () => (props.region.minPosition - tabBarBounds.start) / subunit.value + 2,
+  () =>
+    (props.region.minPosition - tabBarBounds.start) / subunit.value +
+    columnOffset.value,
 );
 
 const endColumn = computed(
-  () => (props.region.maxPosition - tabBarBounds.start) / subunit.value + 3,
+  () =>
+    (props.region.maxPosition - tabBarBounds.start) / subunit.value +
+    columnOffset.value +
+    1,
 );
 const startRow = computed(() => props.region.minString + 1);
 

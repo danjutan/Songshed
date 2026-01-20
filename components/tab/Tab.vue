@@ -253,7 +253,7 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
             "
           />
         </template>
-        <template #widget>
+        <template v-if="i === 0 || tabStore.timeChanges.has(bar.start)" #widget>
           <template v-if="i === 0">
             <TuningWidget
               :tuning="tabStore.guitar.tuning"

@@ -7,6 +7,7 @@ import { injectTabBarBounds } from "../provide-bar-bounds";
 import { injectTieAddState } from "../../providers/state/provide-tie-add-state";
 import { injectSubUnitFunctions } from "../../providers/provide-subunit";
 import { provideEditTie } from "./provide-edit-tie";
+import { provideHasWidget } from "./provide-has-widget";
 import { provideOverlayControlsTeleport } from "./provide-overlay-controls-teleport";
 
 import BendRender from "./overlay/bend/BendRender.vue";
@@ -43,7 +44,8 @@ const emit = defineEmits<{
 }>();
 
 const slots = useSlots();
-const hasWidget = computed(() => slots.widget);
+const hasWidget = computed(() => !!slots.widget);
+provideHasWidget(hasWidget);
 const numStacks = computed(
   () => props.stackData.length + (hasWidget.value ? 1 : 0),
 );
