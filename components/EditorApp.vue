@@ -105,8 +105,8 @@ async function save(saveId: string) {
 
   --note-hover-color: var(--p-blue-200);
   --select-color: var(--p-blue-200);
-  --might-move-color: var(--p-amber-300);
-  --moving-color: var(--p-amber-400);
+  --might-move-color: var(--p-green-400);
+  --moving-color: var(--p-green-600);
   --delete-color: var(--p-red-300);
   --move-target-color: var(--select-color);
 
@@ -168,8 +168,8 @@ async function save(saveId: string) {
 
     --note-hover-color: var(--p-blue-100);
     --select-color: var(--p-blue-200);
-    --might-move-color: var(--p-amber-400);
-    --moving-color: var(--p-amber-500);
+    --might-move-color: var(--p-green-500);
+    --moving-color: var(--p-green-600);
     --delete-color: var(--p-red-400);
 
     --annotation-row-line-color: var(--p-surface-600);
