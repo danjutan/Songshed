@@ -31,13 +31,14 @@ export interface TabStore
   serialize: () => string;
 }
 
-const defaults: Omit<TabData, "guitarData" | "annotations"> = {
+const defaults: Omit<TabData, "guitarData"> = {
   title: "New Song",
   doesSyncTuning: true,
   chordsData: {
     tuning: Array.from(defaultTuning),
     chords: [{ title: "", notes: new Map() }],
   },
+  annotations: new Map([[0, []]]),
   lineBreaks: new Set(),
   timeChanges: new Map([[0, { beatsPerBar: 4, beatSize: SPACING.Quarter }]]),
 };
@@ -50,7 +51,6 @@ export function createTabStore(
   if (init === undefined) init = {};
   const data: TabData = reactive({
     ...defaults,
-    annotations: new Map(),
     ...init,
   });
 
