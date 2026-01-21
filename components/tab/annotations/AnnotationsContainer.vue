@@ -123,7 +123,6 @@ const droppablePositions = computed(() => {
 
 <template>
   <div class="annotations-container">
-    <div class="line" />
     <template v-for="row in rows" :key="row">
       <template v-for="(position, i) in droppablePositions" :key="i">
         <AnnotationDragDroppable
@@ -136,7 +135,7 @@ const droppablePositions = computed(() => {
       <div
         class="line"
         :style="{
-          top: `calc(${renderRow(row) + 1} * var(--cell-height))`,
+          top: `calc(${renderRow(row)} * var(--cell-height))`,
         }"
       />
     </template>
@@ -156,6 +155,7 @@ const droppablePositions = computed(() => {
       v-if="newAnnotationRender"
       v-bind="newAnnotationRender"
     />
+    <div class="last line" />
   </div>
 </template>
 
@@ -171,5 +171,12 @@ const droppablePositions = computed(() => {
   left: 0;
   width: 100%;
   height: 1px;
+  &.last {
+    background: var(--annotation-row-line-last-color);
+    height: 2px;
+    top: calc(v-bind(numRows) * var(--cell-height));
+  }
 }
+
+
 </style>

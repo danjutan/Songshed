@@ -111,6 +111,7 @@ async function save(saveId: string) {
   --move-target-color: var(--select-color);
 
   --annotation-row-line-color: var(--p-surface-300);
+  --annotation-row-line-last-color: var(--p-surface-400);
   --annotation-border: var(--p-surface-300);
   --annotation-notch-color: var(--p-surface-400);
   --annotation-dragger-color: var(--p-surface-400);
@@ -172,6 +173,7 @@ async function save(saveId: string) {
     --delete-color: var(--p-red-400);
 
     --annotation-row-line-color: var(--p-surface-600);
+    --annotation-row-line-last-color: var(--p-surface-500);
     --annotation-border: var(--p-surface-600);
     --annotation-notch-color: var(--p-surface-500);
     --annotation-dragger-color: var(--p-surface-400);
