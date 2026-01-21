@@ -1,11 +1,12 @@
-import { Note, Midi } from "tonal";
+import { Note as TonalNote, Chord as TonalChord, Midi as TonalMidi } from "tonal";
+import type { ChordNote, NoteStack } from "~/model/data";
 import type { Chroma } from "./colors";
 
 export type Midi =
   | 0
   | 1
   | 2
-  | 3
+    | 3
   | 4
   | 5
   | 6
@@ -173,9 +174,9 @@ export function validMidi(midi: number | null): midi is Midi {
 // Note.get already caches for us https://github.com/tonaljs/tonal/blob/3eb59b7cc0e02f6a66d07756d9d6dec8637abf2f/packages/core/src/note.ts#L44-L48
 export function getNoteInfo(nameOrMidi: string | number) {
   const note =
-    typeof nameOrMidi === "number" ? Note.fromMidi(nameOrMidi) : nameOrMidi;
+    typeof nameOrMidi === "number" ? TonalNote.fromMidi(nameOrMidi) : nameOrMidi;
 
-  const noteData = Note.get(note);
+  const noteData = TonalNote.get(note);
 
   if (noteData.empty) {
     throw new Error(`Invalid note: ${note}`);
@@ -185,16 +186,16 @@ export function getNoteInfo(nameOrMidi: string | number) {
 }
 
 export function getNameAndOctave(midi: number) {
-  const note = Note.fromMidi(midi);
-  const enharmonic = Note.enharmonic(note);
+  const note = TonalNote.fromMidi(midi);
+  const enharmonic = TonalNote.enharmonic(note);
   return {
-    name: Note.pitchClass(enharmonic),
-    octave: Note.octave(enharmonic),
+    name: TonalNote.pitchClass(enharmonic),
+    octave: TonalNote.octave(enharmonic),
   };
 }
 
 export function toMidi(note: string): Midi {
-  const conversion = Midi.toMidi(note);
+  const conversion = TonalMidi.toMidi(note);
   if (!validMidi(conversion)) {
     throw new Error(`Invalid note: ${note}`);
   }
@@ -203,4 +204,19 @@ export function toMidi(note: string): Midi {
 
 export function getChroma(midi: number): Chroma {
   return (midi % 12) as Chroma;
+}
+
+export function detectChord(notes: NoteStack<ChordNote>): string | null {
+  if (notes.size === 0) return null;
+
+  const pitchClasses = [...notes.values()].sort((a, b) => a.note - b.note).map((n) =>
+    TonalNote.pitchClass(TonalNote.fromMidi(n.note)),
+  );
+
+  const detected = TonalChord.detect(pitchClasses);
+  if (detected.length === 0) return null;
+
+  const chordName = detected[0].replace("M", "maj");
+
+  return chordName;
 }

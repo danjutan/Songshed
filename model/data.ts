@@ -46,7 +46,11 @@ export interface ChordNote {
 
 export type NoteStack<N extends NoteData> = Map<number, N>;
 export type StackMap<N extends NoteData> = Map<number, NoteStack<N>>;
-export type Chord = { title: string; notes: NoteStack<ChordNote> };
+export type Chord = {
+  title: string;
+  notes: NoteStack<ChordNote>;
+  autoTitle?: boolean; // undefined/true = auto-detect, false = manual
+};
 
 export interface GuitarTabData {
   tuning: Midi[];

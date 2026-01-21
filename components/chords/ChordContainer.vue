@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { Chord, ChordNote, NoteStack } from "~/model/data";
+import { detectChord } from "~/composables/theory";
 import { Check, X, GripVertical } from "lucide-vue-next";
 import ChordChart from "./ChordChart.vue";
 
@@ -25,6 +26,25 @@ const props = defineProps<{
 const emit = defineEmits<{
   delete: [];
 }>();
+
+// Watch for note changes and auto-detect chord title
+watch(
+  () => [...props.chord.notes.entries()],
+  () => {
+    if (props.chord.autoTitle !== false) {
+      const detected = detectChord(props.chord.notes);
+      props.chord.title = detected ?? "";
+    }
+  },
+  { deep: true },
+);
+
+function onTitleChange(newTitle: string | undefined) {
+  const title = newTitle ?? "";
+  props.chord.title = title;
+  // Empty title = resume auto-detect, non-empty = manual mode
+  props.chord.autoTitle = title === "";
+}
 
 const mightDelete = ref(false);
 const mightMove = ref(false);
@@ -103,7 +123,11 @@ onMounted(() => {
           {{ chord.title || "..." }}
         </template>
         <template #content="{ closeCallback }">
-          <InputText v-model="chord.title" class="title-input" />
+          <InputText
+            :model-value="chord.title"
+            class="title-input"
+            @update:model-value="onTitleChange"
+          />
           <Button class="icon-button" text @click="closeCallback">
             <template #icon>
               <Check :size="16" color="var(--p-green-600)" />

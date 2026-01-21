@@ -36,7 +36,7 @@ const defaults: Omit<TabData, "guitarData"> = {
   doesSyncTuning: true,
   chordsData: {
     tuning: Array.from(defaultTuning),
-    chords: [{ title: "", notes: new Map() }],
+    chords: [{ title: "", notes: new Map(), autoTitle: true }],
   },
   annotations: new Map([[0, []]]),
   lineBreaks: new Set(),
@@ -211,6 +211,7 @@ function createChordStore({ tuning, chords }: ChordsData) {
       const chord: Chord = {
         title: "",
         notes: new Map(),
+        autoTitle: true,
       };
       chords.push(chord);
     },
