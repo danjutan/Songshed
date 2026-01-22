@@ -28,6 +28,7 @@ onMounted(() => {
           return isChordDragData(source.data);
         },
         onDrop(args) {
+          if (args.location.current.dropTargets.length === 0) return;
           const dropData = args.location.current.dropTargets[0].data;
           if (
             isChordInsertDropData(dropData) &&

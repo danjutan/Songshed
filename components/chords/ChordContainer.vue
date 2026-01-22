@@ -58,15 +58,14 @@ function deleteClicked() {
   emit("delete");
 }
 
-const moveHandleRef = useTemplateRef("moveHandle");
-const droppableRef = useTemplateRef("droppable");
+const containerRef = useTemplateRef("container");
 
 onMounted(() => {
   watchEffect((cleanup) => {
     cleanup(
       combine(
         draggable({
-          element: moveHandleRef.value!,
+          element: containerRef.value!,
           getInitialData: () => getChordDragData({ index: props.index }),
           onGenerateDragPreview: ({ nativeSetDragImage }) => {
             disableNativeDragPreview({ nativeSetDragImage });
@@ -80,7 +79,7 @@ onMounted(() => {
           },
         }),
         dropTargetForElements({
-          element: droppableRef.value!,
+          element: containerRef.value!,
           getData: () => getChordInsertDropData({ index: props.index }),
           onDropTargetChange(args) {
             if (isChordDragData(args.source.data)) {
@@ -106,7 +105,7 @@ onMounted(() => {
 
 <template>
   <div
-    ref="droppable"
+    ref="container"
     class="chart-container"
     :class="{ 'inplace-opened': inplaceOpened, moving }"
   >
@@ -182,6 +181,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  cursor: grab;
   &:hover:not(.inplace-opened),
   &.moving {
     & .buttons-container {
@@ -190,6 +190,9 @@ onMounted(() => {
     /* & .chart {
       width: 200px;
     } */
+  }
+  &.moving {
+    cursor: grabbing;
   }
 }
 
@@ -244,10 +247,6 @@ onMounted(() => {
   &:hover {
     font-weight: bold;
   }
-}
-
-.move-handle {
-  cursor: move;
 }
 
 .left-filler {
