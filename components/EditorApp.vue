@@ -117,8 +117,10 @@ async function save(saveId: string) {
   --annotation-dragger-color: var(--p-surface-400);
   --annotation-dragger-hover-color: var(--p-surface-500);
   --annotation-hover-background-color: var(--p-blue-200);
-  --annotation-default-background-color: rgb(
-    from var(--annotation-hover-background-color) r g b / 0.4
+  --annotation-default-background-color: color-mix(
+    in srgb,
+    var(--annotation-hover-background-color) 40%,
+    var(--tab-background-color)
   );
 
   --pos-line-color: var(--p-surface-400);
@@ -179,8 +181,10 @@ async function save(saveId: string) {
     --annotation-dragger-color: var(--p-surface-400);
     --annotation-dragger-hover-color: var(--p-surface-300);
     --annotation-hover-background-color: var(--p-primary-700);
-    --annotation-default-background-color: rgb(
-      from var(--p-primary-500) r g b / 0.4
+    --annotation-default-background-color: color-mix(
+      in srgb,
+      var(--annotation-hover-background-color) 40%,
+      var(--tab-background-color)
     );
   }
 }
