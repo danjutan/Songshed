@@ -151,6 +151,10 @@ onMounted(() => {
   } */
 }
 
+.divider:hover {
+  z-index: var(--divider-hover-z-index);
+}
+
 .thicc,
 .expanded {
   /* display: grid;
@@ -162,7 +166,6 @@ onMounted(() => {
   position: absolute;
   background: var(--divider-color);
   width: calc(var(--note-font-size) + 4px);
-  z-index: var(--divider-z-index);
   transform: translateX(-25%);
 }
 
