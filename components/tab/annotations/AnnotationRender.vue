@@ -254,9 +254,7 @@ const isOneColumn = computed(() => {
   position: absolute;
   margin-left: auto;
   margin-right: auto;
-  left: 0;
-  right: 0;
-  top: calc(var(--cell-height) * 0.85);
+  inset: calc(var(--cell-height) * 0.85) 0 auto;
   height: calc((var(--cell-height) * 0.3));
   width: calc(var(--pos-line-width) + 1px);
   background: var(--annotation-notch-color);
