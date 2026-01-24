@@ -97,9 +97,6 @@ watchEffect((cleanup) => {
       @note-delete="(pos) => guitarStore.deleteNote(pos)"
       @note-change="(pos, note) => guitarStore.setNote(pos, note)"
     >
-      <template #divider>
-        <slot name="divider" />
-      </template>
       <template v-if="$slots.widget" #widget>
         <slot name="widget" />
       </template>

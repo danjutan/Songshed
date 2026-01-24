@@ -141,11 +141,11 @@ onMounted(() => {
 <style scoped>
 .divider {
   width: var(--divider-width);
-  height: 100%;
   background: var(--divider-color);
   padding: 0;
   position: relative;
   z-index: var(--divider-z-index);
+  align-self: stretch;
   /* &:not(.first) {
     cursor: ew-resize;
   } */
