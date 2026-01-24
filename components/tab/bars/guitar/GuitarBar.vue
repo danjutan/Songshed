@@ -26,7 +26,6 @@ const props = defineProps<{
   tuning: Midi[];
   frets: number;
   tieStore: TieStore;
-  highlight?: BarHighlightType | false;
 }>();
 
 const tieAddState = injectTieAddState();
@@ -103,7 +102,6 @@ const tablineHasBends = computed(() => {
       'has-widget': hasWidget,
     }"
   >
-    <div v-if="highlight" class="highlight" :class="highlight" />
     <div class="toolbar">
       <div class="flex-bar" />
       <template v-if="tablineHasBends">
@@ -265,26 +263,5 @@ const tablineHasBends = computed(() => {
   margin-top: calc(-1 * (var(--cell-height) + var(--context-menu-height)));
 }
 
-.highlight {
-  grid-column: 1 / -1;
-  grid-row: 2 / -1;
-  pointer-events: none;
-  width: 100%;
-  height: 100%;
-  opacity: var(--select-alpha);
-  z-index: var(--bar-overlay-z-index);
 
-  &.might-delete {
-    background-color: var(--delete-color);
-  }
-  &.might-move {
-    background-color: var(--might-move-color);
-  }
-  &.moving {
-    background-color: var(--moving-color);
-  }
-  &.move-target {
-    background-color: var(--move-target-color);
-  }
-}
 </style>
