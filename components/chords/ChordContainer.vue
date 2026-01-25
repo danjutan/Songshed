@@ -2,7 +2,7 @@
 import type { Chord, ChordNote, NoteStack } from "~/model/data";
 import { detectChord } from "~/composables/theory";
 import { Check, X, GripVertical } from "lucide-vue-next";
-import ChordChart from "./ChordChart.vue";
+import ChordDiagram from "./ChordDiagram.vue";
 
 import {
   draggable,
@@ -157,7 +157,7 @@ onMounted(() => {
         </Button>
       </div>
     </div>
-    <ChordChart
+    <ChordDiagram
       class="chart"
       :strings="props.tuning.length"
       :notes="props.chord.notes"
