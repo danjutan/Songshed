@@ -1,13 +1,13 @@
 <script lang="ts" setup></script>
 
 <template>
-  <div class="stack">
+  <div class="widget-stack">
     <slot />
   </div>
 </template>
 
 <style scoped>
-.stack {
+.widget-stack {
   display: grid;
   grid-template-rows: subgrid;
 }

@@ -7,7 +7,6 @@ import { injectTabBarBounds } from "../provide-bar-bounds";
 import { injectTieAddState } from "../../providers/state/provide-tie-add-state";
 import { injectSubUnitFunctions } from "../../providers/provide-subunit";
 import { provideEditTie } from "./provide-edit-tie";
-import { provideHasWidget } from "./provide-has-widget";
 import { provideOverlayControlsTeleport } from "./provide-overlay-controls-teleport";
 
 import BendRender from "./overlay/bend/BendRender.vue";
@@ -42,9 +41,6 @@ const emit = defineEmits<{
   noteChange: [notePosition: NotePosition, note: GuitarNote];
 }>();
 
-const slots = useSlots();
-const hasWidget = computed(() => !!slots.widget);
-provideHasWidget(hasWidget);
 const numStacks = computed(() => props.stackData.length);
 
 const numStrings = computed(() => props.tuning.length);
@@ -99,7 +95,6 @@ const tablineHasBends = computed(() => {
     class="guitar-bar"
     :class="{
       'has-bends': tablineHasBends,
-      'has-widget': hasWidget,
     }"
   >
     <div class="toolbar">
@@ -126,7 +121,7 @@ const tablineHasBends = computed(() => {
           gridColumn: '1 / -1',
         }"
       />
-      <WidgetStack v-if="hasWidget" style="grid-column: 1; grid-row: 1 / -1">
+      <WidgetStack style="grid-column: 1; grid-row: 1 / -1">
         <slot name="widget" />
       </WidgetStack>
       <Stack
@@ -136,7 +131,7 @@ const tablineHasBends = computed(() => {
         class="stack"
         :class="{ border: !settings.posLineCenter && i < stackData.length - 1 }"
         :style="{
-          gridColumn: i + (hasWidget ? 2 : 1),
+          gridColumn: i + 2,
           gridRow: '1 / -1',
         }"
         :notes
@@ -184,19 +179,12 @@ const tablineHasBends = computed(() => {
 .guitar-bar {
   display: grid;
   width: 100%;
-  grid-template-columns: repeat(
+  grid-template-columns: min-content repeat(
     v-bind(numStacks),
     minmax(auto, var(--expanded-min-width))
       /* expanded-min-width is also the max width */
   );
   grid-template-rows: auto calc(v-bind(numStrings) * var(--cell-height));
-
-  &.has-widget {
-    grid-template-columns: min-content repeat(
-      v-bind(numStacks),
-      minmax(auto, var(--expanded-min-width))
-    );
-  }
 }
 
 .notes-grid {
