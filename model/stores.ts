@@ -337,7 +337,7 @@ function createAnnotationStore(
         (a) => a.start === data.start && a.end === data.end,
       );
       ofRow.splice(toDelete, 1);
-      if (ofRow.length === 0 && row === annotations.size - 1) {
+      if (ofRow.length === 0 && annotations.size > 1 && row === annotations.size - 1) {
         annotations.delete(row);
       }
     }
