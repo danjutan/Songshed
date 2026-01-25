@@ -26,7 +26,6 @@ const props = defineProps<{
   tuning: Midi[];
   frets: number;
   tieStore: TieStore;
-  highlight?: BarHighlightType | false;
 }>();
 
 const tieAddState = injectTieAddState();
@@ -46,9 +45,7 @@ const emit = defineEmits<{
 const slots = useSlots();
 const hasWidget = computed(() => !!slots.widget);
 provideHasWidget(hasWidget);
-const numStacks = computed(
-  () => props.stackData.length + (hasWidget.value ? 1 : 0),
-);
+const numStacks = computed(() => props.stackData.length);
 
 const numStrings = computed(() => props.tuning.length);
 
@@ -105,8 +102,6 @@ const tablineHasBends = computed(() => {
       'has-widget': hasWidget,
     }"
   >
-    <slot name="divider" />
-    <div v-if="highlight" class="highlight" :class="highlight" />
     <div class="toolbar">
       <div class="flex-bar" />
       <template v-if="tablineHasBends">
@@ -189,29 +184,24 @@ const tablineHasBends = computed(() => {
 .guitar-bar {
   display: grid;
   width: 100%;
-  grid-template-columns: min-content repeat(
-      v-bind(numStacks),
-      minmax(auto, var(--expanded-min-width))
-        /* expanded-min-width is also the max width */
-    );
+  grid-template-columns: repeat(
+    v-bind(numStacks),
+    minmax(auto, var(--expanded-min-width))
+      /* expanded-min-width is also the max width */
+  );
   grid-template-rows: auto calc(v-bind(numStrings) * var(--cell-height));
 
   &.has-widget {
-    grid-template-columns: min-content min-content repeat(
-        v-bind(numStacks),
-        minmax(auto, var(--expanded-min-width))
-      );
-  }
-
-  & :deep(.divider) {
-    grid-column: 1;
-    grid-row: -2 / -1;
+    grid-template-columns: min-content repeat(
+      v-bind(numStacks),
+      minmax(auto, var(--expanded-min-width))
+    );
   }
 }
 
 .notes-grid {
   display: grid;
-  grid-column: 2 / -1;
+  grid-column: 1 / -1;
   grid-row: 2;
   grid-template-columns: subgrid;
   grid-template-rows: repeat(v-bind(numStrings), var(--cell-height));
@@ -273,26 +263,5 @@ const tablineHasBends = computed(() => {
   margin-top: calc(-1 * (var(--cell-height) + var(--context-menu-height)));
 }
 
-.highlight {
-  grid-column: 2 / -1;
-  grid-row: 2 / -1;
-  pointer-events: none;
-  width: 100%;
-  height: 100%;
-  opacity: var(--select-alpha);
-  z-index: var(--bar-overlay-z-index);
 
-  &.might-delete {
-    background-color: var(--delete-color);
-  }
-  &.might-move {
-    background-color: var(--might-move-color);
-  }
-  &.moving {
-    background-color: var(--moving-color);
-  }
-  &.move-target {
-    background-color: var(--move-target-color);
-  }
-}
 </style>
