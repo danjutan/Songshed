@@ -15,6 +15,7 @@ import {
   getChordInsertDropData,
   isChordDragData,
 } from "./dnd-types";
+import type { Midi } from "~/theory/notes";
 
 const props = defineProps<{
   chord: Chord;

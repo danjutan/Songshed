@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { SPACING } from "~/composables/theory";
+import { toMidi } from "~/theory/notes";
+import { SPACING } from "~/theory/spacing";
 import { TIE_TYPE, type GuitarNote } from "~/model/data";
 import { createTabStore } from "~/model/stores";
 

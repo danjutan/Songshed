@@ -1,4 +1,4 @@
-import type { Midi } from "~/composables/theory";
+import type { Midi } from "~/theory/notes";
 import type { ChordStore, GuitarStore } from "./stores";
 
 /**

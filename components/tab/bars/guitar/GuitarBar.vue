@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { GuitarNote } from "~/model/data";
 import type { GuitarStack, NotePosition, TieStore } from "~/model/stores";
+import type { Midi } from "~/theory/notes";
 
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectTabBarBounds } from "../provide-bar-bounds";

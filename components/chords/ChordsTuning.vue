@@ -2,6 +2,7 @@
 import TuningInput from "~/components/tab/bars/guitar/stack/widgets/TuningInput.vue";
 import { Plus, Minus } from "lucide-vue-next";
 import type { UpdateTuning } from "~/model/stores";
+import type { Midi } from "~/theory/notes";
 
 const props = defineProps<{
   tuning: Midi[];

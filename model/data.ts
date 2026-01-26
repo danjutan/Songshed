@@ -1,3 +1,6 @@
+import type { Midi } from "~/theory/notes";
+import type { SpacingValue } from "~/theory/spacing";
+
 export interface Annotation {
   start: number;
   end: number;

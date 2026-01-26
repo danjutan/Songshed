@@ -1,4 +1,4 @@
-export type Chroma = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+import type { Chroma } from "./notes";
 
 export type NoteColors = {
   [note in Chroma]: string;
