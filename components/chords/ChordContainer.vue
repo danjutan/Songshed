@@ -71,47 +71,47 @@ function deleteClicked() {
 
 const containerRef = useTemplateRef("container");
 
-onMounted(() => {
-  watchEffect((cleanup) => {
-    cleanup(
-      combine(
-        draggable({
-          element: containerRef.value!,
-          getInitialData: () => getChordDragData({ index: props.index }),
-          onGenerateDragPreview: ({ nativeSetDragImage }) => {
-            disableNativeDragPreview({ nativeSetDragImage });
-            preventUnhandled.start();
-          },
-          onDragStart() {
-            moving.value = true;
-          },
-          onDrop() {
-            moving.value = false;
-          },
-        }),
-        dropTargetForElements({
-          element: containerRef.value!,
-          getData: () => getChordInsertDropData({ index: props.index }),
-          onDropTargetChange(args) {
-            if (isChordDragData(args.source.data)) {
-              if (
-                args.location.current.dropTargets[0].data.index ===
-                args.self.data.index
-              ) {
-                moveTarget.value = true;
-              } else {
-                moveTarget.value = false;
-              }
-            }
-          },
-          onDrop(args) {
-            moveTarget.value = false;
-          },
-        }),
-      ),
-    );
-  });
-});
+// onMounted(() => {
+//   watchEffect((cleanup) => {
+//     cleanup(
+//       combine(
+//         draggable({
+//           element: containerRef.value!,
+//           getInitialData: () => getChordDragData({ index: props.index }),
+//           onGenerateDragPreview: ({ nativeSetDragImage }) => {
+//             disableNativeDragPreview({ nativeSetDragImage });
+//             preventUnhandled.start();
+//           },
+//           onDragStart() {
+//             moving.value = true;
+//           },
+//           onDrop() {
+//             moving.value = false;
+//           },
+//         }),
+//         dropTargetForElements({
+//           element: containerRef.value!,
+//           getData: () => getChordInsertDropData({ index: props.index }),
+//           onDropTargetChange(args) {
+//             if (isChordDragData(args.source.data)) {
+//               if (
+//                 args.location.current.dropTargets[0].data.index ===
+//                 args.self.data.index
+//               ) {
+//                 moveTarget.value = true;
+//               } else {
+//                 moveTarget.value = false;
+//               }
+//             }
+//           },
+//           onDrop(args) {
+//             moveTarget.value = false;
+//           },
+//         }),
+//       ),
+//     );
+//   });
+// });
 </script>
 
 <template>
