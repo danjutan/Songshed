@@ -191,13 +191,13 @@ onMounted(() => {
     </div>
     <ChordSelect class="chord-select" />
     <div ref="diagram" class="diagram-container">
-      <!-- <ChordDiagram
+      <ChordDiagram
         :notes="props.chord.notes"
         :tuning="props.tuning"
         :interactive="true"
         @update-string="(string, note) => props.chord.notes.set(string, note)"
         @mute-string="(string) => props.chord.notes.delete(string)"
-      /> -->
+      />
     </div>
   </div>
 </template>
@@ -207,6 +207,7 @@ onMounted(() => {
   --diagram-width: 150px;
   --control-width: 24px;
   --icon-width: 16px;
+  width: 180px;
   position: relative;
   display: flex;
   flex-direction: column;

@@ -17,16 +17,16 @@ let observer: IntersectionObserver | null = null;
 
 // Drag-to-scroll state
 const isDragging = ref(false);
-let dragStartY = 0;
-let scrollStartY = 0;
+let dragStartX = 0;
+let scrollStartX = 0;
 
 function onMouseDown(e: MouseEvent) {
   const container = containerRef.value;
   if (!container) return;
 
   isDragging.value = true;
-  dragStartY = e.clientY;
-  scrollStartY = container.scrollTop;
+  dragStartX = e.clientX;
+  scrollStartX = container.scrollLeft;
 }
 
 function onMouseMove(e: MouseEvent) {
@@ -35,8 +35,8 @@ function onMouseMove(e: MouseEvent) {
   const container = containerRef.value;
   if (!container) return;
 
-  const deltaY = dragStartY - e.clientY;
-  container.scrollTop = scrollStartY + deltaY;
+  const deltaX = dragStartX - e.clientX;
+  container.scrollLeft = scrollStartX + deltaX;
 }
 
 function onMouseUp() {
@@ -61,7 +61,7 @@ function scrollToSelected() {
   if (!container) return;
   const target = itemRefs.value[model.value];
   if (target) {
-    target.scrollIntoView({ block: "center" });
+    target.scrollIntoView({ inline: "center" });
   }
 }
 
@@ -91,7 +91,7 @@ onMounted(async () => {
     },
     {
       root: container,
-      rootMargin: "-45% 0px -55% 0px",
+      rootMargin: "0px -45% 0px -55%",
       threshold: 0,
     },
   );
@@ -145,25 +145,24 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .scroll-container {
-  --item-height: 60px;
+  --item-width: 100px;
   --item-gap: 6px;
-  --visible-items: 2.5;
-  width: 80px;
-  height: calc(
-    (var(--item-height) * var(--visible-items)) +
-      (var(--item-gap) * (var(--visible-items) - 1))
-  );
+
+  width: 100%;
+
   display: flex;
-  flex-direction: column;
-  row-gap: var(--item-gap);
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  overscroll-behavior-y: none;
+  flex-direction: row;
+  column-gap: var(--item-gap);
+
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: none;
+
+  padding-inline: calc(50% - var(--item-width) / 2);
+  padding-block: 4px;
   border-radius: 6px;
   border: 1px solid var(--p-border-color);
   background: var(--tab-background-color);
-  padding-block: calc(var(--item-height) / 2);
-  padding-inline: 4px;
   scrollbar-width: none;
   cursor: grab;
 
@@ -179,7 +178,8 @@ onBeforeUnmount(() => {
 }
 
 .scroll-item {
-  flex: 0 0 var(--item-height);
+  flex: 0 0 var(--item-width);
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -187,11 +187,11 @@ onBeforeUnmount(() => {
   user-select: none;
   opacity: 0.4;
   transition: opacity 0.15s ease-in-out;
-  width: 100%;
 }
 
 .scroll-item :deep(.container) {
-  width: 100%;
+  height: 100%;
+  width: auto;
   transform: none;
 }
 

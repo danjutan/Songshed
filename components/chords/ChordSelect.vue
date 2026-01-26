@@ -76,11 +76,9 @@ watch(selectedVoicing, (v) => emit("update:voicing", v), { immediate: true });
 .chord-select {
   width: 100%;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 8px;
-}
-
-.chroma-picker {
-  align-items: center;
+  overflow: hidden;
 }
 </style>

@@ -13,16 +13,16 @@ let observer: IntersectionObserver | null = null;
 
 // Drag-to-scroll state
 const isDragging = ref(false);
-let dragStartY = 0;
-let scrollStartY = 0;
+let dragStartX = 0;
+let scrollStartX = 0;
 
 function onMouseDown(e: MouseEvent) {
   const container = containerRef.value;
   if (!container) return;
 
   isDragging.value = true;
-  dragStartY = e.clientY;
-  scrollStartY = container.scrollTop;
+  dragStartX = e.clientX;
+  scrollStartX = container.scrollLeft;
 }
 
 function onMouseMove(e: MouseEvent) {
@@ -31,8 +31,8 @@ function onMouseMove(e: MouseEvent) {
   const container = containerRef.value;
   if (!container) return;
 
-  const deltaY = dragStartY - e.clientY;
-  container.scrollTop = scrollStartY + deltaY;
+  const deltaX = dragStartX - e.clientX;
+  container.scrollLeft = scrollStartX + deltaX;
 }
 
 function onMouseUp() {
@@ -59,7 +59,7 @@ function scrollToSelected() {
     (item) => item.dataset.value === model.value,
   );
   if (target) {
-    target.scrollIntoView({ block: "center" });
+    target.scrollIntoView({ inline: "center" });
   }
 }
 
@@ -89,7 +89,7 @@ onMounted(async () => {
     },
     {
       root: container,
-      rootMargin: "-45% 0px -55% 0px",
+      rootMargin: "0px -45% 0px -55%",
       threshold: 0,
     },
   );
@@ -150,26 +150,25 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .scroll-container {
-  --item-height: 26px;
+  --item-width: 32px;
   --item-gap: 6px;
-  --visible-items: 4.5;
-  height: calc(
-    (var(--item-height) * var(--visible-items)) +
-      (var(--item-gap) * (var(--visible-items) - 1))
-  );
-  width: fit-content;
-  min-width: 32px;
+
+  width: 100%;
+  height: fit-content;
+  min-height: 32px;
+
   display: flex;
-  flex-direction: column;
-  row-gap: var(--item-gap);
-  /* align-items: center; */
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  overscroll-behavior-y: none;
+  flex-direction: row;
+  column-gap: var(--item-gap);
+
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: none;
+
+  padding-inline: calc(50% - var(--item-width) / 2);
   border-radius: 6px;
   border: 1px solid var(--p-border-color);
   background: var(--tab-background-color);
-  padding-block: calc(var(--item-height) * 2);
   scrollbar-width: none;
   cursor: grab;
 
@@ -185,11 +184,12 @@ onBeforeUnmount(() => {
 }
 
 .scroll-item {
-  flex: 0 0 var(--item-height);
+  flex: 0 0 var(--item-width);
   display: flex;
   align-items: center;
+  justify-content: center;
   font-size: 12px;
-  line-height: var(--item-height);
+  line-height: 32px;
   color: var(--p-text-color);
   border-radius: 4px;
   scroll-snap-align: center;
