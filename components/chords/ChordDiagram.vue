@@ -5,12 +5,10 @@ import type {
   InputNumberInputEvent,
 } from "primevue/inputnumber";
 import { X, ChevronDown, ChevronUp } from "lucide-vue-next";
-import type { BarHighlightType } from "../tab/bars/TabBar.vue";
 
 const props = defineProps<{
   notes: NoteStack<ChordNote>;
   tuning: Midi[];
-  highlight?: BarHighlightType | false;
 }>();
 
 const emit = defineEmits<{
@@ -130,7 +128,6 @@ function onInputClick(e: Event) {
 
 <template>
   <div class="container">
-    <div v-if="highlight" :class="highlight" class="overlay" />
     <svg class="chart-svg" :viewBox>
       <rect
         v-if="windowStart === 1"
@@ -305,32 +302,6 @@ function onInputClick(e: Event) {
   padding-bottom: var(--control-width);
   margin-bottom: var(--control-width);
   padding-right: 10px;
-}
-
-.overlay {
-  position: absolute;
-  top: -8px;
-  left: 6px;
-  width: 100%;
-  height: calc(100% + var(--control-width));
-  pointer-events: none;
-  opacity: var(--select-alpha);
-
-  &.might-delete {
-    background: var(--delete-color);
-  }
-
-  &.might-move {
-    background: var(--might-move-color);
-  }
-
-  &.moving {
-    background: var(--moving-color);
-  }
-
-  &.move-target {
-    background: var(--move-target-color);
-  }
 }
 
 .chart-svg {

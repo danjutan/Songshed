@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { Chord, ChordNote, NoteStack } from "~/model/data";
 import { detectChord } from "~/composables/theory";
-import { Check, X, GripVertical } from "lucide-vue-next";
+import { Check, Delete, Pencil } from "lucide-vue-next";
 import ChordDiagram from "./ChordDiagram.vue";
 
 import {
@@ -50,6 +50,14 @@ const mightDelete = ref(false);
 const mightMove = ref(false);
 const moving = ref(false);
 const moveTarget = ref(false);
+
+const highlight = computed(() =>
+  (moving.value && "moving") ||
+  (mightMove.value && "might-move") ||
+  (mightDelete.value && "might-delete") ||
+  (moveTarget.value && "move-target") ||
+  false,
+);
 
 const inplaceOpened = ref(false);
 
@@ -109,8 +117,9 @@ onMounted(() => {
     class="chart-container"
     :class="{ 'inplace-opened': inplaceOpened, moving }"
   >
+    <div v-if="highlight" :class="highlight" class="highlight" />
     <div class="title-row">
-      <div class="left-filler" />
+      <!-- <div class="left-filler" /> -->
       <Inplace
         class="inplace"
         pt:display:class="inplace-display"
@@ -119,7 +128,11 @@ onMounted(() => {
         @close="inplaceOpened = false"
       >
         <template #display>
+          <span/>
           {{ chord.title || "..." }}
+          <span class="edit-icon">
+            <Pencil :size="12" />
+          </span>
         </template>
         <template #content="{ closeCallback }">
           <InputText
@@ -132,10 +145,21 @@ onMounted(() => {
               <Check :size="16" color="var(--p-green-600)" />
             </template>
           </Button>
+          <Button
+            class="delete icon-button"
+            text
+            @mouseenter="mightDelete = true"
+            @mouseleave="mightDelete = false"
+            @click="deleteClicked"
+          >
+            <template #icon>
+              <Delete :size="16" />
+            </template>
+          </Button>
         </template>
       </Inplace>
 
-      <div class="buttons-container">
+      <!-- <div class="buttons-container">
         <div
           ref="moveHandle"
           class="move-handle"
@@ -155,19 +179,12 @@ onMounted(() => {
             <X :size="16" />
           </template>
         </Button>
-      </div>
+      </div> -->
     </div>
     <ChordDiagram
       class="chart"
-      :strings="props.tuning.length"
       :notes="props.chord.notes"
       :tuning="props.tuning"
-      :highlight="
-        (moving && 'moving') ||
-        (mightMove && 'might-move') ||
-        (mightDelete && 'might-delete') ||
-        (moveTarget && 'move-target')
-      "
       @update-string="(string, note) => props.chord.notes.set(string, note)"
       @mute-string="(string) => props.chord.notes.delete(string)"
     />
@@ -176,8 +193,10 @@ onMounted(() => {
 
 <style scoped>
 .chart-container {
+  --chart-width: 150px;
   --control-width: 24px;
-  /* position: relative; */
+  --icon-width: 16px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -197,40 +216,81 @@ onMounted(() => {
 }
 
 .chart {
-  width: 150px;
+  width: var(--chart-width);
+}
+
+.highlight {
+  position: absolute;
+  inset: -10px -6px 10px 10px;
+  pointer-events: none;
+  opacity: var(--select-alpha);
+
+  &.might-delete {
+    background: var(--delete-color);
+  }
+
+  &.might-move {
+    background: var(--might-move-color);
+  }
+
+  &.moving {
+    background: var(--moving-color);
+  }
+
+  &.move-target {
+    background: var(--move-target-color);
+  }
 }
 
 .title-row {
   display: flex;
-  /* margin-left: var(--control-width); */
-  transform: translateX(var(--control-width));
-  width: calc(100% - var(--control-width));
-  justify-content: space-between;
-  align-items: center;
+  width: var(--chart-width);
+  justify-content: center;
+  margin-right: calc(-0.5 * (var(--control-width) + var(--icon-width)));
+  margin-bottom: 12px;
+}
+
+.inplace {
+  width: 100%;
 }
 
 :deep(.inplace-display) {
-  width: 96px;
+  display: flex;
+  justify-content: space-between;
   text-align: center;
+
+  & .edit-icon {
+    width: var(--icon-width);
+    margin-right: calc(var(--icon-width) * -0.5);
+    height: var(--icon-width);
+  }
 }
 
 :deep(.inplace-content) {
+  width: calc(100% + var(--icon-width) * 1.5);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .title-input {
-  width: 80px;
+  width: calc(var(--chart-width) - var(--control-width) - var(--icon-width) * 0.5);
   text-align: center;
-  height: 32px;
-  padding-inline: 2px;
+  /* height: 32px; */
+  /* padding-inline: 2px; */
+
 }
 
 .icon-button {
-  width: 16px;
+  width: var(--icon-width);
   height: 32px;
   padding: 0px;
+  &:hover svg {
+    stroke-width: 3;
+  }
+  &.delete {
+    cursor: pointer;
+  }
 }
 
 .buttons-container {
@@ -241,13 +301,7 @@ onMounted(() => {
   transition: opacity 0.15s ease-in-out;
 }
 
-.delete {
-  cursor: pointer;
-  color: var(--p-red-600);
-  &:hover {
-    font-weight: bold;
-  }
-}
+
 
 .left-filler {
   width: 24px;
