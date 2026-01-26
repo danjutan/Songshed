@@ -69,59 +69,64 @@ function deleteClicked() {
   emit("delete");
 }
 
-const containerRef = useTemplateRef("container");
+// const containerRef = useTemplateRef("container");
+const titleRowRef = useTemplateRef("titleRow");
+const diagramRef = useTemplateRef("diagram");
 
-// onMounted(() => {
-//   watchEffect((cleanup) => {
-//     cleanup(
-//       combine(
-//         draggable({
-//           element: containerRef.value!,
-//           getInitialData: () => getChordDragData({ index: props.index }),
-//           onGenerateDragPreview: ({ nativeSetDragImage }) => {
-//             disableNativeDragPreview({ nativeSetDragImage });
-//             preventUnhandled.start();
-//           },
-//           onDragStart() {
-//             moving.value = true;
-//           },
-//           onDrop() {
-//             moving.value = false;
-//           },
-//         }),
-//         dropTargetForElements({
-//           element: containerRef.value!,
-//           getData: () => getChordInsertDropData({ index: props.index }),
-//           onDropTargetChange(args) {
-//             if (isChordDragData(args.source.data)) {
-//               if (
-//                 args.location.current.dropTargets[0].data.index ===
-//                 args.self.data.index
-//               ) {
-//                 moveTarget.value = true;
-//               } else {
-//                 moveTarget.value = false;
-//               }
-//             }
-//           },
-//           onDrop(args) {
-//             moveTarget.value = false;
-//           },
-//         }),
-//       ),
-//     );
-//   });
-// });
+onMounted(() => {
+  watchEffect((cleanup) => {
+    cleanup(
+      combine(
+        ...[titleRowRef.value!, diagramRef.value!].map((el) =>
+          draggable({
+            element: el,
+            getInitialData: () => getChordDragData({ index: props.index }),
+            onGenerateDragPreview: ({ nativeSetDragImage }) => {
+              disableNativeDragPreview({ nativeSetDragImage });
+              preventUnhandled.start();
+            },
+            onDragStart() {
+              moving.value = true;
+            },
+            onDrop() {
+              moving.value = false;
+            },
+          }),
+        ),
+        ...[titleRowRef.value!, diagramRef.value!].map((el) =>
+          dropTargetForElements({
+            element: el,
+            getData: () => getChordInsertDropData({ index: props.index }),
+            onDropTargetChange(args) {
+              if (isChordDragData(args.source.data)) {
+                if (
+                  args.location.current.dropTargets[0].data.index ===
+                  args.self.data.index
+                ) {
+                  moveTarget.value = true;
+                } else {
+                  moveTarget.value = false;
+                }
+              }
+            },
+            onDrop(args) {
+              moveTarget.value = false;
+            },
+          }),
+        ),
+      ),
+    );
+  });
+});
 </script>
 
 <template>
   <div
-    ref="container"
     class="chart-container"
     :class="{ 'inplace-opened': inplaceOpened, moving }"
   >
     <div v-if="highlight" :class="highlight" class="highlight" />
-    <div class="title-row">
+    <div ref="titleRow" class="title-row">
       <!-- <div class="left-filler" /> -->
       <Inplace
         class="inplace"
@@ -185,19 +190,20 @@ const containerRef = useTemplateRef("container");
       </div> -->
     </div>
     <ChordSelect class="chord-select" />
-    <ChordDiagram
-      class="chart"
-      :notes="props.chord.notes"
-      :tuning="props.tuning"
-      @update-string="(string, note) => props.chord.notes.set(string, note)"
-      @mute-string="(string) => props.chord.notes.delete(string)"
-    />
+    <div ref="diagram" class="diagram-container">
+      <ChordDiagram
+        :notes="props.chord.notes"
+        :tuning="props.tuning"
+        @update-string="(string, note) => props.chord.notes.set(string, note)"
+        @mute-string="(string) => props.chord.notes.delete(string)"
+      />
+    </div>
   </div>
 </template>
 
 <style scoped>
 .chart-container {
-  --chart-width: 150px;
+  --diagram-width: 150px;
   --control-width: 24px;
   --icon-width: 16px;
   position: relative;
@@ -219,8 +225,8 @@ const containerRef = useTemplateRef("container");
   }
 }
 
-.chart {
-  width: var(--chart-width);
+.diagram-container {
+  width: var(--diagram-width);
 }
 
 .chord-select {
@@ -252,7 +258,7 @@ const containerRef = useTemplateRef("container");
 
 .title-row {
   display: flex;
-  width: var(--chart-width);
+  width: var(--diagram-width);
   justify-content: center;
   margin-right: calc(-0.5 * (var(--control-width) + var(--icon-width)));
   margin-bottom: 12px;
@@ -283,7 +289,7 @@ const containerRef = useTemplateRef("container");
 
 .title-input {
   width: calc(
-    var(--chart-width) - var(--control-width) - var(--icon-width) * 0.5
+    var(--diagram-width) - var(--control-width) - var(--icon-width) * 0.5
   );
   text-align: center;
   /* height: 32px; */
