@@ -43,11 +43,26 @@ watch([chromaIndex, selectedSuffix], () => {
   selectedVoicingIndex.value = 0;
 });
 
+function formatSuffixForTitle(suffix: string): string {
+  if (suffix === "major") return "maj";
+  if (suffix === "minor") return "min";
+  return suffix;
+}
+
+const selectedTitle = computed(() => {
+  const suffix = formatSuffixForTitle(selectedSuffix.value);
+  return `${selectedChroma.value}${suffix}`;
+});
+
 const emit = defineEmits<{
   "update:voicing": [voicing: NoteStack<ChordNote> | null];
+  "update:title": [title: string];
 }>();
 
 watch(selectedVoicing, (v) => emit("update:voicing", v), { immediate: true });
+watch(selectedTitle, (title) => emit("update:title", title), {
+  immediate: true,
+});
 </script>
 
 <template>

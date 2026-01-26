@@ -52,7 +52,6 @@ export type StackMap<N extends NoteData> = Map<number, NoteStack<N>>;
 export type Chord = {
   title: string;
   notes: NoteStack<ChordNote>;
-  autoTitle?: boolean; // undefined/true = auto-detect, false = manual
 };
 
 export interface GuitarTabData {

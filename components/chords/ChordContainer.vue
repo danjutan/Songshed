@@ -33,10 +33,8 @@ const emit = defineEmits<{
 watch(
   () => [...props.chord.notes.entries()],
   () => {
-    if (props.chord.autoTitle !== false) {
-      const detected = detectChord(props.chord.notes);
-      props.chord.title = detected ?? "";
-    }
+    const detected = detectChord(props.chord.notes);
+    props.chord.title = detected ?? "";
   },
   { deep: true },
 );
@@ -44,8 +42,10 @@ watch(
 function onTitleChange(newTitle: string | undefined) {
   const title = newTitle ?? "";
   props.chord.title = title;
-  // Empty title = resume auto-detect, non-empty = manual mode
-  props.chord.autoTitle = title === "";
+}
+
+function onSelectTitle(title: string) {
+  props.chord.title = title;
 }
 
 const mightDelete = ref(false);
@@ -189,7 +189,7 @@ onMounted(() => {
         </Button>
       </div> -->
     </div>
-    <ChordSelect class="chord-select" />
+    <ChordSelect class="chord-select" @update:title="onSelectTitle" />
     <div ref="diagram" class="diagram-container">
       <ChordDiagram
         :notes="props.chord.notes"
