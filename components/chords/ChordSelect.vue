@@ -1,7 +1,9 @@
 <script lang="ts" setup>
-import type { Chroma } from "~/theory/notes";
-import { getSuffixesForChroma } from "~/theory/chords";
+import type { ChordNote, NoteStack } from "~/model/data";
+import { type Chroma, defaultTuning } from "~/theory/notes";
+import { getChordsFromDb, getSuffixesForChroma } from "~/theory/chords";
 import ScrollPicker from "./ScrollPicker.vue";
+import DiagramPicker from "./DiagramPicker.vue";
 
 const CHROMATIC_NOTES = [
   "C",
@@ -26,6 +28,26 @@ const chromaIndex = computed(
 );
 
 const suffixes = computed(() => getSuffixesForChroma(chromaIndex.value));
+
+const selectedVoicingIndex = ref(0);
+
+const voicings = computed(() =>
+  getChordsFromDb(chromaIndex.value, selectedSuffix.value),
+);
+
+const selectedVoicing = computed(
+  () => voicings.value[selectedVoicingIndex.value] ?? null,
+);
+
+watch([chromaIndex, selectedSuffix], () => {
+  selectedVoicingIndex.value = 0;
+});
+
+const emit = defineEmits<{
+  "update:voicing": [voicing: NoteStack<ChordNote> | null];
+}>();
+
+watch(selectedVoicing, (v) => emit("update:voicing", v), { immediate: true });
 </script>
 
 <template>
@@ -41,6 +63,12 @@ const suffixes = computed(() => getSuffixesForChroma(chromaIndex.value));
       :items="suffixes"
       name="chord-suffix"
     />
+    <DiagramPicker
+      v-if="voicings.length > 0"
+      v-model="selectedVoicingIndex"
+      :voicings="voicings"
+      :tuning="defaultTuning"
+    />
   </div>
 </template>
 
@@ -48,7 +76,8 @@ const suffixes = computed(() => getSuffixesForChroma(chromaIndex.value));
 .chord-select {
   width: 100%;
   display: flex;
-  /* justify-content: center; */
+  align-items: center;
+  gap: 8px;
 }
 
 .chroma-picker {

@@ -1,11 +1,15 @@
 <script lang="ts" setup>
+import type { ChordNote, NoteStack } from "~/model/data";
+import type { Midi } from "~/theory/notes";
+import ChordDiagram from "./ChordDiagram.vue";
+
 interface Props {
-  items: string[];
-  name: string;
+  voicings: NoteStack<ChordNote>[];
+  tuning: Midi[];
 }
 
 const props = defineProps<Props>();
-const model = defineModel<string>({ required: true });
+const model = defineModel<number>({ required: true });
 
 const containerRef = ref<HTMLElement | null>(null);
 const itemRefs = ref<HTMLElement[]>([]);
@@ -47,17 +51,15 @@ function onMouseUp() {
 }
 
 function setDefaultSelection() {
-  if (!model.value && props.items.length > 0) {
-    model.value = props.items[0];
+  if (model.value === undefined && props.voicings.length > 0) {
+    model.value = 0;
   }
 }
 
 function scrollToSelected() {
   const container = containerRef.value;
   if (!container) return;
-  const target = itemRefs.value.find(
-    (item) => item.dataset.value === model.value,
-  );
+  const target = itemRefs.value[model.value];
   if (target) {
     target.scrollIntoView({ block: "center" });
   }
@@ -81,9 +83,9 @@ onMounted(async () => {
     (entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
-        const value = (entry.target as HTMLElement).dataset.value;
-        if (value !== undefined) {
-          model.value = value;
+        const index = (entry.target as HTMLElement).dataset.index;
+        if (index !== undefined) {
+          model.value = parseInt(index, 10);
         }
       });
     },
@@ -98,21 +100,16 @@ onMounted(async () => {
   if (currentObserver) {
     itemRefs.value.forEach((item) => currentObserver.observe(item));
   }
-
-  // Defer scroll until after layout is complete to handle sibling components
-  // that may render conditionally and cause layout shifts
-  requestAnimationFrame(() => {
-    scrollToSelected();
-  });
+  scrollToSelected();
 });
 
 watch(
-  () => props.items,
+  () => props.voicings,
   async () => {
     await nextTick();
-    // If current selection is not in new items, reset to first item
-    if (!props.items.includes(model.value)) {
-      model.value = props.items[0] ?? "";
+    // If current selection is out of bounds, reset to first item
+    if (model.value >= props.voicings.length) {
+      model.value = 0;
     }
     scrollToSelected();
   },
@@ -133,43 +130,40 @@ onBeforeUnmount(() => {
     :class="{ dragging: isDragging }"
     @mousedown="onMouseDown"
   >
-    <label
-      v-for="item in items"
-      :key="item"
+    <div
+      v-for="(voicing, index) in voicings"
+      :key="index"
       ref="itemRefs"
       class="scroll-item"
-      :class="{ selected: model === item }"
-      :data-value="item"
-      :aria-selected="model === item"
+      :class="{ selected: model === index }"
+      :data-index="index"
     >
-      <span class="label">{{ item }}</span>
-      <input v-model="model" type="radio" :name="name" :value="item" />
-    </label>
+      <ChordDiagram :notes="voicing" :tuning="tuning" :interactive="false" />
+    </div>
   </div>
 </template>
 
 <style scoped>
 .scroll-container {
-  --item-height: 26px;
+  --item-height: 60px;
   --item-gap: 6px;
-  --visible-items: 4.5;
+  --visible-items: 2.5;
+  width: 80px;
   height: calc(
     (var(--item-height) * var(--visible-items)) +
       (var(--item-gap) * (var(--visible-items) - 1))
   );
-  width: fit-content;
-  min-width: 32px;
   display: flex;
   flex-direction: column;
   row-gap: var(--item-gap);
-  /* align-items: center; */
   overflow-y: auto;
   scroll-snap-type: y mandatory;
   overscroll-behavior-y: none;
   border-radius: 6px;
   border: 1px solid var(--p-border-color);
   background: var(--tab-background-color);
-  padding-block: calc(var(--item-height) * 2);
+  padding-block: calc(var(--item-height) / 2);
+  padding-inline: 4px;
   scrollbar-width: none;
   cursor: grab;
 
@@ -188,22 +182,24 @@ onBeforeUnmount(() => {
   flex: 0 0 var(--item-height);
   display: flex;
   align-items: center;
-  font-size: 12px;
-  line-height: var(--item-height);
-  color: var(--p-text-color);
-  border-radius: 4px;
+  justify-content: center;
   scroll-snap-align: center;
   user-select: none;
+  opacity: 0.4;
+  transition: opacity 0.15s ease-in-out;
+  width: 100%;
+}
+
+.scroll-item :deep(.container) {
+  width: 100%;
+  transform: none;
+}
+
+.scroll-item :deep(.chart-svg) {
+  transform: none;
 }
 
 .scroll-item.selected {
-  color: var(--p-primary-color);
-  font-weight: 600;
-}
-
-.scroll-item input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 1;
 }
 </style>

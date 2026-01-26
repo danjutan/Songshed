@@ -191,12 +191,13 @@ onMounted(() => {
     </div>
     <ChordSelect class="chord-select" />
     <div ref="diagram" class="diagram-container">
-      <ChordDiagram
+      <!-- <ChordDiagram
         :notes="props.chord.notes"
         :tuning="props.tuning"
+        :interactive="true"
         @update-string="(string, note) => props.chord.notes.set(string, note)"
         @mute-string="(string) => props.chord.notes.delete(string)"
-      />
+      /> -->
     </div>
   </div>
 </template>
@@ -231,6 +232,7 @@ onMounted(() => {
 
 .chord-select {
   margin-left: calc(var(--control-width) * 0.5);
+  position: relative;
 }
 
 .highlight {
