@@ -12,8 +12,9 @@ import type {
   BendData,
   TieData,
 } from "./data";
-import { SPACING } from "~/composables/theory";
+import { SPACING, largestSpacingDivisor } from "~/theory/spacing";
 import { syncTuning } from "./sync-tuning";
+import { defaultTuning, type Midi } from "~/theory/notes";
 
 export interface TabStore
   extends Pick<

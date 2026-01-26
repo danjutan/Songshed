@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ChordNote, NoteStack } from "~/model/data";
+import type { Midi } from "~/theory/notes";
 import type {
   InputNumberBlurEvent,
   InputNumberInputEvent,

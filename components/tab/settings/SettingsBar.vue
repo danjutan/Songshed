@@ -4,7 +4,7 @@ import {
   SPACING,
   type SpacingName,
   type SpacingValue,
-} from "~/composables/theory";
+} from "~/theory/spacing";
 const props = defineProps<{
   id: string;
 }>();

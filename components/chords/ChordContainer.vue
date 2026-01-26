@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import type { Chord, ChordNote, NoteStack } from "~/model/data";
-import { detectChord } from "~/composables/theory";
+import { detectChord } from "~/theory/notes";
 import { Check, Delete, Pencil } from "lucide-vue-next";
 import ChordDiagram from "./ChordDiagram.vue";
+import ChordSelect from "./ChordSelect.vue";
 
 import {
   draggable,
@@ -16,6 +17,7 @@ import {
   getChordInsertDropData,
   isChordDragData,
 } from "./dnd-types";
+import type { Midi } from "~/theory/notes";
 
 const props = defineProps<{
   chord: Chord;
@@ -51,12 +53,13 @@ const mightMove = ref(false);
 const moving = ref(false);
 const moveTarget = ref(false);
 
-const highlight = computed(() =>
-  (moving.value && "moving") ||
-  (mightMove.value && "might-move") ||
-  (mightDelete.value && "might-delete") ||
-  (moveTarget.value && "move-target") ||
-  false,
+const highlight = computed(
+  () =>
+    (moving.value && "moving") ||
+    (mightMove.value && "might-move") ||
+    (mightDelete.value && "might-delete") ||
+    (moveTarget.value && "move-target") ||
+    false,
 );
 
 const inplaceOpened = ref(false);
@@ -128,7 +131,7 @@ onMounted(() => {
         @close="inplaceOpened = false"
       >
         <template #display>
-          <span/>
+          <span />
           {{ chord.title || "..." }}
           <span class="edit-icon">
             <Pencil :size="12" />
@@ -181,6 +184,7 @@ onMounted(() => {
         </Button>
       </div> -->
     </div>
+    <ChordSelect class="chord-select" />
     <ChordDiagram
       class="chart"
       :notes="props.chord.notes"
@@ -217,6 +221,10 @@ onMounted(() => {
 
 .chart {
   width: var(--chart-width);
+}
+
+.chord-select {
+  margin-left: calc(var(--control-width) * 0.5);
 }
 
 .highlight {
@@ -274,11 +282,12 @@ onMounted(() => {
 }
 
 .title-input {
-  width: calc(var(--chart-width) - var(--control-width) - var(--icon-width) * 0.5);
+  width: calc(
+    var(--chart-width) - var(--control-width) - var(--icon-width) * 0.5
+  );
   text-align: center;
   /* height: 32px; */
   /* padding-inline: 2px; */
-
 }
 
 .icon-button {
@@ -300,8 +309,6 @@ onMounted(() => {
   opacity: 0;
   transition: opacity 0.15s ease-in-out;
 }
-
-
 
 .left-filler {
   width: 24px;

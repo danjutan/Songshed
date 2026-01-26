@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { getNoteInfo, type Midi } from "~/theory/notes";
 const props = defineProps<{
   noteRadius: number;
   cx: number;

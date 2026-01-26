@@ -3,7 +3,11 @@ import { injectCellHoverEvents } from "~/components/tab/providers/events/provide
 import { injectSettingsState } from "~/components/tab/providers/state/provide-settings-state";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
 import { injectTimeSignature } from "~/components/tab/providers/provide-time-signature";
-import { SPACING, type ColoredSpacingName } from "~/composables/theory";
+import {
+  SPACING,
+  largestSpacingDivisor,
+  type ColoredSpacingName,
+} from "~/theory/spacing";
 
 const props = defineProps<{
   position: number;

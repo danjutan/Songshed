@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { GuitarNote, NoteStack } from "~/model/data";
+import type { Midi } from "~/theory/notes";
 import NoteContainer from "./NoteContainer.vue";
 import { injectStackResizeObserver } from "~/components/tab/providers/events/provide-resize-observer";
 import { useIsCollapsed } from "~/components/tab/hooks/use-collapsed";

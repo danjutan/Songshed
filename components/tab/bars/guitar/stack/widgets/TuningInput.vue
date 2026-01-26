@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { getNameAndOctave, toMidi, type Midi } from "~/theory/notes";
 const props = withDefaults(
   defineProps<{
     fontSize: string;
