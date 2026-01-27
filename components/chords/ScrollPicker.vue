@@ -59,7 +59,7 @@ function scrollToSelected() {
     (item) => item.dataset.value === model.value,
   );
   if (target) {
-    target.scrollIntoView({ inline: "center" });
+    target.scrollIntoView({ inline: "center", block: "nearest" });
   }
 }
 
@@ -155,7 +155,7 @@ onBeforeUnmount(() => {
 
   width: 100%;
   height: fit-content;
-  min-height: 32px;
+  /* min-height: 32px; */
 
   display: flex;
   flex-direction: row;

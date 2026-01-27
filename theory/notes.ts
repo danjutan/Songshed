@@ -1,4 +1,8 @@
-import { Note as TonalNote, Chord as TonalChord, Midi as TonalMidi } from "tonal";
+import {
+  Note as TonalNote,
+  Chord as TonalChord,
+  Midi as TonalMidi,
+} from "tonal";
 import type { ChordNote, NoteStack } from "~/model/data";
 
 export type Midi =
@@ -153,7 +157,9 @@ export function toMidi(note: string): Midi {
 // Note.get already caches for us https://github.com/tonaljs/tonal/blob/3eb59b7cc0e02f6a66d07756d9d6dec8637abf2f/packages/core/src/note.ts#L44-L48
 export function getNoteInfo(nameOrMidi: string | number) {
   const note =
-    typeof nameOrMidi === "number" ? TonalNote.fromMidi(nameOrMidi) : nameOrMidi;
+    typeof nameOrMidi === "number"
+      ? TonalNote.fromMidi(nameOrMidi)
+      : nameOrMidi;
 
   const noteData = TonalNote.get(note);
 
@@ -182,9 +188,9 @@ export function getChroma(midi: number): Chroma {
 export function detectChord(notes: NoteStack<ChordNote>): string | null {
   if (notes.size === 0) return null;
 
-  const pitchClasses = [...notes.values()].sort((a, b) => a.note - b.note).map((n) =>
-    TonalNote.pitchClass(TonalNote.fromMidi(n.note)),
-  );
+  const pitchClasses = [...notes.values()]
+    .sort((a, b) => a.note - b.note)
+    .map((n) => TonalNote.pitchClass(TonalNote.fromMidi(n.note)));
 
   const detected = TonalChord.detect(pitchClasses);
   if (detected.length === 0) return null;

@@ -1,7 +1,13 @@
 <script lang="ts" setup>
 import type { Chord, ChordNote, NoteStack } from "~/model/data";
 import { detectChord } from "~/theory/notes";
-import { Check, Delete, Pencil } from "lucide-vue-next";
+import {
+  Check,
+  Delete,
+  Pencil,
+  SquareChevronDown,
+  SquareChevronUp,
+} from "lucide-vue-next";
 import ChordDiagram from "./ChordDiagram.vue";
 import ChordSelect from "./ChordSelect.vue";
 
@@ -34,7 +40,9 @@ watch(
   () => [...props.chord.notes.entries()],
   () => {
     const detected = detectChord(props.chord.notes);
-    props.chord.title = detected ?? "";
+    if (detected) {
+      props.chord.title = detected;
+    }
   },
   { deep: true },
 );
@@ -44,9 +52,7 @@ function onTitleChange(newTitle: string | undefined) {
   props.chord.title = title;
 }
 
-function onSelectTitle(title: string) {
-  props.chord.title = title;
-}
+const showChordSelect = ref(false);
 
 const mightDelete = ref(false);
 const mightMove = ref(false);
@@ -75,9 +81,13 @@ const diagramRef = useTemplateRef("diagram");
 
 onMounted(() => {
   watchEffect((cleanup) => {
+    const draggableElements = [titleRowRef.value, diagramRef.value].filter(
+      (el): el is HTMLDivElement => el !== null,
+    );
+
     cleanup(
       combine(
-        ...[titleRowRef.value!, diagramRef.value!].map((el) =>
+        ...draggableElements.map((el) =>
           draggable({
             element: el,
             getInitialData: () => getChordDragData({ index: props.index }),
@@ -93,12 +103,15 @@ onMounted(() => {
             },
           }),
         ),
-        ...[titleRowRef.value!, diagramRef.value!].map((el) =>
+        ...draggableElements.map((el) =>
           dropTargetForElements({
             element: el,
             getData: () => getChordInsertDropData({ index: props.index }),
             onDropTargetChange(args) {
-              if (isChordDragData(args.source.data)) {
+              if (
+                isChordDragData(args.source.data) &&
+                args.location.current.dropTargets.length > 0
+              ) {
                 if (
                   args.location.current.dropTargets[0].data.index ===
                   args.self.data.index
@@ -127,7 +140,14 @@ onMounted(() => {
   >
     <div v-if="highlight" :class="highlight" class="highlight" />
     <div ref="titleRow" class="title-row">
-      <!-- <div class="left-filler" /> -->
+      <Button
+        class="dropdown icon-button"
+        text
+        @click="showChordSelect = !showChordSelect"
+      >
+        <SquareChevronDown v-if="!showChordSelect" :size="16" />
+        <SquareChevronUp v-else :size="16" />
+      </Button>
       <Inplace
         class="inplace"
         pt:display:class="inplace-display"
@@ -153,20 +173,19 @@ onMounted(() => {
               <Check :size="16" color="var(--p-green-600)" />
             </template>
           </Button>
-          <Button
-            class="delete icon-button"
-            text
-            @mouseenter="mightDelete = true"
-            @mouseleave="mightDelete = false"
-            @click="deleteClicked"
-          >
-            <template #icon>
-              <Delete :size="16" />
-            </template>
-          </Button>
         </template>
       </Inplace>
-
+      <Button
+        class="delete icon-button"
+        text
+        @mouseenter="mightDelete = true"
+        @mouseleave="mightDelete = false"
+        @click="deleteClicked"
+      >
+        <template #icon>
+          <Delete :size="16" />
+        </template>
+      </Button>
       <!-- <div class="buttons-container">
         <div
           ref="moveHandle"
@@ -189,8 +208,12 @@ onMounted(() => {
         </Button>
       </div> -->
     </div>
-    <ChordSelect class="chord-select" @update:title="onSelectTitle" />
-    <div ref="diagram" class="diagram-container">
+    <ChordSelect
+      v-if="showChordSelect"
+      class="chord-select"
+      @update:title="onTitleChange"
+    />
+    <div v-else ref="diagram" class="diagram-container">
       <ChordDiagram
         :notes="props.chord.notes"
         :tuning="props.tuning"
@@ -207,7 +230,7 @@ onMounted(() => {
   --diagram-width: 150px;
   --control-width: 24px;
   --icon-width: 16px;
-  width: 180px;
+  width: 200px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -225,6 +248,10 @@ onMounted(() => {
   &.moving {
     cursor: grabbing;
   }
+
+  &:not(:hover) svg {
+    display: none;
+  }
 }
 
 .diagram-container {
@@ -238,7 +265,8 @@ onMounted(() => {
 
 .highlight {
   position: absolute;
-  inset: -10px -6px 10px 10px;
+  z-index: 1;
+  inset: -10px -10px 0px 10px;
   pointer-events: none;
   opacity: var(--select-alpha);
 
@@ -261,14 +289,14 @@ onMounted(() => {
 
 .title-row {
   display: flex;
-  width: var(--diagram-width);
   justify-content: center;
+  align-items: center;
   margin-right: calc(-0.5 * (var(--control-width) + var(--icon-width)));
   margin-bottom: 12px;
 }
 
 .inplace {
-  width: 100%;
+  width: var(--diagram-width);
 }
 
 :deep(.inplace-display) {
@@ -284,7 +312,7 @@ onMounted(() => {
 }
 
 :deep(.inplace-content) {
-  width: calc(100% + var(--icon-width) * 1.5);
+  width: calc(100% + var(--icon-width) * 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -309,6 +337,11 @@ onMounted(() => {
   &.delete {
     cursor: pointer;
   }
+  &.dropdown {
+    color: var(--p-content-color);
+    /* margin-left: calc(var(--icon-width) * -1);
+    transform: translateX(var(--icon-width)); */
+  }
 }
 
 .buttons-container {
@@ -317,9 +350,5 @@ onMounted(() => {
   align-items: center;
   opacity: 0;
   transition: opacity 0.15s ease-in-out;
-}
-
-.left-filler {
-  width: 24px;
 }
 </style>

@@ -61,7 +61,7 @@ function scrollToSelected() {
   if (!container) return;
   const target = itemRefs.value[model.value];
   if (target) {
-    target.scrollIntoView({ inline: "center" });
+    target.scrollIntoView({ inline: "center", block: "nearest" });
   }
 }
 
