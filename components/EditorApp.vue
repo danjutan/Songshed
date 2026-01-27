@@ -152,6 +152,10 @@ async function save(saveId: string) {
   --tie-dragger-z-index: 7;
 }
 
+.editor-app :deep(button) {
+  font-family: sans-serif;
+}
+
 @media (prefers-color-scheme: dark) {
   .editor-app {
     --tab-background-color: var(--p-surface-900);

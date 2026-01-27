@@ -185,6 +185,23 @@ export function getChroma(midi: number): Chroma {
   return (midi % 12) as Chroma;
 }
 
+const FLAT_TO_SHARP: Record<string, string> = {
+  Bb: "A#",
+  Eb: "D#",
+  Ab: "G#",
+  Db: "C#",
+  Gb: "F#",
+};
+
+function convertFlatsToSharps(chordName: string): string {
+  for (const [flat, sharp] of Object.entries(FLAT_TO_SHARP)) {
+    if (chordName.startsWith(flat)) {
+      return sharp + chordName.slice(flat.length);
+    }
+  }
+  return chordName;
+}
+
 export function detectChord(notes: NoteStack<ChordNote>): string | null {
   if (notes.size === 0) return null;
 
@@ -197,5 +214,5 @@ export function detectChord(notes: NoteStack<ChordNote>): string | null {
 
   const chordName = detected[0].replace("M", "maj");
 
-  return chordName;
+  return convertFlatsToSharps(chordName);
 }

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Chord, ChordNote, NoteStack } from "~/model/data";
+import type { Chord, NoteStack, ChordNote } from "~/model/data";
 import { detectChord } from "~/theory/notes";
 import {
   Check,
@@ -36,9 +36,14 @@ const emit = defineEmits<{
 }>();
 
 // Watch for note changes and auto-detect chord title
+const skipNextDetection = ref(false);
 watch(
   () => [...props.chord.notes.entries()],
   () => {
+    if (skipNextDetection.value) {
+      skipNextDetection.value = false;
+      return;
+    }
     const detected = detectChord(props.chord.notes);
     if (detected) {
       props.chord.title = detected;
@@ -53,6 +58,32 @@ function onTitleChange(newTitle: string | undefined) {
 }
 
 const showChordSelect = ref(false);
+const originalTitle = ref<string | null>(null);
+
+function openChordSelect() {
+  originalTitle.value = props.chord.title;
+  showChordSelect.value = true;
+}
+
+function onChordSelectAccept(voicing: NoteStack<ChordNote> | null) {
+  if (voicing) {
+    skipNextDetection.value = true;
+    props.chord.notes.clear();
+    for (const [string, note] of voicing) {
+      props.chord.notes.set(string, note);
+    }
+  }
+  showChordSelect.value = false;
+  originalTitle.value = null;
+}
+
+function onChordSelectClose() {
+  if (originalTitle.value !== null) {
+    props.chord.title = originalTitle.value;
+  }
+  showChordSelect.value = false;
+  originalTitle.value = null;
+}
 
 const mightDelete = ref(false);
 const mightMove = ref(false);
@@ -69,6 +100,26 @@ const highlight = computed(
 );
 
 const inplaceOpened = ref(false);
+const inplaceRef = useTemplateRef("inplace");
+
+function onInplaceOpen() {
+  inplaceOpened.value = true;
+  if (showChordSelect.value) {
+    onChordSelectClose();
+  }
+}
+
+function onDropdownClick() {
+  if (inplaceOpened.value && inplaceRef.value) {
+    (inplaceRef.value as any).d_active = false;
+    inplaceOpened.value = false;
+  }
+  if (showChordSelect.value) {
+    onChordSelectClose();
+  } else {
+    openChordSelect();
+  }
+}
 
 function deleteClicked() {
   mightDelete.value = false;
@@ -140,19 +191,17 @@ onMounted(() => {
   >
     <div v-if="highlight" :class="highlight" class="highlight" />
     <div ref="titleRow" class="title-row">
-      <Button
-        class="dropdown icon-button"
-        text
-        @click="showChordSelect = !showChordSelect"
-      >
+      <Button class="dropdown icon-button" text @click="onDropdownClick">
         <SquareChevronDown v-if="!showChordSelect" :size="16" />
         <SquareChevronUp v-else :size="16" />
       </Button>
       <Inplace
+        ref="inplace"
         class="inplace"
+        :disabled="showChordSelect"
         pt:display:class="inplace-display"
         pt:content:class="inplace-content"
-        @open="inplaceOpened = true"
+        @open="onInplaceOpen"
         @close="inplaceOpened = false"
       >
         <template #display>
@@ -212,6 +261,8 @@ onMounted(() => {
       v-if="showChordSelect"
       class="chord-select"
       @update:title="onTitleChange"
+      @accept="onChordSelectAccept"
+      @close="onChordSelectClose"
     />
     <div v-else ref="diagram" class="diagram-container">
       <ChordDiagram
@@ -303,6 +354,13 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   text-align: center;
+
+  &.p-disabled {
+    opacity: 1;
+    .edit-icon {
+      visibility: hidden;
+    }
+  }
 
   & .edit-icon {
     width: var(--icon-width);

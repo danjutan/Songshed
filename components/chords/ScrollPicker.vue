@@ -2,6 +2,7 @@
 interface Props {
   items: string[];
   name: string;
+  placeholderItem?: string;
 }
 
 const props = defineProps<Props>();
@@ -138,7 +139,10 @@ onBeforeUnmount(() => {
       :key="item"
       ref="itemRefs"
       class="scroll-item"
-      :class="{ selected: model === item }"
+      :class="{
+        selected: model === item,
+        placeholder: item === placeholderItem,
+      }"
       :data-value="item"
       :aria-selected="model === item"
     >
@@ -150,7 +154,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .scroll-container {
-  --item-width: 32px;
+  --item-width: 35px;
   --item-gap: 6px;
 
   width: 100%;
@@ -205,5 +209,12 @@ onBeforeUnmount(() => {
   position: absolute;
   opacity: 0;
   pointer-events: none;
+}
+
+.scroll-item.placeholder {
+  font-size: 10px;
+  font-style: italic;
+  color: var(--p-text-color);
+  font-weight: normal;
 }
 </style>
