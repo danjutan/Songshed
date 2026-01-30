@@ -24,22 +24,11 @@ function setDefaultSelection() {
   }
 }
 
-function scrollToSelected() {
-  const container = containerRef.value;
-  if (!container) return;
-  const target = itemRefs.value?.[model.value];
-  if (target) {
-    target.scrollIntoView({ inline: "center", block: "nearest" });
-  }
-}
-
-onMounted(async () => {
-  await nextTick();
-  setDefaultSelection();
-
+function setupObserver() {
   const container = containerRef.value;
   if (!container) return;
 
+  observer?.disconnect();
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -61,6 +50,21 @@ onMounted(async () => {
   if (currentObserver) {
     itemRefs.value?.forEach((item) => currentObserver.observe(item));
   }
+}
+
+function scrollToSelected() {
+  const container = containerRef.value;
+  if (!container) return;
+  const target = itemRefs.value?.[model.value];
+  if (target) {
+    target.scrollIntoView({ inline: "center", block: "nearest" });
+  }
+}
+
+onMounted(async () => {
+  await nextTick();
+  setDefaultSelection();
+  setupObserver();
   scrollToSelected();
 });
 
@@ -72,6 +76,7 @@ watch(
     if (model.value >= props.voicings.length) {
       model.value = 0;
     }
+    setupObserver();
     scrollToSelected();
   },
 );
