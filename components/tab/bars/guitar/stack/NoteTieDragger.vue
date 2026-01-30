@@ -19,7 +19,7 @@ const emit = defineEmits<{
   "drag-end": [];
 }>();
 
-const draggerRef = ref<HTMLElement>();
+const draggerRef = useTemplateRef<HTMLElement>("draggerRef");
 
 onMounted(() => {
   return draggable({

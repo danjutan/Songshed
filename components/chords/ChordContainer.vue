@@ -35,22 +35,22 @@ const emit = defineEmits<{
   delete: [];
 }>();
 
-// Watch for note changes and auto-detect chord title
-const skipNextDetection = ref(false);
-watch(
-  () => [...props.chord.notes.entries()],
-  () => {
-    if (skipNextDetection.value) {
-      skipNextDetection.value = false;
-      return;
-    }
-    const detected = detectChord(props.chord.notes);
-    if (detected) {
-      props.chord.title = detected;
-    }
-  },
-  { deep: true },
-);
+function detectChordTitle() {
+  const detected = detectChord(props.chord.notes);
+  if (detected) {
+    props.chord.title = detected;
+  }
+}
+
+function onUpdateString(string: number, note: ChordNote) {
+  props.chord.notes.set(string, note);
+  detectChordTitle();
+}
+
+function onMuteString(string: number) {
+  props.chord.notes.delete(string);
+  detectChordTitle();
+}
 
 function onTitleChange(newTitle: string | undefined) {
   const title = newTitle ?? "";
@@ -67,7 +67,6 @@ function openChordSelect() {
 
 function onChordSelectAccept(voicing: NoteStack<ChordNote> | null) {
   if (voicing) {
-    skipNextDetection.value = true;
     props.chord.notes.clear();
     for (const [string, note] of voicing) {
       props.chord.notes.set(string, note);
@@ -100,7 +99,6 @@ const highlight = computed(
 );
 
 const inplaceOpened = ref(false);
-const inplaceRef = useTemplateRef("inplace");
 
 function onInplaceOpen() {
   inplaceOpened.value = true;
@@ -110,10 +108,7 @@ function onInplaceOpen() {
 }
 
 function onDropdownClick() {
-  if (inplaceOpened.value && inplaceRef.value) {
-    (inplaceRef.value as any).d_active = false;
-    inplaceOpened.value = false;
-  }
+  inplaceOpened.value = false;
   if (showChordSelect.value) {
     onChordSelectClose();
   } else {
@@ -196,9 +191,9 @@ onMounted(() => {
         <SquareChevronUp v-else :size="16" />
       </Button>
       <Inplace
-        ref="inplace"
         class="inplace"
         :disabled="showChordSelect"
+        :active="inplaceOpened"
         pt:display:class="inplace-display"
         pt:content:class="inplace-content"
         @open="onInplaceOpen"
@@ -269,8 +264,8 @@ onMounted(() => {
         :notes="props.chord.notes"
         :tuning="props.tuning"
         :interactive="true"
-        @update-string="(string, note) => props.chord.notes.set(string, note)"
-        @mute-string="(string) => props.chord.notes.delete(string)"
+        @update-string="onUpdateString"
+        @mute-string="onMuteString"
       />
     </div>
   </div>

@@ -1,91 +1,35 @@
 <script lang="ts" setup>
+import { useDragScroll } from "./use-drag-scroll";
 interface Props {
   items: string[];
   name: string;
-  placeholderItem?: string;
 }
 
 const props = defineProps<Props>();
-const model = defineModel<string>({ required: true });
+const model = defineModel<string | undefined>({ required: true });
 
-const containerRef = ref<HTMLElement | null>(null);
-const itemRefs = ref<HTMLElement[]>([]);
+const containerRef = useTemplateRef<HTMLElement>("containerRef");
+const itemRefs = useTemplateRef<HTMLElement[]>("itemRefs");
+const placeholderRef = useTemplateRef<HTMLElement>("placeholderRef");
 let observer: IntersectionObserver | null = null;
 
-// Drag-to-scroll state
-const isDragging = ref(false);
-let dragStartX = 0;
-let scrollStartX = 0;
+const { isDragging, onMouseDown } = useDragScroll(containerRef);
 
-function onMouseDown(e: MouseEvent) {
+function setupObserver() {
   const container = containerRef.value;
   if (!container) return;
 
-  isDragging.value = true;
-  dragStartX = e.clientX;
-  scrollStartX = container.scrollLeft;
-}
-
-function onMouseMove(e: MouseEvent) {
-  if (!isDragging.value) return;
-
-  const container = containerRef.value;
-  if (!container) return;
-
-  const deltaX = dragStartX - e.clientX;
-  container.scrollLeft = scrollStartX + deltaX;
-}
-
-function onMouseUp() {
-  if (!isDragging.value) return;
-
-  const container = containerRef.value;
-  if (container) {
-    container.style.scrollSnapType = "";
-    container.style.cursor = "";
-  }
-  isDragging.value = false;
-}
-
-function setDefaultSelection() {
-  if (!model.value && props.items.length > 0) {
-    model.value = props.items[0];
-  }
-}
-
-function scrollToSelected() {
-  const container = containerRef.value;
-  if (!container) return;
-  const target = itemRefs.value.find(
-    (item) => item.dataset.value === model.value,
-  );
-  if (target) {
-    target.scrollIntoView({ inline: "center", block: "nearest" });
-  }
-}
-
-onBeforeUpdate(() => {
-  itemRefs.value = [];
-});
-
-onMounted(async () => {
-  window.addEventListener("mousemove", onMouseMove);
-  window.addEventListener("mouseup", onMouseUp);
-
-  await nextTick();
-  setDefaultSelection();
-
-  const container = containerRef.value;
-  if (!container) return;
-
+  observer?.disconnect();
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         const value = (entry.target as HTMLElement).dataset.value;
-        if (value !== undefined) {
-          model.value = value;
-        }
+        // if (value === placeholderToken) {
+        //   model.value = null;
+        //   return;
+        // }
+        model.value = value;
       });
     },
     {
@@ -97,8 +41,29 @@ onMounted(async () => {
 
   const currentObserver = observer;
   if (currentObserver) {
-    itemRefs.value.forEach((item) => currentObserver.observe(item));
+    itemRefs.value?.forEach((item) => currentObserver.observe(item));
+    if (placeholderRef.value) {
+      currentObserver.observe(placeholderRef.value);
+    }
   }
+}
+
+function scrollToSelected() {
+  const container = containerRef.value;
+  if (!container) return;
+  const target = itemRefs.value?.find(
+    (item) => item.dataset.value === model.value,
+  );
+  if (target) {
+    target.scrollIntoView({ inline: "center", block: "nearest" });
+  } else if (model.value === undefined && placeholderRef.value) {
+    placeholderRef.value.scrollIntoView({ inline: "center", block: "nearest" });
+  }
+}
+
+onMounted(async () => {
+  await nextTick();
+  setupObserver();
 
   // Defer scroll until after layout is complete to handle sibling components
   // that may render conditionally and cause layout shifts
@@ -112,16 +77,15 @@ watch(
   async () => {
     await nextTick();
     // If current selection is not in new items, reset to first item
-    if (!props.items.includes(model.value)) {
+    if (model.value && !props.items.includes(model.value)) {
       model.value = props.items[0] ?? "";
     }
+    setupObserver();
     scrollToSelected();
   },
 );
 
 onBeforeUnmount(() => {
-  window.removeEventListener("mousemove", onMouseMove);
-  window.removeEventListener("mouseup", onMouseUp);
   observer?.disconnect();
   observer = null;
 });
@@ -135,13 +99,21 @@ onBeforeUnmount(() => {
     @mousedown="onMouseDown"
   >
     <label
+      v-if="$slots.placeholder"
+      ref="placeholderRef"
+      class="scroll-item placeholder"
+      :aria-selected="model === undefined"
+    >
+      <slot name="placeholder" />
+      <input type="radio" :name="name" :value="undefined" />
+    </label>
+    <label
       v-for="item in items"
       :key="item"
       ref="itemRefs"
       class="scroll-item"
       :class="{
         selected: model === item,
-        placeholder: item === placeholderItem,
       }"
       :data-value="item"
       :aria-selected="model === item"

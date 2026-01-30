@@ -49,8 +49,8 @@ const { hasTieBothSides, hasBend, dragging } = injectTieAddState();
 const settings = injectSettingsState();
 const { useNotePreview } = injectNotePreviewState();
 
-const noteInputRef = ref<InstanceType<typeof NoteInput>>();
-const containerRef = ref<HTMLElement>();
+const noteInputRef = useTemplateRef<InstanceType<typeof NoteInput>>("noteInputRef");
+const containerRef = useTemplateRef<HTMLElement>("containerRef");
 
 const notePreview = useNotePreview(props.notePosition);
 

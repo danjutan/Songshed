@@ -16,7 +16,7 @@ const emit = defineEmits<{
   dragEnd: [];
 }>();
 
-const handleRef = ref<HTMLElement>();
+const handleRef = useTemplateRef<HTMLElement>("handleRef");
 
 const mouseDown = ref(false);
 const dragging = ref(false);

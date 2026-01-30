@@ -2,6 +2,7 @@
 import type { ChordNote, NoteStack } from "~/model/data";
 import type { Midi } from "~/theory/notes";
 import ChordDiagram from "./ChordDiagram.vue";
+import { useDragScroll } from "./use-drag-scroll";
 
 interface Props {
   voicings: NoteStack<ChordNote>[];
@@ -11,74 +12,17 @@ interface Props {
 const props = defineProps<Props>();
 const model = defineModel<number>({ required: true });
 
-const containerRef = ref<HTMLElement | null>(null);
-const itemRefs = ref<HTMLElement[]>([]);
+const containerRef = useTemplateRef<HTMLElement>("containerRef");
+const itemRefs = useTemplateRef<HTMLElement[]>("itemRefs");
 let observer: IntersectionObserver | null = null;
 
-// Drag-to-scroll state
-const isDragging = ref(false);
-let dragStartX = 0;
-let scrollStartX = 0;
+const { isDragging, onMouseDown } = useDragScroll(containerRef);
 
-function onMouseDown(e: MouseEvent) {
+function setupObserver() {
   const container = containerRef.value;
   if (!container) return;
 
-  isDragging.value = true;
-  dragStartX = e.clientX;
-  scrollStartX = container.scrollLeft;
-}
-
-function onMouseMove(e: MouseEvent) {
-  if (!isDragging.value) return;
-
-  const container = containerRef.value;
-  if (!container) return;
-
-  const deltaX = dragStartX - e.clientX;
-  container.scrollLeft = scrollStartX + deltaX;
-}
-
-function onMouseUp() {
-  if (!isDragging.value) return;
-
-  const container = containerRef.value;
-  if (container) {
-    container.style.scrollSnapType = "";
-    container.style.cursor = "";
-  }
-  isDragging.value = false;
-}
-
-function setDefaultSelection() {
-  if (model.value === undefined && props.voicings.length > 0) {
-    model.value = 0;
-  }
-}
-
-function scrollToSelected() {
-  const container = containerRef.value;
-  if (!container) return;
-  const target = itemRefs.value[model.value];
-  if (target) {
-    target.scrollIntoView({ inline: "center", block: "nearest" });
-  }
-}
-
-onBeforeUpdate(() => {
-  itemRefs.value = [];
-});
-
-onMounted(async () => {
-  window.addEventListener("mousemove", onMouseMove);
-  window.addEventListener("mouseup", onMouseUp);
-
-  await nextTick();
-  setDefaultSelection();
-
-  const container = containerRef.value;
-  if (!container) return;
-
+  observer?.disconnect();
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -98,8 +42,29 @@ onMounted(async () => {
 
   const currentObserver = observer;
   if (currentObserver) {
-    itemRefs.value.forEach((item) => currentObserver.observe(item));
+    itemRefs.value?.forEach((item) => currentObserver.observe(item));
   }
+}
+
+function setDefaultSelection() {
+  if (model.value === undefined && props.voicings.length > 0) {
+    model.value = 0;
+  }
+}
+
+function scrollToSelected() {
+  const container = containerRef.value;
+  if (!container) return;
+  const target = itemRefs.value?.[model.value];
+  if (target) {
+    target.scrollIntoView({ inline: "center", block: "nearest" });
+  }
+}
+
+onMounted(async () => {
+  await nextTick();
+  setDefaultSelection();
+  setupObserver();
   scrollToSelected();
 });
 
@@ -111,13 +76,12 @@ watch(
     if (model.value >= props.voicings.length) {
       model.value = 0;
     }
+    setupObserver();
     scrollToSelected();
   },
 );
 
 onBeforeUnmount(() => {
-  window.removeEventListener("mousemove", onMouseMove);
-  window.removeEventListener("mouseup", onMouseUp);
   observer?.disconnect();
   observer = null;
 });

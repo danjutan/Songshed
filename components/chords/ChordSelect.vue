@@ -20,24 +20,9 @@ const CHROMATIC_NOTES = [
   "B",
 ];
 
-const CHROMA_PLACEHOLDER = "scroll →";
-const CHROMA_PICKER_ITEMS = [CHROMA_PLACEHOLDER, ...CHROMATIC_NOTES];
-
-const selectedPickerItem = ref(CHROMA_PLACEHOLDER);
-const activeChroma = ref<string | null>(null);
+const activeChroma = ref<string | undefined>(undefined);
 const selectedSuffix = ref("");
 
-watch(selectedPickerItem, (item) => {
-  if (item !== CHROMA_PLACEHOLDER) {
-    activeChroma.value = item;
-  }
-});
-
-const isPreviewMode = computed(
-  () => selectedPickerItem.value === CHROMA_PLACEHOLDER,
-);
-
-// Use C (index 0) as preview when no real selection yet
 const displayChroma = computed(() => activeChroma.value ?? "C");
 const chromaIndex = computed(
   () => CHROMATIC_NOTES.indexOf(displayChroma.value) as Chroma,
@@ -66,19 +51,17 @@ function formatSuffixForTitle(suffix: string): string {
 }
 
 const selectedTitle = computed(() => {
-  if (activeChroma.value === null) return null;
+  if (activeChroma.value === undefined) return null;
   const suffix = formatSuffixForTitle(selectedSuffix.value);
   return `${activeChroma.value}${suffix}`;
 });
 
 const emit = defineEmits<{
-  "update:voicing": [voicing: NoteStack<ChordNote> | null];
   "update:title": [title: string];
   accept: [voicing: NoteStack<ChordNote> | null];
   close: [];
 }>();
 
-watch(selectedVoicing, (v) => emit("update:voicing", v), { immediate: true });
 watch(selectedTitle, (title) => {
   if (title !== null) {
     emit("update:title", title);
@@ -89,13 +72,19 @@ watch(selectedTitle, (title) => {
 <template>
   <div class="chord-select">
     <ScrollPicker
-      v-model="selectedPickerItem"
+      v-model="activeChroma"
       class="chroma-picker"
-      :items="CHROMA_PICKER_ITEMS"
-      :placeholder-item="CHROMA_PLACEHOLDER"
+      :items="CHROMATIC_NOTES"
       name="chord-chroma"
-    />
-    <div class="preview-container" :class="{ preview: isPreviewMode }">
+    >
+      <template #placeholder>
+        <span>scroll →</span>
+      </template>
+    </ScrollPicker>
+    <div
+      class="preview-container"
+      :class="{ preview: activeChroma === undefined }"
+    >
       <ScrollPicker
         v-model="selectedSuffix"
         :items="suffixes"
@@ -112,7 +101,7 @@ watch(selectedTitle, (title) => {
       <Button
         class="action-button"
         size="small"
-        :disabled="isPreviewMode"
+        :disabled="activeChroma === undefined"
         @click="$emit('accept', selectedVoicing)"
       >
         Accept
