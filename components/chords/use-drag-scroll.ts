@@ -1,3 +1,4 @@
+// TODO: consider https://developer.mozilla.org/en-US/docs/Web/API/Element/setPointerCapture
 export function useDragScroll(containerRef: Ref<HTMLElement | null>) {
   const isDragging = ref(false);
   let dragStartX = 0;

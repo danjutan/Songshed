@@ -18,11 +18,28 @@ let observer: IntersectionObserver | null = null;
 
 const { isDragging, onMouseDown } = useDragScroll(containerRef);
 
-function setupObserver() {
+function setDefaultSelection() {
+  if (model.value === undefined && props.voicings.length > 0) {
+    model.value = 0;
+  }
+}
+
+function scrollToSelected() {
+  const container = containerRef.value;
+  if (!container) return;
+  const target = itemRefs.value?.[model.value];
+  if (target) {
+    target.scrollIntoView({ inline: "center", block: "nearest" });
+  }
+}
+
+onMounted(async () => {
+  await nextTick();
+  setDefaultSelection();
+
   const container = containerRef.value;
   if (!container) return;
 
-  observer?.disconnect();
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -44,27 +61,6 @@ function setupObserver() {
   if (currentObserver) {
     itemRefs.value?.forEach((item) => currentObserver.observe(item));
   }
-}
-
-function setDefaultSelection() {
-  if (model.value === undefined && props.voicings.length > 0) {
-    model.value = 0;
-  }
-}
-
-function scrollToSelected() {
-  const container = containerRef.value;
-  if (!container) return;
-  const target = itemRefs.value?.[model.value];
-  if (target) {
-    target.scrollIntoView({ inline: "center", block: "nearest" });
-  }
-}
-
-onMounted(async () => {
-  await nextTick();
-  setDefaultSelection();
-  setupObserver();
   scrollToSelected();
 });
 
@@ -76,7 +72,6 @@ watch(
     if (model.value >= props.voicings.length) {
       model.value = 0;
     }
-    setupObserver();
     scrollToSelected();
   },
 );
