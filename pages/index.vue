@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import { SPACING } from "~/composables/theory";
+import { toMidi } from "~/theory/notes";
+import { SPACING } from "~/theory/spacing";
 import { TIE_TYPE, type GuitarNote } from "~/model/data";
 import { createTabStore } from "~/model/stores";
 
@@ -9,17 +10,17 @@ const store = createTabStore();
 //   beatSize: SPACING.Quarter,
 // });
 
-store.annotations.createAnnotation(0, {
-  text: "1",
-  start: 5,
-  end: 8,
-});
+// store.annotations.createAnnotation(0, {
+//   text: "1",
+//   start: 1,
+//   end: 4,
+// });
 
-store.annotations.createAnnotation(1, {
-  text: "2",
-  start: 12,
-  end: 14,
-});
+// store.annotations.createAnnotation(1, {
+//   text: "2",
+//   start: 12,
+//   end: 14,
+// });
 
 // store.annotations.createAnnotation(0, {
 //   text: "3",
@@ -91,22 +92,22 @@ const guitarNotes: Array<[number, number, string]> = [
   // [SPACING.Quarter * 45 + SPACING.Sixteenth, 0, "F4"],
 ];
 
-guitarNotes.forEach(([position, string, midiString]) => {
-  const data: GuitarNote = {
-    note: toMidi(midiString),
-  };
-  guitar.setNote({ position, string }, data);
-});
+// guitarNotes.forEach(([position, string, midiString]) => {
+//   const data: GuitarNote = {
+//     note: toMidi(midiString),
+//   };
+//   guitar.setNote({ position, string }, data);
+// });
 
 const ties = guitar.ties;
 
-ties.setTie(5, SPACING.Quarter * 4 - SPACING.Eighth, {
-  type: "bend",
-  releaseType: "connect",
-  bend: 1,
-  through: [SPACING.Sixteenth],
-  to: SPACING.Quarter * 5,
-});
+// ties.setTie(5, SPACING.Quarter * 4 - SPACING.Eighth, {
+//   type: "bend",
+//   releaseType: "connect",
+//   bend: 1,
+//   through: [SPACING.Sixteenth],
+//   to: SPACING.Quarter * 5,
+// });
 
 // ties.setTie(5, SPACING.Quarter * 5 - SPACING.Eighth, {
 //   type: "bend",
@@ -123,13 +124,13 @@ ties.setTie(5, SPACING.Quarter * 4 - SPACING.Eighth, {
 //   to: SPACING.Quarter * 3,
 // });
 
-ties.setTie(2, SPACING.Quarter * 7, {
-  type: "bend",
-  releaseType: "connect",
-  bend: 1,
-  // through: [SPACING.Sixteenth * 2],
-  to: SPACING.Quarter * 13,
-});
+// ties.setTie(2, SPACING.Quarter * 7, {
+//   type: "bend",
+//   releaseType: "connect",
+//   bend: 1,
+//   // through: [SPACING.Sixteenth * 2],
+//   to: SPACING.Quarter * 13,
+// });
 
 // ties.setTie(2, SPACING.Quarter * 11, {
 //   type: "bend",
@@ -144,20 +145,20 @@ ties.setTie(2, SPACING.Quarter * 7, {
 //   type: TIE_TYPE.Hammer,
 // });
 
-ties.setTie(1, SPACING.Quarter * 5 + SPACING.Sixteenth, {
-  to: SPACING.Quarter * 6,
-  type: TIE_TYPE.TieSlide,
-});
+// ties.setTie(1, SPACING.Quarter * 5 + SPACING.Sixteenth, {
+//   to: SPACING.Quarter * 6,
+//   type: TIE_TYPE.TieSlide,
+// });
 
-ties.setTie(2, SPACING.Whole * 2 - SPACING.Sixteenth, {
-  to: SPACING.Whole * 2,
-  type: TIE_TYPE.Hammer,
-});
+// ties.setTie(2, SPACING.Whole * 2 - SPACING.Sixteenth, {
+//   to: SPACING.Whole * 2,
+//   type: TIE_TYPE.Hammer,
+// });
 
-ties.setTie(2, SPACING.Whole * 3 - SPACING.Eighth, {
-  to: SPACING.Whole * 3,
-  type: TIE_TYPE.Slide,
-});
+// ties.setTie(2, SPACING.Whole * 3 - SPACING.Eighth, {
+//   to: SPACING.Whole * 3,
+//   type: TIE_TYPE.Slide,
+// });
 
 // ties.setTie(0, SPACING.Quarter * 9, {
 //   to: SPACING.Quarter * 10 - SPACING.Sixteenth,

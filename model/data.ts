@@ -1,3 +1,6 @@
+import type { Midi } from "~/theory/notes";
+import type { SpacingValue } from "~/theory/spacing";
+
 export interface Annotation {
   start: number;
   end: number;
@@ -39,14 +42,17 @@ export interface GuitarNote extends NoteData {
   bend?: string; */
 }
 
-export interface ChordNote {
+export interface ChordNote extends NoteData {
   note: Midi;
   finger?: number; // to implement
 }
 
 export type NoteStack<N extends NoteData> = Map<number, N>;
 export type StackMap<N extends NoteData> = Map<number, NoteStack<N>>;
-export type Chord = { title: string; notes: NoteStack<ChordNote> };
+export type Chord = {
+  title: string;
+  notes: NoteStack<ChordNote>;
+};
 
 export interface GuitarTabData {
   tuning: Midi[];

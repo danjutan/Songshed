@@ -12,8 +12,9 @@ import type {
   BendData,
   TieData,
 } from "./data";
-import { SPACING } from "~/composables/theory";
+import { SPACING, largestSpacingDivisor } from "~/theory/spacing";
 import { syncTuning } from "./sync-tuning";
+import { defaultTuning, type Midi } from "~/theory/notes";
 
 export interface TabStore
   extends Pick<
@@ -31,13 +32,14 @@ export interface TabStore
   serialize: () => string;
 }
 
-const defaults: Omit<TabData, "guitarData" | "annotations"> = {
+const defaults: Omit<TabData, "guitarData"> = {
   title: "New Song",
   doesSyncTuning: true,
   chordsData: {
     tuning: Array.from(defaultTuning),
     chords: [{ title: "", notes: new Map() }],
   },
+  annotations: new Map([[0, []]]),
   lineBreaks: new Set(),
   timeChanges: new Map([[0, { beatsPerBar: 4, beatSize: SPACING.Quarter }]]),
 };
@@ -50,7 +52,6 @@ export function createTabStore(
   if (init === undefined) init = {};
   const data: TabData = reactive({
     ...defaults,
-    annotations: new Map(),
     ...init,
   });
 
@@ -336,7 +337,7 @@ function createAnnotationStore(
         (a) => a.start === data.start && a.end === data.end,
       );
       ofRow.splice(toDelete, 1);
-      if (ofRow.length === 0 && row === annotations.size - 1) {
+      if (ofRow.length === 0 && annotations.size > 1 && row === annotations.size - 1) {
         annotations.delete(row);
       }
     }

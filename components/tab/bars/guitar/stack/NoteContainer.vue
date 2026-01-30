@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { GuitarNote } from "~/model/data";
+import type { Midi } from "~/theory/notes";
 import NoteInput from "./NoteInput.vue";
 import { injectSelectionState } from "~/components/tab/providers/state/provide-selection-state";
 import { injectEditingState } from "~/components/tab/providers/state/provide-editing-state";
@@ -25,7 +26,7 @@ import { injectNotePreviewState } from "~/components/tab/providers/state/provide
 import SelectionToolbar from "../selections/SelectionToolbar.vue";
 import { injectTabBarBounds } from "../../provide-bar-bounds";
 import PositionLine from "./PositionLine.vue";
-import { SPACING } from "~/composables/theory";
+import { SPACING } from "~/theory/spacing";
 import StringLine from "./StringLine.vue";
 
 const props = defineProps<{
@@ -48,8 +49,8 @@ const { hasTieBothSides, hasBend, dragging } = injectTieAddState();
 const settings = injectSettingsState();
 const { useNotePreview } = injectNotePreviewState();
 
-const noteInputRef = ref<InstanceType<typeof NoteInput>>();
-const containerRef = ref<HTMLElement>();
+const noteInputRef = useTemplateRef<InstanceType<typeof NoteInput>>("noteInputRef");
+const containerRef = useTemplateRef<HTMLElement>("containerRef");
 
 const notePreview = useNotePreview(props.notePosition);
 

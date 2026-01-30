@@ -48,7 +48,7 @@ const props = defineProps<{
 }>();
 
 const settings = injectSettingsState();
-const { collapsedMinWidth, cellHeight, dividerWidth, expandedMinWidth } =
+const { collapsedMinWidth, cellHeight, expandedMinWidth } =
   injectSpacingsState();
 
 const { getTimeSignatureAt } = provideTimeSignature(props.tabStore);
@@ -154,7 +154,7 @@ const barMinWidth = (bar: Bar) => {
   );
 
   const firstBarBuffer = cellHeight.value;
-  let total = stacks + dividerWidth.value;
+  let total = stacks;
   if (tablineStarts.includes(bar.start)) {
     total += firstBarBuffer;
   }
@@ -222,6 +222,25 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
     <template v-for="(bar, i) in barManagement.bars" :key="bar.start">
       <div v-if="tabStore.lineBreaks.has(bar.start)" class="line-break" />
 
+      <BarDivider
+        v-if="i > 0"
+        class="tab-divider"
+        :start-of-line="tablineStarts.includes(bar.start)"
+        :bar-start="bar.start"
+        :joinable="tabStore.lineBreaks.has(bar.start)"
+        @resize="(diffX: number) => onResize(i, diffX)"
+        @delete-hover-start="mightDeleteBarStart = bar.start"
+        @delete-hover-end="mightDeleteBarStart = undefined"
+        @end-drag="endDrag(i)"
+        @move-hover-start="mightMoveBarStart = bar.start"
+        @move-hover-end="mightMoveBarStart = undefined"
+        @move-drag-start="movingBarStart = bar.start"
+        @move-drag-end="movingBarStart = moveTargetBarStart = undefined"
+        @inserting-into="
+          (position: number) => (moveTargetBarStart = position)
+        "
+      />
+
       <TabBar
         ref="tabBars"
         :bar="bar"
@@ -235,24 +254,6 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
           (moveTargetBarStart === bar.start && 'move-target')
         "
       >
-        <template #divider>
-          <BarDivider
-            :start-of-line="tablineStarts.includes(bar.start)"
-            :bar-start="bar.start"
-            :joinable="tabStore.lineBreaks.has(bar.start)"
-            @resize="(diffX: number) => onResize(i, diffX)"
-            @delete-hover-start="mightDeleteBarStart = bar.start"
-            @delete-hover-end="mightDeleteBarStart = undefined"
-            @end-drag="endDrag(i)"
-            @move-hover-start="mightMoveBarStart = bar.start"
-            @move-hover-end="mightMoveBarStart = undefined"
-            @move-drag-start="movingBarStart = bar.start"
-            @move-drag-end="movingBarStart = moveTargetBarStart = undefined"
-            @inserting-into="
-              (position: number) => (moveTargetBarStart = position)
-            "
-          />
-        </template>
         <template v-if="i === 0 || tabStore.timeChanges.has(bar.start)" #widget>
           <template v-if="i === 0">
             <TuningWidget
@@ -289,6 +290,10 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
 .line-break {
   width: 100%;
   height: 0px;
+}
+
+.tab-divider {
+  align-self: stretch;
 }
 
 .drag-start {

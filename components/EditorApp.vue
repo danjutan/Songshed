@@ -105,19 +105,22 @@ async function save(saveId: string) {
 
   --note-hover-color: var(--p-blue-200);
   --select-color: var(--p-blue-200);
-  --might-move-color: var(--p-amber-300);
-  --moving-color: var(--p-amber-400);
+  --might-move-color: var(--p-green-400);
+  --moving-color: var(--p-green-600);
   --delete-color: var(--p-red-300);
   --move-target-color: var(--select-color);
 
   --annotation-row-line-color: var(--p-surface-300);
+  --annotation-row-line-last-color: var(--p-surface-400);
   --annotation-border: var(--p-surface-300);
   --annotation-notch-color: var(--p-surface-400);
   --annotation-dragger-color: var(--p-surface-400);
   --annotation-dragger-hover-color: var(--p-surface-500);
   --annotation-hover-background-color: var(--p-blue-200);
-  --annotation-default-background-color: rgb(
-    from var(--annotation-hover-background-color) r g b / 0.4
+  --annotation-default-background-color: color-mix(
+    in srgb,
+    var(--annotation-hover-background-color) 40%,
+    var(--tab-background-color)
   );
 
   --pos-line-color: var(--p-surface-400);
@@ -136,16 +139,21 @@ async function save(saveId: string) {
 
   --pos-line-z-index: 1;
   --overlay-svg-z-index: 2;
-  --bar-overlay-z-index: 3;
+  --bar-highlight-z-index: 3;
   --annotation-dragger-z-index: 3;
+  --divider-z-index: 3;
   --annotation-z-index: 4;
   --annotation-current-z-index: 5;
   --overlay-controls-z-index: 6;
   --annotation-resize-dragger-z-index: 6;
   --selection-toolbar-z-index: 6;
-  --divider-z-index: 7;
+  --divider-hover-z-index: 7;
   --note-container-drag-extender-z-index: 7;
   --tie-dragger-z-index: 7;
+}
+
+.editor-app :deep(button) {
+  font-family: sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -167,18 +175,21 @@ async function save(saveId: string) {
 
     --note-hover-color: var(--p-blue-100);
     --select-color: var(--p-blue-200);
-    --might-move-color: var(--p-amber-400);
-    --moving-color: var(--p-amber-500);
+    --might-move-color: var(--p-green-500);
+    --moving-color: var(--p-green-600);
     --delete-color: var(--p-red-400);
 
     --annotation-row-line-color: var(--p-surface-600);
+    --annotation-row-line-last-color: var(--p-surface-500);
     --annotation-border: var(--p-surface-600);
     --annotation-notch-color: var(--p-surface-500);
     --annotation-dragger-color: var(--p-surface-400);
     --annotation-dragger-hover-color: var(--p-surface-300);
     --annotation-hover-background-color: var(--p-primary-700);
-    --annotation-default-background-color: rgb(
-      from var(--p-primary-500) r g b / 0.4
+    --annotation-default-background-color: color-mix(
+      in srgb,
+      var(--annotation-hover-background-color) 40%,
+      var(--tab-background-color)
     );
   }
 }

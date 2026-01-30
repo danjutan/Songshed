@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import type { ChordNote, NoteStack } from "~/model/data";
+import type { Midi } from "~/theory/notes";
 import type {
   InputNumberBlurEvent,
   InputNumberInputEvent,
 } from "primevue/inputnumber";
 import { X, ChevronDown, ChevronUp } from "lucide-vue-next";
-import type { BarHighlightType } from "../tab/bars/TabBar.vue";
 
 const props = defineProps<{
   notes: NoteStack<ChordNote>;
   tuning: Midi[];
-  highlight?: BarHighlightType | false;
+  interactive?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -70,7 +70,8 @@ function decrementWindow() {
 
 // const fretLabelWidth = computed(() => (windowStart.value === 0 ? 0 : cellWidth));
 const gridStartX = computed(() => cellWidth);
-const gridStartY = computed(() => 0);
+// TODO: hacky fix; figure out why rendering the window controls shifts everything down
+const gridStartY = computed(() => (props.interactive ? 0 : cellHeight));
 const gridEndX = computed(
   () => gridStartX.value + (strings.value - 1) * cellWidth,
 );
@@ -129,8 +130,7 @@ function onInputClick(e: Event) {
 </script>
 
 <template>
-  <div class="container">
-    <div v-if="highlight" :class="highlight" class="overlay" />
+  <div class="container" :class="{ 'read-only': !interactive }">
     <svg class="chart-svg" :viewBox>
       <rect
         v-if="windowStart === 1"
@@ -273,7 +273,7 @@ function onInputClick(e: Event) {
         </text>
       </template>
     </svg>
-    <div class="window-controls">
+    <div v-if="interactive" class="window-controls">
       <div class="window-decrement-container">
         <Button class="window-button decrement" text @click="decrementWindow">
           <template #icon>
@@ -307,30 +307,15 @@ function onInputClick(e: Event) {
   padding-right: 10px;
 }
 
-.overlay {
-  position: absolute;
-  top: -8px;
-  left: 6px;
-  width: 100%;
-  height: calc(100% + var(--control-width));
+.container.read-only {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  padding-right: 0;
+}
+
+.container.read-only .chart-svg {
   pointer-events: none;
-  opacity: var(--select-alpha);
-
-  &.might-delete {
-    background: var(--delete-color);
-  }
-
-  &.might-move {
-    background: var(--might-move-color);
-  }
-
-  &.moving {
-    background: var(--moving-color);
-  }
-
-  &.move-target {
-    background: var(--move-target-color);
-  }
+  transform: none;
 }
 
 .chart-svg {

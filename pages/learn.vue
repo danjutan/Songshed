@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { defaultTuning, getChroma, getNoteInfo } from "~/theory/notes";
 const tuning = defaultTuning;
 const frets = 12;
 

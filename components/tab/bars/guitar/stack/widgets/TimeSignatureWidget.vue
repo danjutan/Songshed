@@ -2,6 +2,7 @@
 import OverlaySelect from "@/components/tab/bars/guitar/overlay/OverlaySelect.vue";
 import { injectSpacingsState } from "@/components/tab/providers/provide-spacings";
 import { X } from "lucide-vue-next";
+import { SPACING, type SpacingValue } from "~/theory/spacing";
 
 const props = defineProps<{
   first?: boolean;

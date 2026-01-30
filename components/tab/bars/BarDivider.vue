@@ -141,14 +141,18 @@ onMounted(() => {
 <style scoped>
 .divider {
   width: var(--divider-width);
-  height: 100%;
   background: var(--divider-color);
   padding: 0;
   position: relative;
   z-index: var(--divider-z-index);
+  align-self: stretch;
   /* &:not(.first) {
     cursor: ew-resize;
   } */
+}
+
+.divider:hover {
+  z-index: var(--divider-hover-z-index);
 }
 
 .thicc,
@@ -162,7 +166,6 @@ onMounted(() => {
   position: absolute;
   background: var(--divider-color);
   width: calc(var(--note-font-size) + 4px);
-  z-index: var(--divider-z-index);
   transform: translateX(-25%);
 }
 

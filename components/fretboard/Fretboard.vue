@@ -1,6 +1,11 @@
 <script setup lang="ts">
+import { defaultTuning, getChroma, validMidi, type Midi } from "~/theory/notes";
 import NoteView from "./NoteView.vue";
-import { defaultFrameColor } from "~/composables/colors";
+import {
+  defaultColors,
+  defaultFrameColor,
+  type NoteColors,
+} from "~/theory/colors";
 
 const props = withDefaults(
   defineProps<{

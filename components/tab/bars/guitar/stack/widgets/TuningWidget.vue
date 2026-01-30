@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { UpdateTuning } from "~/model/stores";
 import TuningInput from "./TuningInput.vue";
+import { getNameAndOctave, type Midi } from "~/theory/notes";
 import {
   Plus,
   Minus,

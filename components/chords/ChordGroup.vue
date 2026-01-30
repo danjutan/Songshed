@@ -28,6 +28,7 @@ onMounted(() => {
           return isChordDragData(source.data);
         },
         onDrop(args) {
+          if (args.location.current.dropTargets.length === 0) return;
           const dropData = args.location.current.dropTargets[0].data;
           if (
             isChordInsertDropData(dropData) &&
@@ -43,16 +44,16 @@ onMounted(() => {
 </script>
 
 <template>
-  <Panel class="panel" header="Chords" toggleable pt:header:class="header">
+  <!-- <Panel class="panel" header="Chords" toggleable pt:header:class="header">
     <template #toggleicon="{ collapsed }">
       <ChevronRight v-if="collapsed" :size="16" />
       <ChevronDown v-else :size="16" />
-    </template>
-    <ChordsTuning
+    </template> -->
+    <!-- <ChordsTuning
       v-model:sync-tuning="syncTuning"
       :tuning="store.tuning"
       :update-tuning="updateTuning"
-    />
+    /> -->
     <div class="group">
       <ChordContainer
         v-for="(chord, i) of store.chords"
@@ -74,7 +75,7 @@ onMounted(() => {
         </template>
       </Button>
     </div>
-  </Panel>
+  <!-- </Panel> -->
 </template>
 
 <style scoped>

@@ -14,6 +14,9 @@ dependencies:
   '@primevue/themes':
     specifier: ^4.2.5
     version: 4.3.1
+  '@tombatossals/chords-db':
+    specifier: ^0.5.1
+    version: 0.5.1
   '@vue/language-server':
     specifier: ^2.1.10
     version: 2.2.4(typescript@5.7.3)
@@ -3315,6 +3318,10 @@ packages:
     dependencies:
       tslib: 2.8.1
     dev: true
+
+  /@tombatossals/chords-db@0.5.1:
+    resolution: {integrity: sha512-5kLLtwOxmnFfpVTYfYiw1Q22NJ8msb5JeyDLre09XnUFx2l6KSeqPtJQPsVPOak4BUenlsv/j2H65KBVhB6qgQ==}
+    dev: false
 
   /@tonaljs/abc-notation@4.9.1:
     resolution: {integrity: sha512-2fDUdPsFDdgZgyIiZCTYGKy30QiwIQxSXCSN2thGrSMXbQKCp8iTC8haStYcrA+25MPWhWlmvC/pz3tGcTNAqQ==}

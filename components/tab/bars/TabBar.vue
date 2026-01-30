@@ -93,17 +93,14 @@ watchEffect((cleanup) => {
       :tuning="guitarStore.tuning"
       :frets="guitarStore.frets"
       :tie-store="guitarStore.ties"
-      :highlight
       @note-delete="(pos) => guitarStore.deleteNote(pos)"
       @note-change="(pos, note) => guitarStore.setNote(pos, note)"
     >
-      <template #divider>
-        <slot name="divider" />
-      </template>
       <template v-if="$slots.widget" #widget>
         <slot name="widget" />
       </template>
     </GuitarBar>
+    <div v-if="highlight" class="highlight" :class="highlight" />
   </div>
 </template>
 
@@ -127,6 +124,30 @@ watchEffect((cleanup) => {
   & .guitar,
   & .annotations {
     grid-column: 2;
+  }
+}
+
+.highlight {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  opacity: var(--select-alpha);
+  z-index: var(--bar-highlight-z-index);
+
+
+  &.might-delete {
+    background-color: var(--delete-color);
+  }
+  &.might-move {
+    background-color: var(--might-move-color);
+  }
+  &.moving {
+    background-color: var(--moving-color);
+  }
+  &.move-target {
+    background-color: var(--move-target-color);
   }
 }
 </style>
