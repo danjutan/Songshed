@@ -103,10 +103,13 @@ export function provideSelectionState(
     const outputRegions: RegionBounds[] = [];
 
     function areAdjacent(note1: NotePosition, note2: NotePosition): boolean {
+      const verticallyAdjacent = Math.abs(note1.string - note2.string) <= 1;
+      if (!verticallyAdjacent) return false;
+      const earlierPosition = Math.min(note1.position, note2.position);
+      const laterPosition = Math.max(note1.position, note2.position);
       return (
-        Math.abs(note1.string - note2.string) <= 1 &&
-        getPreviousPosition(Math.max(note1.position, note2.position)) ===
-          Math.min(note1.position, note2.position)
+        earlierPosition === laterPosition ||
+        getPreviousPosition(laterPosition) === earlierPosition
       );
     }
 

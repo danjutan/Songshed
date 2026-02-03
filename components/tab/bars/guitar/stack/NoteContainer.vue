@@ -182,7 +182,7 @@ const noteText = computed(() => {
   const sourceData = notePreview.value ?? props.note;
   if (sourceData) {
     if (sourceData.note === "muted") {
-      return "x"; // we're hiding the note text to show the icon; this is just used for spacing
+      return "✕"; // we're hiding the note text to show the icon; this is just used for spacing
     }
     return "" + (sourceData.note - props.tuning);
   }
