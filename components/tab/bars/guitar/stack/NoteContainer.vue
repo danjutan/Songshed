@@ -49,7 +49,8 @@ const { hasTieBothSides, hasBend, dragging } = injectTieAddState();
 const settings = injectSettingsState();
 const { useNotePreview } = injectNotePreviewState();
 
-const noteInputRef = useTemplateRef<InstanceType<typeof NoteInput>>("noteInputRef");
+const noteInputRef =
+  useTemplateRef<InstanceType<typeof NoteInput>>("noteInputRef");
 const containerRef = useTemplateRef<HTMLElement>("containerRef");
 
 const notePreview = useNotePreview(props.notePosition);
@@ -181,7 +182,7 @@ const noteText = computed(() => {
   const sourceData = notePreview.value ?? props.note;
   if (sourceData) {
     if (sourceData.note === "muted") {
-      return "X";
+      return "x"; // we're hiding the note text to show the icon; this is just used for spacing
     }
     return "" + (sourceData.note - props.tuning);
   }
@@ -222,7 +223,7 @@ const row = computed(() => props.notePosition.string + 1);
     <div
       v-if="note || notePreview"
       class="note-block"
-      :class="{ preview: notePreview }"
+      :class="{ preview: notePreview, muted: note?.note === 'muted' }"
     >
       {{ noteText }}
     </div>
@@ -373,6 +374,9 @@ const row = computed(() => props.notePosition.string + 1);
   grid-area: 2 / 2;
   &.preview {
     opacity: 0.5;
+  }
+  &.muted {
+    color: transparent;
   }
 }
 
