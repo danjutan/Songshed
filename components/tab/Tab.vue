@@ -121,6 +121,9 @@ onMounted(() => {
 function onLeaveTab() {
   cellHoverEvents.clear();
   editingState.blurEditing();
+  if (selectionState.isEmpty()) {
+    selectionState.clearSelections();
+  }
 }
 
 function onKeyUp(e: KeyboardEvent) {
@@ -236,9 +239,7 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
         @move-hover-end="mightMoveBarStart = undefined"
         @move-drag-start="movingBarStart = bar.start"
         @move-drag-end="movingBarStart = moveTargetBarStart = undefined"
-        @inserting-into="
-          (position: number) => (moveTargetBarStart = position)
-        "
+        @inserting-into="(position: number) => (moveTargetBarStart = position)"
       />
 
       <TabBar
