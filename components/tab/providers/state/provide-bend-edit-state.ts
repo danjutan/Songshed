@@ -88,7 +88,7 @@ export function provideBendEditState(
   }
 
   function deleteBend(bend: Bend) {
-    props.tieStore!.deleteTie(bend.string, bend.from);
+    props.tieStore!.deleteBend(bend.string, bend.from);
   }
 
   function setBendValue(bend: Bend, value: number) {

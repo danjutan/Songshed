@@ -11,6 +11,7 @@ import type {
   Chord,
   BendData,
   TieData,
+  TieSlotData,
 } from "./data";
 import { SPACING, largestSpacingDivisor } from "~/theory/spacing";
 import { syncTuning } from "./sync-tuning";
@@ -457,53 +458,104 @@ export interface Bend extends BendData {
 }
 
 export interface TieStore {
-  setTie: (string: number, from: number, tie: TieData | BendData) => void;
+  setTie: (string: number, from: number, tie: TieData) => void;
+  setBend: (string: number, from: number, bend: BendData) => void;
   updateBend: (bend: Bend) => void;
   updateTie: (tie: Tie) => void;
   deleteTie: (string: number, from: number) => void;
+  deleteBend: (string: number, from: number) => void;
   deleteAt: (string: number, position: number) => void;
   getTies: () => Tie[];
   getBends: () => Bend[];
   shiftFrom: (position: number, shiftBy: number) => void;
-  getStartsAt: (notePosition: NotePosition) => TieData | BendData | undefined;
+  getStartsAt: (notePosition: NotePosition) => TieSlotData | undefined;
 }
 
 function createTieStore(guitarData: GuitarTabData): TieStore {
-  function setTie(string: number, from: number, tie: TieData | BendData) {
-    const stringTies = guitarData.ties.get(string);
+  function getOrCreateSlot(string: number, from: number): TieSlotData {
+    let stringTies = guitarData.ties.get(string);
     if (!stringTies) {
-      guitarData.ties.set(string, new Map([[from, tie]]));
-      return;
+      stringTies = new Map();
+      guitarData.ties.set(string, stringTies);
     }
-    stringTies.set(from, tie);
+    let slot = stringTies.get(from);
+    if (!slot) {
+      slot = {};
+      stringTies.set(from, slot);
+    }
+    return slot;
+  }
+
+  function cleanupSlot(string: number, from: number) {
+    const stringTies = guitarData.ties.get(string);
+    if (!stringTies) return;
+    const slot = stringTies.get(from);
+    if (slot && !slot.tie && !slot.bend) {
+      stringTies.delete(from);
+    }
+  }
+
+  function setTie(string: number, from: number, tie: TieData) {
+    const slot = getOrCreateSlot(string, from);
+    slot.tie = tie;
+  }
+
+  function setBend(string: number, from: number, bend: BendData) {
+    const slot = getOrCreateSlot(string, from);
+    slot.bend = bend;
   }
 
   function updateBend(bend: Bend) {
     const { string, from, ...bendData } = bend;
-    setTie(string, from, bendData);
+    setBend(string, from, bendData);
   }
 
   function updateTie(tie: Tie) {
-    const { string, from, ...tieData } = tie;
+    const { string, from, midiFrom, midiTo, ...tieData } = tie;
     setTie(string, from, tieData);
   }
 
   function deleteTie(string: number, from: number) {
     const stringTies = guitarData.ties.get(string);
-    if (stringTies) {
-      stringTies.delete(from);
+    if (!stringTies) return;
+    const slot = stringTies.get(from);
+    if (slot) {
+      slot.tie = undefined;
+      cleanupSlot(string, from);
+    }
+  }
+
+  function deleteBend(string: number, from: number) {
+    const stringTies = guitarData.ties.get(string);
+    if (!stringTies) return;
+    const slot = stringTies.get(from);
+    if (slot) {
+      slot.bend = undefined;
+      cleanupSlot(string, from);
     }
   }
 
   function deleteAt(string: number, position: number) {
     const stringTies = guitarData.ties.get(string);
-    if (stringTies) {
-      deleteTie(string, position);
-      const tiedTo = [...stringTies.entries()].find(
-        ([from, tie]) => tie.to === position,
-      );
-      if (tiedTo) {
-        deleteTie(string, tiedTo[0]);
+    if (!stringTies) return;
+
+    // Clear outgoing tie and bend at this position
+    const slot = stringTies.get(position);
+    if (slot) {
+      slot.tie = undefined;
+      slot.bend = undefined;
+      cleanupSlot(string, position);
+    }
+
+    // Clear incoming ties/bends that point to this position
+    for (const [from, slot] of stringTies) {
+      if (slot.tie?.to === position) {
+        slot.tie = undefined;
+        cleanupSlot(string, from);
+      }
+      if (slot.bend?.to === position) {
+        slot.bend = undefined;
+        cleanupSlot(string, from);
       }
     }
   }
@@ -511,8 +563,9 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
   function getTies(): Tie[] {
     const ties: Tie[] = [];
     for (const [string, stringTies] of guitarData.ties) {
-      for (const [from, tie] of stringTies) {
-        if (tie.type === "bend") continue;
+      for (const [from, slot] of stringTies) {
+        if (!slot.tie) continue;
+        const tie = slot.tie;
         const fromNote = guitarData.stacks.get(from)?.get(string);
         const toNote = guitarData.stacks.get(tie.to)?.get(string);
         ties.push({
@@ -531,26 +584,18 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
   function getBends(): Bend[] {
     const bends: Bend[] = [];
     for (const [string, stringTies] of guitarData.ties) {
-      for (const [from, tie] of stringTies) {
-        if (tie.type === "bend") {
-          bends.push({ ...tie, string, from });
-        }
+      for (const [from, slot] of stringTies) {
+        if (!slot.bend) continue;
+        bends.push({ ...slot.bend, string, from });
       }
     }
     return bends;
   }
 
-  // function isConnected({ string, position }: NotePosition): boolean {
-  //   const stringTies = guitarData.ties.get(string);
-  //   if (!stringTies) return false;
-  //   const tie = stringTies.get(position);
-  //   return tie !== undefined;
-  // }
-
   function getStartsAt({
     position,
     string,
-  }: NotePosition): TieData | BendData | undefined {
+  }: NotePosition): TieSlotData | undefined {
     const stringTies = guitarData.ties.get(string);
     if (!stringTies) return undefined;
     return stringTies.get(position);
@@ -558,17 +603,39 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
 
   function shiftFrom(position: number, shiftBy: number) {
     for (const [string, ties] of guitarData.ties) {
-      const newTies = new Map<number, TieData | BendData>();
-      for (const [from, tie] of ties) {
-        if (tie.to >= position && from <= position) continue;
-        if (tie.to >= position && from >= position) {
-          newTies.set(from + shiftBy, {
-            ...tie,
-            to: tie.to + shiftBy,
-          });
-          continue;
+      const newTies = new Map<number, TieSlotData>();
+      for (const [from, slot] of ties) {
+        const newSlot: TieSlotData = {};
+        let keep = false;
+
+        if (slot.tie) {
+          if (slot.tie.to >= position && from <= position) {
+            // tie spans the shift point — discard
+          } else if (slot.tie.to >= position && from >= position) {
+            newSlot.tie = { ...slot.tie, to: slot.tie.to + shiftBy };
+            keep = true;
+          } else {
+            newSlot.tie = slot.tie;
+            keep = true;
+          }
         }
-        newTies.set(from, tie);
+
+        if (slot.bend) {
+          if (slot.bend.to >= position && from <= position) {
+            // bend spans the shift point — discard
+          } else if (slot.bend.to >= position && from >= position) {
+            newSlot.bend = { ...slot.bend, to: slot.bend.to + shiftBy };
+            keep = true;
+          } else {
+            newSlot.bend = slot.bend;
+            keep = true;
+          }
+        }
+
+        if (keep) {
+          const newFrom = from >= position ? from + shiftBy : from;
+          newTies.set(newFrom, newSlot);
+        }
       }
       guitarData.ties.set(string, newTies);
     }
@@ -576,9 +643,11 @@ function createTieStore(guitarData: GuitarTabData): TieStore {
 
   return {
     setTie,
+    setBend,
     updateBend,
     updateTie,
     deleteTie,
+    deleteBend,
     deleteAt,
     getTies,
     getBends,

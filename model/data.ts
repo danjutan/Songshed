@@ -27,10 +27,7 @@ export type TieData = {
   to: number;
 };
 
-// export type TieOrBendData = ({ type: "bend" } & BendData) | TieData;
-
 export interface BendData {
-  type: "bend";
   bend: number;
   through?: number[]; //relative to from. this is an array in case we later want to add consecutive bend segments https://archive.steinberg.help/dorico/v3/en/dorico/topics/notation_reference/notation_reference_guitar_bends/notation_reference_guitar_bends_c.html#:~:text=consecutive%20guitar%20bends
   releaseType: "hold" | "connect"; // whether the line releases down to "to" note. ignored if no "through" point.
@@ -55,11 +52,16 @@ export type Chord = {
   notes: NoteStack<ChordNote>;
 };
 
+export interface TieSlotData {
+  tie?: TieData;
+  bend?: BendData;
+}
+
 export interface GuitarTabData {
   tuning: Midi[];
   frets: number;
   stacks: StackMap<GuitarNote>;
-  ties: Map<number, Map<number, TieData | BendData>>;
+  ties: Map<number, Map<number, TieSlotData>>; // string -> from pos -> TieSlotData
 }
 
 export interface ChordsData {

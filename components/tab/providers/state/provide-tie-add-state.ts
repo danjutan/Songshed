@@ -96,8 +96,7 @@ export function provideTieAddState(
     const string = dragString.value;
 
     if (mode.value === "bend") {
-      props.store.ties.setTie(string, start, {
-        type: "bend",
+      props.store.ties.setBend(string, start, {
         to: end,
         releaseType: "connect",
         bend: 1,
@@ -113,12 +112,12 @@ export function provideTieAddState(
   }
 
   function hasBend(notePosition: NotePosition): boolean {
-    return props.store.ties.getStartsAt(notePosition)?.type === "bend";
+    return props.store.ties.getStartsAt(notePosition)?.bend !== undefined;
   }
 
   function hasTieBothSides(notePosition: NotePosition): boolean {
-    const tieOut = props.store.ties.getStartsAt(notePosition);
-    if (!tieOut || tieOut.type === "bend") return false;
+    const slot = props.store.ties.getStartsAt(notePosition);
+    if (!slot?.tie) return false;
     const tieIn = props.store.ties
       .getTies()
       .find(
@@ -180,7 +179,6 @@ export function provideTieAddState(
           string: dragString.value,
           from,
           to,
-          type: "bend",
           releaseType: "connect",
           bend: 1,
         };
