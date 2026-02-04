@@ -76,9 +76,9 @@ watch(
 const startRowTop = computed(() => contextMenuHeight.value + cellHeight.value);
 
 const hasTie = computed(() =>
-  ([TIE_TYPE.Hammer, TIE_TYPE.Tap, TIE_TYPE.TieSlide] as TieType[]).includes(
-    props.tie.type,
-  ),
+  (
+    [TIE_TYPE.Plain, TIE_TYPE.Hammer, TIE_TYPE.Tap, TIE_TYPE.TieSlide] as TieType[]
+  ).includes(props.tie.type),
 );
 const hasSlide = computed(() =>
   ([TIE_TYPE.Slide, TIE_TYPE.TieSlide] as TieType[]).includes(props.tie.type),
@@ -114,7 +114,7 @@ const curveBottom = (center1: number, center2: number) => {
     <TieCurve
       v-if="hasTie"
       ref="tieCurve"
-      :close="tie.type === TIE_TYPE.TieSlide"
+      :close="tie.type === TIE_TYPE.TieSlide || tie.type === TIE_TYPE.Plain"
       :from-pos="tie.from"
       :to-pos="tie.to"
       :y="startRowTop + row * cellHeight - 1"
@@ -146,7 +146,7 @@ const curveBottom = (center1: number, center2: number) => {
         (coords) =>
           hasSlide ? startRowTop + slideRowEnd * cellHeight : labelY(coords)
       "
-      :hide="hasSlide"
+      :hide="hasSlide || tie.type === TIE_TYPE.Plain"
       @mouseenter="() => (selectHovered = true)"
       @mouseleave="() => (selectHovered = false)"
     />

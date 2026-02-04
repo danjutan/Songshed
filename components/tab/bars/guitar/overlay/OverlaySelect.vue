@@ -128,8 +128,12 @@ const iconSize = 16;
 }
 </style>
 <style>
-.options-teleport {
+/* .options-teleport {
   --p-select-option-padding: 1px 2px;
   margin-top: unset !important;
+} */
+
+.p-select-option {
+  justify-content: center;
 }
 </style>

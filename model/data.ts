@@ -13,6 +13,7 @@ export interface NoteData {
 
 // "hammer" means hammer-on if going up, pull-off if going down
 export const TIE_TYPE = {
+  Plain: "plain",
   Hammer: "hammer",
   Tap: "tap",
   Slide: "slide",

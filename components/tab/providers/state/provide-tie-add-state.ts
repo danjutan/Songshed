@@ -14,8 +14,6 @@ export function provideTieAddState(
   const dragString = ref<number>(0);
   const rawFrom = ref<number>(0);
   const rawTo = ref<number>(0);
-  const defaultTieType = TIE_TYPE.Hammer;
-
   const validPositions = computed(() => {
     const string = dragString.value;
     const from = rawFrom.value;
@@ -65,6 +63,10 @@ export function provideTieAddState(
     };
   });
 
+  const defaultTieType = computed(() =>
+    midiValues.value.to !== undefined ? TIE_TYPE.Hammer : TIE_TYPE.Plain,
+  );
+
   const dragDirection = computed<"right" | "left" | undefined>(() => {
     if (!mode.value) return undefined;
     const { from, to } = validPositions.value;
@@ -99,7 +101,7 @@ export function provideTieAddState(
       });
     } else if (to !== from) {
       props.store.ties.setTie(string, start, {
-        type: defaultTieType,
+        type: defaultTieType.value,
         to: end,
       });
     }
@@ -162,7 +164,7 @@ export function provideTieAddState(
           string: dragString.value,
           from,
           to,
-          type: defaultTieType,
+          type: defaultTieType.value,
           midiFrom,
           midiTo,
         };

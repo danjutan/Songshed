@@ -30,12 +30,10 @@ const vCoords = useCoordsDirective({
   to: computed(() => props.toPos),
 });
 
-const iconSize = computed(() => `${(cellHeight.value * 2) / 3}`);
-
 function tieSlideCurvePath() {
   const x1 = 0;
-  const x2 = 10;
-  const y = 7.5;
+  const x2 = 20;
+  const y = 7;
   const bottom = 9;
   const curvePointX = (x2 + x1) / 2;
   const controlY = 2 * bottom - y; // from the derivative of the quadratic Bezier curve
@@ -52,21 +50,25 @@ const options = computed<[TieType, string][]>(() => {
     props.tie.midiFrom !== undefined && props.tie.midiTo !== undefined;
   const ascending = !connected || props.tie.midiFrom! < props.tie.midiTo!;
   const hammerChar = ascending ? "H" : "P";
+
+  const svgWrapper = (icon: string) =>
+    `<svg width="20px" height="10px" viewBox="0 0 20 10">${icon}</svg>`;
+
   const slideLine = (yStart: number) =>
     ascending
-      ? `<line x1="1" y1="${yStart + 6}" x2="9" y2="${yStart + 2}" stroke="currentColor" stroke-width="0.5" />`
-      : `<line x1="1" y1="${yStart + 2}" x2="10" y2="${yStart + 6}" stroke="currentColor" stroke-width="0.5" />`;
+      ? `<line x1="1" y1="${yStart + 6}" x2="19" y2="${yStart + 2}" stroke="currentColor" stroke-width="0.5" />`
+      : `<line x1="1" y1="${yStart + 2}" x2="20" y2="${yStart + 6}" stroke="currentColor" stroke-width="0.5" />`;
 
-  const slideIcon = `<svg class="slide" width="${iconSize.value}" height="${iconSize.value}" viewBox="0 0 10 10">
-    ${slideLine(2)}
-  </svg>`;
-
-  const tieSlideIcon = `<svg class="tie-slide" width="${iconSize.value}" height="${iconSize.value}" viewBox="0 0 10 10">
-    ${slideLine(0)}
-    <path fill="currentColor" d="${tieSlideCurvePath()}" />
-  </svg>`;
+  const slideIcon = svgWrapper(`${slideLine(2)}`);
+  const tieSlideIcon = svgWrapper(
+    `${slideLine(0)}<path fill="currentColor" d="${tieSlideCurvePath()}" />`,
+  );
+  const plainIcon = svgWrapper(
+    `<path fill="currentColor" d="${tieSlideCurvePath()}" />`,
+  );
 
   return [
+    [TIE_TYPE.Plain, plainIcon],
     [TIE_TYPE.Hammer, hammerChar],
     [TIE_TYPE.Slide, slideIcon],
     [TIE_TYPE.TieSlide, tieSlideIcon],
@@ -99,6 +101,7 @@ const emits = defineEmits<{
           :hide
           :options
           :override-display="{
+            [TIE_TYPE.Plain]: '',
             [TIE_TYPE.Slide]: '',
             [TIE_TYPE.TieSlide]: '',
           }"
