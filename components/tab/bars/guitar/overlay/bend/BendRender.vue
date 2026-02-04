@@ -164,7 +164,7 @@ const vCoords = useCoordsDirective({
       :marker-end="upswingArrowHover ? 'url(#hover-arrow)' : 'url(#arrow)'"
     />
 
-    <g v-if="throughPos">
+    <g v-if="hasThrough">
       <path
         v-if="bend.releaseType === 'connect'"
         v-coords:d="
