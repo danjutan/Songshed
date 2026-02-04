@@ -81,7 +81,7 @@ function onTextInput() {
 
 function onTextBlur() {
   if (props.annotation && textEl.value) {
-    const value = textEl.value.innerText;
+    const value = textEl.value.innerText.trim();
     if (value.length === 0) {
       emit("delete");
     }
@@ -99,6 +99,9 @@ function focusText() {
   }
 }
 onMounted(() => {
+  if (textEl.value && props.annotation?.text) {
+    textEl.value.textContent = props.annotation.text;
+  }
   if (!props.creating) {
     setTimeout(() => focusText(), 1);
   }
@@ -181,9 +184,7 @@ const isOneColumn = computed(() => {
       @input="onTextInput"
       @blur="onTextBlur"
       @click.stop
-    >
-      {{ annotation?.text }}
-    </div>
+    />
 
     <div v-if="isOneColumn" class="notch" />
   </div>
@@ -239,13 +240,9 @@ const isOneColumn = computed(() => {
 
 .text {
   font-size: var(--annotation-font-size);
-  max-width: min-content;
-  display: flex;
-  justify-content: center;
   align-self: center;
   white-space: nowrap;
   flex-grow: 1;
-  height: min-content;
   text-align: center;
   outline: none;
 }
