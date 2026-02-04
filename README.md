@@ -1,12 +1,6 @@
 Songshed is a proof-of-concept for a grid-based guitar tabs editor.
 
-Guitar tab editors are either inprecise (they won't let you specify exactly when a note should be hit) or cumbersome (they require classical notation knowledge or have a difficult UI to learn). Songshed divides a bar into a grid, letting you place notes as easily as filling a cell in a table.
-
-The app is fully responsive, breaking bars across lines and automatically shrinking empty columns to make more space:
-![Demonstration of resizing the window and the tab updating](readme/responsive.gif)
-
-If a tie, bend, or annotation expands across a bar, and those bars end up on separate lines, they will gracefully break:
-![Demonstration of resizing the window and a tie and an annotation that expands two bars gracefully breaks with them](readme/responsivebreak.gif)
+Guitar tab editors are either inprecise (they won't let you specify exactly when a note should be hit) or cumbersome (they require classical notation knowledge or have a difficult UI to learn). Songshed divides a bar into a grid, letting you place notes as easily as filling a cell in a table. Then, use drag-and-drop interactions to create ties, bends, and annotations and to move notes and reorder bars.
 
 ## Implemented Features
 
@@ -40,5 +34,15 @@ If a tie, bend, or annotation expands across a bar, and those bars end up on sep
 - Mobile version
 - Copy chords and bars as images
 - Multiple tab views (i.e., multiple guitar/bass parts for the same song)
+
+## Responsiveness
+
+
+The app is fully responsive, breaking bars across lines and automatically shrinking empty columns to make more space:
+![Demonstration of resizing the window and the tab updating](readme/responsive.gif)
+
+If a tie, bend, or annotation expands across a bar, and those bars end up on separate lines, they will gracefully break:
+<img src="readme/responsivebreak.gif" width="400">
+
 
 _this README under development!_
