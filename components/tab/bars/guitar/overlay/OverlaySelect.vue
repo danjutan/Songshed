@@ -19,7 +19,7 @@ const fontSizePx = computed(() => `calc(${cellHeightPx.value} * 0.6)`);
 const model = defineModel();
 
 const emit = defineEmits<{
-  deleteClicked: () => void;
+  deleteClicked: [];
 }>();
 
 const options = computed(() => {
@@ -63,7 +63,7 @@ const iconSize = 16;
       <ChevronDown :size="iconSize" />
     </template>
     <template #clearicon>
-      <X class="clear" :size="iconSize" @click="$emit('deleteClicked')" />
+      <X class="clear" :size="iconSize" @click="emit('deleteClicked')" />
     </template>
   </Select>
 </template>
