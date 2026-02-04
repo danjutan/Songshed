@@ -25,24 +25,24 @@ export function provideTieAddState(
     }
 
     // "Collisions"
-    if (to !== from) {
-      const direction = to < from ? -1 : 1;
-      const start =
-        from + direction * props.getSubUnitForPosition(Math.min(to, from));
-      const end = to;
+    // if (to !== from) {
+    //   const direction = to < from ? -1 : 1;
+    //   const start =
+    //     from + direction * props.getSubUnitForPosition(Math.min(to, from));
+    //   const end = to;
 
-      for (
-        let i = start;
-        direction > 0 ? i <= end : i >= end;
-        i += direction * props.getSubUnitForPosition(i)
-      ) {
-        const stack = props.store.stacks.get(i);
-        if (stack?.get(string)) {
-          to = i;
-          break;
-        }
-      }
-    }
+    //   for (
+    //     let i = start;
+    //     direction > 0 ? i <= end : i >= end;
+    //     i += direction * props.getSubUnitForPosition(i)
+    //   ) {
+    //     const stack = props.store.stacks.get(i);
+    //     if (stack?.get(string)) {
+    //       to = i;
+    //       break;
+    //     }
+    //   }
+    // }
 
     return { from, to };
   });
@@ -64,7 +64,10 @@ export function provideTieAddState(
   });
 
   const defaultTieType = computed(() =>
-    midiValues.value.to !== undefined ? TIE_TYPE.Hammer : TIE_TYPE.Plain,
+    midiValues.value.to === undefined ||
+    midiValues.value.from === midiValues.value.to
+      ? TIE_TYPE.Plain
+      : TIE_TYPE.Hammer,
   );
 
   const dragDirection = computed<"right" | "left" | undefined>(() => {
