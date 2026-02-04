@@ -2,8 +2,8 @@ export function provideSettingsState() {
   const settings = reactive({
     subdivisions: 4, // per beat
     collapseSubdivisions: false,
-    collapseEmpty: false,
-    collapseAll: true,
+    collapseEmpty: true,
+    collapseAll: false,
     cellHeight: 24,
     showAnnotationBackground: true,
     posLineCenter: true,

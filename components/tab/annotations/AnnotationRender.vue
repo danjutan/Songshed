@@ -99,10 +99,10 @@ function focusText() {
   }
 }
 onMounted(() => {
-  if (textEl.value && props.annotation?.text) {
-    textEl.value.textContent = props.annotation.text;
+  if (textEl.value) {
+    textEl.value.textContent = props.annotation.text ?? "...";
   }
-  if (!props.creating) {
+  if (!props.creating && !props.annotation?.text) {
     setTimeout(() => focusText(), 1);
   }
 });

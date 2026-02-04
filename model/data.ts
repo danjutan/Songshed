@@ -4,7 +4,7 @@ import type { SpacingValue } from "~/theory/spacing";
 export interface Annotation {
   start: number;
   end: number;
-  text: string;
+  text?: string;
 }
 
 export interface NoteData {
