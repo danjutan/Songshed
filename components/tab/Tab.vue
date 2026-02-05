@@ -4,6 +4,7 @@ import TabToolbar from "./TabToolbar.vue";
 import BarDivider from "./bars/BarDivider.vue";
 import TimeSignatureWidget from "./bars/guitar/stack/widgets/TimeSignatureWidget.vue";
 import TuningWidget from "./bars/guitar/stack/widgets/TuningWidget.vue";
+import NewRowButton from "./annotations/NewRowButton.vue";
 
 import { Plus } from "lucide-vue-next";
 
@@ -225,58 +226,79 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
     <template v-for="(bar, i) in barManagement.bars" :key="bar.start">
       <div v-if="tabStore.lineBreaks.has(bar.start)" class="line-break" />
 
-      <BarDivider
-        v-if="i > 0"
-        class="tab-divider"
-        :start-of-line="tablineStarts.includes(bar.start)"
-        :bar-start="bar.start"
-        :joinable="tabStore.lineBreaks.has(bar.start)"
-        @resize="(diffX: number) => onResize(i, diffX)"
-        @delete-hover-start="mightDeleteBarStart = bar.start"
-        @delete-hover-end="mightDeleteBarStart = undefined"
-        @end-drag="endDrag(i)"
-        @move-hover-start="mightMoveBarStart = bar.start"
-        @move-hover-end="mightMoveBarStart = undefined"
-        @move-drag-start="movingBarStart = bar.start"
-        @move-drag-end="movingBarStart = moveTargetBarStart = undefined"
-        @inserting-into="(position: number) => (moveTargetBarStart = position)"
-      />
-
-      <TabBar
-        ref="tabBars"
-        :bar="bar"
-        :flex-grow="barFlexGrow[i]"
-        :annotation-store="props.tabStore.annotations"
-        :guitar-store="props.tabStore.guitar"
-        :highlight="
-          (mightDeleteBarStart === bar.start && 'might-delete') ||
-          (mightMoveBarStart === bar.start && 'might-move') ||
-          (movingBarStart === bar.start && 'moving') ||
-          (moveTargetBarStart === bar.start && 'move-target')
-        "
+      <div
+        class="bar-group"
+        :style="{
+          flex: barFlexGrow[i] ? `${barFlexGrow[i]} 0 0px` : undefined,
+        }"
       >
-        <template v-if="i === 0 || tabStore.timeChanges.has(bar.start)" #widget>
-          <template v-if="i === 0">
-            <TuningWidget
-              :tuning="tabStore.guitar.tuning"
-              :update-tuning="tabStore.updateTuning.guitar"
-            />
+        <NewRowButton
+          v-if="tablineStarts.includes(bar.start)"
+          class="new-row-button"
+          @click="tabStore.annotations.createNextRow()"
+        />
+        <BarDivider
+          class="tab-divider"
+          :start-of-line="tablineStarts.includes(bar.start)"
+          :bar-start="bar.start"
+          :joinable="tabStore.lineBreaks.has(bar.start)"
+          @resize="(diffX: number) => onResize(i, diffX)"
+          @delete-hover-start="mightDeleteBarStart = bar.start"
+          @delete-hover-end="mightDeleteBarStart = undefined"
+          @end-drag="endDrag(i)"
+          @move-hover-start="mightMoveBarStart = bar.start"
+          @move-hover-end="mightMoveBarStart = undefined"
+          @move-drag-start="movingBarStart = bar.start"
+          @move-drag-end="movingBarStart = moveTargetBarStart = undefined"
+          @inserting-into="
+            (position: number) => (moveTargetBarStart = position)
+          "
+        />
+
+        <TabBar
+          ref="tabBars"
+          :bar="bar"
+          :annotation-store="props.tabStore.annotations"
+          :guitar-store="props.tabStore.guitar"
+          :highlight="
+            (mightDeleteBarStart === bar.start && 'might-delete') ||
+            (mightMoveBarStart === bar.start && 'might-move') ||
+            (movingBarStart === bar.start && 'moving') ||
+            (moveTargetBarStart === bar.start && 'move-target')
+          "
+        >
+          <template
+            v-if="i === 0 || tabStore.timeChanges.has(bar.start)"
+            #widget
+          >
+            <template v-if="i === 0">
+              <TuningWidget
+                :tuning="tabStore.guitar.tuning"
+                :update-tuning="tabStore.updateTuning.guitar"
+              />
+            </template>
+            <template v-if="tabStore.timeChanges.has(bar.start)">
+              <TimeSignatureWidget
+                v-model:beats="tabStore.timeChanges.get(bar.start)!.beatsPerBar"
+                v-model:beat-value="
+                  tabStore.timeChanges.get(bar.start)!.beatSize
+                "
+                :first="bar.start === 0"
+                @delete="tabStore.timeChanges.delete(bar.start)"
+              />
+            </template>
           </template>
-          <template v-if="tabStore.timeChanges.has(bar.start)">
-            <TimeSignatureWidget
-              v-model:beats="tabStore.timeChanges.get(bar.start)!.beatsPerBar"
-              v-model:beat-value="tabStore.timeChanges.get(bar.start)!.beatSize"
-              :first="bar.start === 0"
-              @delete="tabStore.timeChanges.delete(bar.start)"
-            />
-          </template>
-        </template>
-      </TabBar>
+        </TabBar>
+
+        <div
+          v-if="i === barManagement.bars.length - 1"
+          class="new-button"
+          @click="barManagement.newBarClick"
+        >
+          <Plus />
+        </div>
+      </div>
     </template>
-    <!-- TODO: re-evaluate; do I toss this down a slot? -->
-    <div class="new-button" @click="barManagement.newBarClick">
-      <Plus />
-    </div>
   </div>
 </template>
 
@@ -288,9 +310,24 @@ const moveTargetBarStart = ref<number | undefined>(undefined);
   row-gap: calc(var(--cell-height) / 2);
 }
 
+.new-row-button {
+  margin-right: var(--divider-width);
+}
+
 .line-break {
   width: 100%;
   height: 0px;
+}
+
+.bar-group {
+  max-width: max-content;
+  display: flex;
+  align-items: stretch;
+}
+
+.bar-group > .new-row-button {
+  align-self: flex-start;
+  margin-top: 1px;
 }
 
 .tab-divider {

@@ -26,7 +26,7 @@ const SpacingsStateKey: InjectionKey<SpacingsState> = Symbol("SpacingsState");
 
 export function provideSpacings(settings: SettingsState): SpacingsState {
   const cellHeight = computed(() => settings.cellHeight);
-  const dividerWidth = computed(() => settings.cellHeight / 3);
+  const dividerWidth = computed(() => settings.cellHeight / 2);
   const contextMenuHeight = computed(() => (settings.cellHeight * 3) / 4);
   const collapsedMinWidth = computed(() => settings.cellHeight / 2);
   const noteTieDraggerSize = computed(() => settings.cellHeight / 3);

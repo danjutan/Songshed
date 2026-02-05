@@ -13,7 +13,6 @@ import GuitarBar from "./guitar/GuitarBar.vue";
 import { provideTabBarBounds } from "./provide-bar-bounds";
 import { injectStackResizeObserver } from "../providers/events/provide-resize-observer";
 import AnnotationsContainer from "../annotations/AnnotationsContainer.vue";
-import NewRowButton from "../annotations/NewRowButton.vue";
 import { injectBarHoverState } from "../providers/state/provide-bar-hover-state";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { getInsertBarDropData, isBarDragData } from "../hooks/dnd/dnd-types";
@@ -28,7 +27,6 @@ const props = defineProps<{
   annotationStore: AnnotationStore;
   bar: Bar;
   guitarStore: GuitarStore;
-  flexGrow?: number;
   highlight?: BarHighlightType | false;
 }>();
 
@@ -44,10 +42,6 @@ provideTabBarBounds(
 );
 
 const { setHoveredBarStart, clearHoveredBarStart } = injectBarHoverState();
-
-const firstInLine = computed(() =>
-  resizeObserver.tablineStarts.includes(props.bar.start),
-);
 
 const tabBar = useTemplateRef<HTMLDivElement>("tabBar");
 
@@ -75,16 +69,9 @@ watchEffect((cleanup) => {
   <div
     ref="tabBar"
     class="tab-bar"
-    :class="{ firstInLine }"
-    :style="{ flex: flexGrow ? `${flexGrow} 0 0px` : undefined }"
     @mouseover="setHoveredBarStart(bar.start)"
     @mouseleave="clearHoveredBarStart"
   >
-    <NewRowButton
-      v-if="firstInLine"
-      class="new-row-button"
-      @click="annotationStore.createNextRow()"
-    />
     <AnnotationsContainer class="annotations" :annotation-store />
     <GuitarBar
       ref="overlayReference"
@@ -106,25 +93,9 @@ watchEffect((cleanup) => {
 
 <style scoped>
 .tab-bar {
-  max-width: max-content;
+  max-width: min-content;
   display: grid;
   position: relative;
-}
-
-.new-row-button {
-  grid-column: 1;
-  grid-row: 1;
-  /* To avoid reflowing and looping the ResizeObserver */
-  position: absolute;
-  top: 1px;
-}
-
-.tab-bar.firstInLine {
-  grid-template-columns: var(--cell-height) auto;
-  & .guitar,
-  & .annotations {
-    grid-column: 2;
-  }
 }
 
 .highlight {
@@ -135,7 +106,6 @@ watchEffect((cleanup) => {
   height: 100%;
   opacity: var(--select-alpha);
   z-index: var(--bar-highlight-z-index);
-
 
   &.might-delete {
     background-color: var(--delete-color);

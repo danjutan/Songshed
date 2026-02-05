@@ -140,7 +140,7 @@ onMounted(() => {
 
 <style scoped>
 .divider {
-  width: var(--divider-width);
+  min-width: var(--divider-width);
   background: var(--divider-color);
   padding: 0;
   position: relative;

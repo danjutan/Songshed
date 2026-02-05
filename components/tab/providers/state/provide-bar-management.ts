@@ -1,5 +1,6 @@
 import type { GuitarNote, NoteStack, TimeSignature } from "~/model/data";
 import type { GuitarStack, TabStore } from "~/model/stores";
+import { SPACING } from "~/theory/spacing";
 
 export type Bar = {
   start: number;
@@ -91,6 +92,17 @@ export function provideBarManagement(
     for (const [pos, timeChange] of timeChangesToUpdate.entries()) {
       tabStore.timeChanges.set(pos, timeChange);
     }
+
+    // Ensure there's always a time signature at position 0
+    if (!tabStore.timeChanges.has(0)) {
+      tabStore.timeChanges.set(0, {
+        beatsPerBar: 4,
+        beatSize: SPACING.Quarter,
+      });
+    }
+
+    // Update newBarStart to account for deleted bar
+    newBarStart.value = Math.max(0, newBarStart.value - barSize);
   }
 
   function shiftTimeChanges(start: number, shiftBy: number) {
