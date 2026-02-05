@@ -35,14 +35,12 @@ Guitar tab editors are either inprecise (they won't let you specify exactly when
 - Copy chords and bars as images
 - Multiple tab views (i.e., multiple guitar/bass parts for the same song)
 
-<!-- ## Responsiveness
-
+## Responsiveness
 
 The app is fully responsive, breaking bars across lines and automatically shrinking empty columns to make more space:
 ![Demonstration of resizing the window and the tab updating](readme/responsive.gif)
 
 If a tie, bend, or annotation expands across a bar, and those bars end up on separate lines, they will gracefully break:
-<img src="readme/responsivebreak.gif" width="400">-->
-
+<img src="readme/responsivebreak.gif" width="400">
 
 _this README under development!_
