@@ -93,7 +93,7 @@ watchEffect((cleanup) => {
 
 <style scoped>
 .tab-bar {
-  max-width: min-content;
+  max-width: max-content;
   display: grid;
   position: relative;
 }
