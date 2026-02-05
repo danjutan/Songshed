@@ -41,6 +41,7 @@ The app is fully responsive, breaking bars across lines and automatically shrink
 ![Demonstration of resizing the window and the tab updating](readme/responsive.gif)
 
 If a tie, bend, or annotation expands across a bar, and those bars end up on separate lines, they will gracefully break:
-<img src="readme/responsivebreak.gif" width="400">
+
+<img src="readme/responsivebreak.gif" width="600">
 
 _this README under development!_
