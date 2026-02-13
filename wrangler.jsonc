@@ -1,6 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "songshed",
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "dev.songshed.app",
+      "custom_domain": true,
+    },
+  ],
   "observability": {
     "enabled": true,
   },
