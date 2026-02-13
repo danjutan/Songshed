@@ -14,11 +14,8 @@ export default defineEventHandler(async (event) => {
     };
   }
   if (event.method === "GET") {
-    // In the new implementation of kv, getItem automatically deserializes the object,
-    // but we want to deserialize it ourselves on the client. So we use
-    // `getItemRaw` and decode the buffer it returns
-    const rawTabData = await kv.getItemRaw<Uint8Array>(id);
-    if (rawTabData == null) return null;
-    return new TextDecoder().decode(rawTabData);
+    const tabData = await kv.get(id);
+    if (tabData == null) return null;
+    return JSON.stringify(tabData);
   }
 });

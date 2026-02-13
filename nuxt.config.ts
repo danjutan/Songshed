@@ -1,6 +1,4 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import Aura from "@primevue/themes/aura";
-import Material from "@primevue/themes/material";
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
@@ -18,10 +16,7 @@ export default defineNuxtConfig({
   ],
 
   hub: {
-    kv: {
-      driver: "cloudflare-kv-binding",
-      namespaceId: "14d4165918f64f2e989b109c372afffb",
-    },
+    kv: true,
   },
 
   primevue: {
@@ -33,5 +28,5 @@ export default defineNuxtConfig({
     importTheme: { from: "@/themes/theme.ts" },
   },
 
-  compatibilityDate: "2024-12-12",
+  compatibilityDate: "2026-02-13",
 });
