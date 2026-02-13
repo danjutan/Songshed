@@ -18,7 +18,10 @@ export default defineNuxtConfig({
   ],
 
   hub: {
-    kv: true,
+    kv: {
+      driver: "cloudflare-kv-binding",
+      namespaceId: "14d4165918f64f2e989b109c372afffb",
+    },
   },
 
   primevue: {
