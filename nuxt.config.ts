@@ -11,11 +11,15 @@ export default defineNuxtConfig({
 
   modules: [
     "@nuxt/eslint",
-    "@nuxthub/core",
     "@vueuse/nuxt",
     "@primevue/nuxt-module",
     "@nuxt/fonts",
+    "@nuxthub/core",
   ],
+
+  hub: {
+    kv: true,
+  },
 
   primevue: {
     options: {
@@ -24,20 +28,6 @@ export default defineNuxtConfig({
       // },
     },
     importTheme: { from: "@/themes/theme.ts" },
-  },
-
-  hub: {
-    kv: true,
-  },
-
-  hooks: {
-    // Uncomment for IDX:
-    // "vite:extend"({ config }) {
-    //   if (config.server && config.server.hmr) {
-    //     // @ts-ignore
-    //     config.server.hmr.protocol = "wss";
-    //   }
-    // },
   },
 
   compatibilityDate: "2024-12-12",
