@@ -1,5 +1,9 @@
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { isNoteInputDropData, isTieAddDragData } from "./dnd-types";
+import {
+  isBendBarDropData,
+  isNoteInputDropData,
+  isTieAddDragData,
+} from "./dnd-types";
 import type { TieAddState } from "../../providers/state/provide-tie-add-state";
 
 export function useTieAddMonitor(tieAddState: TieAddState) {
@@ -18,7 +22,7 @@ export function useTieAddMonitor(tieAddState: TieAddState) {
         onDropTargetChange(args) {
           if (args.location.current.dropTargets.length > 0) {
             const dropData = args.location.current.dropTargets[0].data;
-            if (isNoteInputDropData(dropData)) {
+            if (isNoteInputDropData(dropData) || isBendBarDropData(dropData)) {
               tieAddState.drag(dropData.position);
             }
           }
