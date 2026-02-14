@@ -5,16 +5,16 @@
   "routes": [
     {
       "pattern": "dev.songshed.app",
-      "custom_domain": true,
-    },
+      "custom_domain": true
+    }
   ],
   "observability": {
-    "enabled": true,
+    "enabled": true
   },
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "7ae4b98f01e545ac8fcde4d1be192791",
-    },
-  ],
+      "id": "7ae4b98f01e545ac8fcde4d1be192791"
+    }
+  ]
 }
