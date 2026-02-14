@@ -1,10 +1,6 @@
 <script lang="ts" setup>
 import { injectSettingsState } from "../providers/state/provide-settings-state";
-import {
-  SPACING,
-  type SpacingName,
-  type SpacingValue,
-} from "~/theory/spacing";
+import { SPACING, type SpacingName, type SpacingValue } from "~/theory/spacing";
 const props = defineProps<{
   id: string;
 }>();
@@ -38,7 +34,7 @@ const saveId = ref(props.id);
     Subdivisions:
     <input v-model="settings.subdivisions" type="number" />
   -->
-    <label for="collapse-subdivisions">Collapse subdivisions</label>
+    <!-- <label for="collapse-subdivisions">Collapse subdivisions</label>
     <input
       id="collapse-subdivisions"
       v-model="settings.collapseSubdivisions"
@@ -52,7 +48,8 @@ const saveId = ref(props.id);
       type="checkbox"
     />
     <label for="collapse-all">Collapse all</label>
-    <input id="collapse-all" v-model="settings.collapseAll" type="checkbox" />
+    <input id="collapse-all" v-model="settings.collapseAll" type="checkbox" /> -->
+    <div class="gap" />
     <input v-model="saveId" type="text" />
     <button @click="$emit('save', saveId)">Save</button>
   </div>
@@ -63,6 +60,10 @@ const saveId = ref(props.id);
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.gap {
+  margin-left: auto;
 }
 
 input[type="number"] {
