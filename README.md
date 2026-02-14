@@ -27,10 +27,10 @@ Guitar tab editors are either inprecise (they won't let you specify exactly when
 
 ## Planned Features
 
+- Full account and profile system (save, view tabs, share)
 - Triplets
 - Integration with [alphaTab](https://alphatab.net/) for playback, PDF generation, export to Guitar Pro
 - Dragging chords to the bar for chord rhythm notation
-- Full account and profile system (save, view tabs, share)
 - Mobile version
 - Copy chords and bars as images
 - Multiple tab views (i.e., multiple guitar/bass parts for the same song)
