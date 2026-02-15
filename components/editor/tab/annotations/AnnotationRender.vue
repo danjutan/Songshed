@@ -18,8 +18,8 @@ import { injectSettingsState } from "~/components/editor/providers/provide-setti
 export interface AnnotationRenderProps {
   row: number;
   renderRow: number;
-  startAtLeft?: number;
-  endAtRight?: number;
+  startAtLeft?: number; // annotation continues from a previous line; this value is the beginning of the current tabline
+  endAtRight?: number; // annotation continues onto the next line; this value is the last position of the current tabline
   annotation: Annotation;
 
   creating?: boolean;
@@ -98,6 +98,7 @@ function focusText() {
     selection?.addRange(range);
   }
 }
+
 onMounted(() => {
   if (textEl.value) {
     textEl.value.textContent = props.annotation.text ?? "...";
@@ -144,14 +145,14 @@ const isOneColumn = computed(() => {
     :class="{
       creating: props.creating,
       dragging: isDragging,
-      'no-right-border': endAtRight,
-      'no-left-border': startAtLeft,
-      'any-creating': isAnyCreating,
+      'no-left-border': startAtLeft || startsInFirstColumn,
       hovered: isHovered,
-      'any-hovered': isAnyHovered,
       'other-hovered': isOtherHovered,
       'always-background': settings.showAnnotationBackground,
       'one-column': isOneColumn,
+      // 'no-right-border': endAtRight,
+      // 'any-creating': isAnyCreating,
+      // 'any-hovered': isAnyHovered,
       // 'other-dragging': !isDragging && isAnyDragging,
     }"
     @mouseenter="hoverState.setHovered(props.row, props.annotation)"
@@ -183,7 +184,6 @@ const isOneColumn = computed(() => {
       spellcheck="false"
       @input="onTextInput"
       @blur="onTextBlur"
-      @click.stop
     />
 
     <div v-if="isOneColumn" class="notch" />
@@ -199,6 +199,10 @@ const isOneColumn = computed(() => {
   display: flex;
   justify-content: center;
   pointer-events: v-bind(pointerEvents);
+  border-left: 1px solid var(--annotation-border);
+  &.no-left-border {
+    border-left: none;
+  }
 
   & .resize-handle {
     visibility: hidden;
@@ -211,20 +215,6 @@ const isOneColumn = computed(() => {
     z-index: var(--annotation-current-z-index);
     & .resize-handle {
       visibility: visible;
-    }
-  }
-
-  &.any-hovered,
-  &.any-creating {
-    /* pointer-events: none; */
-    border: 1px solid var(--annotation-border);
-    border-bottom: none;
-    background-color: var(--annotation-default-background-color);
-    &.no-right-border {
-      border-right: none;
-    }
-    &.no-left-border {
-      border-left: none;
     }
   }
 
