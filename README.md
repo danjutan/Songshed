@@ -1,12 +1,13 @@
 Songshed is a proof-of-concept for a grid-based guitar tabs editor.
 
-Guitar tab editors are either inprecise (they won't let you specify exactly when a note should be hit) or cumbersome (they require classical notation knowledge or have a difficult UI to learn). Songshed divides a bar into a grid, letting you place notes as easily as filling a cell in a table. Then, use drag-and-drop interactions to create ties, bends, and annotations and to move notes and reorder bars.
+Guitar tab editors are either inprecise (they won't let you specify exactly when a note should be hit) or cumbersome (they require classical notation knowledge or have a difficult UI to learn). Songshed divides a bar into a grid, letting you place notes as easily as filling in a table. Then, use drag-and-drop interactions to create ties, bends, and annotations, move notes and reorder bars, and [more](#implemented-features).
 
 ![A Songshed tab (just the tab portion, no chord charts) showing the Let It Be solo](readme/letitbe.png)
 
 You can also create chord charts. The name of the chord will be automatically detected based on your input. You can override that naming, and you can also use a chord picker to choose from a library of chords.
 
-![Songshed's chord picker, selecting a C major chord](readme/chordpicker.png)
+<img src="readme/chordpicker.png" width="400">
+
 
 ## Implemented Features
 
