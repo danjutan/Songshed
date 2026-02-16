@@ -11,7 +11,10 @@ import {
   ChevronDown,
 } from "lucide-vue-next";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { isChordDragData, isChordInsertDropData } from "~/components/editor/chords/dnd-types";
+import {
+  isChordDragData,
+  isChordInsertDropData,
+} from "~/components/editor/chords/dnd-types";
 
 const props = defineProps<{
   store: ChordStore;
@@ -49,21 +52,29 @@ onMounted(() => {
       <ChevronRight v-if="collapsed" :size="16" />
       <ChevronDown v-else :size="16" />
     </template> -->
-    <!-- <ChordsTuning
+  <!-- <ChordsTuning
       v-model:sync-tuning="syncTuning"
       :tuning="store.tuning"
       :update-tuning="updateTuning"
     /> -->
-    <div class="group">
-      <ChordContainer
-        v-for="(chord, i) of store.chords"
-        :key="i"
-        :index="i"
-        :chord="chord"
-        :tuning="store.tuning"
-        @delete="store.deleteChord(i)"
-      />
+  <div class="group">
+    <ChordContainer
+      v-for="(chord, i) of store.chords.slice(0, -1)"
+      :key="i"
+      :index="i"
+      :chord="chord"
+      :tuning="store.tuning"
+      @delete="store.deleteChord(i)"
+    />
 
+    <div v-if="store.chords.length > 0" class="last-group">
+      <ChordContainer
+        :key="store.chords.length - 1"
+        :index="store.chords.length - 1"
+        :chord="store.chords[store.chords.length - 1]"
+        :tuning="store.tuning"
+        @delete="store.deleteChord(store.chords.length - 1)"
+      />
       <Button
         class="add"
         severity="secondary"
@@ -75,6 +86,19 @@ onMounted(() => {
         </template>
       </Button>
     </div>
+
+    <Button
+      v-else
+      class="add"
+      severity="secondary"
+      outlined
+      @click="store.addChord()"
+    >
+      <template #icon>
+        <Plus :size="24" />
+      </template>
+    </Button>
+  </div>
   <!-- </Panel> -->
 </template>
 
@@ -93,11 +117,15 @@ onMounted(() => {
 .group {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.last-group {
+  display: flex;
+  align-items: center;
 }
 
 .add {
-  width: none;
   padding: 2px;
-  margin: 12px;
 }
 </style>
