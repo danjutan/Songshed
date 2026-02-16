@@ -30,7 +30,7 @@ You can also create chord charts. The name of the chord will be automatically de
 - Interactive GUI for chord diagrams - edit, reorder, rename
   - Chord name detection with [tonaljs](https://github.com/tonaljs/tonal)
   - Chord picker using [chords-db](https://github.com/tombatossals/chords-db)
-- Serializing/deserializing tabs (basic save and load)
+- Serializing/deserializing tabs (for demo purposes; just uses a global KV store)
 - Responsive options
   - Collapse empty (default): Empty columns collapse as the screen gets smaller, until they get to a minimum width. After all empty columns have reached their minimum width, the line breaks.
   - Collapse all: All columns collapse as the screen gets smaller, until they get to a minimum width. The font size of notes will shrink. After all columns have reached their minimum width, the line break.
