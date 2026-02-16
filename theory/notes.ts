@@ -1,9 +1,7 @@
 import {
   Note as TonalNote,
-  Chord as TonalChord,
   Midi as TonalMidi,
 } from "tonal";
-import type { ChordNote, NoteStack } from "~/model/data";
 
 export type Midi =
   | 0
@@ -183,36 +181,4 @@ export type Chroma = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 
 export function getChroma(midi: number): Chroma {
   return (midi % 12) as Chroma;
-}
-
-const FLAT_TO_SHARP: Record<string, string> = {
-  Bb: "A#",
-  Eb: "D#",
-  Ab: "G#",
-  Db: "C#",
-  Gb: "F#",
-};
-
-function convertFlatsToSharps(chordName: string): string {
-  for (const [flat, sharp] of Object.entries(FLAT_TO_SHARP)) {
-    if (chordName.startsWith(flat)) {
-      return sharp + chordName.slice(flat.length);
-    }
-  }
-  return chordName;
-}
-
-export function detectChord(notes: NoteStack<ChordNote>): string | null {
-  if (notes.size === 0) return null;
-
-  const pitchClasses = [...notes.values()]
-    .sort((a, b) => a.note - b.note)
-    .map((n) => TonalNote.pitchClass(TonalNote.fromMidi(n.note)));
-
-  const detected = TonalChord.detect(pitchClasses);
-  if (detected.length === 0) return null;
-
-  const chordName = detected[0].replace("M", "maj");
-
-  return convertFlatsToSharps(chordName);
 }

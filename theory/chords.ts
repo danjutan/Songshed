@@ -1,5 +1,6 @@
 import type { ChordNote, NoteStack } from "~/model/data";
 import guitarDb from "@tombatossals/chords-db/lib/guitar.json";
+import { Chord as TonalChord, Note as TonalNote } from "tonal";
 import { type Chroma, type Midi, defaultTuning } from "./notes";
 
 interface ChordPosition {
@@ -103,4 +104,36 @@ export function getChordsFromDb(
 
     return noteStack;
   });
+}
+
+const FLAT_TO_SHARP: Record<string, string> = {
+  Bb: "A#",
+  Eb: "D#",
+  Ab: "G#",
+  Db: "C#",
+  Gb: "F#",
+};
+
+function convertFlatsToSharps(chordName: string): string {
+  for (const [flat, sharp] of Object.entries(FLAT_TO_SHARP)) {
+    if (chordName.startsWith(flat)) {
+      return sharp + chordName.slice(flat.length);
+    }
+  }
+  return chordName;
+}
+
+export function detectChord(notes: NoteStack<ChordNote>): string | null {
+  if (notes.size === 0) return null;
+
+  const pitchClasses = [...notes.values()]
+    .sort((a, b) => a.note - b.note)
+    .map((n) => TonalNote.pitchClass(TonalNote.fromMidi(n.note)));
+
+  const detected = TonalChord.detect(pitchClasses);
+  if (detected.length === 0) return null;
+
+  const chordName = detected[0].replace("M", "");
+
+  return convertFlatsToSharps(chordName);
 }

@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { Chord, NoteStack, ChordNote } from "~/model/data";
-import { detectChord } from "~/theory/notes";
+import { detectChord } from "~/theory/chords";
 import {
   Check,
   Delete,

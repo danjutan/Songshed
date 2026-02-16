@@ -45,7 +45,7 @@ watch([chromaIndex, selectedSuffix], () => {
 });
 
 function formatSuffixForTitle(suffix: string): string {
-  if (suffix === "major") return "maj";
+  if (suffix === "major") return "";
   if (suffix === "minor") return "min";
   return suffix;
 }
